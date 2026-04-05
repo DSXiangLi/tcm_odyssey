@@ -1,0 +1,163 @@
+<h2>第六章：一期开发总结</h2>
+<p class="subtitle">药灵山谷 v3.0 - 一期MVP范围</p>
+
+<div class="section">
+  <h3>一期核心内容</h3>
+
+  <div class="mockup">
+    <div class="mockup-body" style="padding: 15px;">
+      <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px;">
+        <!-- 场景 -->
+        <div style="background: #e8f5e9; padding: 12px; border-radius: 6px;">
+          <h4 style="margin: 0 0 8px 0; font-size: 12px; color: #4a7c59;">🗺️ 场景系统</h4>
+          <ul style="margin: 0; padding-left: 15px; font-size: 11px;">
+            <li>室外：百草镇中心区（40x30瓦片）</li>
+            <li>室内：青木诊所、老张药园、玩家之家</li>
+            <li>药王谷：3-4个地貌区域（一期范围）</li>
+            <li>瓦片地图 + 门瓦片场景切换</li>
+          </ul>
+        </div>
+
+        <!-- NPC -->
+        <div style="background: #fce4ec; padding: 12px; border-radius: 6px;">
+          <h4 style="margin: 0 0 8px 0; font-size: 12px; color: #c2185b;">👤 NPC系统</h4>
+          <ul style="margin: 0; padding-left: 15px; font-size: 11px;">
+            <li>核心NPC：青木先生 + 老张</li>
+            <li>AI对话系统（云端LLM API）</li>
+            <li>MEMORY + TASK 文件管理</li>
+            <li>统一对话接口（任务+对话模式）</li>
+          </ul>
+        </div>
+
+        <!-- 学习 -->
+        <div style="background: #fff8e1; padding: 12px; border-radius: 6px;">
+          <h4 style="margin: 0 0 8px 0; font-size: 12px; color: #f9a825;">📚 学习系统</h4>
+          <ul style="margin: 0; padding-left: 15px; font-size: 11px;">
+            <li>方剂：4个解表类（桂枝汤、麻黄汤等）</li>
+            <li>药材：5种基础药材 + 种植考教</li>
+            <li>种植：归经区+四气水+五味肥</li>
+            <li>药袋：按功效分类存放</li>
+            <li>炮制：选择正确材料制药</li>
+          </ul>
+        </div>
+
+        <!-- 探索 -->
+        <div style="background: #e3f2fd; padding: 12px; border-radius: 6px;">
+          <h4 style="margin: 0 0 8px 0; font-size: 12px; color: #1976d2;">🔍 探索系统</h4>
+          <ul style="margin: 0; padding-left: 15px; font-size: 11px;">
+            <li>药王谷地貌探索（高出现频率）</li>
+            <li>挖掘+辨认采集药材</li>
+            <li>矿物挖掘（挖矿小游戏）</li>
+            <li>动物捕捉（瞄准类小游戏）</li>
+            <li>仓库：植物/动物/矿物类存储</li>
+          </ul>
+        </div>
+
+        <!-- 生活 -->
+        <div style="background: #f3e5f5; padding: 12px; border-radius: 6px;">
+          <h4 style="margin: 0 0 8px 0; font-size: 12px; color: #7b1fa2;">🏡 生活系统</h4>
+          <ul style="margin: 0; padding-left: 15px; font-size: 11px;">
+            <li>玩家之家：厨房、书房、卧室</li>
+            <li>药膳制作（酸枣仁汤等）</li>
+            <li>经典阅读解锁技能</li>
+            <li>休息存档</li>
+          </ul>
+        </div>
+
+        <!-- 玩家 -->
+        <div style="background: #f5f5f5; padding: 12px; border-radius: 6px;">
+          <h4 style="margin: 0 0 8px 0; font-size: 12px;">🎮 玩家系统</h4>
+          <ul style="margin: 0; padding-left: 15px; font-size: 11px;">
+            <li>角色移动与交互</li>
+            <li>背包：材料、工具、药材</li>
+            <li>学习进度追踪</li>
+            <li>无时间/体力限制</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <h3>后期扩展预留</h3>
+
+  <div style="background: #f5f5f5; padding: 15px; border-radius: 8px;">
+    <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; font-size: 10px;">
+      <div style="background: white; padding: 8px; border-radius: 4px; text-align: center;">
+        <div style="font-size: 16px;">🔧</div>
+        <div><strong>工具升级</strong></div>
+        <div style="color: #999;">小铲子→锄头→专业工具</div>
+      </div>
+      <div style="background: white; padding: 8px; border-radius: 4px; text-align: center;">
+        <div style="font-size: 16px;">🎣</div>
+        <div><strong>钓鱼系统</strong></div>
+        <div style="color: #999;">溪谷区钓鱼</div>
+      </div>
+      <div style="background: white; padding: 8px; border-radius: 4px; text-align: center;">
+        <div style="font-size: 16px;">🏠</div>
+        <div><strong>家园装饰</strong></div>
+        <div style="color: #999;">家具、装饰品</div>
+      </div>
+      <div style="background: white; padding: 8px; border-radius: 4px; text-align: center;">
+        <div style="font-size: 16px;">🐕</div>
+        <div><strong>宠物系统</strong></div>
+        <div style="color: #999;">陪伴宠物</div>
+      </div>
+      <div style="background: white; padding: 8px; border-radius: 4px; text-align: center;">
+        <div style="font-size: 16px;">🏪</div>
+        <div><strong>王婶集市</strong></div>
+        <div style="color: #999;">交易系统</div>
+      </div>
+      <div style="background: white; padding: 8px; border-radius: 4px; text-align: center;">
+        <div style="font-size: 16px;">🎉</div>
+        <div><strong>节日活动</strong></div>
+        <div style="color: #999;">药王节、采药大赛</div>
+      </div>
+      <div style="background: white; padding: 8px; border-radius: 4px; text-align: center;">
+        <div style="font-size: 16px;">👨‍⚕️</div>
+        <div><strong>新NPC导师</strong></div>
+        <div style="color: #999;">新方剂教学</div>
+      </div>
+      <div style="background: white; padding: 8px; border-radius: 4px; text-align: center;">
+        <div style="font-size: 16px;">🗺️</div>
+        <div><strong>地图扩展</strong></div>
+        <div style="color: #999;">更多药王谷区域</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <h3>技术栈</h3>
+
+  <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px;">
+    <div style="background: #e8f5e9; padding: 10px; border-radius: 6px; text-align: center;">
+      <div style="font-weight: bold; font-size: 11px;">游戏引擎</div>
+      <div style="font-size: 10px; color: #666;">Phaser.js / Godot</div>
+    </div>
+    <div style="background: #fff8e1; padding: 10px; border-radius: 6px; text-align: center;">
+      <div style="font-weight: bold; font-size: 11px;">地图编辑</div>
+      <div style="font-size: 10px; color: #666;">Tiled Map Editor</div>
+    </div>
+    <div style="background: #e3f2fd; padding: 10px; border-radius: 6px; text-align: center;">
+      <div style="font-weight: bold; font-size: 11px;">AI对话</div>
+      <div style="font-size: 10px; color: #666;">云端LLM API</div>
+    </div>
+    <div style="background: #fce4ec; padding: 10px; border-radius: 6px; text-align: center;">
+      <div style="font-weight: bold; font-size: 11px;">美术风格</div>
+      <div style="font-size: 10px; color: #666;">像素田园风</div>
+    </div>
+  </div>
+</div>
+
+<div style="background: #e8f5e9; padding: 20px; border-radius: 8px; margin-top: 15px; text-align: center;">
+  <h3 style="margin: 0 0 10px 0; color: #4a7c59;">✅ 设计展示完成</h3>
+  <p style="margin: 0; font-size: 12px; color: #333;">
+    接下来我将编写正式的设计文档，包含完整游戏愿景和一期MVP方案
+  </p>
+</div>
+
+<div style="text-align: center; padding: 20px; color: #888; font-size: 12px;">
+  请确认一期开发总结是否符合预期，我将开始编写设计文档
+</div>

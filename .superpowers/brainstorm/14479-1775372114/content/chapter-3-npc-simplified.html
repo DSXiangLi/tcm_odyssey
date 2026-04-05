@@ -1,0 +1,186 @@
+<h2>第三章（简化版）：NPC系统设计</h2>
+<p class="subtitle">统一对话接口 + 双模式架构</p>
+
+<div class="section">
+  <h3>简化架构</h3>
+
+  <div class="mockup">
+    <div class="mockup-body" style="padding: 20px;">
+      <div style="text-align: center; margin-bottom: 20px;">
+        <div style="display: inline-block; background: #4a7c59; color: white; padding: 15px 30px; border-radius: 8px; font-size: 14px;">
+          🎮 玩家
+        </div>
+      </div>
+
+      <div style="font-size: 24px; text-align: center; color: #4a7c59;">⇅ 统一对话接口</div>
+
+      <div style="display: flex; justify-content: center; gap: 30px; margin-top: 20px;">
+        <!-- 青木先生 -->
+        <div style="background: #f5deb3; padding: 15px; border-radius: 8px; width: 200px;">
+          <div style="text-align: center; font-size: 32px;">👴</div>
+          <div style="text-align: center; font-weight: bold;">青木先生</div>
+          <div style="margin-top: 10px; font-size: 11px;">
+            <div style="background: white; padding: 6px; border-radius: 4px; margin-bottom: 5px;">
+              📋 任务模式：发布/管理任务
+            </div>
+            <div style="background: white; padding: 6px; border-radius: 4px;">
+              💬 对话模式：自由对话
+            </div>
+          </div>
+        </div>
+
+        <!-- 老张 -->
+        <div style="background: #e8f5e9; padding: 15px; border-radius: 8px; width: 200px;">
+          <div style="text-align: center; font-size: 32px;">👨‍🌾</div>
+          <div style="text-align: center; font-weight: bold;">老张</div>
+          <div style="margin-top: 10px; font-size: 11px;">
+            <div style="background: white; padding: 6px; border-radius: 4px; margin-bottom: 5px;">
+              📋 任务模式：发布/管理任务
+            </div>
+            <div style="background: white; padding: 6px; border-radius: 4px;">
+              💬 对话模式：自由对话
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div style="text-align: center; margin-top: 20px; font-size: 12px; color: #666;">
+        NPC之间不对话，只通过玩家交互
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <h3>双模式说明</h3>
+
+  <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+    <!-- 任务模式 -->
+    <div style="background: #e3f2fd; padding: 15px; border-radius: 8px; border: 2px solid #1976d2;">
+      <h4 style="color: #1976d2; margin: 0 0 10px 0;">📋 任务模式</h4>
+      <p style="font-size: 11px; color: #333; margin: 0 0 10px 0;">Agent拥有一套任务链，自动管理</p>
+      <ul style="font-size: 11px; color: #333; margin: 0; padding-left: 15px;">
+        <li>发布任务（根据玩家进度）</li>
+        <li>更新任务状态</li>
+        <li>判断任务完成</li>
+        <li>给予奖励</li>
+      </ul>
+      <div style="margin-top: 10px; background: white; padding: 8px; border-radius: 4px; font-size: 10px;">
+        <strong>示例：</strong>玩家完成诊治 → 青木先生自动判断完成 → 发放奖励 → 解锁下一个任务
+      </div>
+    </div>
+
+    <!-- 对话模式 -->
+    <div style="background: #fce4ec; padding: 15px; border-radius: 8px; border: 2px solid #c2185b;">
+      <h4 style="color: #c2185b; margin: 0 0 10px 0;">💬 对话模式</h4>
+      <p style="font-size: 11px; color: #333; margin: 0 0 10px 0;">与玩家自由对话，回答问题</p>
+      <ul style="font-size: 11px; color: #333; margin: 0; padding-left: 15px;">
+        <li>回答中医相关问题</li>
+        <li>解释方剂原理</li>
+        <li>闲聊增加好感</li>
+        <li>回顾过往对话</li>
+      </ul>
+      <div style="margin-top: 10px; background: white; padding: 8px; border-radius: 4px; font-size: 10px;">
+        <strong>示例：</strong>玩家问"桂枝汤和麻黄汤有什么区别？" → 青木先生详细解释
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <h3>统一对话接口</h3>
+
+  <div class="mockup">
+    <div class="mockup-body" style="padding: 15px;">
+      <div style="background: #f5f5f5; padding: 12px; border-radius: 6px; font-family: monospace; font-size: 11px;">
+        <div style="color: #666;">// 玩家与NPC对话（统一接口）</div>
+        <div style="margin-top: 8px;">
+          <span style="color: #1976d2;">POST</span> /api/npc/chat
+        </div>
+        <div style="margin-top: 8px; background: white; padding: 10px; border-radius: 4px;">
+<pre style="margin: 0;">{
+  "npc_id": "qingmu",
+  "player_input": "师父，我完成了王婶的诊治",
+  "context": {
+    "player_level": 3,
+    "current_task": "task_002"
+  }
+}</pre>
+        </div>
+        <div style="margin-top: 10px; color: #666;">// NPC自动判断：这是任务相关对话</div>
+        <div style="margin-top: 8px; background: #e8f5e9; padding: 10px; border-radius: 4px;">
+<pre style="margin: 0;">{
+  "mode": "task",
+  "response": "不错！王婶的风寒已解，你用桂枝汤很对症。来，这是你的奖励。",
+  "task_update": {
+    "task_id": "task_002",
+    "status": "completed",
+    "reward": { "gold": 30, "exp": 15 }
+  },
+  "next_task_hint": "明日会有新病人，准备学习麻黄汤。"
+}</pre>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <h3>对话示例对比</h3>
+
+  <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+    <div style="background: #f5f5f5; padding: 12px; border-radius: 6px;">
+      <div style="font-weight: bold; font-size: 11px; color: #1976d2;">任务模式对话</div>
+      <div style="margin-top: 8px; font-size: 11px;">
+        <p style="margin: 0;"><strong>玩家：</strong>师父，我完成了诊治。</p>
+        <p style="margin: 5px 0 0 0;"><strong>青木：</strong>让我看看...嗯，方剂选择正确。今日你学有所成，这是奖励。明日开始学习麻黄汤。</p>
+      </div>
+    </div>
+    <div style="background: #f5f5f5; padding: 12px; border-radius: 6px;">
+      <div style="font-weight: bold; font-size: 11px; color: #c2185b;">对话模式对话</div>
+      <div style="margin-top: 8px; font-size: 11px;">
+        <p style="margin: 0;"><strong>玩家：</strong>师父，桂枝汤和麻黄汤有什么区别？</p>
+        <p style="margin: 5px 0 0 0;"><strong>青木：</strong>好问题！桂枝汤治风寒表虚，麻黄汤治风寒表实。打个比方，桂枝汤像是给虚弱的人添件衣裳，麻黄汤则是让壮实的人发汗驱寒...</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <h3>数据结构简化</h3>
+
+  <div style="background: #f5f5f5; padding: 15px; border-radius: 8px; font-size: 11px;">
+    <pre style="margin: 0; color: #333;">
+npcs/
+├── qingmu/
+│   ├── profile.json      # 角色设定（性格、说话风格、教学领域）
+│   ├── memory.json       # 玩家交互记忆（动态更新）
+│   └── tasks.json        # 任务链定义
+├── laozhang/
+│   ├── profile.json
+│   ├── memory.json
+│   └── tasks.json
+└── functional/           # 功能NPC（简化版）
+    └── templates.json    # 通用对话模板
+    </pre>
+  </div>
+
+  <div style="margin-top: 15px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px;">
+    <div style="background: #e3f2fd; padding: 10px; border-radius: 6px; text-align: center;">
+      <div style="font-weight: bold; font-size: 11px;">profile.json</div>
+      <div style="font-size: 10px; color: #666;">静态角色设定</div>
+    </div>
+    <div style="background: #fce4ec; padding: 10px; border-radius: 6px; text-align: center;">
+      <div style="font-weight: bold; font-size: 11px;">memory.json</div>
+      <div style="font-size: 10px; color: #666;">动态记忆更新</div>
+    </div>
+    <div style="background: #fff8e1; padding: 10px; border-radius: 6px; text-align: center;">
+      <div style="font-weight: bold; font-size: 11px;">tasks.json</div>
+      <div style="font-size: 10px; color: #666;">任务链定义</div>
+    </div>
+  </div>
+</div>
+
+<div style="text-align: center; padding: 20px; color: #888; font-size: 12px;">
+  简化版NPC系统设计完成，请确认是否符合预期
+</div>

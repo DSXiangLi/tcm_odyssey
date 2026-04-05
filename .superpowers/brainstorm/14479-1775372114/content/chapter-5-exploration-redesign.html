@@ -1,0 +1,345 @@
+<h2>第五章（重设计）：药王谷探索系统</h2>
+<p class="subtitle">中国地貌 + 地道产区 + 多样采集玩法</p>
+
+<div class="section">
+  <h3>药王谷地貌分区</h3>
+
+  <div class="mockup">
+    <div class="mockup-body" style="padding: 15px;">
+      <p style="font-size: 11px; color: #666; margin: 0 0 10px 0;">不同地貌对应中国不同产区，产出地道药材</p>
+
+      <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px;">
+        <!-- 高山草甸 -->
+        <div style="background: linear-gradient(180deg, #f5f5f5 0%, #90b060 100%); padding: 12px; border-radius: 6px;">
+          <div style="font-weight: bold; font-size: 11px;">🏔️ 高山草甸区</div>
+          <div style="font-size: 10px; color: #666; margin-top: 5px;">模拟：青藏高原</div>
+          <div style="font-size: 9px; margin-top: 8px;">
+            <strong>气候：</strong>高寒缺氧<br>
+            <strong>特产：</strong>冬虫夏草、雪莲、红景天<br>
+            <strong>特点：</strong>稀有珍品，需高原适应
+          </div>
+        </div>
+
+        <!-- 温带森林 -->
+        <div style="background: linear-gradient(180deg, #4a7c59 0%, #2d5a27 100%); color: white; padding: 12px; border-radius: 6px;">
+          <div style="font-weight: bold; font-size: 11px;">🌲 温带森林区</div>
+          <div style="font-size: 10px; opacity: 0.9; margin-top: 5px;">模拟：东北长白山</div>
+          <div style="font-size: 9px; margin-top: 8px;">
+            <strong>气候：</strong>寒冷湿润<br>
+            <strong>特产：</strong>人参、五味子、细辛<br>
+            <strong>特点：</strong>密林深处，需探索发现
+          </div>
+        </div>
+
+        <!-- 黄土高原 -->
+        <div style="background: linear-gradient(180deg, #c9b896 0%, #a0522d 100%); color: white; padding: 12px; border-radius: 6px;">
+          <div style="font-weight: bold; font-size: 11px;">🏜️ 黄土高原区</div>
+          <div style="font-size: 10px; opacity: 0.9; margin-top: 5px;">模拟：甘肃、山西</div>
+          <div style="font-size: 9px; margin-top: 8px;">
+            <strong>气候：</strong>干旱少雨<br>
+            <strong>特产：</strong>当归、黄芪、党参<br>
+            <strong>特点：</strong>根茎类药材丰富
+          </div>
+        </div>
+
+        <!-- 江南丘陵 -->
+        <div style="background: linear-gradient(180deg, #81c784 0%, #4a7c59 100%); color: white; padding: 12px; border-radius: 6px;">
+          <div style="font-weight: bold; font-size: 11px;">🌿 江南丘陵区</div>
+          <div style="font-size: 10px; opacity: 0.9; margin-top: 5px;">模拟：浙江、安徽</div>
+          <div style="font-size: 9px; margin-top: 8px;">
+            <strong>气候：</strong>温暖湿润<br>
+            <strong>特产：</strong>浙贝母、山茱萸、白术<br>
+            <strong>特点：</strong>花果类药材丰富
+          </div>
+        </div>
+
+        <!-- 热带雨林 -->
+        <div style="background: linear-gradient(180deg, #2e7d32 0%, #1b5e20 100%); color: white; padding: 12px; border-radius: 6px;">
+          <div style="font-weight: bold; font-size: 11px;">🌴 热带雨林区</div>
+          <div style="font-size: 10px; opacity: 0.9; margin-top: 5px;">模拟：云南、海南</div>
+          <div style="font-size: 9px; margin-top: 8px;">
+            <strong>气候：</strong>高温多雨<br>
+            <strong>特产：</strong>砂仁、豆蔻、槟榔<br>
+            <strong>特点：</strong>果实类药材丰富
+          </div>
+        </div>
+
+        <!-- 矿山区 -->
+        <div style="background: linear-gradient(180deg, #78909c 0%, #546e7a 100%); color: white; padding: 12px; border-radius: 6px;">
+          <div style="font-weight: bold; font-size: 11px;">⛏️ 矿山区</div>
+          <div style="font-size: 10px; opacity: 0.9; margin-top: 5px;">矿物药采集</div>
+          <div style="font-size: 9px; margin-top: 8px;">
+            <strong>特点：</strong>挖掘稀有矿石<br>
+            <strong>特产：</strong>朱砂、石膏、滑石、龙骨<br>
+            <strong>玩法：</strong>挖矿小游戏
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <h3>采药系统：挖掘 + 辨认</h3>
+
+  <div class="mockup">
+    <div class="mockup-body" style="padding: 15px;">
+      <h4 style="margin: 0 0 10px 0; font-size: 12px;">🌱 采药流程</h4>
+
+      <div style="display: flex; align-items: center; justify-content: space-between; gap: 10px; font-size: 11px; margin-bottom: 15px;">
+        <div style="background: #e8f5e9; padding: 10px; border-radius: 6px; text-align: center; flex: 1;">
+          <div style="font-size: 16px;">🔍</div>
+          <div>发现药材</div>
+        </div>
+        <div style="color: #4a7c59;">→</div>
+        <div style="background: #fff8e1; padding: 10px; border-radius: 6px; text-align: center; flex: 1;">
+          <div style="font-size: 16px;">⛏️</div>
+          <div>挖掘采集</div>
+        </div>
+        <div style="color: #4a7c59;">→</div>
+        <div style="background: #e3f2fd; padding: 10px; border-radius: 6px; text-align: center; flex: 1;">
+          <div style="font-size: 16px;">🔍</div>
+          <div>辨认药材</div>
+        </div>
+        <div style="color: #4a7c59;">→</div>
+        <div style="background: #fce4ec; padding: 10px; border-radius: 6px; text-align: center; flex: 1;">
+          <div style="font-size: 16px;">✅</div>
+          <div>收获入库</div>
+        </div>
+      </div>
+
+      <!-- 发现与挖掘 -->
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+        <div style="background: #f5f5f5; padding: 12px; border-radius: 6px;">
+          <div style="font-size: 11px; font-weight: bold; margin-bottom: 8px;">🔍 发现药材</div>
+          <p style="font-size: 10px; color: #666; margin: 0 0 8px 0;">在对应地貌区域，根据季节和天气随机出现药材</p>
+          <div style="background: white; padding: 10px; border-radius: 4px;">
+            <div style="text-align: center;">
+              <div style="background: #90b060; width: 60px; height: 60px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 24px; margin: 0 auto;">🌿</div>
+              <div style="font-size: 10px; color: #666; margin-top: 5px;">发现于：黄土高原区</div>
+              <div style="font-size: 10px; color: #333;"><strong>提示：</strong>叶羽状，根有甜味</div>
+            </div>
+          </div>
+        </div>
+
+        <div style="background: #f5f5f5; padding: 12px; border-radius: 6px;">
+          <div style="font-size: 11px; font-weight: bold; margin-bottom: 8px;">⛏️ 挖掘小游戏</div>
+          <p style="font-size: 10px; color: #666; margin: 0 0 8px 0;">点击挖掘，挖到药材根茎才算成功</p>
+          <div style="background: #a0522d; padding: 15px; border-radius: 4px; position: relative; min-height: 80px;">
+            <div style="position: absolute; top: 10px; left: 20px; font-size: 16px;">🌿</div>
+            <div style="position: absolute; top: 25px; left: 25px; font-size: 12px; color: #f5deb3;">┃</div>
+            <div style="position: absolute; top: 40px; left: 20px; font-size: 14px; color: #f5deb3;">〰️</div>
+            <div style="position: absolute; top: 55px; left: 15px; font-size: 20px; color: #f5deb3;">●</div>
+            <div style="position: absolute; top: 10px; right: 20px; font-size: 20px; cursor: pointer;">⛏️</div>
+            <div style="text-align: center; color: white; font-size: 9px; margin-top: 60px;">点击挖掘，找到根部</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 辨认系统 -->
+      <div style="margin-top: 15px; background: #fff8e1; padding: 12px; border-radius: 6px;">
+        <div style="font-size: 11px; font-weight: bold; margin-bottom: 8px;">🔍 药材辨认</div>
+        <p style="font-size: 10px; color: #666; margin: 0 0 8px 0;">挖掘后需要正确辨认，才能收获入库</p>
+
+        <div style="background: white; padding: 12px; border-radius: 4px;">
+          <div style="display: grid; grid-template-columns: 120px 1fr; gap: 15px;">
+            <!-- 药材图片区 -->
+            <div style="text-align: center;">
+              <div style="background: #f5f5f5; width: 100px; height: 100px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 40px; margin: 0 auto; border: 2px solid #ddd;">
+                🌿
+              </div>
+              <div style="font-size: 9px; color: #666; margin-top: 5px;">真实药材图片</div>
+            </div>
+
+            <!-- 辨认信息 -->
+            <div>
+              <div style="font-size: 11px; color: #333; margin-bottom: 8px;">
+                <strong>挖掘发现：</strong>根呈圆柱形，表面淡棕黄色，质柔韧，断面黄白色，有特异香气，味甘甜
+              </div>
+              <div style="font-size: 11px; color: #333; margin-bottom: 8px;">
+                <strong>发现地点：</strong>黄土高原区（甘肃岷县模拟）
+              </div>
+              <div style="font-size: 11px; color: #333; margin-bottom: 8px;">
+                <strong>请辨认这是什么药材：</strong>
+              </div>
+              <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 5px;">
+                <button style="padding: 8px; border: 2px solid #4a7c59; background: #e8f5e9; border-radius: 4px; font-size: 11px; text-align: left;">
+                  A. 当归 ✓<br>
+                  <span style="font-size: 9px; color: #666;">补血活血，调经止痛</span>
+                </button>
+                <button style="padding: 8px; border: 1px solid #ddd; border-radius: 4px; font-size: 11px; text-align: left;">
+                  B. 黄芪<br>
+                  <span style="font-size: 9px; color: #666;">补气固表，利尿托毒</span>
+                </button>
+                <button style="padding: 8px; border: 1px solid #ddd; border-radius: 4px; font-size: 11px; text-align: left;">
+                  C. 党参<br>
+                  <span style="font-size: 9px; color: #666;">补中益气，健脾益肺</span>
+                </button>
+                <button style="padding: 8px; border: 1px solid #ddd; border-radius: 4px; font-size: 11px; text-align: left;">
+                  D. 甘草<br>
+                  <span style="font-size: 9px; color: #666;">补脾益气，清热解毒</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <h3>挖矿系统</h3>
+
+  <div class="mockup">
+    <div class="mockup-body" style="padding: 15px;">
+      <h4 style="margin: 0 0 10px 0; font-size: 12px;">⛏️ 矿区挖掘</h4>
+      <p style="font-size: 10px; color: #666; margin: 0 0 10px 0;">在矿山区挖掘稀有矿物药，不同深度产出不同矿物</p>
+
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+        <!-- 矿层展示 -->
+        <div style="background: #f5f5f5; padding: 12px; border-radius: 6px;">
+          <div style="font-size: 11px; font-weight: bold; margin-bottom: 8px;">🏔️ 矿层分布</div>
+          <div style="background: #78909c; padding: 10px; border-radius: 4px;">
+            <div style="display: flex; flex-direction: column; gap: 5px;">
+              <div style="background: #a5d6a7; padding: 8px; border-radius: 4px; text-align: center;">
+                <span style="font-size: 12px;">表层</span>
+                <span style="font-size: 10px; margin-left: 10px;">滑石、芒硝</span>
+              </div>
+              <div style="background: #81c784; padding: 8px; border-radius: 4px; text-align: center;">
+                <span style="font-size: 12px;">中层</span>
+                <span style="font-size: 10px; margin-left: 10px;">石膏、龙骨</span>
+              </div>
+              <div style="background: #66bb6a; padding: 8px; border-radius: 4px; text-align: center;">
+                <span style="font-size: 12px;">深层</span>
+                <span style="font-size: 10px; margin-left: 10px;">朱砂、雄黄</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 挖矿小游戏 -->
+        <div style="background: #f5f5f5; padding: 12px; border-radius: 6px;">
+          <div style="font-size: 11px; font-weight: bold; margin-bottom: 8px;">⛏️ 挖矿操作</div>
+          <div style="background: #546e7a; padding: 15px; border-radius: 4px; text-align: center;">
+            <div style="color: white; font-size: 11px; margin-bottom: 10px;">选择挖掘深度</div>
+            <div style="display: flex; gap: 5px; justify-content: center;">
+              <button style="padding: 8px 15px; background: #a5d6a7; border: none; border-radius: 4px; font-size: 10px;">浅挖</button>
+              <button style="padding: 8px 15px; background: #81c784; border: none; border-radius: 4px; font-size: 10px;">深挖</button>
+              <button style="padding: 8px 15px; background: #66bb6a; border: none; border-radius: 4px; font-size: 10px;">极深挖</button>
+            </div>
+            <div style="margin-top: 15px; background: rgba(255,255,255,0.1); padding: 10px; border-radius: 4px;">
+              <div style="font-size: 20px;">🪨 → ⛏️ → 💎</div>
+              <div style="color: white; font-size: 10px; margin-top: 5px;">发现：滑石 x2</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 矿物药功效 -->
+      <div style="margin-top: 15px; background: #e8f5e9; padding: 10px; border-radius: 6px;">
+        <div style="font-size: 11px; font-weight: bold; margin-bottom: 8px;">📚 矿物药功效速查</div>
+        <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 5px; font-size: 10px;">
+          <div style="background: white; padding: 6px; border-radius: 4px; text-align: center;">
+            <div style="font-size: 14px;">🔴</div>
+            <strong>朱砂</strong><br>安神定惊
+          </div>
+          <div style="background: white; padding: 6px; border-radius: 4px; text-align: center;">
+            <div style="font-size: 14px;">⚪</div>
+            <strong>石膏</strong><br>清热泻火
+          </div>
+          <div style="background: white; padding: 6px; border-radius: 4px; text-align: center;">
+            <div style="font-size: 14px;">🟢</div>
+            <strong>滑石</strong><br>利尿通淋
+          </div>
+          <div style="background: white; padding: 6px; border-radius: 4px; text-align: center;">
+            <div style="font-size: 14px;">🟤</div>
+            <strong>龙骨</strong><br>镇惊安神
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <h3>动物捕捉系统</h3>
+
+  <div class="mockup">
+    <div class="mockup-body" style="padding: 15px;">
+      <h4 style="margin: 0 0 10px 0; font-size: 12px;">🦂 动物药采集</h4>
+      <p style="font-size: 10px; color: #666; margin: 0 0 10px 0;">在不同区域遇到药用动物，捕捉后可入药</p>
+
+      <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px;">
+        <div style="background: #f5f5f5; padding: 10px; border-radius: 6px; text-align: center;">
+          <div style="font-size: 24px;">🦂</div>
+          <div style="font-weight: bold; font-size: 11px;">全蝎</div>
+          <div style="font-size: 9px; color: #666;">息风镇痉</div>
+          <div style="font-size: 9px; color: #999; margin-top: 5px;">出没：温带森林</div>
+        </div>
+        <div style="background: #f5f5f5; padding: 10px; border-radius: 6px; text-align: center;">
+          <div style="font-size: 24px;">🐛</div>
+          <div style="font-weight: bold; font-size: 11px;">蜈蚣</div>
+          <div style="font-size: 9px; color: #666;">息风止痉</div>
+          <div style="font-size: 9px; color: #999; margin-top: 5px;">出没：阴暗角落</div>
+        </div>
+        <div style="background: #f5f5f5; padding: 10px; border-radius: 6px; text-align: center;">
+          <div style="font-size: 24px;">🪱</div>
+          <div style="font-weight: bold; font-size: 11px;">地龙</div>
+          <div style="font-size: 9px; color: #666;">清热定惊</div>
+          <div style="font-size: 9px; color: #999; margin-top: 5px;">出没：湿润土壤</div>
+        </div>
+        <div style="background: #f5f5f5; padding: 10px; border-radius: 6px; text-align: center;">
+          <div style="font-size: 24px;">🦎</div>
+          <div style="font-weight: bold; font-size: 11px;">蛤蚧</div>
+          <div style="font-size: 9px; color: #666;">补肺益肾</div>
+          <div style="font-size: 9px; color: #999; margin-top: 5px;">出没：热带岩壁</div>
+        </div>
+      </div>
+
+      <!-- 捕捉小游戏 -->
+      <div style="margin-top: 15px; background: #fff8e1; padding: 12px; border-radius: 6px;">
+        <div style="font-size: 11px; font-weight: bold; margin-bottom: 8px;">🎯 捕捉小游戏</div>
+        <div style="background: white; padding: 10px; border-radius: 4px;">
+          <div style="text-align: center; margin-bottom: 10px;">
+            <div style="font-size: 11px; color: #666;">发现全蝎！在它逃跑前点击捕捉</div>
+            <div style="font-size: 32px; margin: 10px 0; animation: shake 0.5s infinite;">🦂</div>
+          </div>
+          <div style="display: flex; gap: 5px; justify-content: center;">
+            <button style="padding: 8px 20px; background: #4a7c59; color: white; border: none; border-radius: 4px; font-size: 11px;">用镊子捕捉</button>
+            <button style="padding: 8px 20px; background: #f9a825; color: white; border: none; border-radius: 4px; font-size: 11px;">用网兜捕捉</button>
+          </div>
+          <div style="margin-top: 10px; font-size: 10px; color: #666; text-align: center;">
+            💡 提示：全蝎有毒，用镊子更安全（成功率更高）
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <h3>刷新机制</h3>
+
+  <div style="background: #f5f5f5; padding: 15px; border-radius: 8px;">
+    <h4 style="margin: 0 0 10px 0; font-size: 12px;">🔄 药材刷新规则</h4>
+    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; font-size: 11px;">
+      <div style="background: white; padding: 10px; border-radius: 6px;">
+        <strong>季节影响</strong>
+        <p style="margin: 5px 0 0 0; color: #666;">春季：花叶类多<br>秋季：根茎类多<br>冬季：矿物类为主</p>
+      </div>
+      <div style="background: white; padding: 10px; border-radius: 6px;">
+        <strong>天气影响</strong>
+        <p style="margin: 5px 0 0 0; color: #666;">雨后：菌类、地龙多<br>晴天：花果类多<br>雪天：稀有药材</p>
+      </div>
+      <div style="background: white; padding: 10px; border-radius: 6px;">
+        <strong>区域轮换</strong>
+        <p style="margin: 5px 0 0 0; color: #666;">每个区域每日刷新<br>稀有药材3-7天刷新<br>已采集点需等待恢复</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div style="text-align: center; padding: 20px; color: #888; font-size: 12px;">
+  第五章（重设计）展示完成，请确认药王谷探索系统是否符合预期
+</div>

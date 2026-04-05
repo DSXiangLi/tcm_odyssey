@@ -1,0 +1,31 @@
+{"type":"server-started","port":52693,"host":"127.0.0.1","url_host":"localhost","url":"http://localhost:52693","screen_dir":"/home/lixiang/Desktop/zhongyi_game_v3/.superpowers/brainstorm/14479-1775372114/content","state_dir":"/home/lixiang/Desktop/zhongyi_game_v3/.superpowers/brainstorm/14479-1775372114/state"}
+{"type":"screen-added","file":"/home/lixiang/Desktop/zhongyi_game_v3/.superpowers/brainstorm/14479-1775372114/content/map-layout.html"}
+{"source":"user-event","type":"click","text":"🏠\n      \n        青木诊所\n        核心NPC：青木先生（老中医）\n        功能：临床教学、诊治病人、开方学习","choice":"clinic","id":null,"timestamp":1775373041628}
+{"source":"user-event","type":"click","text":"🏠\n      \n        青木诊所\n        核心NPC：青木先生（老中医）\n        功能：临床教学、诊治病人、开方学习","choice":"clinic","id":null,"timestamp":1775373042624}
+{"source":"user-event","type":"click","text":"🌱\n      \n        老张药园\n        核心NPC：老张（药农）\n        功能：药材种植、考教问答、炮制加工","choice":"garden","id":null,"timestamp":1775373043394}
+{"source":"user-event","type":"click","text":"🏠\n      \n        青木诊所\n        核心NPC：青木先生（老中医）\n        功能：临床教学、诊治病人、开方学习","choice":"clinic","id":null,"timestamp":1775373060149}
+{"source":"user-event","type":"click","text":"🏡\n      \n        玩家之家\n        玩家专属空间\n        功能：药膳烹饪、休息恢复、物品存储","choice":"home","id":null,"timestamp":1775373072705}
+{"type":"screen-added","file":"/home/lixiang/Desktop/zhongyi_game_v3/.superpowers/brainstorm/14479-1775372114/content/map-technology.html"}
+{"type":"screen-added","file":"/home/lixiang/Desktop/zhongyi_game_v3/.superpowers/brainstorm/14479-1775372114/content/building-entry.html"}
+{"source":"user-event","type":"click","text":"🏡\n      \n        玩家之家\n        室外 → 室内厨房/卧室\n        室内：灶台、储物柜、休息区","choice":"home","id":null,"timestamp":1775373630438}
+{"source":"user-event","type":"click","text":"🏠\n      \n        青木诊所\n        室外 → 室内诊室\n        室内：诊台、药柜、青木先生NPC","choice":"clinic","id":null,"timestamp":1775373641101}
+{"type":"screen-added","file":"/home/lixiang/Desktop/zhongyi_game_v3/.superpowers/brainstorm/14479-1775372114/content/tile-vs-style.html"}
+{"type":"screen-added","file":"/home/lixiang/Desktop/zhongyi_game_v3/.superpowers/brainstorm/14479-1775372114/content/design-summary.html"}
+{"type":"screen-added","file":"/home/lixiang/Desktop/zhongyi_game_v3/.superpowers/brainstorm/14479-1775372114/content/architecture-options.html"}
+{"source":"user-event","type":"click","text":"A\n      \n        引导式渐进架构\n        NPC作为导师，逐步解锁功能和区域\n        推荐理由：最适合中医学习游戏，有明确的学习路径","choice":"guided","id":null,"timestamp":1775374208735}
+{"source":"user-event","type":"click","text":"B\n      \n        自由探索架构\n        开放世界风格，玩家自由决定做什么\n        特点：更像Stardew Valley，玩家自主性强","choice":"free","id":null,"timestamp":1775374209569}
+{"source":"user-event","type":"click","text":"B\n      \n        自由探索架构\n        开放世界风格，玩家自由决定做什么\n        特点：更像Stardew Valley，玩家自主性强","choice":"free","id":null,"timestamp":1775374210533}
+{"source":"user-event","type":"click","text":"C\n      \n        任务驱动架构\n        以任务板为核心，NPC发布任务引导\n        特点：明确目标感，适合不喜欢规划玩家的用户","choice":"task","id":null,"timestamp":1775374211291}
+{"type":"screen-added","file":"/home/lixiang/Desktop/zhongyi_game_v3/.superpowers/brainstorm/14479-1775372114/content/chapter-1-architecture.html"}
+{"type":"screen-added","file":"/home/lixiang/Desktop/zhongyi_game_v3/.superpowers/brainstorm/14479-1775372114/content/chapter-2-scenes.html"}
+{"type":"screen-added","file":"/home/lixiang/Desktop/zhongyi_game_v3/.superpowers/brainstorm/14479-1775372114/content/chapter-3-npc.html"}
+{"type":"screen-added","file":"/home/lixiang/Desktop/zhongyi_game_v3/.superpowers/brainstorm/14479-1775372114/content/chapter-3-npc-updated.html"}
+{"type":"screen-added","file":"/home/lixiang/Desktop/zhongyi_game_v3/.superpowers/brainstorm/14479-1775372114/content/chapter-3-npc-simplified.html"}
+{"type":"screen-added","file":"/home/lixiang/Desktop/zhongyi_game_v3/.superpowers/brainstorm/14479-1775372114/content/chapter-4-learning.html"}
+{"type":"screen-added","file":"/home/lixiang/Desktop/zhongyi_game_v3/.superpowers/brainstorm/14479-1775372114/content/chapter-4-learning-gamified.html"}
+{"type":"screen-added","file":"/home/lixiang/Desktop/zhongyi_game_v3/.superpowers/brainstorm/14479-1775372114/content/chapter-4-learning-redesign.html"}
+{"type":"screen-added","file":"/home/lixiang/Desktop/zhongyi_game_v3/.superpowers/brainstorm/14479-1775372114/content/chapter-4-learning-final.html"}
+{"type":"screen-added","file":"/home/lixiang/Desktop/zhongyi_game_v3/.superpowers/brainstorm/14479-1775372114/content/chapter-5-exploration.html"}
+{"type":"screen-added","file":"/home/lixiang/Desktop/zhongyi_game_v3/.superpowers/brainstorm/14479-1775372114/content/chapter-5-exploration-redesign.html"}
+{"type":"screen-added","file":"/home/lixiang/Desktop/zhongyi_game_v3/.superpowers/brainstorm/14479-1775372114/content/chapter-6-summary.html"}
+{"type":"screen-added","file":"/home/lixiang/Desktop/zhongyi_game_v3/.superpowers/brainstorm/14479-1775372114/content/waiting.html"}

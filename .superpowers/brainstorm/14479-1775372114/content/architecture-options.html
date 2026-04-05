@@ -1,0 +1,202 @@
+<h2>三种整体架构方案</h2>
+<p class="subtitle">从不同角度思考游戏的系统组织方式</p>
+
+<div class="section">
+  <h3>方案对比</h3>
+
+  <div class="options">
+    <div class="option" data-choice="guided" onclick="toggleSelect(this)">
+      <div class="letter">A</div>
+      <div class="content">
+        <h3>引导式渐进架构</h3>
+        <p>NPC作为导师，逐步解锁功能和区域</p>
+        <p style="color: #4a7c59; margin-top: 8px;"><strong>推荐理由：</strong>最适合中医学习游戏，有明确的学习路径</p>
+      </div>
+    </div>
+
+    <div class="option" data-choice="free" onclick="toggleSelect(this)">
+      <div class="letter">B</div>
+      <div class="content">
+        <h3>自由探索架构</h3>
+        <p>开放世界风格，玩家自由决定做什么</p>
+        <p style="color: #1976d2; margin-top: 8px;"><strong>特点：</strong>更像Stardew Valley，玩家自主性强</p>
+      </div>
+    </div>
+
+    <div class="option" data-choice="task" onclick="toggleSelect(this)">
+      <div class="letter">C</div>
+      <div class="content">
+        <h3>任务驱动架构</h3>
+        <p>以任务板为核心，NPC发布任务引导</p>
+        <p style="color: #c2185b; margin-top: 8px;"><strong>特点：</strong>明确目标感，适合不喜欢规划玩家的用户</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <h3>方案A：引导式渐进架构（推荐）</h3>
+
+  <div class="mockup">
+    <div class="mockup-header">玩家成长路径</div>
+    <div class="mockup-body" style="padding: 15px;">
+      <div style="display: flex; align-items: center; justify-content: space-between; font-size: 11px; flex-wrap: wrap; gap: 10px;">
+        <div style="background: #e8f5e9; padding: 8px 12px; border-radius: 4px; text-align: center; flex: 1; min-width: 80px;">
+          <div style="font-weight: bold;">初入药谷</div>
+          <div style="font-size: 10px; color: #666;">青木先生引导</div>
+        </div>
+        <div style="color: #4a7c59;">→</div>
+        <div style="background: #fff8e1; padding: 8px 12px; border-radius: 4px; text-align: center; flex: 1; min-width: 80px;">
+          <div style="font-weight: bold;">学徒阶段</div>
+          <div style="font-size: 10px; color: #666;">观察→辅助诊治</div>
+        </div>
+        <div style="color: #4a7c59;">→</div>
+        <div style="background: #e3f2fd; padding: 8px 12px; border-radius: 4px; text-align: center; flex: 1; min-width: 80px;">
+          <div style="font-weight: bold;">进阶阶段</div>
+          <div style="font-size: 10px; color: #666;">独立诊治+药园</div>
+        </div>
+        <div style="color: #4a7c59;">→</div>
+        <div style="background: #fce4ec; padding: 8px 12px; border-radius: 4px; text-align: center; flex: 1; min-width: 80px;">
+          <div style="font-weight: bold;">成熟医师</div>
+          <div style="font-size: 10px; color: #666;">解锁新区域</div>
+        </div>
+      </div>
+
+      <div style="margin-top: 15px; background: #f5f5f5; padding: 10px; border-radius: 4px;">
+        <p style="font-size: 12px; color: #333; margin: 0;"><strong>NPC角色：</strong></p>
+        <ul style="font-size: 11px; color: #333; margin: 5px 0 0 0;">
+          <li>青木先生：临床导师，发布诊治任务，评价玩家水平</li>
+          <li>老张：药物导师，考教药材知识，解锁种植权限</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <div class="pros-cons">
+    <div class="pros">
+      <h4>✅ 优点</h4>
+      <ul>
+        <li>学习曲线平滑，新手不会迷失</li>
+        <li>NPC有明确的教学意义</li>
+        <li>解锁机制带来成就感</li>
+        <li>适合中医学习的教育目标</li>
+      </ul>
+    </div>
+    <div class="cons">
+      <h4>⚠️ 注意</h4>
+      <ul>
+        <li>需要设计好解锁条件</li>
+        <li>过度引导可能限制自由感</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <h3>方案B：自由探索架构</h3>
+
+  <div class="mockup">
+    <div class="mockup-header">开放世界式自由度</div>
+    <div class="mockup-body" style="padding: 15px;">
+      <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px;">
+        <div style="background: #e8f5e9; padding: 10px; border-radius: 4px; text-align: center;">
+          <div style="font-size: 16px;">🌱</div>
+          <div style="font-size: 11px; font-weight: bold;">去药园</div>
+          <div style="font-size: 10px; color: #666;">随时可以</div>
+        </div>
+        <div style="background: #f5f5f5; padding: 10px; border-radius: 4px; text-align: center;">
+          <div style="font-size: 16px;">🏠</div>
+          <div style="font-size: 11px; font-weight: bold;">去诊所</div>
+          <div style="font-size: 10px; color: #666;">随时可以</div>
+        </div>
+        <div style="background: #fff8e1; padding: 10px; border-radius: 4px; text-align: center;">
+          <div style="font-size: 16px;">🏔️</div>
+          <div style="font-size: 11px; font-weight: bold;">去药王谷</div>
+          <div style="font-size: 10px; color: #666;">随时可以</div>
+        </div>
+      </div>
+      <p style="font-size: 11px; color: #666; margin: 10px 0 0 0; text-align: center;">
+        玩家自己决定今天做什么，NPC作为可选资源而非强制引导
+      </p>
+    </div>
+  </div>
+
+  <div class="pros-cons">
+    <div class="pros">
+      <h4>✅ 优点</h4>
+      <ul>
+        <li>最大自由度，放松感强</li>
+        <li>类似Stardew Valley的成功模式</li>
+        <li>玩家可以按自己节奏玩</li>
+      </ul>
+    </div>
+    <div class="cons">
+      <h4>⚠️ 注意</h4>
+      <ul>
+        <li>新手可能不知道做什么</li>
+        <li>学习目标感较弱</li>
+        <li>中医知识可能学不系统</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <h3>方案C：任务驱动架构</h3>
+
+  <div class="mockup">
+    <div class="mockup-header">任务板为核心</div>
+    <div class="mockup-body" style="padding: 15px;">
+      <div style="background: #f5f5f5; padding: 10px; border-radius: 4px; border: 2px solid #333;">
+        <div style="font-weight: bold; font-size: 12px; margin-bottom: 8px;">📋 今日任务板</div>
+        <div style="font-size: 11px; color: #333;">
+          <p style="margin: 4px 0;">○ 青木先生：诊治3位病人</p>
+          <p style="margin: 4px 0;">○ 老张：种植当归并通过考教</p>
+          <p style="margin: 4px 0;">○ 王婶：制作药膳酸枣仁汤</p>
+          <p style="margin: 4px 0; color: #666;">（完成后获得奖励和新任务）</p>
+        </div>
+      </div>
+      <p style="font-size: 11px; color: #666; margin: 10px 0 0 0; text-align: center;">
+        明确目标，完成后解锁新内容
+      </p>
+    </div>
+  </div>
+
+  <div class="pros-cons">
+    <div class="pros">
+      <h4>✅ 优点</h4>
+      <ul>
+        <li>目标清晰，不会迷茫</li>
+        <li>完成任务有成就感</li>
+        <li>适合不喜欢规划的玩家</li>
+      </ul>
+    </div>
+    <div class="cons">
+      <h4>⚠️ 注意</h4>
+      <ul>
+        <li>任务感太强可能失去放松感</li>
+        <li>自由度较低</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <h3>我的推荐</h3>
+
+  <div style="background: #e8f5e9; padding: 15px; border-radius: 8px; border: 2px solid #4a7c59;">
+    <p style="font-size: 13px; color: #333; margin: 0;">
+      <strong>推荐方案A（引导式渐进）+ B（自由探索）的混合：</strong>
+    </p>
+    <p style="font-size: 12px; color: #333; margin: 10px 0;">
+      初期有NPC引导解锁基础功能，中期后开放自由探索。既保证学习路径，又保留放松自由感。
+    </p>
+    <p style="font-size: 11px; color: #4a7c59; margin: 10px 0 0 0;">
+      这符合你"平衡融合"的核心体验目标：学习有成就感，同时探索自由放松。
+    </p>
+  </div>
+</div>
+
+<div style="text-align: center; padding: 20px; color: #888; font-size: 12px;">
+  请选择你倾向的架构方案，或在终端告诉我你的想法
+</div>

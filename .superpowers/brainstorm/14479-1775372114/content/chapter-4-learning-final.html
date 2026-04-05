@@ -1,0 +1,343 @@
+<h2>第四章（最终版）：学习系统设计</h2>
+<p class="subtitle">操作中记忆药物属性</p>
+
+<div class="section">
+  <h3>记忆映射总表</h3>
+
+  <div style="background: #e8f5e9; padding: 15px; border-radius: 8px;">
+    <table style="width: 100%; font-size: 12px; border-collapse: collapse;">
+      <tr style="background: #c8e6c9;">
+        <th style="padding: 10px; text-align: left;">药物属性</th>
+        <th style="padding: 10px; text-align: left;">游戏机制</th>
+        <th style="padding: 10px; text-align: left;">记忆方式</th>
+      </tr>
+      <tr>
+        <td style="padding: 10px; border-bottom: 1px solid #e0e0e0;"><strong>产地</strong></td>
+        <td style="padding: 10px; border-bottom: 1px solid #e0e0e0;">药田区域选择</td>
+        <td style="padding: 10px; border-bottom: 1px solid #e0e0e0;">在对应产地模拟区种植品质更高</td>
+      </tr>
+      <tr>
+        <td style="padding: 10px; border-bottom: 1px solid #e0e0e0;"><strong>四气（寒热温凉）</strong></td>
+        <td style="padding: 10px; border-bottom: 1px solid #e0e0e0;">水源选择</td>
+        <td style="padding: 10px; border-bottom: 1px solid #e0e0e0;">用对应性质的水浇灌效果更好</td>
+      </tr>
+      <tr>
+        <td style="padding: 10px; border-bottom: 1px solid #e0e0e0;"><strong>五味（酸苦甘辛咸）</strong></td>
+        <td style="padding: 10px; border-bottom: 1px solid #e0e0e0;">肥料选择</td>
+        <td style="padding: 10px; border-bottom: 1px solid #e0e0e0;">用对应味道的肥料促进生长</td>
+      </tr>
+      <tr>
+        <td style="padding: 10px; border-bottom: 1px solid #e0e0e0;"><strong>归经</strong></td>
+        <td style="padding: 10px; border-bottom: 1px solid #e0e0e0;">药田分区</td>
+        <td style="padding: 10px; border-bottom: 1px solid #e0e0e0;">在对应经络区域种植有加成</td>
+      </tr>
+      <tr>
+        <td style="padding: 10px;"><strong>功效/主治</strong></td>
+        <td style="padding: 10px;">药袋分类</td>
+        <td style="padding: 10px;">成熟后考教，放入对应功效药袋</td>
+      </tr>
+    </table>
+  </div>
+</div>
+
+<div class="section">
+  <h3>种植系统设计</h3>
+
+  <div class="mockup">
+    <div class="mockup-header">药园布局</div>
+    <div class="mockup-body" style="padding: 15px;">
+      <!-- 药田分区：对应归经 -->
+      <div style="margin-bottom: 15px;">
+        <h4 style="margin: 0 0 8px 0; font-size: 12px; color: #7b1fa2;">📍 药田分区（对应归经）</h4>
+        <p style="font-size: 10px; color: #666; margin: 0 0 10px 0;">在对应经络区域种植该经药物，生长更快、品质更高</p>
+        <div style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px;">
+          <div style="background: #ffebee; padding: 10px; border-radius: 6px; text-align: center; border: 2px solid #c2185b;">
+            <div style="font-size: 16px;">❤️</div>
+            <div style="font-size: 10px; font-weight: bold;">心经区</div>
+            <div style="font-size: 9px; color: #666;">丹参、麦冬</div>
+          </div>
+          <div style="background: #e8f5e9; padding: 10px; border-radius: 6px; text-align: center; border: 2px solid #4a7c59;">
+            <div style="font-size: 16px;">🫁</div>
+            <div style="font-size: 10px; font-weight: bold;">肺经区</div>
+            <div style="font-size: 9px; color: #666;">麻黄、杏仁</div>
+          </div>
+          <div style="background: #fff8e1; padding: 10px; border-radius: 6px; text-align: center; border: 2px solid #f9a825;">
+            <div style="font-size: 16px;">🫀</div>
+            <div style="font-size: 10px; font-weight: bold;">肝经区</div>
+            <div style="font-size: 9px; color: #666;">柴胡、白芍</div>
+          </div>
+          <div style="background: #fce4ec; padding: 10px; border-radius: 6px; text-align: center;">
+            <div style="font-size: 16px;">🫃</div>
+            <div style="font-size: 10px; font-weight: bold;">脾经区</div>
+            <div style="font-size: 9px; color: #666;">白术、山药</div>
+          </div>
+          <div style="background: #e3f2fd; padding: 10px; border-radius: 6px; text-align: center;">
+            <div style="font-size: 16px;">🫘</div>
+            <div style="font-size: 10px; font-weight: bold;">肾经区</div>
+            <div style="font-size: 9px; color: #666;">熟地、杜仲</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 种植操作 -->
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+        <!-- 水源：对应四气 -->
+        <div style="background: #f5f5f5; padding: 12px; border-radius: 6px;">
+          <h4 style="margin: 0 0 8px 0; font-size: 11px; color: #1976d2;">💧 水源选择（对应四气）</h4>
+          <p style="font-size: 10px; color: #666; margin: 0 0 8px 0;">麻黄性温，用温泉水浇灌效果最佳</p>
+          <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 5px;">
+            <div style="background: #e3f2fd; padding: 8px; border-radius: 4px; text-align: center;">
+              <div style="font-size: 12px;">🧊</div>
+              <div style="font-size: 9px;"><strong>雪山水</strong></div>
+              <div style="font-size: 8px; color: #1976d2;">性寒</div>
+              <div style="font-size: 8px; color: #666;">适合：金银花、连翘</div>
+            </div>
+            <div style="background: #fff8e1; padding: 8px; border-radius: 4px; text-align: center; border: 2px solid #f9a825;">
+              <div style="font-size: 12px;">♨️</div>
+              <div style="font-size: 9px;"><strong>温泉水</strong></div>
+              <div style="font-size: 8px; color: #f9a825;">性温 ✓</div>
+              <div style="font-size: 8px; color: #666;">适合：麻黄、桂枝</div>
+            </div>
+            <div style="background: #fce4ec; padding: 8px; border-radius: 4px; text-align: center;">
+              <div style="font-size: 12px;">🔥</div>
+              <div style="font-size: 9px;"><strong>阳泉水</strong></div>
+              <div style="font-size: 8px; color: #c2185b;">性热</div>
+              <div style="font-size: 8px; color: #666;">适合：附子、干姜</div>
+            </div>
+            <div style="background: #e8f5e9; padding: 8px; border-radius: 4px; text-align: center;">
+              <div style="font-size: 12px;">🍃</div>
+              <div style="font-size: 9px;"><strong>山泉水</strong></div>
+              <div style="font-size: 8px; color: #4a7c59;">性凉</div>
+              <div style="font-size: 8px; color: #666;">适合：薄荷、菊花</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 肥料：对应五味 -->
+        <div style="background: #f5f5f5; padding: 12px; border-radius: 6px;">
+          <h4 style="margin: 0 0 8px 0; font-size: 11px; color: #7b1fa2;">🌱 肥料选择（对应五味）</h4>
+          <p style="font-size: 10px; color: #666; margin: 0 0 8px 0;">麻黄味辛微苦，请选择对应肥料</p>
+          <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 5px;">
+            <div style="background: #fff8e1; padding: 6px; border-radius: 4px; text-align: center; border: 2px solid #f9a825;">
+              <div style="font-size: 10px;">🌶️</div>
+              <div style="font-size: 9px;">辛味肥 ✓</div>
+            </div>
+            <div style="background: #e8f5e9; padding: 6px; border-radius: 4px; text-align: center; border: 2px solid #4a7c59;">
+              <div style="font-size: 10px;">🍵</div>
+              <div style="font-size: 9px;">苦味肥 ✓</div>
+            </div>
+            <div style="background: white; padding: 6px; border-radius: 4px; text-align: center; border: 1px solid #ddd;">
+              <div style="font-size: 10px;">🍋</div>
+              <div style="font-size: 9px;">酸味肥</div>
+            </div>
+            <div style="background: white; padding: 6px; border-radius: 4px; text-align: center; border: 1px solid #ddd;">
+              <div style="font-size: 10px;">🍬</div>
+              <div style="font-size: 9px;">甘味肥</div>
+            </div>
+            <div style="background: white; padding: 6px; border-radius: 4px; text-align: center; border: 1px solid #ddd;">
+              <div style="font-size: 10px;">🧂</div>
+              <div style="font-size: 9px;">咸味肥</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <h3>药袋系统：功效分类</h3>
+
+  <div class="mockup">
+    <div class="mockup-body" style="padding: 15px;">
+      <h4 style="margin: 0 0 10px 0; font-size: 12px;">🎒 药袋（按功效分类）</h4>
+      <p style="font-size: 10px; color: #666; margin: 0 0 10px 0;">药物成熟后，答对老张的考教，放入对应药袋</p>
+
+      <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px;">
+        <div style="background: #e8f5e9; padding: 10px; border-radius: 6px; text-align: center;">
+          <div style="font-size: 18px;">🌬️</div>
+          <div style="font-size: 10px; font-weight: bold;">解表药袋</div>
+          <div style="font-size: 9px; color: #666;">麻黄、桂枝、薄荷...</div>
+          <div style="margin-top: 5px; background: white; padding: 3px; border-radius: 3px; font-size: 9px;">已收集: 3种</div>
+        </div>
+        <div style="background: #fff8e1; padding: 10px; border-radius: 6px; text-align: center;">
+          <div style="font-size: 18px;">🔥</div>
+          <div style="font-size: 10px; font-weight: bold;">清热药袋</div>
+          <div style="font-size: 9px; color: #666;">金银花、连翘...</div>
+          <div style="margin-top: 5px; background: white; padding: 3px; border-radius: 3px; font-size: 9px;">已收集: 2种</div>
+        </div>
+        <div style="background: #fce4ec; padding: 10px; border-radius: 6px; text-align: center;">
+          <div style="font-size: 18px;">💪</div>
+          <div style="font-size: 10px; font-weight: bold;">补益药袋</div>
+          <div style="font-size: 9px; color: #666;">人参、黄芪、当归...</div>
+          <div style="margin-top: 5px; background: white; padding: 3px; border-radius: 3px; font-size: 9px;">已收集: 0种</div>
+        </div>
+        <div style="background: #e3f2fd; padding: 10px; border-radius: 6px; text-align: center;">
+          <div style="font-size: 18px;">🌡️</div>
+          <div style="font-size: 10px; font-weight: bold;">温里药袋</div>
+          <div style="font-size: 9px; color: #666;">附子、干姜...</div>
+          <div style="margin-top: 5px; background: white; padding: 3px; border-radius: 3px; font-size: 9px;">已收集: 0种</div>
+        </div>
+        <div style="background: #f3e5f5; padding: 10px; border-radius: 6px; text-align: center;">
+          <div style="font-size: 18px;">🩸</div>
+          <div style="font-size: 10px; font-weight: bold;">活血药袋</div>
+          <div style="font-size: 9px; color: #666;">川芎、丹参...</div>
+        </div>
+        <div style="background: #efebe9; padding: 10px; border-radius: 6px; text-align: center;">
+          <div style="font-size: 18px;">💨</div>
+          <div style="font-size: 10px; font-weight: bold;">理气药袋</div>
+          <div style="font-size: 9px; color: #666;">陈皮、香附...</div>
+        </div>
+        <div style="background: #f5f5f5; padding: 10px; border-radius: 6px; text-align: center;">
+          <div style="font-size: 18px;">💧</div>
+          <div style="font-size: 10px; font-weight: bold;">利湿药袋</div>
+          <div style="font-size: 9px; color: #666;">茯苓、泽泻...</div>
+        </div>
+        <div style="background: #f5f5f5; padding: 10px; border-radius: 6px; text-align: center; border: 1px dashed #999;">
+          <div style="font-size: 18px;">+</div>
+          <div style="font-size: 10px;">更多药袋</div>
+          <div style="font-size: 9px; color: #999;">学习解锁</div>
+        </div>
+      </div>
+
+      <!-- 考教示例 -->
+      <div style="margin-top: 15px; background: #fff8e1; padding: 12px; border-radius: 6px;">
+        <h4 style="margin: 0 0 8px 0; font-size: 11px;">📝 考教示例</h4>
+        <div style="background: white; padding: 10px; border-radius: 4px;">
+          <div style="font-size: 10px; color: #666;">麻黄成熟！老张走来考你：</div>
+          <div style="margin-top: 8px; font-size: 11px;">
+            <strong>"麻黄主要用于治疗什么？"</strong>
+          </div>
+          <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 5px; margin-top: 8px;">
+            <button style="padding: 6px; border: 1px solid #4a7c59; background: #e8f5e9; border-radius: 4px; font-size: 10px;">A. 风寒感冒 ✓</button>
+            <button style="padding: 6px; border: 1px solid #ddd; border-radius: 4px; font-size: 10px;">B. 风热感冒</button>
+            <button style="padding: 6px; border: 1px solid #ddd; border-radius: 4px; font-size: 10px;">C. 气血两虚</button>
+            <button style="padding: 6px; border: 1px solid #ddd; border-radius: 4px; font-size: 10px;">D. 阴虚火旺</button>
+          </div>
+          <div style="margin-top: 8px; font-size: 10px; color: #4a7c59;">
+            ✓ 正确！麻黄放入【解表药袋】
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <h3>仓库系统</h3>
+
+  <div class="mockup">
+    <div class="mockup-body" style="padding: 15px;">
+      <h4 style="margin: 0 0 10px 0; font-size: 12px;">🏪 仓库（存放所有药物）</h4>
+      <p style="font-size: 10px; color: #666; margin: 0 0 10px 0;">存放植物类、动物类、矿物类药材</p>
+
+      <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px;">
+        <!-- 植物类 -->
+        <div style="background: #e8f5e9; padding: 12px; border-radius: 6px;">
+          <div style="font-size: 12px; font-weight: bold; color: #4a7c59;">🌿 植物类</div>
+          <div style="font-size: 10px; color: #666; margin: 5px 0;">来源：药园种植、野外采集</div>
+          <div style="font-size: 10px;">库存：当归x5、甘草x3、薄荷x2...</div>
+        </div>
+
+        <!-- 动物类 -->
+        <div style="background: #fff8e1; padding: 12px; border-radius: 6px;">
+          <div style="font-size: 12px; font-weight: bold; color: #f9a825;">🦂 动物类</div>
+          <div style="font-size: 10px; color: #666; margin: 5px 0;">来源：药王谷猎取、商人购买</div>
+          <div style="font-size: 10px;">库存：全蝎x2、蜈蚣x1、地龙x3...</div>
+        </div>
+
+        <!-- 矿物类 -->
+        <div style="background: #e3f2fd; padding: 12px; border-radius: 6px;">
+          <div style="font-size: 12px; font-weight: bold; color: #1976d2;">🪨 矿物类</div>
+          <div style="font-size: 10px; color: #666; margin: 5px 0;">来源：药王谷矿洞、商人购买</div>
+          <div style="font-size: 10px;">库存：朱砂x1、石膏x4、龙骨x2...</div>
+        </div>
+      </div>
+
+      <div style="margin-top: 15px; background: #f5f5f5; padding: 10px; border-radius: 6px;">
+        <div style="font-size: 11px; color: #333;">
+          <strong>仓库功能：</strong>
+          <ul style="margin: 5px 0 0 0; padding-left: 15px; font-size: 10px;">
+            <li>查看所有药材详情（性味归经、功效主治）</li>
+            <li>取药材用于配药、炮制</li>
+            <li>出售多余药材给商人</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <h3>炮制系统</h3>
+
+  <div class="mockup">
+    <div class="mockup-body" style="padding: 15px;">
+      <h4 style="margin: 0 0 10px 0; font-size: 12px;">🔥 炮制工坊</h4>
+      <p style="font-size: 10px; color: #666; margin: 0 0 10px 0;">从仓库取出药材和材料，完成炮制</p>
+
+      <div style="background: #f5f5f5; padding: 12px; border-radius: 6px;">
+        <div style="font-size: 11px; font-weight: bold; margin-bottom: 8px;">炮制任务：制作姜半夏</div>
+        <div style="display: flex; align-items: center; gap: 10px; font-size: 11px;">
+          <div style="background: white; padding: 8px 12px; border-radius: 4px;">
+            <span style="font-size: 14px;">🌿</span> 半夏 (仓库取出)
+          </div>
+          <span>+</span>
+          <div style="background: white; padding: 8px 12px; border-radius: 4px;">
+            <span style="font-size: 14px;">🫚</span> 生姜 (仓库取出)
+          </div>
+          <span>=</span>
+          <div style="background: #e8f5e9; padding: 8px 12px; border-radius: 4px;">
+            <span style="font-size: 14px;">💊</span> 姜半夏
+          </div>
+        </div>
+      </div>
+
+      <div style="margin-top: 10px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; font-size: 10px;">
+        <div style="background: white; padding: 8px; border-radius: 4px;">
+          <strong>蜜制材料：</strong>🍯 蜂蜜
+          <div style="color: #666;">用于：蜜麻黄、蜜紫菀</div>
+        </div>
+        <div style="background: white; padding: 8px; border-radius: 4px;">
+          <strong>酒制材料：</strong>🍶 黄酒
+          <div style="color: #666;">用于：酒当归、酒大黄</div>
+        </div>
+        <div style="background: white; padding: 8px; border-radius: 4px;">
+          <strong>醋制材料：</strong>🫒 米醋
+          <div style="color: #666;">用于：醋柴胡、醋香附</div>
+        </div>
+        <div style="background: white; padding: 8px; border-radius: 4px;">
+          <strong>盐制材料：</strong>🧂 食盐
+          <div style="color: #666;">用于：盐杜仲、盐黄柏</div>
+        </div>
+        <div style="background: white; padding: 8px; border-radius: 4px;">
+          <strong>姜制材料：</strong>🫚 生姜
+          <div style="color: #666;">用于：姜半夏、姜厚朴</div>
+        </div>
+        <div style="background: white; padding: 8px; border-radius: 4px;">
+          <strong>水飞材料：</strong>💧 清水
+          <div style="color: #666;">用于：水飞朱砂</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div style="background: #e8f5e9; padding: 15px; border-radius: 8px; margin-top: 15px;">
+  <h4 style="margin: 0 0 10px 0; font-size: 12px; color: #4a7c59;">✅ 记忆方式总结</h4>
+  <div style="font-size: 11px; color: #333;">
+    <p style="margin: 0;">玩家在游戏操作中自然记忆：</p>
+    <ul style="margin: 5px 0 0 0; padding-left: 15px;">
+      <li><strong>产地</strong> → 药王谷不同区域采集</li>
+      <li><strong>四气</strong> → 选择对应性质的水源浇灌</li>
+      <li><strong>五味</strong> → 选择对应味道的肥料施用</li>
+      <li><strong>归经</strong> → 在对应经络区域种植</li>
+      <li><strong>功效</strong> → 成熟后考教，放入对应药袋</li>
+      <li><strong>炮制</strong> → 用正确材料制药</li>
+    </ul>
+  </div>
+</div>
+
+<div style="text-align: center; padding: 20px; color: #888; font-size: 12px;">
+  第四章（最终版）展示完成，请确认是否符合预期
+</div>

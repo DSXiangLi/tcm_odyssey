@@ -1,0 +1,311 @@
+<h2>第四章：学习系统设计</h2>
+<p class="subtitle">完整规划 vs 一期方案</p>
+
+<div class="section">
+  <h3>学习系统总览</h3>
+
+  <div class="mockup">
+    <div class="mockup-header">完整学习体系（长期愿景）</div>
+    <div class="mockup-body" style="padding: 15px;">
+      <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px;">
+        <div style="background: #e8f5e9; padding: 12px; border-radius: 6px;">
+          <div style="font-weight: bold; font-size: 12px; color: #4a7c59;">一期：解表类</div>
+          <ul style="font-size: 10px; margin: 8px 0 0 0; padding-left: 15px; color: #333;">
+            <li>桂枝汤</li>
+            <li>麻黄汤</li>
+            <li>银翘散</li>
+            <li>桑菊饮</li>
+          </ul>
+          <div style="margin-top: 8px; font-size: 9px; color: #4a7c59;">✓ 当前范围</div>
+        </div>
+        <div style="background: #f5f5f5; padding: 12px; border-radius: 6px;">
+          <div style="font-weight: bold; font-size: 12px; color: #666;">二期：清热类</div>
+          <ul style="font-size: 10px; margin: 8px 0 0 0; padding-left: 15px; color: #666;">
+            <li>白虎汤</li>
+            <li>黄连解毒汤</li>
+            <li>犀角地黄汤</li>
+            <li>...</li>
+          </ul>
+        </div>
+        <div style="background: #f5f5f5; padding: 12px; border-radius: 6px;">
+          <div style="font-weight: bold; font-size: 12px; color: #666;">三期：补益类</div>
+          <ul style="font-size: 10px; margin: 8px 0 0 0; padding-left: 15px; color: #666;">
+            <li>四君子汤</li>
+            <li>四物汤</li>
+            <li>六味地黄丸</li>
+            <li>...</li>
+          </ul>
+        </div>
+        <div style="background: #f5f5f5; padding: 12px; border-radius: 6px;">
+          <div style="font-weight: bold; font-size: 12px; color: #666;">未来扩展</div>
+          <ul style="font-size: 10px; margin: 8px 0 0 0; padding-left: 15px; color: #666;">
+            <li>理气类</li>
+            <li>活血类</li>
+            <li>祛湿类</li>
+            <li>...</li>
+          </ul>
+        </div>
+      </div>
+
+      <div style="margin-top: 15px; background: #fff8e1; padding: 10px; border-radius: 6px;">
+        <p style="font-size: 11px; color: #333; margin: 0;">
+          <strong>设计理念：</strong>每期由不同老师教授一类方剂，玩家逐步解锁，形成完整的中医学习路径。
+        </p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <h3>一期学习内容</h3>
+
+  <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+    <!-- 青木先生教学 -->
+    <div style="background: #f5deb3; padding: 15px; border-radius: 8px; border: 2px solid #8b4513;">
+      <h4 style="margin: 0 0 10px 0;">👨‍⚕️ 青木先生：解表类方剂</h4>
+      <div style="font-size: 11px;">
+        <table style="width: 100%; border-collapse: collapse;">
+          <tr style="background: rgba(255,255,255,0.5);">
+            <th style="padding: 6px; text-align: left; font-size: 10px;">方剂</th>
+            <th style="padding: 6px; text-align: left; font-size: 10px;">主治</th>
+            <th style="padding: 6px; text-align: left; font-size: 10px;">学习目标</th>
+          </tr>
+          <tr>
+            <td style="padding: 6px; font-size: 10px; border-bottom: 1px solid #ddd;">桂枝汤</td>
+            <td style="padding: 6px; font-size: 10px; border-bottom: 1px solid #ddd;">风寒表虚</td>
+            <td style="padding: 6px; font-size: 10px; border-bottom: 1px solid #ddd;">理解表虚证特点</td>
+          </tr>
+          <tr>
+            <td style="padding: 6px; font-size: 10px; border-bottom: 1px solid #ddd;">麻黄汤</td>
+            <td style="padding: 6px; font-size: 10px; border-bottom: 1px solid #ddd;">风寒表实</td>
+            <td style="padding: 6px; font-size: 10px; border-bottom: 1px solid #ddd;">区分表实表虚</td>
+          </tr>
+          <tr>
+            <td style="padding: 6px; font-size: 10px; border-bottom: 1px solid #ddd;">银翘散</td>
+            <td style="padding: 6px; font-size: 10px; border-bottom: 1px solid #ddd;">风热表证</td>
+            <td style="padding: 6px; font-size: 10px; border-bottom: 1px solid #ddd;">风寒vs风热鉴别</td>
+          </tr>
+          <tr>
+            <td style="padding: 6px; font-size: 10px;">桑菊饮</td>
+            <td style="padding: 6px; font-size: 10px;">风温初起</td>
+            <td style="padding: 6px; font-size: 10px;">咳嗽为主症辨识</td>
+          </tr>
+        </table>
+      </div>
+    </div>
+
+    <!-- 老张教学 -->
+    <div style="background: #e8f5e9; padding: 15px; border-radius: 8px; border: 2px solid #4a7c59;">
+      <h4 style="margin: 0 0 10px 0;">👨‍🌾 老张：基础药材</h4>
+      <div style="font-size: 11px;">
+        <table style="width: 100%; border-collapse: collapse;">
+          <tr style="background: rgba(255,255,255,0.5);">
+            <th style="padding: 6px; text-align: left; font-size: 10px;">药材</th>
+            <th style="padding: 6px; text-align: left; font-size: 10px;">功效</th>
+            <th style="padding: 6px; text-align: left; font-size: 10px;">学习目标</th>
+          </tr>
+          <tr>
+            <td style="padding: 6px; font-size: 10px; border-bottom: 1px solid #ddd;">甘草</td>
+            <td style="padding: 6px; font-size: 10px; border-bottom: 1px solid #ddd;">补气、调和诸药</td>
+            <td style="padding: 6px; font-size: 10px; border-bottom: 1px solid #ddd;">基础种植+蜜炙</td>
+          </tr>
+          <tr>
+            <td style="padding: 6px; font-size: 10px; border-bottom: 1px solid #ddd;">薄荷</td>
+            <td style="padding: 6px; font-size: 10px; border-bottom: 1px solid #ddd;">疏散风热</td>
+            <td style="padding: 6px; font-size: 10px; border-bottom: 1px solid #ddd;">采摘时机掌握</td>
+          </tr>
+          <tr>
+            <td style="padding: 6px; font-size: 10px; border-bottom: 1px solid #ddd;">金银花</td>
+            <td style="padding: 6px; font-size: 10px; border-bottom: 1px solid #ddd;">清热解毒</td>
+            <td style="padding: 6px; font-size: 10px; border-bottom: 1px solid #ddd;">花期管理</td>
+          </tr>
+          <tr>
+            <td style="padding: 6px; font-size: 10px; border-bottom: 1px solid #ddd;">菊花</td>
+            <td style="padding: 6px; font-size: 10px; border-bottom: 1px solid #ddd;">疏风清热</td>
+            <td style="padding: 6px; font-size: 10px; border-bottom: 1px solid #ddd;">不同品种区分</td>
+          </tr>
+          <tr>
+            <td style="padding: 6px; font-size: 10px;">枸杞</td>
+            <td style="padding: 6px; font-size: 10px;">滋补肝肾</td>
+            <td style="padding: 6px; font-size: 10px;">炮制方法学习</td>
+          </tr>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <h3>学习进度系统</h3>
+
+  <div class="mockup">
+    <div class="mockup-header">玩家学习进度界面</div>
+    <div class="mockup-body" style="padding: 15px;">
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+        <!-- 临床进度 -->
+        <div style="background: #f5f5f5; padding: 12px; border-radius: 6px;">
+          <div style="font-weight: bold; font-size: 12px; margin-bottom: 8px;">📚 临床学习进度</div>
+          <div style="font-size: 11px;">
+            <div style="display: flex; align-items: center; margin-bottom: 8px;">
+              <span style="width: 80px;">桂枝汤</span>
+              <div style="flex: 1; background: #ddd; height: 8px; border-radius: 4px;">
+                <div style="background: #4a7c59; height: 100%; width: 100%; border-radius: 4px;"></div>
+              </div>
+              <span style="margin-left: 8px; color: #4a7c59;">已掌握</span>
+            </div>
+            <div style="display: flex; align-items: center; margin-bottom: 8px;">
+              <span style="width: 80px;">麻黄汤</span>
+              <div style="flex: 1; background: #ddd; height: 8px; border-radius: 4px;">
+                <div style="background: #f9a825; height: 100%; width: 60%; border-radius: 4px;"></div>
+              </div>
+              <span style="margin-left: 8px; color: #f9a825;">学习中</span>
+            </div>
+            <div style="display: flex; align-items: center; margin-bottom: 8px;">
+              <span style="width: 80px;">银翘散</span>
+              <div style="flex: 1; background: #ddd; height: 8px; border-radius: 4px;">
+                <div style="background: #ccc; height: 100%; width: 0%; border-radius: 4px;"></div>
+              </div>
+              <span style="margin-left: 8px; color: #999;">未解锁</span>
+            </div>
+            <div style="display: flex; align-items: center;">
+              <span style="width: 80px;">桑菊饮</span>
+              <div style="flex: 1; background: #ddd; height: 8px; border-radius: 4px;">
+                <div style="background: #ccc; height: 100%; width: 0%; border-radius: 4px;"></div>
+              </div>
+              <span style="margin-left: 8px; color: #999;">未解锁</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 药材进度 -->
+        <div style="background: #f5f5f5; padding: 12px; border-radius: 6px;">
+          <div style="font-weight: bold; font-size: 12px; margin-bottom: 8px;">🌱 药材掌握进度</div>
+          <div style="font-size: 11px;">
+            <div style="display: flex; align-items: center; margin-bottom: 8px;">
+              <span style="width: 80px;">甘草</span>
+              <div style="flex: 1; background: #ddd; height: 8px; border-radius: 4px;">
+                <div style="background: #4a7c59; height: 100%; width: 100%; border-radius: 4px;"></div>
+              </div>
+              <span style="margin-left: 8px; color: #4a7c59;">已掌握</span>
+            </div>
+            <div style="display: flex; align-items: center; margin-bottom: 8px;">
+              <span style="width: 80px;">薄荷</span>
+              <div style="flex: 1; background: #ddd; height: 8px; border-radius: 4px;">
+                <div style="background: #4a7c59; height: 100%; width: 100%; border-radius: 4px;"></div>
+              </div>
+              <span style="margin-left: 8px; color: #4a7c59;">已掌握</span>
+            </div>
+            <div style="display: flex; align-items: center; margin-bottom: 8px;">
+              <span style="width: 80px;">金银花</span>
+              <div style="flex: 1; background: #ddd; height: 8px; border-radius: 4px;">
+                <div style="background: #f9a825; height: 100%; width: 40%; border-radius: 4px;"></div>
+              </div>
+              <span style="margin-left: 8px; color: #f9a825;">学习中</span>
+            </div>
+            <div style="display: flex; align-items: center;">
+              <span style="width: 80px;">其他</span>
+              <div style="flex: 1; background: #ddd; height: 8px; border-radius: 4px;"></div>
+              <span style="margin-left: 8px; color: #999;">待学习</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <h3>考教系统</h3>
+
+  <div class="mockup">
+    <div class="mockup-body" style="padding: 15px;">
+      <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px;">
+        <!-- 种植考教 -->
+        <div style="background: #e8f5e9; padding: 12px; border-radius: 6px;">
+          <div style="font-weight: bold; font-size: 11px; color: #4a7c59;">🌱 种植考教</div>
+          <p style="font-size: 10px; color: #333; margin: 8px 0;">解锁新药材种植前，需通过老张的考教</p>
+          <div style="background: white; padding: 8px; border-radius: 4px; font-size: 10px;">
+            <strong>考教内容：</strong>
+            <ul style="margin: 4px 0 0 0; padding-left: 15px;">
+              <li>药材产地</li>
+              <li>药用部位</li>
+              <li>主要功效</li>
+              <li>性味归经</li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- 诊治考核 -->
+        <div style="background: #f5deb3; padding: 12px; border-radius: 6px;">
+          <div style="font-weight: bold; font-size: 11px; color: #8b4513;">🏥 诊治考核</div>
+          <p style="font-size: 10px; color: #333; margin: 8px 0;">独立诊治病人，青木先生评分</p>
+          <div style="background: white; padding: 8px; border-radius: 4px; font-size: 10px;">
+            <strong>评分维度：</strong>
+            <ul style="margin: 4px 0 0 0; padding-left: 15px;">
+              <li>问诊完整度 20%</li>
+              <li>四诊准确性 30%</li>
+              <li>辨证准确度 30%</li>
+              <li>方剂选择 20%</li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- 炮制考核 -->
+        <div style="background: #fff8e1; padding: 12px; border-radius: 6px;">
+          <div style="font-weight: bold; font-size: 11px; color: #f9a825;">🔥 炮制考核</div>
+          <p style="font-size: 10px; color: #333; margin: 8px 0;">炮制小游戏，精准度决定品质</p>
+          <div style="background: white; padding: 8px; border-radius: 4px; font-size: 10px;">
+            <strong>考核方式：</strong>
+            <ul style="margin: 4px 0 0 0; padding-left: 15px;">
+              <li>火候控制小游戏</li>
+              <li>时间把握</li>
+              <li>品质评定</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <h3>学习路径设计</h3>
+
+  <div class="mockup">
+    <div class="mockup-body" style="padding: 15px;">
+      <div style="display: flex; align-items: center; justify-content: space-between; font-size: 11px; flex-wrap: wrap; gap: 10px;">
+        <div style="background: #e8f5e9; padding: 10px 15px; border-radius: 6px; text-align: center;">
+          <div style="font-weight: bold;">新手期</div>
+          <div style="font-size: 10px; color: #666;">观察学习</div>
+          <div style="font-size: 9px; color: #4a7c59;">桂枝汤</div>
+        </div>
+        <div style="color: #4a7c59;">→</div>
+        <div style="background: #fff8e1; padding: 10px 15px; border-radius: 6px; text-align: center;">
+          <div style="font-weight: bold;">学徒期</div>
+          <div style="font-size: 10px; color: #666;">辅助诊治</div>
+          <div style="font-size: 9px; color: #f9a825;">麻黄汤</div>
+        </div>
+        <div style="color: #4a7c59;">→</div>
+        <div style="background: #e3f2fd; padding: 10px 15px; border-radius: 6px; text-align: center;">
+          <div style="font-weight: bold;">进阶期</div>
+          <div style="font-size: 10px; color: #666;">独立诊治</div>
+          <div style="font-size: 9px; color: #1976d2;">银翘散</div>
+        </div>
+        <div style="color: #4a7c59;">→</div>
+        <div style="background: #fce4ec; padding: 10px 15px; border-radius: 6px; text-align: center;">
+          <div style="font-weight: bold;">成熟期</div>
+          <div style="font-size: 10px; color: #666;">综合运用</div>
+          <div style="font-size: 9px; color: #c2185b;">桑菊饮</div>
+        </div>
+      </div>
+
+      <div style="margin-top: 15px; font-size: 11px; color: #666; text-align: center;">
+        药材学习与方剂学习同步进行，互为支撑
+      </div>
+    </div>
+  </div>
+</div>
+
+<div style="text-align: center; padding: 20px; color: #888; font-size: 12px;">
+  第四章展示完成，请告诉我学习系统设计是否符合预期
+</div>

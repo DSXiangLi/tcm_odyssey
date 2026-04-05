@@ -3,6 +3,8 @@ import { GAME_WIDTH, GAME_HEIGHT } from '../data/constants';
 import { BootScene } from '../scenes/BootScene';
 import { TownOutdoorScene } from '../scenes/TownOutdoorScene';
 import { ClinicScene } from '../scenes/ClinicScene';
+import { GardenScene } from '../scenes/GardenScene';
+import { HomeScene } from '../scenes/HomeScene';
 
 export const gameConfig: Phaser.Types.Core.GameConfig = {
   type: Phaser.AUTO,
@@ -18,7 +20,7 @@ export const gameConfig: Phaser.Types.Core.GameConfig = {
       debug: false
     }
   },
-  scene: [BootScene, TownOutdoorScene, ClinicScene],
+  scene: [BootScene, TownOutdoorScene, ClinicScene, GardenScene, HomeScene],
   scale: {
     mode: Phaser.Scale.FIT,
     autoCenter: Phaser.Scale.CENTER_BOTH

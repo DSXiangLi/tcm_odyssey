@@ -7,6 +7,7 @@ export const TILE_SIZE = 32;
 
 // 场景名称
 export const SCENES = {
+  TITLE: 'TitleScene',
   BOOT: 'BootScene',
   TOWN_OUTDOOR: 'TownOutdoorScene',
   CLINIC: 'ClinicScene',

@@ -6,6 +6,8 @@ import { Player } from '../entities/Player';
 export class ClinicScene extends Phaser.Scene {
   private player!: Player;
   private cursors!: Phaser.Types.Input.Keyboard.CursorKeys;
+  private spaceKey!: Phaser.Input.Keyboard.Key;
+  private isTransitioning: boolean = false;
 
   constructor() {
     super({ key: SCENES.CLINIC });
@@ -15,7 +17,7 @@ export class ClinicScene extends Phaser.Scene {
     // 创建简单的室内地图
     this.createRoom();
 
-    // 创建玩家
+    // 创建玩家（使用registry中的出生点）
     this.createPlayer();
 
     // 添加场景UI
@@ -34,11 +36,6 @@ export class ClinicScene extends Phaser.Scene {
 
     // 设置输入
     this.setupInput();
-
-    // 空格键返回
-    this.input.keyboard?.once('keydown-SPACE', () => {
-      this.scene.start(SCENES.TOWN_OUTDOOR);
-    });
   }
 
   private createRoom(): void {
@@ -76,8 +73,23 @@ export class ClinicScene extends Phaser.Scene {
   }
 
   private createPlayer(): void {
-    const spawnX = Math.floor(15 / 2) * TILE_SIZE + TILE_SIZE / 2;
-    const spawnY = Math.floor(12 / 2) * TILE_SIZE + TILE_SIZE / 2;
+    let spawnX: number;
+    let spawnY: number;
+
+    // 从registry获取出生点
+    const registrySpawnPoint = this.registry.get('spawnPoint');
+    if (registrySpawnPoint) {
+      // 如果有出生点，玩家应该在室内入口处
+      // 室内入口在底部中间，对应doorX=7 (15/2=7)
+      spawnX = 7 * TILE_SIZE + TILE_SIZE / 2;
+      spawnY = 10 * TILE_SIZE + TILE_SIZE / 2;  // 在门口上方一格
+      // 清除出生点
+      this.registry.remove('spawnPoint');
+    } else {
+      // 默认位置：房间中心
+      spawnX = Math.floor(15 / 2) * TILE_SIZE + TILE_SIZE / 2;
+      spawnY = Math.floor(12 / 2) * TILE_SIZE + TILE_SIZE / 2;
+    }
 
     this.player = new Player({
       scene: this,
@@ -89,6 +101,7 @@ export class ClinicScene extends Phaser.Scene {
   private setupInput(): void {
     if (this.input.keyboard) {
       this.cursors = this.input.keyboard.createCursorKeys();
+      this.spaceKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE);
       this.input.keyboard.addKeys('W,A,S,D');
     }
   }
@@ -114,6 +127,14 @@ export class ClinicScene extends Phaser.Scene {
       this.player.move(direction);
     } else {
       this.player.stop();
+    }
+
+    // 检测空格键返回 - 使用JustDown防止多次触发
+    if (Phaser.Input.Keyboard.JustDown(this.spaceKey) && !this.isTransitioning) {
+      this.isTransitioning = true;
+      // 设置返回时的出生点（诊所门外）
+      this.registry.set('spawnPoint', { x: 7, y: 10 });
+      this.scene.start(SCENES.TOWN_OUTDOOR);
     }
   }
 }

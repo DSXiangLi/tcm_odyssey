@@ -105,8 +105,14 @@ export class ClinicScene extends Phaser.Scene {
   private createWallCollisions(roomWidth: number, roomHeight: number): void {
     this.walls = this.physics.add.staticGroup();
 
+    const doorX = Math.floor(roomWidth / 2);  // Door position
+    const doorY = roomHeight - 1;             // Bottom wall
+
     for (let y = 0; y < roomHeight; y++) {
       for (let x = 0; x < roomWidth; x++) {
+        // Skip door position
+        if (x === doorX && y === doorY) continue;
+
         if (x === 0 || x === roomWidth - 1 || y === 0 || y === roomHeight - 1) {
           const wall = this.walls.create(
             x * TILE_SIZE + TILE_SIZE / 2,

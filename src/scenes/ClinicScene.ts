@@ -8,6 +8,7 @@ export class ClinicScene extends Phaser.Scene {
   private cursors!: Phaser.Types.Input.Keyboard.CursorKeys;
   private spaceKey!: Phaser.Input.Keyboard.Key;
   private isTransitioning: boolean = false;
+  private walls!: Phaser.Physics.Arcade.StaticGroup;
 
   constructor() {
     super({ key: SCENES.CLINIC });
@@ -19,6 +20,9 @@ export class ClinicScene extends Phaser.Scene {
 
     // 创建玩家（使用registry中的出生点）
     this.createPlayer();
+
+    // 创建墙壁碰撞
+    this.createWallCollisions(15, 12);
 
     // 添加场景UI
     this.add.text(10, 10, '青木诊所', {
@@ -96,6 +100,27 @@ export class ClinicScene extends Phaser.Scene {
       x: spawnX,
       y: spawnY
     });
+  }
+
+  private createWallCollisions(roomWidth: number, roomHeight: number): void {
+    this.walls = this.physics.add.staticGroup();
+
+    for (let y = 0; y < roomHeight; y++) {
+      for (let x = 0; x < roomWidth; x++) {
+        if (x === 0 || x === roomWidth - 1 || y === 0 || y === roomHeight - 1) {
+          const wall = this.walls.create(
+            x * TILE_SIZE + TILE_SIZE / 2,
+            y * TILE_SIZE + TILE_SIZE / 2,
+            ''
+          );
+          wall.setVisible(false);
+          wall.body?.setSize(TILE_SIZE, TILE_SIZE);
+        }
+      }
+    }
+
+    // 添加玩家与墙壁的碰撞
+    this.physics.add.collider(this.player, this.walls);
   }
 
   private setupInput(): void {

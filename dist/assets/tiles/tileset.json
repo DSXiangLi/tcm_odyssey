@@ -1,0 +1,26 @@
+{
+  "name": "tileset",
+  "image": "tileset.png",
+  "tileWidth": 32,
+  "tileHeight": 32,
+  "tileCount": 16,
+  "columns": 4,
+  "tiles": {
+    "0": { "type": "grass", "properties": [{ "name": "walkable", "value": true }] },
+    "1": { "type": "path", "properties": [{ "name": "walkable", "value": true }] },
+    "2": { "type": "water", "properties": [{ "name": "walkable", "value": false }] },
+    "3": { "type": "wall", "properties": [{ "name": "walkable", "value": false }] },
+    "4": { "type": "door", "properties": [{ "name": "walkable", "value": true }, { "name": "interactive", "value": true }] },
+    "5": { "type": "wood", "properties": [{ "name": "walkable", "value": true }] },
+    "6": { "type": "bridge", "properties": [{ "name": "walkable", "value": true }] },
+    "7": { "type": "fence", "properties": [{ "name": "walkable", "value": false }] },
+    "8": { "type": "flower", "properties": [{ "name": "walkable", "value": true }] },
+    "9": { "type": "tree", "properties": [{ "name": "walkable", "value": false }] },
+    "10": { "type": "rock", "properties": [{ "name": "walkable", "value": false }] },
+    "11": { "type": "sign", "properties": [{ "name": "walkable", "value": true }, { "name": "interactive", "value": true }] },
+    "12": { "type": "chest", "properties": [{ "name": "walkable", "value": false }, { "name": "interactive", "value": true }] },
+    "13": { "type": "bed", "properties": [{ "name": "walkable", "value": false }] },
+    "14": { "type": "table", "properties": [{ "name": "walkable", "value": false }] },
+    "15": { "type": "chair", "properties": [{ "name": "walkable", "value": false }] }
+  }
+}

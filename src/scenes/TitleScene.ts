@@ -4,7 +4,7 @@ import { SCENES, GAME_WIDTH, GAME_HEIGHT } from '../data/constants';
 
 export class TitleScene extends Phaser.Scene {
   constructor() {
-    super({ key: 'TitleScene' });
+    super({ key: SCENES.TITLE });
   }
 
   create(): void {

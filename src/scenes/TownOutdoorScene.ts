@@ -1,9 +1,10 @@
 // Placeholder scene - will be implemented in subsequent tasks
 import Phaser from 'phaser';
+import { SCENES } from '../data/constants';
 
 export class TownOutdoorScene extends Phaser.Scene {
   constructor() {
-    super({ key: 'TownOutdoorScene' });
+    super({ key: SCENES.TOWN_OUTDOOR });
   }
 
   preload(): void {

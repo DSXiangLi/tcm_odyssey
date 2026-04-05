@@ -1,0 +1,240 @@
+<h2>第三章（更新）：NPC系统设计</h2>
+<p class="subtitle">TASK文件 + MEMORY文件 + LLM 架构</p>
+
+<div class="section">
+  <h3>NPC核心架构</h3>
+
+  <div class="mockup">
+    <div class="mockup-header">NPC数据驱动架构</div>
+    <div class="mockup-body" style="padding: 15px;">
+      <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px;">
+        <!-- MEMORY文件 -->
+        <div style="background: #e3f2fd; padding: 15px; border-radius: 8px; border: 2px solid #1976d2;">
+          <h4 style="color: #1976d2; margin: 0 0 10px 0;">📄 MEMORY文件</h4>
+          <p style="font-size: 11px; color: #333; margin: 0 0 10px 0;">记录已发生的历史事件</p>
+          <div style="background: white; padding: 10px; border-radius: 4px; font-size: 10px;">
+            <pre style="margin: 0; color: #333; white-space: pre-wrap;">
+{
+  "npc_id": "qingmu",
+  "player_interactions": [
+    {
+      "date": "Day 3",
+      "event": "玩家首次独立诊治感冒病人",
+      "result": "辨证正确，方剂选择有误",
+      "npc_reaction": "鼓励并讲解桂枝汤与麻黄汤区别"
+    },
+    {
+      "date": "Day 5",
+      "event": "玩家通过解表类考核",
+      "result": "掌握桂枝汤、麻黄汤"
+    }
+  ],
+  "relationship": 45,
+  "teaching_progress": {
+    "current_stage": "独立诊治",
+    "mastered_formulas": ["桂枝汤", "麻黄汤"],
+    "common_mistakes": ["表实表虚混淆"]
+  }
+}
+            </pre>
+          </div>
+        </div>
+
+        <!-- TASK文件 -->
+        <div style="background: #fff8e1; padding: 15px; border-radius: 8px; border: 2px solid #f9a825;">
+          <h4 style="color: #f9a825; margin: 0 0 10px 0;">📋 TASK文件</h4>
+          <p style="font-size: 11px; color: #333; margin: 0 0 10px 0;">主动任务线，任务状态管理</p>
+          <div style="background: white; padding: 10px; border-radius: 4px; font-size: 10px;">
+            <pre style="margin: 0; color: #333; white-space: pre-wrap;">
+{
+  "npc_id": "qingmu",
+  "task_chain": "解表类方剂教学",
+  "tasks": [
+    {
+      "id": "task_001",
+      "name": "观察诊治",
+      "status": "completed",
+      "trigger": "自动触发",
+      "reward": {"exp": 10, "unlock": "辅助诊治"}
+    },
+    {
+      "id": "task_002",
+      "name": "辅助诊治",
+      "status": "in_progress",
+      "trigger": "王婶来访事件",
+      "description": "帮助王婶完成诊断"
+    },
+    {
+      "id": "task_003",
+      "name": "独立诊治考核",
+      "status": "locked",
+      "trigger": "完成task_002",
+      "prerequisite": ["task_001", "task_002"]
+    }
+  ],
+  "active_task": "task_002"
+}
+            </pre>
+          </div>
+        </div>
+
+        <!-- LLM调用 -->
+        <div style="background: #e8f5e9; padding: 15px; border-radius: 8px; border: 2px solid #4a7c59;">
+          <h4 style="color: #4a7c59; margin: 0 0 10px 0;">🤖 LLM调用</h4>
+          <p style="font-size: 11px; color: #333; margin: 0 0 10px 0;">基于MEMORY+TASK生成对话</p>
+          <div style="background: white; padding: 10px; border-radius: 4px; font-size: 10px;">
+            <pre style="margin: 0; color: #333; white-space: pre-wrap;">
+// 构建Prompt
+prompt = `
+你是青木先生，一位老中医。
+
+【角色设定】
+温和严谨，善于用比喻讲解...
+
+【当前记忆】
+- 玩家已掌握：桂枝汤、麻黄汤
+- 常见错误：表实表虚混淆
+- 当前好感：45
+
+【当前任务】
+- 任务：辅助诊治
+- 触发事件：王婶来访
+- 状态：进行中
+
+【玩家输入】
+"${player_input}"
+
+请根据角色设定和上下文回应。
+`
+            </pre>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <h3>事件触发机制</h3>
+
+  <div class="mockup">
+    <div class="mockup-header">功能性NPC触发核心NPC任务</div>
+    <div class="mockup-body" style="padding: 15px;">
+      <div style="display: flex; align-items: center; justify-content: space-between; gap: 10px; font-size: 11px;">
+        <div style="background: #f3e5f5; padding: 12px; border-radius: 6px; text-align: center; flex: 1;">
+          <div style="font-size: 20px;">👩</div>
+          <div style="font-weight: bold;">王婶</div>
+          <div style="font-size: 10px; color: #666;">功能NPC</div>
+          <div style="font-size: 9px; color: #7b1fa2; margin-top: 5px;">状态：生病</div>
+        </div>
+        <div style="font-size: 16px;">→</div>
+        <div style="background: #fff3cd; padding: 10px; border-radius: 6px; text-align: center; flex: 1;">
+          <div style="font-weight: bold; font-size: 10px;">事件触发</div>
+          <div style="font-size: 10px; color: #856404;">王婶来到诊所求医</div>
+        </div>
+        <div style="font-size: 16px;">→</div>
+        <div style="background: #fce4ec; padding: 12px; border-radius: 6px; text-align: center; flex: 1;">
+          <div style="font-size: 20px;">👴</div>
+          <div style="font-weight: bold;">青木先生</div>
+          <div style="font-size: 10px; color: #666;">核心NPC</div>
+          <div style="font-size: 9px; color: #c2185b; margin-top: 5px;">发布任务：辅助诊治</div>
+        </div>
+      </div>
+
+      <div style="margin-top: 15px; background: #f5f5f5; padding: 12px; border-radius: 6px;">
+        <h4 style="font-size: 12px; margin: 0 0 10px 0;">一期事件示例</h4>
+        <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; font-size: 11px;">
+          <div style="background: white; padding: 8px; border-radius: 4px;">
+            <strong>王婶感冒</strong> → 触发青木先生"观察诊治"任务
+          </div>
+          <div style="background: white; padding: 8px; border-radius: 4px;">
+            <strong>李大爷风寒</strong> → 触发"辅助诊治"任务
+          </div>
+          <div style="background: white; padding: 8px; border-radius: 4px;">
+            <strong>村民求药</strong> → 触发老张"药材考教"任务
+          </div>
+          <div style="background: white; padding: 8px; border-radius: 4px;">
+            <strong>药园虫害</strong> → 触发老张"除虫教学"任务
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <h3>对话连续性示例</h3>
+
+  <div class="mockup">
+    <div class="mockup-body" style="padding: 15px;">
+      <div style="background: #f5f5f5; padding: 12px; border-radius: 6px; margin-bottom: 10px;">
+        <div style="font-size: 10px; color: #666; margin-bottom: 5px;">Day 3 - 首次对话</div>
+        <div style="font-size: 11px;">
+          <p style="margin: 0;"><strong>青木先生：</strong>"徒儿，今日王婶来求诊，你先在旁观察，我边看边讲。"</p>
+          <p style="margin: 5px 0 0 0; color: #666;">→ MEMORY记录：开始观察诊治任务</p>
+        </div>
+      </div>
+
+      <div style="background: #f5f5f5; padding: 12px; border-radius: 6px; margin-bottom: 10px;">
+        <div style="font-size: 10px; color: #666; margin-bottom: 5px;">Day 5 - 再次对话</div>
+        <div style="font-size: 11px;">
+          <p style="margin: 0;"><strong>青木先生：</strong>"上次王婶的诊治你可记住了？今日李大爷也患了风寒，你来试试辅助诊断。"</p>
+          <p style="margin: 5px 0 0 0; color: #666;">→ MEMORY检索：玩家已观察王婶诊治，任务链推进到辅助诊治</p>
+        </div>
+      </div>
+
+      <div style="background: #e8f5e9; padding: 12px; border-radius: 6px;">
+        <div style="font-size: 10px; color: #666; margin-bottom: 5px;">Day 10 - 考核对话</div>
+        <div style="font-size: 11px;">
+          <p style="margin: 0;"><strong>青木先生：</strong>"这几日你表现不错，桂枝汤和麻黄汤的运用也熟练了。今日有个疑难病例，你来独立诊治，我来看看你的功底。"</p>
+          <p style="margin: 5px 0 0 0; color: #4a7c59;">→ TASK状态：解锁"独立诊治考核"</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <h3>NPC数据文件结构</h3>
+
+  <div style="background: #f5f5f5; padding: 15px; border-radius: 8px; font-size: 11px;">
+    <pre style="margin: 0; color: #333;">
+npcs/
+├── qingmu/
+│   ├── profile.json      # 角色设定（性格、教学领域、对话风格）
+│   ├── memory.json       # 玩家交互记忆（动态更新）
+│   └── tasks.json        # 任务链定义和状态
+├── laozhang/
+│   ├── profile.json
+│   ├── memory.json
+│   └── tasks.json
+└── functional/           # 功能NPC模板
+    ├── wang_shen.json    # 王婶（可触发事件）
+    ├── li_daye.json      # 李大爷（可触发事件）
+    └── ...
+    </pre>
+  </div>
+</div>
+
+<div class="section">
+  <h3>核心优势</h3>
+
+  <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px;">
+    <div style="background: #e3f2fd; padding: 12px; border-radius: 6px;">
+      <div style="font-weight: bold; color: #1976d2;">对话连续性</div>
+      <p style="font-size: 11px; color: #333; margin: 8px 0 0 0;">MEMORY让NPC记住过去的交互，对话自然连贯</p>
+    </div>
+    <div style="background: #fff8e1; padding: 12px; border-radius: 6px;">
+      <div style="font-weight: bold; color: #f9a825;">主动发布任务</div>
+      <p style="font-size: 11px; color: #333; margin: 8px 0 0 0;">TASK文件让NPC能主动推进教学进度</p>
+    </div>
+    <div style="background: #e8f5e9; padding: 12px; border-radius: 6px;">
+      <div style="font-weight: bold; color: #4a7c59;">事件驱动</div>
+      <p style="font-size: 11px; color: #333; margin: 8px 0 0 0;">功能NPC触发事件，核心NPC响应任务</p>
+    </div>
+  </div>
+</div>
+
+<div style="text-align: center; padding: 20px; color: #888; font-size: 12px;">
+  第三章（更新）展示完成，请确认这个TASK+MEMORY+LLM架构是否符合你的预期
+</div>

@@ -1,0 +1,266 @@
+<h2>第三章：NPC系统设计</h2>
+<p class="subtitle">完整规划 vs 一期方案</p>
+
+<div class="section">
+  <h3>NPC分类体系</h3>
+
+  <div class="mockup">
+    <div class="mockup-body" style="padding: 15px;">
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+        <!-- 核心NPC -->
+        <div style="background: #fce4ec; padding: 15px; border-radius: 8px; border: 2px solid #c2185b;">
+          <h4 style="color: #c2185b; margin: 0 0 10px 0;">核心NPC（AI驱动）</h4>
+          <p style="font-size: 11px; color: #333; margin: 0 0 10px 0;">有记忆、有任务线、有个性，承担教学职责</p>
+          <div style="display: flex; gap: 10px;">
+            <div style="background: white; padding: 10px; border-radius: 6px; text-align: center; flex: 1;">
+              <div style="font-size: 24px;">👴</div>
+              <div style="font-weight: bold; font-size: 12px;">青木先生</div>
+              <div style="font-size: 10px; color: #666;">临床导师</div>
+              <div style="font-size: 9px; color: #c2185b; margin-top: 5px;">一期✓</div>
+            </div>
+            <div style="background: white; padding: 10px; border-radius: 6px; text-align: center; flex: 1;">
+              <div style="font-size: 24px;">👨‍🌾</div>
+              <div style="font-weight: bold; font-size: 12px;">老张</div>
+              <div style="font-size: 10px; color: #666;">药物导师</div>
+              <div style="font-size: 9px; color: #c2185b; margin-top: 5px;">一期✓</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 功能NPC -->
+        <div style="background: #f3e5f5; padding: 15px; border-radius: 8px; border: 2px solid #7b1fa2;">
+          <h4 style="color: #7b1fa2; margin: 0 0 10px 0;">功能NPC（模板对话）</h4>
+          <p style="font-size: 11px; color: #333; margin: 0 0 10px 0;">简单对话、交易功能、任务触发</p>
+          <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+            <div style="background: white; padding: 8px; border-radius: 6px; text-align: center;">
+              <div style="font-size: 18px;">👩</div>
+              <div style="font-size: 10px;">王婶</div>
+              <div style="font-size: 8px; color: #999;">二期</div>
+            </div>
+            <div style="background: white; padding: 8px; border-radius: 6px; text-align: center;">
+              <div style="font-size: 18px;">👴</div>
+              <div style="font-size: 10px;">李大爷</div>
+              <div style="font-size: 8px; color: #999;">二期</div>
+            </div>
+            <div style="background: rgba(255,255,255,0.5); padding: 8px; border-radius: 6px; text-align: center;">
+              <div style="font-size: 18px;">...</div>
+              <div style="font-size: 10px;">更多</div>
+              <div style="font-size: 8px; color: #999;">未来</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <h3>核心NPC详细设计：青木先生</h3>
+
+  <div class="mockup">
+    <div class="mockup-header">临床导师 - 青木先生</div>
+    <div class="mockup-body" style="padding: 15px;">
+      <div style="display: grid; grid-template-columns: 200px 1fr; gap: 15px;">
+        <!-- 角色形象 -->
+        <div style="text-align: center;">
+          <div style="width: 120px; height: 120px; background: #f5f5f5; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 48px; margin: 0 auto; border: 2px solid #8b4513;">👴</div>
+          <div style="font-weight: bold; margin-top: 10px;">青木先生</div>
+          <div style="font-size: 11px; color: #666;">老中医 · 六十岁</div>
+          <div style="font-size: 10px; color: #8b4513; margin-top: 5px;">"医者仁心，教学严谨"</div>
+        </div>
+
+        <!-- 角色设定 -->
+        <div style="font-size: 12px;">
+          <div style="margin-bottom: 10px;">
+            <strong>性格特点：</strong>
+            <p style="margin: 5px 0; color: #333;">温和但严谨，善于用比喻讲解复杂概念，对病人耐心，对学生要求严格但从不责骂。</p>
+          </div>
+          <div style="margin-bottom: 10px;">
+            <strong>教学领域：</strong>
+            <p style="margin: 5px 0; color: #333;">一期：解表类方剂（桂枝汤、麻黄汤、银翘散、桑菊饮）</p>
+          </div>
+          <div style="margin-bottom: 10px;">
+            <strong>任务类型：</strong>
+            <ul style="margin: 5px 0; padding-left: 15px; color: #333;">
+              <li>观察诊治（学习阶段）</li>
+              <li>辅助诊治（实践阶段）</li>
+              <li>独立诊治（考核阶段）</li>
+              <li>病案讨论（深化理解）</li>
+            </ul>
+          </div>
+          <div>
+            <strong>记忆系统：</strong>
+            <p style="margin: 5px 0; color: #333;">记住玩家的诊治表现、常见错误、学习进度，针对性调整教学内容。</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div style="margin-top: 15px; background: #fff8e1; padding: 12px; border-radius: 6px;">
+    <h4 style="margin: 0 0 8px 0; font-size: 12px;">一期教学内容：解表类方剂</h4>
+    <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; font-size: 11px;">
+      <div style="background: white; padding: 8px; border-radius: 4px;">
+        <strong>桂枝汤</strong> - 风寒表虚证
+      </div>
+      <div style="background: white; padding: 8px; border-radius: 4px;">
+        <strong>麻黄汤</strong> - 风寒表实证
+      </div>
+      <div style="background: white; padding: 8px; border-radius: 4px;">
+        <strong>银翘散</strong> - 风热表证
+      </div>
+      <div style="background: white; padding: 8px; border-radius: 4px;">
+        <strong>桑菊饮</strong> - 风温初起
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <h3>核心NPC详细设计：老张</h3>
+
+  <div class="mockup">
+    <div class="mockup-header">药物导师 - 老张</div>
+    <div class="mockup-body" style="padding: 15px;">
+      <div style="display: grid; grid-template-columns: 200px 1fr; gap: 15px;">
+        <!-- 角色形象 -->
+        <div style="text-align: center;">
+          <div style="width: 120px; height: 120px; background: #e8f5e9; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 48px; margin: 0 auto; border: 2px solid #4a7c59;">👨‍🌾</div>
+          <div style="font-weight: bold; margin-top: 10px;">老张</div>
+          <div style="font-size: 11px; color: #666;">药农 · 五十岁</div>
+          <div style="font-size: 10px; color: #4a7c59; margin-top: 5px;">"种药如养娃，用心才得好药"</div>
+        </div>
+
+        <!-- 角色设定 -->
+        <div style="font-size: 12px;">
+          <div style="margin-bottom: 10px;">
+            <strong>性格特点：</strong>
+            <p style="margin: 5px 0; color: #333;">朴实憨厚，说话直来直去，对药材有深厚感情，喜欢用种地的比喻讲解药材知识。</p>
+          </div>
+          <div style="margin-bottom: 10px;">
+            <strong>教学领域：</strong>
+            <p style="margin: 5px 0; color: #333;">一期：基础药材种植（甘草、薄荷、金银花、菊花、枸杞）+ 基础炮制方法</p>
+          </div>
+          <div style="margin-bottom: 10px;">
+            <strong>任务类型：</strong>
+            <ul style="margin: 5px 0; padding-left: 15px; color: #333;">
+              <li>药材知识考教（解锁种植）</li>
+              <li>种植任务（实践）</li>
+              <li>炮制任务（技能提升）</li>
+              <li>品质挑战（进阶）</li>
+            </ul>
+          </div>
+          <div>
+            <strong>记忆系统：</strong>
+            <p style="margin: 5px 0; color: #333;">记住玩家已解锁的药材、炮制技能、种植习惯，推荐适合的学习路径。</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div style="margin-top: 15px; background: #e8f5e9; padding: 12px; border-radius: 6px;">
+    <h4 style="margin: 0 0 8px 0; font-size: 12px;">一期教学内容：基础药材</h4>
+    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; font-size: 11px;">
+      <div style="background: white; padding: 8px; border-radius: 4px; text-align: center;">
+        <div style="font-size: 16px;">🌿</div>
+        <strong>甘草</strong>
+      </div>
+      <div style="background: white; padding: 8px; border-radius: 4px; text-align: center;">
+        <div style="font-size: 16px;">🌱</div>
+        <strong>薄荷</strong>
+      </div>
+      <div style="background: white; padding: 8px; border-radius: 4px; text-align: center;">
+        <div style="font-size: 16px;">🌸</div>
+        <strong>金银花</strong>
+      </div>
+      <div style="background: white; padding: 8px; border-radius: 4px; text-align: center;">
+        <div style="font-size: 16px;">🌼</div>
+        <strong>菊花</strong>
+      </div>
+      <div style="background: white; padding: 8px; border-radius: 4px; text-align: center;">
+        <div style="font-size: 16px;">🫐</div>
+        <strong>枸杞</strong>
+      </div>
+      <div style="background: rgba(255,255,255,0.5); padding: 8px; border-radius: 4px; text-align: center;">
+        <div style="font-size: 16px;">...</div>
+        <span style="color: #999;">二期扩展</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <h3>AI NPC技术架构</h3>
+
+  <div class="mockup">
+    <div class="mockup-body" style="padding: 15px;">
+      <div style="display: flex; align-items: center; justify-content: space-between; gap: 10px; font-size: 11px;">
+        <div style="background: #e3f2fd; padding: 12px; border-radius: 6px; text-align: center; flex: 1;">
+          <div style="font-weight: bold;">玩家输入</div>
+          <div style="font-size: 10px; color: #666;">对话/动作</div>
+        </div>
+        <div style="font-size: 16px;">→</div>
+        <div style="background: #fce4ec; padding: 12px; border-radius: 6px; text-align: center; flex: 1;">
+          <div style="font-weight: bold;">上下文构建</div>
+          <div style="font-size: 10px; color: #666;">NPC人设+记忆+当前情境</div>
+        </div>
+        <div style="font-size: 16px;">→</div>
+        <div style="background: #fff8e1; padding: 12px; border-radius: 6px; text-align: center; flex: 1;">
+          <div style="font-weight: bold;">LLM API</div>
+          <div style="font-size: 10px; color: #666;">云端调用</div>
+        </div>
+        <div style="font-size: 16px;">→</div>
+        <div style="background: #e8f5e9; padding: 12px; border-radius: 6px; text-align: center; flex: 1;">
+          <div style="font-weight: bold;">响应处理</div>
+          <div style="font-size: 10px; color: #666;">解析+更新记忆</div>
+        </div>
+      </div>
+
+      <div style="margin-top: 15px; background: #f5f5f5; padding: 10px; border-radius: 4px;">
+        <p style="font-size: 11px; color: #333; margin: 0;"><strong>NPC记忆存储内容：</strong></p>
+        <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-top: 8px; font-size: 10px;">
+          <div style="background: white; padding: 6px; border-radius: 4px;">玩家等级进度</div>
+          <div style="background: white; padding: 6px; border-radius: 4px;">已完成任务</div>
+          <div style="background: white; padding: 6px; border-radius: 4px;">对话历史摘要</div>
+          <div style="background: white; padding: 6px; border-radius: 4px;">好感度状态</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <h3>NPC扩展路线图</h3>
+
+  <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; font-size: 11px;">
+    <div style="background: #e8f5e9; padding: 12px; border-radius: 6px;">
+      <div style="font-weight: bold; color: #4a7c59;">一期</div>
+      <ul style="margin: 8px 0 0 0; padding-left: 15px;">
+        <li>青木先生（核心）</li>
+        <li>老张（核心）</li>
+        <li>功能NPC基础框架</li>
+      </ul>
+    </div>
+    <div style="background: #fff8e1; padding: 12px; border-radius: 6px;">
+      <div style="font-weight: bold; color: #f9a825;">二期</div>
+      <ul style="margin: 8px 0 0 0; padding-left: 15px;">
+        <li>王婶（功能-交易）</li>
+        <li>李大爷（功能-任务）</li>
+        <li>游方郎中（特殊事件）</li>
+      </ul>
+    </div>
+    <div style="background: #f3e5f5; padding: 12px; border-radius: 6px;">
+      <div style="font-weight: bold; color: #7b1fa2;">三期+</div>
+      <ul style="margin: 8px 0 0 0; padding-left: 15px;">
+        <li>新核心NPC（新教学领域）</li>
+        <li>更多功能NPC</li>
+        <li>节日特殊NPC</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<div style="text-align: center; padding: 20px; color: #888; font-size: 12px;">
+  第三章展示完成，请告诉我NPC系统设计是否符合预期
+</div>

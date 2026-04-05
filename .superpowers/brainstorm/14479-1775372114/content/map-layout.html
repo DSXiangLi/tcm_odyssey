@@ -1,0 +1,147 @@
+<h2>百草镇地图布局设计</h2>
+<p class="subtitle">一期场景规划：田园风格的中医小镇</p>
+
+<div class="section">
+  <h3>核心区域划分</h3>
+  <div class="mockup">
+    <div class="mockup-header">整体地图布局预览</div>
+    <div class="mockup-body" style="padding: 20px;">
+      <div style="display: grid; grid-template-columns: 1fr 2fr 1fr; gap: 15px; min-height: 300px;">
+        <!-- 左侧：药王谷 -->
+        <div style="background: linear-gradient(135deg, #2d5a27 0%, #4a7c59 100%); border-radius: 8px; padding: 15px; color: white; display: flex; flex-direction: column;">
+          <div style="font-weight: bold; font-size: 14px; margin-bottom: 10px;">🏔️ 药王谷</div>
+          <div style="font-size: 12px; opacity: 0.9;">
+            <p>• 大型野生药园</p>
+            <p>• 珍稀药材采集</p>
+            <p>• 探索区域</p>
+            <p style="color: #7fff7f; margin-top: 10px;">🌿 多种野生植物</p>
+          </div>
+        </div>
+
+        <!-- 中间：百草镇主区 -->
+        <div style="background: linear-gradient(180deg, #87ceeb 0%, #f5deb3 30%, #90b060 100%); border-radius: 8px; padding: 15px; position: relative;">
+          <div style="font-weight: bold; font-size: 16px; text-align: center; margin-bottom: 15px; color: #333;">🏘️ 百草镇中心</div>
+
+          <!-- 镇内建筑布局 -->
+          <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px;">
+            <!-- 青木诊所 -->
+            <div style="background: #f0f0f0; border-radius: 6px; padding: 10px; text-align: center;">
+              <div style="font-size: 24px;">🏠</div>
+              <div style="font-size: 11px; color: #333; font-weight: bold;">青木诊所</div>
+              <div style="font-size: 9px; color: #666;">临床教学</div>
+            </div>
+
+            <!-- 老张药园 -->
+            <div style="background: #e8f5e9; border-radius: 6px; padding: 10px; text-align: center;">
+              <div style="font-size: 24px;">🌱</div>
+              <div style="font-size: 11px; color: #333; font-weight: bold;">老张药园</div>
+              <div style="font-size: 9px; color: #666;">种植炮制</div>
+            </div>
+
+            <!-- 玩家之家 -->
+            <div style="background: #fff8e1; border-radius: 6px; padding: 10px; text-align: center;">
+              <div style="font-size: 24px;">🏡</div>
+              <div style="font-size: 11px; color: #333; font-weight: bold;">玩家之家</div>
+              <div style="font-size: 9px; color: #666;">药膳烹饪</div>
+            </div>
+          </div>
+
+          <!-- 小桥流水 -->
+          <div style="position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%); text-align: center;">
+            <div style="font-size: 12px; color: #4a90a4;">🌊 小桥流水 · 农田环绕</div>
+          </div>
+        </div>
+
+        <!-- 右侧：扩展预留 -->
+        <div style="background: linear-gradient(135deg, #c9b896 0%, #a0522d 100%); border-radius: 8px; padding: 15px; color: white; display: flex; flex-direction: column;">
+          <div style="font-weight: bold; font-size: 14px; margin-bottom: 10px;">🔮 未来扩展</div>
+          <div style="font-size: 12px; opacity: 0.9;">
+            <p>• 王婶集市</p>
+            <p>• 悬崖采药区</p>
+            <p>• 密林深处</p>
+            <p style="color: #ffd700; margin-top: 10px;">二期内容预留</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <h3>区域详细功能</h3>
+  <div class="cards">
+    <div class="card" data-choice="clinic" onclick="toggleSelect(this)">
+      <div class="card-image" style="background: #f5f5f5; display: flex; align-items: center; justify-content: center; font-size: 40px;">🏠</div>
+      <div class="card-body">
+        <h3>青木诊所</h3>
+        <p>核心NPC：青木先生（老中医）</p>
+        <p class="label">功能：临床教学、诊治病人、开方学习</p>
+      </div>
+    </div>
+
+    <div class="card" data-choice="garden" onclick="toggleSelect(this)">
+      <div class="card-image" style="background: #e8f5e9; display: flex; align-items: center; justify-content: center; font-size: 40px;">🌱</div>
+      <div class="card-body">
+        <h3>老张药园</h3>
+        <p>核心NPC：老张（药农）</p>
+        <p class="label">功能：药材种植、考教问答、炮制加工</p>
+      </div>
+    </div>
+
+    <div class="card" data-choice="home" onclick="toggleSelect(this)">
+      <div class="card-image" style="background: #fff8e1; display: flex; align-items: center; justify-content: center; font-size: 40px;">🏡</div>
+      <div class="card-body">
+        <h3>玩家之家</h3>
+        <p>玩家专属空间</p>
+        <p class="label">功能：药膳烹饪、休息恢复、物品存储</p>
+      </div>
+    </div>
+
+    <div class="card" data-choice="valley" onclick="toggleSelect(this)">
+      <div class="card-image" style="background: linear-gradient(135deg, #2d5a27, #4a7c59); display: flex; align-items: center; justify-content: center; font-size: 40px; color: white;">🏔️</div>
+      <div class="card-body">
+        <h3>药王谷</h3>
+        <p>野生药园·探索区域</p>
+        <p class="label">功能：野生药材采集、季节性稀有药材</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <h3>视觉风格参考</h3>
+  <p style="color: #666; margin-bottom: 15px;">「采菊东篱下，悠然见南山」的田园意境</p>
+
+  <div class="options">
+    <div class="option" data-choice="pixel" onclick="toggleSelect(this)">
+      <div class="letter">A</div>
+      <div class="content">
+        <h3>像素田园风</h3>
+        <p>类似 Stardew Valley，温暖像素风格，细节丰富</p>
+        <p style="color: #4a7c59;">✓ 已验证的成功案例</p>
+      </div>
+    </div>
+
+    <div class="option" data-choice="watercolor" onclick="toggleSelect(this)">
+      <div class="letter">B</div>
+      <div class="content">
+        <h3>水墨淡彩风</h3>
+        <p>中国传统水墨意境，淡雅色调，更有中医文化气质</p>
+        <p style="color: #8b4513;">✓ 独特风格，与文化契合</p>
+      </div>
+    </div>
+
+    <div class="option" data-choice="handpaint" onclick="toggleSelect(this)">
+      <div class="letter">C</div>
+      <div class="content">
+        <h3>手绘绘本风</h3>
+        <p>类似绘本插画，柔和笔触，温馨治愈感</p>
+        <p style="color: #daa520;">✓ 现代感与传统文化结合</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div style="text-align: center; padding: 20px; color: #888; font-size: 12px;">
+  请在浏览器中查看并选择你偏好的方案，然后在终端告诉我你的想法
+</div>

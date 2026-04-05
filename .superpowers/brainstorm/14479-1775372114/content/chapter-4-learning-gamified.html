@@ -1,0 +1,265 @@
+<h2>第四章（更新）：学习系统设计</h2>
+<p class="subtitle">游戏化学习体验</p>
+
+<div class="section">
+  <h3>游戏化设计原则</h3>
+
+  <div style="background: #e8f5e9; padding: 15px; border-radius: 8px; border: 2px solid #4a7c59;">
+    <p style="font-size: 13px; color: #333; margin: 0;">
+      <strong>核心理念：</strong>让学习过程本身变得有趣，而不是"先学后玩"
+    </p>
+    <p style="font-size: 12px; color: #666; margin: 10px 0 0 0;">
+      玩家在游戏中完成学习，而不是为了玩游戏被迫学习
+    </p>
+  </div>
+</div>
+
+<div class="section">
+  <h3>种植系统 · 游戏化</h3>
+
+  <div class="mockup">
+    <div class="mockup-body" style="padding: 15px;">
+      <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px;">
+        <!-- 药田产地选择 -->
+        <div style="background: #f5f5f5; padding: 12px; border-radius: 6px;">
+          <h4 style="margin: 0 0 10px 0; font-size: 12px; color: #4a7c59;">🏞️ 药田产地选择</h4>
+          <p style="font-size: 11px; color: #666; margin: 0 0 8px 0;">不同药田模拟不同产地环境</p>
+          <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px;">
+            <div style="background: #e8f5e9; padding: 8px; border-radius: 4px; text-align: center;">
+              <div style="font-size: 14px;">🌿</div>
+              <div style="font-size: 10px; font-weight: bold;">药田A</div>
+              <div style="font-size: 9px; color: #666;">模拟：甘肃岷县</div>
+              <div style="font-size: 9px; color: #4a7c59;">当归最佳</div>
+            </div>
+            <div style="background: #fff8e1; padding: 8px; border-radius: 4px; text-align: center;">
+              <div style="font-size: 14px;">🌱</div>
+              <div style="font-size: 10px; font-weight: bold;">药田B</div>
+              <div style="font-size: 9px; color: #666;">模拟：内蒙古</div>
+              <div style="font-size: 9px; color: #f9a825;">黄芪最佳</div>
+            </div>
+            <div style="background: #e3f2fd; padding: 8px; border-radius: 4px; text-align: center;">
+              <div style="font-size: 14px;">🌼</div>
+              <div style="font-size: 10px; font-weight: bold;">药田C</div>
+              <div style="font-size: 9px; color: #666;">模拟：河南焦作</div>
+              <div style="font-size: 9px; color: #7b1fa2;">地黄最佳</div>
+            </div>
+            <div style="background: #fce4ec; padding: 8px; border-radius: 4px; text-align: center;">
+              <div style="font-size: 14px;">🌸</div>
+              <div style="font-size: 10px; font-weight: bold;">药田D</div>
+              <div style="font-size: 9px; color: #666;">模拟：山东平阴</div>
+              <div style="font-size: 9px; color: #c2185b;">玫瑰最佳</div>
+            </div>
+          </div>
+          <p style="font-size: 10px; color: #8b4513; margin: 8px 0 0 0;">
+            💡 在正确产地种植对应药材，品质更高
+          </p>
+        </div>
+
+        <!-- 浇水系统 -->
+        <div style="background: #f5f5f5; padding: 12px; border-radius: 6px;">
+          <h4 style="margin: 0 0 10px 0; font-size: 12px; color: #1976d2;">💧 浇水来源选择</h4>
+          <p style="font-size: 11px; color: #666; margin: 0 0 8px 0;">不同水源影响药材品质</p>
+          <div style="display: flex; gap: 8px;">
+            <div style="background: #e3f2fd; padding: 8px; border-radius: 4px; flex: 1; text-align: center;">
+              <div style="font-size: 12px;">💧</div>
+              <div style="font-size: 10px; font-weight: bold;">山泉水</div>
+              <div style="font-size: 9px; color: #4a7c59;">品质+20%</div>
+            </div>
+            <div style="background: #fff8e1; padding: 8px; border-radius: 4px; flex: 1; text-align: center;">
+              <div style="font-size: 12px;">🪣</div>
+              <div style="font-size: 10px; font-weight: bold;">井水</div>
+              <div style="font-size: 9px; color: #666;">品质+5%</div>
+            </div>
+            <div style="background: #f5f5f5; padding: 8px; border-radius: 4px; flex: 1; text-align: center;">
+              <div style="font-size: 12px;">🌧️</div>
+              <div style="font-size: 10px; font-weight: bold;">雨水</div>
+              <div style="font-size: 9px; color: #666;">品质+10%</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 施肥系统 -->
+      <div style="background: #f5f5f5; padding: 12px; border-radius: 6px; margin-top: 15px;">
+        <h4 style="margin: 0 0 10px 0; font-size: 12px; color: #7b1fa2;">🌱 肥料类型选择</h4>
+        <p style="font-size: 11px; color: #666; margin: 0 0 8px 0;">不同肥料有不同功效侧重</p>
+        <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px;">
+          <div style="background: #8b4513; color: white; padding: 8px; border-radius: 4px; text-align: center;">
+            <div style="font-size: 10px;">有机肥</div>
+            <div style="font-size: 9px; opacity: 0.9;">产量+30%</div>
+          </div>
+          <div style="background: #607d8b; color: white; padding: 8px; border-radius: 4px; text-align: center;">
+            <div style="font-size: 10px;">草木灰</div>
+            <div style="font-size: 9px; opacity: 0.9;">品质+15%</div>
+          </div>
+          <div style="background: #2e7d32; color: white; padding: 8px; border-radius: 4px; text-align: center;">
+            <div style="font-size: 10px;">绿肥</div>
+            <div style="font-size: 9px; opacity: 0.9;">生长加速</div>
+          </div>
+          <div style="background: #f9a825; color: white; padding: 8px; border-radius: 4px; text-align: center;">
+            <div style="font-size: 10px;">骨粉</div>
+            <div style="font-size: 9px; opacity: 0.9;">药效+20%</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <h3>采药系统 · 游戏化</h3>
+
+  <div class="mockup">
+    <div class="mockup-body" style="padding: 15px;">
+      <h4 style="margin: 0 0 10px 0; font-size: 12px;">🏔️ 药王谷区域与产地对应</h4>
+      <p style="font-size: 11px; color: #666; margin: 0 0 10px 0;">不同区域产出特定产地药材</p>
+
+      <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px;">
+        <div style="background: linear-gradient(180deg, #4a7c59, #2d5a27); color: white; padding: 12px; border-radius: 6px;">
+          <div style="font-weight: bold; font-size: 11px;">🌲 密林区</div>
+          <div style="font-size: 10px; opacity: 0.9; margin-top: 5px;">产地：东北长白山</div>
+          <div style="font-size: 9px; margin-top: 8px;">特产：人参、五味子</div>
+        </div>
+        <div style="background: linear-gradient(180deg, #87ceeb, #4a90a4); color: white; padding: 12px; border-radius: 6px;">
+          <div style="font-weight: bold; font-size: 11px;">🌊 溪谷区</div>
+          <div style="font-size: 10px; opacity: 0.9; margin-top: 5px;">产地：浙江天目山</div>
+          <div style="font-size: 9px; margin-top: 8px;">特产：山茱萸、杜仲</div>
+        </div>
+        <div style="background: linear-gradient(180deg, #f9a825, #a0522d); color: white; padding: 12px; border-radius: 6px;">
+          <div style="font-weight: bold; font-size: 11px;">☀️ 阳坡区</div>
+          <div style="font-size: 10px; opacity: 0.9; margin-top: 5px;">产地：甘肃岷县</div>
+          <div style="font-size: 9px; margin-top: 8px;">特产：当归、黄芪</div>
+        </div>
+      </div>
+
+      <div style="margin-top: 15px; background: #fff8e1; padding: 12px; border-radius: 6px;">
+        <h4 style="margin: 0 0 8px 0; font-size: 11px; color: #f9a825;">🎯 药材辨认小游戏</h4>
+        <p style="font-size: 10px; color: #333; margin: 0 0 8px 0;">发现药材后，需要正确辨认才能采集</p>
+        <div style="background: white; padding: 10px; border-radius: 4px;">
+          <div style="text-align: center; margin-bottom: 8px;">
+            <span style="font-size: 24px;">🌿</span>
+            <div style="font-size: 11px; color: #666;">你发现了一株草药</div>
+          </div>
+          <div style="font-size: 10px; color: #333;">
+            <strong>提示：</strong>叶互生，羽状复叶，根有特殊香气
+          </div>
+          <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 5px; margin-top: 8px;">
+            <button style="padding: 6px; border: 1px solid #ddd; border-radius: 4px; font-size: 10px;">A. 薄荷</button>
+            <button style="padding: 6px; border: 1px solid #4a7c59; background: #e8f5e9; border-radius: 4px; font-size: 10px;">B. 当归 ✓</button>
+            <button style="padding: 6px; border: 1px solid #ddd; border-radius: 4px; font-size: 10px;">C. 柴胡</button>
+            <button style="padding: 6px; border: 1px solid #ddd; border-radius: 4px; font-size: 10px;">D. 白芍</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <h3>诊治系统 · 游戏化</h3>
+
+  <div class="mockup">
+    <div class="mockup-body" style="padding: 15px;">
+      <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px;">
+        <!-- 配药小游戏 -->
+        <div style="background: #f5f5f5; padding: 12px; border-radius: 6px;">
+          <h4 style="margin: 0 0 10px 0; font-size: 12px; color: #c2185b;">💊 配药小游戏</h4>
+          <p style="font-size: 10px; color: #666; margin: 0 0 8px 0;">病人需要桂枝汤，请选择正确的饮片</p>
+          <div style="background: white; padding: 10px; border-radius: 4px; margin-bottom: 8px;">
+            <div style="font-size: 10px; color: #333;"><strong>处方：</strong>桂枝、芍药、甘草、生姜、大枣</div>
+          </div>
+          <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 5px;">
+            <div style="background: #e8f5e9; padding: 6px; border-radius: 4px; text-align: center; font-size: 9px; border: 2px solid #4a7c59;">✓ 桂枝</div>
+            <div style="background: #fff8e1; padding: 6px; border-radius: 4px; text-align: center; font-size: 9px;">✓ 白芍</div>
+            <div style="background: #e3f2fd; padding: 6px; border-radius: 4px; text-align: center; font-size: 9px;">✓ 炙甘草</div>
+            <div style="background: #fce4ec; padding: 6px; border-radius: 4px; text-align: center; font-size: 9px;">✓ 生姜</div>
+            <div style="background: #f3e5f5; padding: 6px; border-radius: 4px; text-align: center; font-size: 9px;">✓ 大枣</div>
+            <div style="background: #f5f5f5; padding: 6px; border-radius: 4px; text-align: center; font-size: 9px; color: #999;">❌ 黄连</div>
+          </div>
+        </div>
+
+        <!-- 脉象判断 -->
+        <div style="background: #f5f5f5; padding: 12px; border-radius: 6px;">
+          <h4 style="margin: 0 0 10px 0; font-size: 12px; color: #7b1fa2;">🩺 脉象判断</h4>
+          <p style="font-size: 10px; color: #666; margin: 0 0 8px 0;">感受病人脉象，选择正确描述</p>
+          <div style="background: white; padding: 10px; border-radius: 4px;">
+            <div style="text-align: center; margin-bottom: 8px;">
+              <div style="font-size: 20px;">🖐️</div>
+              <div style="font-size: 10px; color: #666;">点击"诊脉"感受</div>
+            </div>
+            <div style="font-size: 10px; color: #333; margin-bottom: 8px;">
+              <strong>描述：</strong>脉来浮而有力，按之稍减
+            </div>
+            <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 5px;">
+              <button style="padding: 6px; border: 1px solid #4a7c59; background: #e8f5e9; border-radius: 4px; font-size: 10px;">浮脉 ✓</button>
+              <button style="padding: 6px; border: 1px solid #ddd; border-radius: 4px; font-size: 10px;">沉脉</button>
+              <button style="padding: 6px; border: 1px solid #ddd; border-radius: 4px; font-size: 10px;">迟脉</button>
+              <button style="padding: 6px; border: 1px solid #ddd; border-radius: 4px; font-size: 10px;">数脉</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 经典阅读作为技能解锁 -->
+      <div style="margin-top: 15px; background: #e8f5e9; padding: 12px; border-radius: 6px;">
+        <h4 style="margin: 0 0 8px 0; font-size: 12px; color: #4a7c59;">📚 经典阅读 · 技能解锁</h4>
+        <p style="font-size: 10px; color: #666; margin: 0 0 8px 0;">阅读经典文献，解锁高级能力</p>
+        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px;">
+          <div style="background: white; padding: 8px; border-radius: 4px; text-align: center;">
+            <div style="font-size: 14px;">📖</div>
+            <div style="font-size: 10px; font-weight: bold;">伤寒论</div>
+            <div style="font-size: 9px; color: #4a7c59;">解锁：六经辨证</div>
+          </div>
+          <div style="background: white; padding: 8px; border-radius: 4px; text-align: center;">
+            <div style="font-size: 14px;">📖</div>
+            <div style="font-size: 10px; font-weight: bold;">金匮要略</div>
+            <div style="font-size: 9px; color: #7b1fa2;">解锁：杂病诊治</div>
+          </div>
+          <div style="background: white; padding: 8px; border-radius: 4px; text-align: center;">
+            <div style="font-size: 14px;">📖</div>
+            <div style="font-size: 10px; font-weight: bold;">本草纲目</div>
+            <div style="font-size: 9px; color: #f9a825;">解锁：药材鉴别</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <h3>游戏化设计总结</h3>
+
+  <div style="background: #f5f5f5; padding: 15px; border-radius: 8px;">
+    <table style="width: 100%; font-size: 11px; border-collapse: collapse;">
+      <tr style="background: #e0e0e0;">
+        <th style="padding: 8px; text-align: left;">系统</th>
+        <th style="padding: 8px; text-align: left;">游戏化元素</th>
+        <th style="padding: 8px; text-align: left;">学习价值</th>
+      </tr>
+      <tr>
+        <td style="padding: 8px; border-bottom: 1px solid #e0e0e0;"><strong>种植</strong></td>
+        <td style="padding: 8px; border-bottom: 1px solid #e0e0e0;">产地选择、水源选择、肥料选择</td>
+        <td style="padding: 8px; border-bottom: 1px solid #e0e0e0;">理解道地药材概念</td>
+      </tr>
+      <tr>
+        <td style="padding: 8px; border-bottom: 1px solid #e0e0e0;"><strong>采药</strong></td>
+        <td style="padding: 8px; border-bottom: 1px solid #e0e0e0;">区域-产地对应、药材辨认游戏</td>
+        <td style="padding: 8px; border-bottom: 1px solid #e0e0e0;">学习药材形态特征</td>
+      </tr>
+      <tr>
+        <td style="padding: 8px; border-bottom: 1px solid #e0e0e0;"><strong>诊治</strong></td>
+        <td style="padding: 8px; border-bottom: 1px solid #e0e0e0;">配药小游戏、脉象判断、舌象观察</td>
+        <td style="padding: 8px; border-bottom: 1px solid #e0e0e0;">实践中医诊断技能</td>
+      </tr>
+      <tr>
+        <td style="padding: 8px;"><strong>阅读</strong></td>
+        <td style="padding: 8px;">经典阅读解锁技能</td>
+        <td style="padding: 8px;">系统学习中医理论</td>
+      </tr>
+    </table>
+  </div>
+</div>
+
+<div style="text-align: center; padding: 20px; color: #888; font-size: 12px;">
+  第四章（更新）展示完成，请告诉我这个游戏化设计是否符合预期
+</div>

@@ -1,0 +1,207 @@
+<h2>第二章：场景系统设计</h2>
+<p class="subtitle">完整规划 vs 一期方案</p>
+
+<div class="section">
+  <h3>场景规划总览</h3>
+
+  <div class="mockup">
+    <div class="mockup-header">完整游戏场景地图（长期愿景）</div>
+    <div class="mockup-body" style="padding: 15px;">
+      <div style="display: grid; grid-template-columns: 1fr 2fr 1fr; gap: 10px; min-height: 250px;">
+        <!-- 左：药王谷 -->
+        <div style="background: linear-gradient(180deg, #2d5a27 0%, #1a3a17 100%); border-radius: 8px; padding: 10px; color: white;">
+          <div style="font-weight: bold; font-size: 11px; margin-bottom: 8px;">🏔️ 药王谷（完整）</div>
+          <div style="font-size: 9px; opacity: 0.9;">
+            <p>• 入口区（一期）</p>
+            <p>• 密林深处</p>
+            <p>• 悬崖采药区</p>
+            <p>• 瀑布秘境</p>
+            <p>• 稀有药材区</p>
+          </div>
+          <div style="margin-top: 10px; padding: 5px; background: rgba(255,255,255,0.1); border-radius: 4px; font-size: 8px;">
+            可采集：50+野生药材
+          </div>
+        </div>
+
+        <!-- 中：百草镇 -->
+        <div style="background: linear-gradient(180deg, #87ceeb 0%, #f5deb3 40%, #90b060 100%); border-radius: 8px; padding: 10px; position: relative;">
+          <div style="font-weight: bold; font-size: 12px; text-align: center; margin-bottom: 10px;">🏘️ 百草镇（完整）</div>
+          <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 5px; font-size: 9px;">
+            <div style="background: rgba(255,255,255,0.7); padding: 5px; border-radius: 4px; text-align: center;">
+              <div style="font-size: 12px;">🏠</div>
+              <div>青木诊所</div>
+              <div style="color: #4a7c59;">一期✓</div>
+            </div>
+            <div style="background: rgba(255,255,255,0.7); padding: 5px; border-radius: 4px; text-align: center;">
+              <div style="font-size: 12px;">🌱</div>
+              <div>老张药园</div>
+              <div style="color: #4a7c59;">一期✓</div>
+            </div>
+            <div style="background: rgba(255,255,255,0.7); padding: 5px; border-radius: 4px; text-align: center;">
+              <div style="font-size: 12px;">🏡</div>
+              <div>玩家之家</div>
+              <div style="color: #4a7c59;">一期✓</div>
+            </div>
+            <div style="background: rgba(200,200,200,0.5); padding: 5px; border-radius: 4px; text-align: center;">
+              <div style="font-size: 12px;">🏪</div>
+              <div>王婶集市</div>
+              <div style="color: #999;">二期</div>
+            </div>
+            <div style="background: rgba(200,200,200,0.5); padding: 5px; border-radius: 4px; text-align: center;">
+              <div style="font-size: 12px;">🍵</div>
+              <div>茶馆</div>
+              <div style="color: #999;">二期</div>
+            </div>
+            <div style="background: rgba(200,200,200,0.5); padding: 5px; border-radius: 4px; text-align: center;">
+              <div style="font-size: 12px;">📚</div>
+              <div>藏书阁</div>
+              <div style="color: #999;">三期</div>
+            </div>
+          </div>
+          <div style="position: absolute; bottom: 8px; left: 50%; transform: translateX(-50%); font-size: 9px; color: #333;">
+            🌊 小桥流水 · 🌾 农田 · 🌸 花海
+          </div>
+        </div>
+
+        <!-- 右：扩展区域 -->
+        <div style="background: linear-gradient(180deg, #c9b896 0%, #a0522d 100%); border-radius: 8px; padding: 10px; color: white;">
+          <div style="font-weight: bold; font-size: 11px; margin-bottom: 8px;">🔮 扩展区域（未来）</div>
+          <div style="font-size: 9px; opacity: 0.9;">
+            <p>• 东郊药田</p>
+            <p>• 南山温泉</p>
+            <p>• 西林牧场</p>
+            <p>• 北峰道观</p>
+            <p>• 游方郎中驿站</p>
+          </div>
+          <div style="margin-top: 10px; padding: 5px; background: rgba(255,255,255,0.1); border-radius: 4px; font-size: 8px;">
+            更多NPC和玩法
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <h3>一期场景方案（最小可玩）</h3>
+
+  <div class="cards">
+    <div class="card" data-choice="outdoor" onclick="toggleSelect(this)">
+      <div class="card-image" style="background: linear-gradient(180deg, #87ceeb 0%, #90b060 100%); display: flex; align-items: center; justify-content: center; font-size: 24px; color: white;">🌳</div>
+      <div class="card-body">
+        <h3>室外：百草镇中心区</h3>
+        <p class="label">一期范围</p>
+        <ul style="font-size: 11px; color: #333; margin: 5px 0; padding-left: 15px;">
+          <li>小桥流水景观区</li>
+          <li>农田（装饰性）</li>
+          <li>三个核心建筑入口</li>
+          <li>药王谷入口区（小范围）</li>
+        </ul>
+        <p style="font-size: 10px; color: #666;">地图尺寸：约 40x30 瓦片</p>
+      </div>
+    </div>
+
+    <div class="card" data-choice="clinic" onclick="toggleSelect(this)">
+      <div class="card-image" style="background: #f5deb3; display: flex; align-items: center; justify-content: center; font-size: 24px;">🏠</div>
+      <div class="card-body">
+        <h3>室内：青木诊所</h3>
+        <p class="label">一期范围</p>
+        <ul style="font-size: 11px; color: #333; margin: 5px 0; padding-left: 15px;">
+          <li>诊台（诊治交互点）</li>
+          <li>药柜（装饰+交互）</li>
+          <li>青木先生NPC位置</li>
+          <li>病人候诊区</li>
+        </ul>
+        <p style="font-size: 10px; color: #666;">地图尺寸：约 15x12 瓦片</p>
+      </div>
+    </div>
+
+    <div class="card" data-choice="garden" onclick="toggleSelect(this)">
+      <div class="card-image" style="background: #e8f5e9; display: flex; align-items: center; justify-content: center; font-size: 24px;">🌱</div>
+      <div class="card-body">
+        <h3>室内：老张药园</h3>
+        <p class="label">一期范围</p>
+        <ul style="font-size: 11px; color: #333; margin: 5px 0; padding-left: 15px;">
+          <li>4-6块药田</li>
+          <li>炮制工作台</li>
+          <li>老张NPC位置</li>
+          <li>工具架/种子架</li>
+        </ul>
+        <p style="font-size: 10px; color: #666;">地图尺寸：约 20x15 瓦片</p>
+      </div>
+    </div>
+
+    <div class="card" data-choice="home" onclick="toggleSelect(this)">
+      <div class="card-image" style="background: #fff8e1; display: flex; align-items: center; justify-content: center; font-size: 24px;">🏡</div>
+      <div class="card-body">
+        <h3>室内：玩家之家</h3>
+        <p class="label">一期范围</p>
+        <ul style="font-size: 11px; color: #333; margin: 5px 0; padding-left: 15px;">
+          <li>厨房（药膳烹饪）</li>
+          <li>储物柜</li>
+          <li>休息区（可选）</li>
+        </ul>
+        <p style="font-size: 10px; color: #666;">地图尺寸：约 12x10 瓦片</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <h3>场景切换机制</h3>
+
+  <div class="mockup">
+    <div class="mockup-body" style="padding: 15px;">
+      <div style="display: flex; align-items: center; justify-content: center; gap: 10px; font-size: 11px; flex-wrap: wrap;">
+        <div style="background: #90b060; color: white; padding: 8px 12px; border-radius: 4px;">室外地图</div>
+        <div style="font-size: 14px;">⇄</div>
+        <div style="background: #f5deb3; padding: 8px 12px; border-radius: 4px; border: 2px solid #8b4513;">诊所门</div>
+        <div style="font-size: 14px;">⇄</div>
+        <div style="background: #f5deb3; padding: 8px 12px; border-radius: 4px; border: 2px solid #8b4513;">诊所室内</div>
+      </div>
+      <p style="font-size: 11px; color: #666; margin: 10px 0 0 0; text-align: center;">
+        每个建筑入口有门瓦片，玩家站上门按确认键切换场景
+      </p>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <h3>扩展路线图</h3>
+
+  <div style="background: #f5f5f5; padding: 15px; border-radius: 8px;">
+    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px;">
+      <div style="text-align: center;">
+        <div style="background: #4a7c59; color: white; padding: 8px; border-radius: 4px; font-weight: bold;">一期</div>
+        <ul style="font-size: 10px; text-align: left; margin: 10px 0; padding-left: 15px; color: #333;">
+          <li>百草镇中心区</li>
+          <li>3个室内场景</li>
+          <li>药王谷入口</li>
+          <li>2个核心NPC</li>
+        </ul>
+      </div>
+      <div style="text-align: center;">
+        <div style="background: #f9a825; color: white; padding: 8px; border-radius: 4px; font-weight: bold;">二期</div>
+        <ul style="font-size: 10px; text-align: left; margin: 10px 0; padding-left: 15px; color: #333;">
+          <li>扩展百草镇区域</li>
+          <li>王婶集市</li>
+          <li>茶馆</li>
+          <li>药王谷密林</li>
+        </ul>
+      </div>
+      <div style="text-align: center;">
+        <div style="background: #7b1fa2; color: white; padding: 8px; border-radius: 4px; font-weight: bold;">三期+</div>
+        <ul style="font-size: 10px; text-align: left; margin: 10px 0; padding-left: 15px; color: #333;">
+          <li>完整药王谷</li>
+          <li>藏书阁</li>
+          <li>扩展区域</li>
+          <li>更多NPC/方剂</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div style="text-align: center; padding: 20px; color: #888; font-size: 12px;">
+  第二章展示完成，请告诉我场景系统设计是否符合预期
+</div>

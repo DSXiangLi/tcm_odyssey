@@ -1,0 +1,133 @@
+<h2>第一章：整体架构设计</h2>
+<p class="subtitle">药灵山谷 v3.0 - 一期架构总览</p>
+
+<div class="section">
+  <h3>核心架构图</h3>
+
+  <div class="mockup">
+    <div class="mockup-header">系统模块关系图</div>
+    <div class="mockup-body" style="padding: 20px;">
+      <div style="display: flex; flex-direction: column; gap: 20px; align-items: center;">
+        <!-- 核心层 -->
+        <div style="background: linear-gradient(135deg, #4a7c59, #2d5a27); color: white; padding: 15px 30px; border-radius: 8px; text-align: center;">
+          <div style="font-weight: bold; font-size: 14px;">玩家角色系统</div>
+          <div style="font-size: 11px; opacity: 0.9;">移动、交互、状态管理</div>
+        </div>
+
+        <!-- 连接箭头 -->
+        <div style="font-size: 20px; color: #4a7c59;">↓ ↑</div>
+
+        <!-- 场景层 -->
+        <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; width: 100%;">
+          <div style="background: #e8f5e9; padding: 12px; border-radius: 6px; text-align: center;">
+            <div style="font-weight: bold; font-size: 12px;">室外地图</div>
+            <div style="font-size: 10px; color: #666;">百草镇中心区</div>
+          </div>
+          <div style="background: #f5f5f5; padding: 12px; border-radius: 6px; text-align: center;">
+            <div style="font-weight: bold; font-size: 12px;">青木诊所</div>
+            <div style="font-size: 10px; color: #666;">临床教学</div>
+          </div>
+          <div style="background: #fff8e1; padding: 12px; border-radius: 6px; text-align: center;">
+            <div style="font-weight: bold; font-size: 12px;">老张药园</div>
+            <div style="font-size: 10px; color: #666;">种植炮制</div>
+          </div>
+          <div style="background: #e3f2fd; padding: 12px; border-radius: 6px; text-align: center;">
+            <div style="font-weight: bold; font-size: 12px;">玩家之家</div>
+            <div style="font-size: 10px; color: #666;">药膳烹饪</div>
+          </div>
+        </div>
+
+        <!-- 连接箭头 -->
+        <div style="font-size: 20px; color: #4a7c59;">↓ ↑</div>
+
+        <!-- 系统层 -->
+        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; width: 100%;">
+          <div style="background: #fce4ec; padding: 15px; border-radius: 6px; border: 2px solid #c2185b;">
+            <div style="font-weight: bold; font-size: 12px; color: #c2185b;">核心NPC系统</div>
+            <div style="font-size: 10px; color: #333;">青木先生 + 老张</div>
+            <div style="font-size: 9px; color: #666;">AI对话 + 任务发布 + 考教</div>
+          </div>
+          <div style="background: #f3e5f5; padding: 15px; border-radius: 6px; border: 2px solid #7b1fa2;">
+            <div style="font-weight: bold; font-size: 12px; color: #7b1fa2;">功能NPC系统</div>
+            <div style="font-size: 10px; color: #333;">王婶等邻居</div>
+            <div style="font-size: 9px; color: #666;">交易 + 简单对话</div>
+          </div>
+          <div style="background: #efebe9; padding: 15px; border-radius: 6px; border: 2px solid #5d4037;">
+            <div style="font-weight: bold; font-size: 12px; color: #5d4037;">自由探索系统</div>
+            <div style="font-size: 10px; color: #333;">收集 + 探索</div>
+            <div style="font-size: 9px; color: #666;">随时可做</div>
+          </div>
+        </div>
+
+        <!-- 连接箭头 -->
+        <div style="font-size: 20px; color: #4a7c59;">↓ ↑</div>
+
+        <!-- 数据层 -->
+        <div style="background: #f5f5f5; padding: 15px 30px; border-radius: 8px; text-align: center; width: 100%;">
+          <div style="font-weight: bold; font-size: 12px;">数据存储层</div>
+          <div style="font-size: 10px; color: #666;">药材库、方剂库、NPC记忆、玩家进度</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <h3>架构设计要点</h3>
+
+  <div style="background: #f5f5f5; padding: 15px; border-radius: 8px;">
+    <table style="width: 100%; font-size: 12px; border-collapse: collapse;">
+      <tr style="background: #e0e0e0;">
+        <th style="padding: 8px; text-align: left;">设计要点</th>
+        <th style="padding: 8px; text-align: left;">说明</th>
+      </tr>
+      <tr>
+        <td style="padding: 8px; border-bottom: 1px solid #e0e0e0;"><strong>模块分离</strong></td>
+        <td style="padding: 8px; border-bottom: 1px solid #e0e0e0;">场景系统、NPC系统、学习系统各自独立，通过事件机制通信</td>
+      </tr>
+      <tr>
+        <td style="padding: 8px; border-bottom: 1px solid #e0e0e0;"><strong>场景切换</strong></td>
+        <td style="padding: 8px; border-bottom: 1px solid #e0e0e0;">门瓦片触发，室内场景独立加载，玩家位置记录</td>
+      </tr>
+      <tr>
+        <td style="padding: 8px; border-bottom: 1px solid #e0e0e0;"><strong>NPC分层</strong></td>
+        <td style="padding: 8px; border-bottom: 1px solid #e0e0e0;">核心NPC有记忆系统，功能NPC仅做交易响应</td>
+      </tr>
+      <tr>
+        <td style="padding: 8px; border-bottom: 1px solid #e0e0e0;"><strong>双线并行</strong></td>
+        <td style="padding: 8px; border-bottom: 1px solid #e0e0e0;">教学主线（NPC任务）与自由探索线（随时可做）并行运行</td>
+      </tr>
+      <tr>
+        <td style="padding: 8px;"><strong>无时间限制</strong></td>
+        <td style="padding: 8px;">玩家可随时做任何事，无体力/时间压力，纯自由节奏</td>
+      </tr>
+    </table>
+  </div>
+</div>
+
+<div class="section">
+  <h3>技术栈选型</h3>
+
+  <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px;">
+    <div style="background: #e8f5e9; padding: 10px; border-radius: 4px; text-align: center;">
+      <div style="font-weight: bold; font-size: 11px;">游戏引擎</div>
+      <div style="font-size: 10px; color: #666;">Phaser.js / Godot</div>
+    </div>
+    <div style="background: #fff8e1; padding: 10px; border-radius: 4px; text-align: center;">
+      <div style="font-weight: bold; font-size: 11px;">地图编辑</div>
+      <div style="font-size: 10px; color: #666;">Tiled Map Editor</div>
+    </div>
+    <div style="background: #e3f2fd; padding: 10px; border-radius: 4px; text-align: center;">
+      <div style="font-weight: bold; font-size: 11px;">AI对话</div>
+      <div style="font-size: 10px; color: #666;">云端LLM API</div>
+    </div>
+    <div style="background: #fce4ec; padding: 10px; border-radius: 4px; text-align: center;">
+      <div style="font-weight: bold; font-size: 11px;">数据存储</div>
+      <div style="font-size: 10px; color: #666;">本地 + 云端可选</div>
+    </div>
+  </div>
+</div>
+
+<div style="text-align: center; padding: 20px; color: #888; font-size: 12px;">
+  第一章展示完成，请在终端告诉我这个架构设计是否符合你的预期
+</div>

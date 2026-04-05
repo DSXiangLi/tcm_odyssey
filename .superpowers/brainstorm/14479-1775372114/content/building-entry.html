@@ -1,0 +1,205 @@
+<h2>玩家如何进入建筑？</h2>
+<p class="subtitle">瓦片地图中"房子入口"的实现原理</p>
+
+<div class="section">
+  <h3>核心概念：场景切换</h3>
+  <p style="color: #666;">Stardew Valley、Pokemon等经典游戏的方式</p>
+
+  <div class="mockup">
+    <div class="mockup-header">步骤演示：玩家走进房子</div>
+    <div class="mockup-body" style="padding: 20px;">
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px;">
+        <!-- 步骤1：室外地图 -->
+        <div>
+          <div style="font-weight: bold; margin-bottom: 10px; color: #333;">Step 1: 玩家站在房子门口</div>
+          <div style="background: #90b060; padding: 10px; border-radius: 8px; position: relative;">
+            <div style="display: grid; grid-template-columns: repeat(6, 40px); grid-template-rows: repeat(4, 40px); gap: 2px;">
+              <!-- 天空 -->
+              <div style="background: #87ceeb;"></div>
+              <div style="background: #87ceeb;"></div>
+              <div style="background: #87ceeb;"></div>
+              <div style="background: #87ceeb;"></div>
+              <div style="background: #87ceeb;"></div>
+              <div style="background: #87ceeb;"></div>
+              <!-- 房子 -->
+              <div style="background: #f0f0f0; border-radius: 4px; font-size: 12px; text-align: center;">🏠</div>
+              <div style="background: #f0f0f0;"></div>
+              <div style="background: #f0f0f0;"></div>
+              <div style="background: #f0f0f0;"></div>
+              <div style="background: #4a7c59;">🌲</div>
+              <div style="background: #87ceeb;"></div>
+              <!-- 门 + 玩家 -->
+              <div style="background: #c9b896; font-size: 12px; text-align: center;">🚪</div>
+              <div style="background: #c9b896; font-size: 16px; text-align: center; border: 2px solid #ff6b6b;">🧑</div>
+              <div style="background: #c9b896;"></div>
+              <div style="background: #90b060;">草</div>
+              <div style="background: #90b060;">草</div>
+              <div style="background: #87ceeb;"></div>
+              <!-- 地面 -->
+              <div style="background: #c9b896;"></div>
+              <div style="background: #c9b896;"></div>
+              <div style="background: #c9b896;"></div>
+              <div style="background: #90b060;">草</div>
+              <div style="background: #90b060;">草</div>
+              <div style="background: #87ceeb;"></div>
+            </div>
+          </div>
+          <p style="font-size: 11px; color: #666; margin-top: 8px;">
+            🚪 门是一个特殊瓦片，标记为"入口点"
+          </p>
+        </div>
+
+        <!-- 步骤2：触发切换 -->
+        <div>
+          <div style="font-weight: bold; margin-bottom: 10px; color: #333;">Step 2: 按确认键 → 场景切换</div>
+          <div style="background: #e8f5e9; padding: 15px; border-radius: 8px; text-align: center;">
+            <div style="font-size: 14px; color: #333;">
+              <p style="margin: 0;">玩家站在"门"瓦片上</p>
+              <p style="margin: 10px 0; font-size: 16px; color: #4a7c59;">↓ 按空格/点击 ↓</p>
+              <p style="margin: 0; font-weight: bold;">触发场景切换事件</p>
+            </div>
+            <div style="margin-top: 15px; background: #f5f5f5; padding: 10px; border-radius: 4px; font-size: 11px;">
+              <code style="color: #333;">
+                if (player.tile === "door_青木诊所") {<br>
+                &nbsp;&nbsp;loadScene("青木诊所_室内");<br>
+                }
+              </code>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <h3>切换后：加载室内地图</h3>
+
+  <div class="mockup">
+    <div class="mockup-header">青木诊所 · 室内地图</div>
+    <div class="mockup-body" style="padding: 15px;">
+      <div style="background: #f5deb3; padding: 10px; border-radius: 8px; border: 3px solid #8b4513;">
+        <div style="display: grid; grid-template-columns: repeat(8, 35px); grid-template-rows: repeat(5, 35px); gap: 2px; background: #d4a574; padding: 5px;">
+          <!-- 墙壁 -->
+          <div style="background: #8b4513;"></div>
+          <div style="background: #8b4513;"></div>
+          <div style="background: #8b4513;"></div>
+          <div style="background: #8b4513;"></div>
+          <div style="background: #8b4513;"></div>
+          <div style="background: #8b4513;"></div>
+          <div style="background: #8b4513;"></div>
+          <div style="background: #8b4513;"></div>
+          <!-- 内部 -->
+          <div style="background: #f5deb3;">🧑</div>
+          <div style="background: #f5deb3;"></div>
+          <div style="background: #f5deb3; font-size: 10px;">🪑</div>
+          <div style="background: #f5deb3;"></div>
+          <div style="background: #87ceeb; border-radius: 4px;">🪟</div>
+          <div style="background: #f5deb3;"></div>
+          <div style="background: #a0522d; font-size: 12px;">柜</div>
+          <div style="background: #a0522d; font-size: 12px;">药</div>
+          <!-- NPC区域 -->
+          <div style="background: #f5deb3;"></div>
+          <div style="background: #f5deb3;"></div>
+          <div style="background: #f5deb3; font-size: 12px; text-align: center;">👴</div>
+          <div style="background: #f5deb3;"></div>
+          <div style="background: #f5deb3;"></div>
+          <div style="background: #f5deb3;"></div>
+          <div style="background: #a0522d; font-size: 12px;">柜</div>
+          <div style="background: #a0522d; font-size: 12px;">药</div>
+          <!-- 诊台 -->
+          <div style="background: #f5deb3;"></div>
+          <div style="background: #d4a574; font-size: 10px;">诊台</div>
+          <div style="background: #d4a574;"></div>
+          <div style="background: #f5deb3;"></div>
+          <div style="background: #f5deb3;"></div>
+          <div style="background: #f5deb3;"></div>
+          <div style="background: #f5deb3;"></div>
+          <div style="background: #f5deb3;"></div>
+          <!-- 门 -->
+          <div style="background: #c9b896; border: 2px solid #4a7c59; font-size: 10px;">🚪</div>
+          <div style="background: #c9b896;"></div>
+          <div style="background: #f5deb3;"></div>
+          <div style="background: #f5deb3;"></div>
+          <div style="background: #f5deb3;"></div>
+          <div style="background: #f5deb3;"></div>
+          <div style="background: #f5deb3;"></div>
+          <div style="background: #f5deb3;"></div>
+        </div>
+      </div>
+      <p style="font-size: 11px; color: #666; margin-top: 8px;">
+        玩家从门位置进入，可以在室内自由移动，与NPC（青木先生）交互
+      </p>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <h3>完整流程图</h3>
+  <div class="mockup">
+    <div class="mockup-body" style="padding: 15px;">
+      <div style="display: flex; align-items: center; justify-content: center; gap: 15px; font-size: 12px;">
+        <div style="background: #90b060; color: white; padding: 8px 12px; border-radius: 4px;">室外地图</div>
+        <div style="color: #333;">→</div>
+        <div style="background: #f5deb3; border: 2px solid #8b4513; padding: 8px 12px; border-radius: 4px;">站到门瓦片</div>
+        <div style="color: #333;">→</div>
+        <div style="background: #4a7c59; color: white; padding: 8px 12px; border-radius: 4px;">按确认键</div>
+        <div style="color: #333;">→</div>
+        <div style="background: #8b4513; color: white; padding: 8px 12px; border-radius: 4px;">加载室内</div>
+        <div style="color: #333;">→</div>
+        <div style="background: #f0f0f0; border: 2px solid #333; padding: 8px 12px; border-radius: 4px;">室内交互</div>
+      </div>
+      <p style="font-size: 11px; color: #666; margin-top: 10px; text-align: center;">
+        出门同理：站到室内门瓦片 → 按确认 → 加载室外地图
+      </p>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <h3>一期的场景切换清单</h3>
+  <div class="cards">
+    <div class="card" data-choice="clinic" onclick="toggleSelect(this)">
+      <div class="card-image" style="background: #f5deb3; display: flex; align-items: center; justify-content: center; font-size: 30px;">🏠</div>
+      <div class="card-body">
+        <h3>青木诊所</h3>
+        <p class="label">室外 → 室内诊室</p>
+        <p style="font-size: 11px;">室内：诊台、药柜、青木先生NPC</p>
+      </div>
+    </div>
+
+    <div class="card" data-choice="garden" onclick="toggleSelect(this)">
+      <div class="card-image" style="background: #e8f5e9; display: flex; align-items: center; justify-content: center; font-size: 30px;">🌱</div>
+      <div class="card-body">
+        <h3>老张药园</h3>
+        <p class="label">室外 → 室内工具房</p>
+        <p style="font-size: 11px;">室内：炮制台、种子架、老张NPC</p>
+      </div>
+    </div>
+
+    <div class="card" data-choice="home" onclick="toggleSelect(this)">
+      <div class="card-image" style="background: #fff8e1; display: flex; align-items: center; justify-content: center; font-size: 30px;">🏡</div>
+      <div class="card-body">
+        <h3>玩家之家</h3>
+        <p class="label">室外 → 室内厨房/卧室</p>
+        <p style="font-size: 11px;">室内：灶台、储物柜、休息区</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <h3>技术实现要点</h3>
+  <div style="background: #f5f5f5; padding: 15px; border-radius: 8px;">
+    <ul style="font-size: 12px; color: #333; margin: 0;">
+      <li><strong>门瓦片：</strong>在Tiled编辑器中标记特殊属性 <code>type: "door"</code></li>
+      <li><strong>目标场景：</strong>每个门记录 <code>targetScene: "青木诊所_室内"</code></li>
+      <li><strong>入口位置：</strong>记录玩家进入后应该站在哪个格子 <code>entryPos: {x: 1, y: 2}</code></li>
+      <li><strong>过渡动画：</strong>可选添加淡入淡出效果</li>
+    </ul>
+  </div>
+</div>
+
+<div style="text-align: center; padding: 20px; color: #888; font-size: 12px;">
+  现在你理解了吗？每个房子是独立的室内地图，通过"门瓦片"触发切换
+</div>

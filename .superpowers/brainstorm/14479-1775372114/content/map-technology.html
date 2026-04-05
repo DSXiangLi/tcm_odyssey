@@ -1,0 +1,185 @@
+<h2>地图技术方案对比</h2>
+<p class="subtitle">理解"像素瓦片地图" vs "AI生成背景图"的本质区别</p>
+
+<div class="section">
+  <h3>核心问题：人物如何在地图上移动？</h3>
+
+  <div class="split">
+    <!-- 左侧：像素瓦片方案 -->
+    <div class="mockup">
+      <div class="mockup-header">方案A：像素瓦片地图（Stardew Valley方式）</div>
+      <div class="mockup-body" style="padding: 15px;">
+        <div style="background: #2d5a27; padding: 10px; border-radius: 4px;">
+          <!-- 瓦片网格示意 -->
+          <div style="display: grid; grid-template-columns: repeat(8, 32px); grid-template-rows: repeat(5, 32px); gap: 1px; background: #1a3a17; padding: 5px;">
+            <!-- 第一行：天空 -->
+            <div style="background: #87ceeb; font-size: 10px; text-align: center; color: #333;">☁️</div>
+            <div style="background: #87ceeb;"></div>
+            <div style="background: #87ceeb;"></div>
+            <div style="background: #87ceeb;"></div>
+            <div style="background: #87ceeb;"></div>
+            <div style="background: #87ceeb;"></div>
+            <div style="background: #87ceeb;">☁️</div>
+            <div style="background: #87ceeb;"></div>
+
+            <!-- 第二行：树 -->
+            <div style="background: #4a7c59;">🌲</div>
+            <div style="background: #90b060;">草</div>
+            <div style="background: #90b060;">草</div>
+            <div style="background: #a8a8a8;">石</div>
+            <div style="background: #90b060;">草</div>
+            <div style="background: #90b060;">草</div>
+            <div style="background: #4a7c59;">🌲</div>
+            <div style="background: #87ceeb;"></div>
+
+            <!-- 第三行：可行走区 -->
+            <div style="background: #c9b896; border: 2px dashed #fff;">路</div>
+            <div style="background: #c9b896; border: 2px dashed #fff;">路</div>
+            <div style="background: #c9b896; border: 2px dashed #fff;">路</div>
+            <div style="background: #c9b896; border: 2px dashed #fff;">路</div>
+            <div style="background: #c9b896; border: 2px dashed #fff;">路</div>
+            <div style="background: #c9b896; border: 2px dashed #fff;">路</div>
+            <div style="background: #c9b896; border: 2px dashed #fff;">路</div>
+            <div style="background: #87ceeb;"></div>
+
+            <!-- 第四行：玩家位置 -->
+            <div style="background: #f0f0f0;">🏠</div>
+            <div style="background: #c9b896; border: 2px dashed #fff;">路</div>
+            <div style="background: #c9b896; border: 2px solid #ff6b6b; font-size: 12px; text-align: center;">🧑</div>
+            <div style="background: #c9b896; border: 2px dashed #fff;">路</div>
+            <div style="background: #e8f5e9;">🌱</div>
+            <div style="background: #c9b896; border: 2px dashed #fff;">路</div>
+            <div style="background: #4a7c59;">🌲</div>
+            <div style="background: #87ceeb;"></div>
+
+            <!-- 第五行 -->
+            <div style="background: #90b060;">草</div>
+            <div style="background: #c9b896; border: 2px dashed #fff;">路</div>
+            <div style="background: #c9b896; border: 2px dashed #fff;">路</div>
+            <div style="background: #c9b896; border: 2px dashed #fff;">路</div>
+            <div style="background: #e8f5e9;">🌱</div>
+            <div style="background: #c9b896; border: 2px dashed #fff;">路</div>
+            <div style="background: #90b060;">草</div>
+            <div style="background: #87ceeb;"></div>
+          </div>
+        </div>
+
+        <div style="margin-top: 15px; padding: 10px; background: #f5f5f5; border-radius: 4px;">
+          <p style="font-size: 13px; color: #333; margin: 0;">
+            <strong>原理：</strong>地图由32x32像素的小格子（瓦片）组成
+          </p>
+          <p style="font-size: 11px; color: #666; margin: 5px 0 0 0;">
+            ✓ 每个格子有属性：<span style="color: #4a7c59;">可通行</span> / <span style="color: #a8a8a8;">不可通行</span>
+          </p>
+          <p style="font-size: 11px; color: #666; margin: 5px 0 0 0;">
+            ✓ 玩家在格子间移动，碰撞检测简单
+          </p>
+          <p style="font-size: 11px; color: #666; margin: 5px 0 0 0;">
+            ✓ 工具：<strong>Tiled Map Editor</strong> 可以可视化编辑
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- 右侧：AI背景方案 -->
+    <div class="mockup">
+      <div class="mockup-header">方案B：AI生成整张背景图</div>
+      <div class="mockup-body" style="padding: 15px;">
+        <div style="background: linear-gradient(180deg, #87ceeb 0%, #90b060 60%, #c9b896 100%); padding: 15px; border-radius: 4px; min-height: 180px; position: relative; overflow: hidden;">
+          <!-- AI生成的装饰元素 -->
+          <div style="position: absolute; top: 5px; left: 10px; font-size: 20px;">☁️</div>
+          <div style="position: absolute; top: 10px; right: 30px; font-size: 20px;">☁️</div>
+          <div style="position: absolute; top: 40px; left: 5px; font-size: 24px;">🌲</div>
+          <div style="position: absolute; top: 40px; right: 5px; font-size: 24px;">🌲</div>
+          <div style="position: absolute; bottom: 30px; left: 20px; font-size: 24px;">🏠</div>
+          <div style="position: absolute; bottom: 30px; right: 40px; font-size: 24px;">🌱</div>
+
+          <!-- 玩家角色 -->
+          <div style="position: absolute; bottom: 35px; left: 50%; transform: translateX(-50%); font-size: 20px; border: 2px solid #ff6b6b; background: rgba(255,255,255,0.3); padding: 2px; border-radius: 50%;">🧑</div>
+
+          <!-- 可行走路径（需要额外定义） -->
+          <div style="position: absolute; bottom: 20px; left: 30%; right: 30%; height: 40px; border: 2px dashed rgba(255,255,255,0.5); border-radius: 4px; display: flex; align-items: center; justify-content: center;">
+            <span style="color: white; font-size: 10px; opacity: 0.8;">可行走区域（需程序定义）</span>
+          </div>
+        </div>
+
+        <div style="margin-top: 15px; padding: 10px; background: #fff3cd; border-radius: 4px;">
+          <p style="font-size: 13px; color: #856404; margin: 0;">
+            <strong>问题：</strong>AI生成的只是一张静态图片
+          </p>
+          <p style="font-size: 11px; color: #856404; margin: 5px 0 0 0;">
+            ⚠️ 图片本身没有"格子"概念
+          </p>
+          <p style="font-size: 11px; color: #856404; margin: 5px 0 0 0;">
+            ⚠️ 需要额外定义可行走区域（碰撞体/路径）
+          </p>
+          <p style="font-size: 11px; color: #856404; margin: 5px 0 0 0;">
+            ⚠️ 实现复杂度更高，不如瓦片地图直观
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <h3>推荐方案：像素瓦片地图</h3>
+
+  <div class="pros-cons">
+    <div class="pros">
+      <h4>✅ 优点</h4>
+      <ul>
+        <li>技术上最成熟，碰撞检测简单</li>
+        <li>Tiled编辑器可视化设计地图</li>
+        <li>风格统一，经典像素游戏感</li>
+        <li>可扩展性强，随意添加新区域</li>
+        <li>性能好，只渲染可见区域</li>
+      </ul>
+    </div>
+    <div class="cons">
+      <h4>⚠️ 注意</h4>
+      <ul>
+        <li>需要设计每个瓦片素材</li>
+        <li>可用素材库或AI生成后像素化</li>
+        <li>初期投入稍多，但长期更易维护</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <h3>AI可以辅助的地方</h3>
+  <div class="mockup">
+    <div class="mockup-body" style="padding: 15px;">
+      <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px;">
+        <div style="background: #f5f5f5; padding: 10px; border-radius: 4px; text-align: center;">
+          <div style="font-size: 20px; margin-bottom: 5px;">🌿</div>
+          <div style="font-size: 11px; color: #333;">草丛瓦片</div>
+          <div style="font-size: 9px; color: #4a7c59;">AI生成→像素化</div>
+        </div>
+        <div style="background: #f5f5f5; padding: 10px; border-radius: 4px; text-align: center;">
+          <div style="font-size: 20px; margin-bottom: 5px;">🌲</div>
+          <div style="font-size: 11px; color: #333;">树木瓦片</div>
+          <div style="font-size: 9px; color: #4a7c59;">AI生成→像素化</div>
+        </div>
+        <div style="background: #f5f5f5; padding: 10px; border-radius: 4px; text-align: center;">
+          <div style="font-size: 20px; margin-bottom: 5px;">🏠</div>
+          <div style="font-size: 11px; color: #333;">建筑瓦片</div>
+          <div style="font-size: 9px; color: #4a7c59;">AI生成→像素化</div>
+        </div>
+        <div style="background: #f5f5f5; padding: 10px; border-radius: 4px; text-align: center;">
+          <div style="font-size: 20px; margin-bottom: 5px;">🧑</div>
+          <div style="font-size: 11px; color: #333;">角色 sprite</div>
+          <div style="font-size: 9px; color: #4a7c59;">手绘或AI辅助</div>
+        </div>
+      </div>
+      <p style="margin-top: 15px; font-size: 12px; color: #666; text-align: center;">
+        <strong>工作流：</strong>AI生成素材 → 像素化处理 → 组装成瓦片 → Tiled编辑地图
+      </p>
+    </div>
+  </div>
+</div>
+
+<div style="text-align: center; padding: 20px; color: #888; font-size: 12px;">
+  看完后请在终端告诉我：你是否理解了两种方案的区别？倾向于哪种？
+</div>

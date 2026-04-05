@@ -26,6 +26,7 @@ export class TownOutdoorScene extends Phaser.Scene {
   private doorTiles: Map<string, DoorInfo> = new Map();
   private spaceKey!: Phaser.Input.Keyboard.Key;
   private isTransitioning: boolean = false;
+  private walls!: Phaser.Physics.Arcade.StaticGroup;
 
   constructor() {
     super({ key: SCENES.TOWN_OUTDOOR });
@@ -40,6 +41,9 @@ export class TownOutdoorScene extends Phaser.Scene {
 
     // 创建玩家
     this.createPlayer();
+
+    // 创建墙壁碰撞
+    this.createWallCollisions();
 
     // 设置相机
     this.setupCamera();
@@ -217,6 +221,28 @@ export class TownOutdoorScene extends Phaser.Scene {
       x: spawnX,
       y: spawnY
     });
+  }
+
+  private createWallCollisions(): void {
+    this.walls = this.physics.add.staticGroup();
+
+    for (let y = 0; y < this.mapData.height; y++) {
+      for (let x = 0; x < this.mapData.width; x++) {
+        const tile = this.mapData.tiles[y][x];
+        if (tile.type === 'wall') {
+          const wall = this.walls.create(
+            x * TILE_SIZE + TILE_SIZE / 2,
+            y * TILE_SIZE + TILE_SIZE / 2,
+            ''
+          );
+          wall.setVisible(false);
+          wall.body?.setSize(TILE_SIZE, TILE_SIZE);
+        }
+      }
+    }
+
+    // 添加玩家与墙壁的碰撞
+    this.physics.add.collider(this.player, this.walls);
   }
 
   private setupCamera(): void {

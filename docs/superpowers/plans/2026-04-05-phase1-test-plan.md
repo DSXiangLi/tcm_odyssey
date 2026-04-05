@@ -634,377 +634,351 @@ describe('Phase 1 完成检查清单', () => {
 
 ---
 
-## 五、AI端到端测试 (多模态验证)
+## 五、AI端到端测试 (功能性验证)
 
-### 5.1 视觉验证测试用例
+> **设计规范**: 详见 [Phase 1 AI端到端测试设计规范](../specs/2026-04-05-phase1-ai-e2e-test-design.md)
+>
+> 本节将设计规范转换为具体可执行的实现任务和测试用例。
 
-使用多模态LLM对游戏界面进行视觉验证：
+### 5.0 前置依赖实现任务
 
+**在执行AI端到端测试前，必须完成以下游戏系统实现：**
+
+#### 5.0.1 日志系统实现
+
+| 任务ID | 任务描述 | 文件 | 状态 |
+|--------|---------|------|------|
+| LOG-001 | 创建EventBus事件总线 | `src/systems/EventBus.ts` | ⏳ |
+| LOG-002 | 定义GameEvents事件常量 | `src/systems/EventBus.ts` | ⏳ |
+| LOG-003 | 创建GameLogger日志收集器 | `src/utils/GameLogger.ts` | ⏳ |
+| LOG-004 | 实现分文件日志导出功能 | `src/utils/GameLogger.ts` | ⏳ |
+| LOG-005 | 在Player中添加事件发送 | `src/entities/Player.ts` | ⏳ |
+| LOG-006 | 在各Scene中添加事件发送 | `src/scenes/*.ts` | ⏳ |
+| LOG-007 | 在SceneManager中添加事件发送 | `src/systems/SceneManager.ts` | ⏳ |
+
+**EventBus事件定义**:
 ```typescript
-// tests/e2e/ai-visual-tests.ts
-interface VisualTestResult {
-  passed: boolean;
-  observations: string[];
-  issues: string[];
-  confidence: number;
-}
+// src/systems/EventBus.ts
+export const GameEvents = {
+  // 玩家事件
+  PLAYER_MOVE: 'player:move',
+  PLAYER_STOP: 'player:stop',
+  PLAYER_COLLIDE: 'player:collide',
+  PLAYER_POSITION: 'player:position',
 
-async function runVisualTest(
-  screenshot: Buffer,
-  expectedDescription: string
-): Promise<VisualTestResult> {
-  const response = await multimodalLLM.analyze({
-    image: screenshot,
-    prompt: `
-      分析这个游戏截图是否符合以下描述：
-      "${expectedDescription}"
+  // 场景事件
+  SCENE_CREATE: 'scene:create',
+  SCENE_SWITCH: 'scene:switch',
+  SCENE_DESTROY: 'scene:destroy',
+  SCENE_READY: 'scene:ready',
 
-      请检查：
-      1. 界面元素是否完整
-      2. 文字是否正确显示
-      3. 颜色是否合理
-      4. 布局是否正确
-      5. 是否有任何视觉问题
+  // 交互事件
+  DOOR_INTERACT: 'door:interact',
+  DOOR_ENTER: 'door:enter',
+  DOOR_EXIT: 'door:exit',
 
-      返回JSON格式：
-      {
-        "passed": boolean,
-        "observations": string[],
-        "issues": string[],
-        "confidence": number (0-1)
-      }
-    `
-  });
-
-  return JSON.parse(response);
-}
-
-describe('AI视觉验证测试', () => {
-  test('标题画面视觉验证', async () => {
-    const game = await startGame();
-    await waitFor(1000);
-
-    const screenshot = await takeScreenshot(game);
-    const result = await runVisualTest(screenshot, `
-      游戏标题画面应该包含：
-      1. 深绿色背景 (#2d5a27)
-      2. 大标题 "药灵山谷" (白色，居中)
-      3. 副标题 "v3.0 - 一期MVP" (灰色)
-      4. "开始游戏" 按钮 (绿色背景)
-      5. 底部控制提示文字
-    `);
-
-    expect(result.passed).toBe(true);
-    expect(result.confidence).toBeGreaterThan(0.8);
-
-    if (!result.passed) {
-      console.log('Issues found:', result.issues);
-    }
-
-    game.destroy(true);
-  });
-
-  test('室外场景视觉验证', async () => {
-    const game = await startInTown();
-    await waitFor(500);
-
-    const screenshot = await takeScreenshot(game);
-    const result = await runVisualTest(screenshot, `
-      百草镇室外场景应该包含：
-      1. 绿色草地背景
-      2. 米色十字路径
-      3. 棕色墙壁边界
-      4. 门瓦片（深棕色）
-      5. 红色圆形玩家角色
-      6. 左上角场景名称 "百草镇 - 室外"
-    `);
-
-    expect(result.passed).toBe(true);
-    game.destroy(true);
-  });
-
-  test('诊所场景视觉验证', async () => {
-    const game = await startInClinic();
-    await waitFor(500);
-
-    const screenshot = await takeScreenshot(game);
-    const result = await runVisualTest(screenshot, `
-      青木诊所室内场景应该包含：
-      1. 米色地板
-      2. 棕色墙壁边界
-      3. 门瓦片在底部中央
-      4. 左上角场景名称 "青木诊所"
-      5. 提示文字 "按空格键返回室外"
-    `);
-
-    expect(result.passed).toBe(true);
-    game.destroy(true);
-  });
-
-  test('药园场景视觉验证', async () => {
-    const game = await startInGarden();
-    await waitFor(500);
-
-    const screenshot = await takeScreenshot(game);
-    const result = await runVisualTest(screenshot, `
-      老张药园场景应该包含：
-      1. 绿色草地背景
-      2. 棕色墙壁边界
-      3. 4个药田区域（深绿色方块）
-      4. 左上角场景名称 "老张药园"
-    `);
-
-    expect(result.passed).toBe(true);
-    game.destroy(true);
-  });
-
-  test('玩家之家场景视觉验证', async () => {
-    const game = await startInHome();
-    await waitFor(500);
-
-    const screenshot = await takeScreenshot(game);
-    const result = await runVisualTest(screenshot, `
-      玩家之家场景应该包含：
-      1. 米色地板
-      2. 棕色墙壁边界
-      3. 厨房区域（🍳图标）
-      4. 书房区域（📚图标）
-      5. 卧室区域（🛏️图标）
-      6. 左上角场景名称 "玩家之家"
-    `);
-
-    expect(result.passed).toBe(true);
-    game.destroy(true);
-  });
-});
+  // 错误事件
+  ERROR: 'error',
+  ERROR_INPUT: 'error:input',
+  ERROR_COLLISION: 'error:collision'
+} as const;
 ```
 
-### 5.2 游戏流程AI验证
+**日志文件输出**:
+| 类别 | 文件名 | 内容 |
+|------|--------|------|
+| scene | `scene-{timestamp}.log` | 场景生命周期、切换记录 |
+| player | `player-{timestamp}.log` | 移动、碰撞、位置变化 |
+| interaction | `interaction-{timestamp}.log` | 门交互、按键事件 |
+| error | `error-{timestamp}.log` | 异常、警告、失败操作 |
 
+#### 5.0.2 状态暴露接口实现
+
+| 任务ID | 任务描述 | 实现方式 | 状态 |
+|--------|---------|---------|------|
+| STATE-001 | 暴露地图瓦片数据 | `window.__GAME_STATE__.mapData` | ⏳ |
+| STATE-002 | 暴露玩家位置数据 | `window.__GAME_STATE__.player` | ⏳ |
+| STATE-003 | 暴露场景尺寸数据 | `window.__GAME_STATE__.sceneSize` | ⏳ |
+| STATE-004 | 暴露当前场景名称 | `window.__GAME_STATE__.currentScene` | ⏳ |
+| STATE-005 | 暴露碰撞检测结果 | `window.__GAME_STATE__.collision` | ⏳ |
+
+**状态接口结构**:
 ```typescript
-// tests/e2e/ai-gameplay-tests.ts
-describe('AI游戏流程验证', () => {
-  test('完整游戏启动流程', async () => {
-    const browser = await launchGameBrowser();
-    const page = browser.page;
-
-    // 1. 验证标题画面
-    await page.waitForSelector('#game-container canvas');
-    await sleep(1000);
-
-    const titleScreenAnalysis = await analyzeGameScreen(page, `
-      这是游戏启动画面。请验证：
-      1. 是否显示游戏标题
-      2. 是否有开始游戏的按钮
-      3. 整体视觉效果是否正常
-    `);
-
-    expect(titleScreenAnalysis.hasTitle).toBe(true);
-    expect(titleScreenAnalysis.hasStartButton).toBe(true);
-
-    // 2. 点击开始
-    await page.click('#game-container canvas', {
-      position: { x: 400, y: 350 } // 开始按钮位置
-    });
-    await sleep(2000);
-
-    // 3. 验证进入游戏
-    const gameScreenAnalysis = await analyzeGameScreen(page, `
-      这是游戏主画面。请验证：
-      1. 是否显示游戏场景
-      2. 是否有玩家角色
-      3. 是否有地图/背景
-    `);
-
-    expect(gameScreenAnalysis.hasScene).toBe(true);
-    expect(gameScreenAnalysis.hasPlayer).toBe(true);
-
-    await browser.close();
-  });
-
-  test('场景切换视觉连续性', async () => {
-    const browser = await launchGameBrowser();
-    await startGameAndSkipTitle(browser.page);
-
-    // 记录切换前后的视觉变化
-    const visualChanges = [];
-
-    // 进入诊所
-    await moveToClinicDoor(browser.page);
-    const beforeEnter = await takeScreenshot(browser.page);
-
-    await pressSpace(browser.page);
-    await sleep(500);
-
-    const afterEnter = await takeScreenshot(browser.page);
-
-    const enterAnalysis = await multimodalLLM.compare({
-      image1: beforeEnter,
-      image2: afterEnter,
-      prompt: `
-        比较这两张截图。
-        第一张是在室外，第二张应该是在诊所内。
-        验证场景切换是否成功，视觉风格是否一致。
-      `
-    });
-
-    expect(enterAnalysis.sceneChanged).toBe(true);
-    expect(enterAnalysis.visualConsistent).toBe(true);
-
-    await browser.close();
-  });
-
-  test('玩家移动动画流畅性', async () => {
-    const browser = await launchGameBrowser();
-    await startGameAndSkipTitle(browser.page);
-
-    // 捕获移动过程的帧序列
-    const frames = await captureMovementFrames(browser.page, {
-      direction: 'right',
-      duration: 1000,
-      frameCount: 10
-    });
-
-    const movementAnalysis = await multimodalLLM.analyzeFrames({
-      frames,
-      prompt: `
-        分析这组游戏帧，验证：
-        1. 玩家是否在移动
-        2. 移动是否流畅
-        3. 是否有视觉抖动或异常
-        4. 碰撞检测是否正常（不应穿过墙壁）
-      `
-    });
-
-    expect(movementAnalysis.isMoving).toBe(true);
-    expect(movementAnalysis.isSmooth).toBe(true);
-    expect(movementAnalysis.noClipping).toBe(true);
-
-    await browser.close();
-  });
-});
-```
-
-### 5.3 UI/UX AI评估
-
-```typescript
-// tests/e2e/ai-ux-evaluation.ts
-describe('AI用户体验评估', () => {
-  test('界面可读性评估', async () => {
-    const game = await startGame();
-
-    // 收集所有场景的截图
-    const screenshots = {
-      title: await captureScene(game, 'TitleScene'),
-      town: await captureScene(game, 'TownOutdoorScene'),
-      clinic: await captureScene(game, 'ClinicScene'),
-      garden: await captureScene(game, 'GardenScene'),
-      home: await captureScene(game, 'HomeScene')
-    };
-
-    const readabilityReport = await multimodalLLM.evaluateReadability({
-      screenshots,
-      criteria: [
-        '文字是否清晰可读',
-        '颜色对比度是否足够',
-        'UI元素是否易于识别',
-        '信息层次是否清晰'
-      ]
-    });
-
-    expect(readabilityReport.overallScore).toBeGreaterThan(0.7);
-
-    game.destroy(true);
-  });
-
-  test('新手引导充分性', async () => {
-    const browser = await launchGameBrowser();
-    const newUserExperience = await simulateNewUser(browser.page);
-
-    const guidanceAnalysis = await multimodalLLM.analyze({
-      screenshots: newUserExperience.screenshots,
-      actions: newUserExperience.actions,
-      prompt: `
-        分析新手用户的游戏体验：
-        1. 控制提示是否清晰
-        2. 游戏目标是否明确
-        3. 交互方式是否直观
-        4. 是否有困惑点
-
-        提供改进建议。
-      `
-    });
-
-    console.log('新手体验分析:', guidanceAnalysis);
-
-    await browser.close();
-  });
-
-  test('视觉风格一致性', async () => {
-    const game = await startGame();
-    const allScenes = await captureAllScenes(game);
-
-    const styleConsistency = await multimodalLLM.analyze({
-      images: allScenes,
-      prompt: `
-        分析所有场景截图，验证视觉风格一致性：
-        1. 色彩方案是否统一
-        2. 瓦片风格是否一致
-        3. UI元素风格是否统一
-        4. 是否有风格冲突的地方
-      `
-    });
-
-    expect(styleConsistency.isConsistent).toBe(true);
-
-    game.destroy(true);
-  });
-});
-```
-
-### 5.4 自动化AI测试报告
-
-```typescript
-// tests/e2e/ai-test-reporter.ts
-interface TestReport {
-  timestamp: Date;
-  phase: string;
-  tests: {
-    name: string;
-    passed: boolean;
-    observations: string[];
-    issues: string[];
-    screenshots: string[];
-  }[];
-  overallScore: number;
-  recommendations: string[];
-}
-
-async function generateAITestReport(): Promise<TestReport> {
-  const report: TestReport = {
-    timestamp: new Date(),
-    phase: 'Phase 1 MVP',
-    tests: [],
-    overallScore: 0,
-    recommendations: []
+// 挂载到 window.__GAME_STATE__
+interface GameStateForTest {
+  mapData: {
+    width: number;
+    height: number;
+    tiles: TileData[][];
   };
-
-  // 运行所有AI测试并收集结果
-  const testResults = await runAllAITests();
-
-  report.tests = testResults;
-  report.overallScore = calculateOverallScore(testResults);
-  report.recommendations = generateRecommendations(testResults);
-
-  // 保存报告
-  await saveReport(report, `test-reports/ai-test-${Date.now()}.json`);
-
-  // 生成可视化报告
-  await generateHTMLReport(report);
-
-  return report;
+  player: {
+    x: number;
+    y: number;
+    tileX: number;
+    tileY: number;
+    speed: number;
+    velocity: { x: number; y: number };
+  };
+  sceneSize: {
+    width: number;
+    height: number;
+  };
+  currentScene: string;
+  collision: {
+    lastCollision: string | null;
+    isColliding: boolean;
+  };
+  timestamp: number;
 }
 ```
+
+#### 5.0.3 测试目录结构创建
+
+| 任务ID | 任务描述 | 路径 | 状态 |
+|--------|---------|------|------|
+| DIR-001 | 创建visual测试根目录 | `tests/visual/` | ⏳ |
+| DIR-002 | 创建布局测试目录 | `tests/visual/layout/` | ⏳ |
+| DIR-003 | 创建移动测试目录 | `tests/visual/movement/` | ⏳ |
+| DIR-004 | 创建场景切换测试目录 | `tests/visual/scene-switch/` | ⏳ |
+| DIR-005 | 创建报告输出目录 | `tests/visual/reports/` | ⏳ |
+| DIR-006 | 创建日志采集目录 | `tests/visual/logs/` | ⏳ |
+| DIR-007 | 创建截图存储目录 | `tests/visual/screenshots/` | ⏳ |
+| DIR-008 | 创建动作序列帧目录 | `tests/visual/screenshots/sequences/` | ⏳ |
+
+### 5.1 测试脚本实现任务
+
+#### 5.1.1 核心测试工具实现
+
+| 任务ID | 任务描述 | 文件 | 状态 |
+|--------|---------|------|------|
+| TOOL-001 | 实现游戏启动器 | `tests/visual/utils/game-launcher.ts` | ⏳ |
+| TOOL-002 | 实现截图采集器 | `tests/visual/utils/screenshot-capture.ts` | ⏳ |
+| TOOL-003 | 实现状态提取器 | `tests/visual/utils/state-extractor.ts` | ⏳ |
+| TOOL-004 | 实现日志读取器 | `tests/visual/utils/log-reader.ts` | ⏳ |
+| TOOL-005 | 实现动作序列录制器 | `tests/visual/utils/action-recorder.ts` | ⏳ |
+
+#### 5.1.2 AI分析模块实现
+
+| 任务ID | 任务描述 | 文件 | 状态 |
+|--------|---------|------|------|
+| AI-001 | 实现QWEN VL API调用封装 | `tests/visual/ai/qwen-vl-client.ts` | ⏳ |
+| AI-002 | 实现GLM API调用封装 | `tests/visual/ai/glm-client.ts` | ⏳ |
+| AI-003 | 实现截图分析器（布局判断） | `tests/visual/ai/analyzers/layout-analyzer.ts` | ⏳ |
+| AI-004 | 实现移动分析器（流畅性判断） | `tests/visual/ai/analyzers/movement-analyzer.ts` | ⏳ |
+| AI-005 | 实现综合判断器（结果生成） | `tests/visual/ai/analyzers/result-judge.ts` | ⏳ |
+| AI-006 | 实现报告生成器 | `tests/visual/ai/report-generator.ts` | ⏳ |
+
+### 5.2 测试用例执行清单
+
+**执行命令**: `npm run test:visual-phase1`
+
+#### 5.2.1 布局验证测试 (`tests/visual/layout/`)
+
+| 测试ID | 测试项 | 判定类型 | 验证方式 | 验收标准 | 状态 |
+|--------|-------|---------|---------|---------|------|
+| T-V001 | 地图尺寸40x30 | 硬性精确 | STATE-001 | width=40, height=30 | ⏳ |
+| T-V002 | 十字路径布局 | 状态+视觉 | STATE-001 + AI-003 | 路径瓦片位置正确 + 置信度≥80% | ⏳ |
+| T-V003 | 诊所门位置 | 硬性精确 | STATE-001 | door at (7, 9) target=clinic | ⏳ |
+| T-V004 | 药园门位置 | 硬性精确 | STATE-001 | door at (33, 9) target=garden | ⏳ |
+| T-V005 | 家门位置 | 硬性精确 | STATE-001 | door at (6, 27) target=home | ⏳ |
+| T-V006 | 边界墙壁完整 | 状态+视觉 | STATE-001 + AI-003 | 边界瓦片正确 + 置信度≥80% | ⏳ |
+
+#### 5.2.2 移动验证测试 (`tests/visual/movement/`)
+
+| 测试ID | 测试项 | 判定类型 | 验证方式 | 验收标准 | 状态 |
+|--------|-------|---------|---------|---------|------|
+| T-V007 | 方向键移动响应 | 日志+序列 | LOG-005 + TOOL-005 | 移动事件记录 + 动作流畅 | ⏳ |
+| T-V008 | WASD移动响应 | 日志+序列 | LOG-005 + TOOL-005 | 移动事件记录 + 动作流畅 | ⏳ |
+| T-V009 | 对角线速度标准化 | 硬性精确 | STATE-002 | velocity magnitude = 150 (√2校正) | ⏳ |
+| T-V010 | 墙壁碰撞阻断 | 状态+日志 | STATE-005 + LOG-005 | 碰撞时位置不变 + 事件记录 | ⏳ |
+| T-V011 | 碰撞后无法移动 | 状态+日志 | STATE-002 + LOG-005 | 碰撞期间velocity=0 | ⏳ |
+
+#### 5.2.3 场景切换测试 (`tests/visual/scene-switch/`)
+
+| 测试ID | 测试项 | 判定类型 | 验证方式 | 验收标准 | 状态 |
+|--------|-------|---------|---------|---------|------|
+| T-V012 | 进入诊所 | 日志+截图 | LOG-003 + TOOL-002 | scene:switch事件 + 截图对比 | ⏳ |
+| T-V013 | 进入药园 | 日志+截图 | LOG-003 + TOOL-002 | scene:switch事件 + 截图对比 | ⏳ |
+| T-V014 | 进入家 | 日志+截图 | LOG-003 + TOOL-002 | scene:switch事件 + 截图对比 | ⏳ |
+| T-V015 | 室内门退出 | 日志+截图 | LOG-003 + TOOL-002 | door:exit事件 + 截图对比 | ⏳ |
+| T-V016 | 出生点位置正确 | 硬性精确 | STATE-002 | 返回后player位置正确 | ⏳ |
+| T-V017 | 空格键防抖 | 日志验证 | LOG-003 | 无连续scene:switch事件 | ⏳ |
+
+#### 5.2.4 室内场景验证测试
+
+| 测试ID | 测试项 | 判定类型 | 验证方式 | 验收标准 | 状态 |
+|--------|-------|---------|---------|---------|------|
+| T-V018 | 诊所尺寸15x12 | 硬性精确 | STATE-003 | width=15, height=12 | ⏳ |
+| T-V019 | 药园尺寸20x15 | 硬性精确 | STATE-003 | width=20, height=15 | ⏳ |
+| T-V020 | 家尺寸12x10 | 硬性精确 | STATE-003 | width=12, height=10 | ⏳ |
+| T-V021 | 诊所功能区域存在 | 状态+视觉 | STATE-001 + AI-003 | 诊台、药柜瓦片存在 + 置信度≥80% | ⏳ |
+| T-V022 | 药园4个药田存在 | 硬性精确 | STATE-001 | 4个herbPlot瓦片 | ⏳ |
+| T-V023 | 家三区域存在 | 状态+视觉 | STATE-001 + AI-003 | 厨房、书房、卧室瓦片 + 置信度≥80% | ⏳ |
+
+### 5.3 截图采集执行清单
+
+| 场景 | 截图时机 | 文件命名 | 采集方式 | 状态 |
+|------|---------|---------|---------|------|
+| TitleScene | 标题画面加载完成 | `title-{timestamp}.png` | TOOL-002 | ⏳ |
+| TownOutdoorScene | 进入场景后初始视角 | `town-init-{timestamp}.png` | TOOL-002 | ⏳ |
+| TownOutdoorScene | 玩家移动后视角 | `town-moved-{timestamp}.png` | TOOL-002 | ⏳ |
+| ClinicScene | 进入诊所后 | `clinic-{timestamp}.png` | TOOL-002 | ⏳ |
+| GardenScene | 进入药园后 | `garden-{timestamp}.png` | TOOL-002 | ⏳ |
+| HomeScene | 进入家后 | `home-{timestamp}.png` | TOOL-002 | ⏳ |
+
+**动作序列录制**:
+
+| 动作 | 录制帧数 | 用途 | 采集方式 | 状态 |
+|------|---------|------|---------|------|
+| 玩家方向键移动 | 10帧 | 验证移动流畅性 | TOOL-005 | ⏳ |
+| 玩家撞墙尝试 | 5帧 | 验证碰撞阻断 | TOOL-005 | ⏳ |
+| 场景切换过渡 | 8帧 | 验证切换完整性 | TOOL-005 | ⏳ |
+| 空格键交互 | 6帧 | 验证门交互流程 | TOOL-005 | ⏳ |
+
+### 5.4 AI分析执行流程
+
+```
+测试执行
+    ↓
+┌─────────────────────────────────────────────────────────────┐
+│  Step 1: QWEN VL截图分析                                     │
+│  调用 AI-003 (layout-analyzer.ts)                           │
+│  输入: tests/visual/screenshots/*.png                        │
+│  输出: { passed, confidence, observations, issues }          │
+└─────────────────────────────────────────────────────────────┘
+    ↓
+┌─────────────────────────────────────────────────────────────┐
+│  Step 2: 状态数据精确验证                                     │
+│  调用 STATE-* 接口获取数据                                    │
+│  比对: expected vs actual                                     │
+│  输出: { match: boolean, expected, actual }                  │
+└─────────────────────────────────────────────────────────────┘
+    ↓
+┌─────────────────────────────────────────────────────────────┐
+│  Step 3: 日志事件验证                                         │
+│  调用 TOOL-004 (log-reader.ts)                               │
+│  检查: 预期事件序列是否存在                                    │
+│  输出: { hasExpectedEvents: boolean, events: [] }            │
+└─────────────────────────────────────────────────────────────┘
+    ↓
+┌─────────────────────────────────────────────────────────────┐
+│  Step 4: GLM综合判断                                          │
+│  调用 AI-005 (result-judge.ts)                               │
+│  输入: 截图分析结果 + 状态验证结果 + 日志结果                  │
+│  输出: 每个测试项的通过/不通过判定 + 诊断建议                  │
+└─────────────────────────────────────────────────────────────┘
+    ↓
+┌─────────────────────────────────────────────────────────────┐
+│  Step 5: 报告生成                                             │
+│  调用 AI-006 (report-generator.ts)                           │
+│  输出: JSON报告 + Markdown报告                                │
+│  位置: tests/visual/reports/                                 │
+└─────────────────────────────────────────────────────────────┘
+```
+
+### 5.5 报告输出规范
+
+**JSON报告结构** (`phase1-report-{timestamp}.json`):
+```json
+{
+  "phase": "Phase1",
+  "timestamp": "2026-04-05T...",
+  "execution_time_ms": 45000,
+  "result": "pass",
+  "summary": {
+    "total": 23,
+    "passed": 22,
+    "failed": 1,
+    "pass_rate": 0.957
+  },
+  "tests": [
+    {
+      "id": "T-V001",
+      "name": "地图尺寸40x30",
+      "category": "layout",
+      "status": "pass",
+      "verification": {
+        "type": "state",
+        "expected": { "width": 40, "height": 30 },
+        "actual": { "width": 40, "height": 30 },
+        "match": true
+      },
+      "ai_confidence": 1.0
+    }
+  ],
+  "ai_feedback": {
+    "summary": "Phase 1功能性验证基本通过...",
+    "diagnosis": [
+      {
+        "test_id": "T-V023",
+        "issue": "家三区域存在性验证置信度较低",
+        "suggestion": "检查瓦片渲染是否正确"
+      }
+    ],
+    "improvements": [
+      "建议增加场景过渡动画",
+      "建议优化碰撞检测的视觉反馈"
+    ]
+  },
+  "files": {
+    "screenshots": ["tests/visual/screenshots/..."],
+    "logs": ["tests/visual/logs/..."]
+  }
+}
+```
+
+**Markdown报告结构** (`phase1-report-{timestamp}.md`):
+```markdown
+# Phase 1 AI端到端测试报告
+
+**执行时间**: 2026-04-05
+**结果**: ✅ 通过 (22/23)
+
+## 测试结果摘要
+
+| 类别 | 通过/总数 | 通过率 |
+|------|-----------|--------|
+| 布局验证 | 6/6 | 100% |
+| 移动验证 | 5/5 | 100% |
+| 场景切换 | 6/6 | 100% |
+| 室内验证 | 5/6 | 83% |
+
+## 详细测试结果
+...
+
+## AI诊断建议
+...
+
+## 改进建议
+...
+
+## 附录
+- 截图列表: tests/visual/screenshots/
+- 日志文件: tests/visual/logs/
+```
+
+### 5.6 执行检查清单
+
+**测试执行前检查**:
+
+| 检查项 | 命令 | 状态 |
+|--------|------|------|
+| 游戏可正常启动 | `npm run dev` | ⏳ |
+| 环境变量已配置 | `.env` 文件存在 | ⏳ |
+| QWEN VL API可用 | 测试API调用 | ⏳ |
+| GLM API可用 | 测试API调用 | ⏳ |
+| 日志系统已实现 | 检查EventBus | ⏳ |
+| 状态接口已实现 | 检查window.__GAME_STATE__ | ⏳ |
+
+**测试执行后检查**:
+
+| 检查项 | 位置 | 状态 |
+|--------|------|------|
+| 截图已采集 | `tests/visual/screenshots/` | ⏳ |
+| 日志已导出 | `tests/visual/logs/` | ⏳ |
+| JSON报告已生成 | `tests/visual/reports/phase1-report-*.json` | ⏳ |
+| Markdown报告已生成 | `tests/visual/reports/phase1-report-*.md` | ⏳ |
+| 所有测试项有结果 | 报告中tests数组完整 | ⏳ |
 
 ---
 

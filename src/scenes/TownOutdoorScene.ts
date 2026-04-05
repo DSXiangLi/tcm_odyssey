@@ -2,6 +2,7 @@
 import Phaser from 'phaser';
 import { SCENES, TILE_SIZE } from '../data/constants';
 import { Player } from '../entities/Player';
+import { SceneManager, DoorInfo } from '../systems/SceneManager';
 
 // 地图数据结构
 interface TileData {
@@ -21,6 +22,8 @@ export class TownOutdoorScene extends Phaser.Scene {
   private player!: Player;
   private cursors!: Phaser.Types.Input.Keyboard.CursorKeys;
   private mapData!: MapData;
+  private sceneManager!: SceneManager;
+  private doorTiles: Map<string, DoorInfo> = new Map();
 
   constructor() {
     super({ key: SCENES.TOWN_OUTDOOR });
@@ -42,12 +45,22 @@ export class TownOutdoorScene extends Phaser.Scene {
     // 设置输入
     this.setupInput();
 
+    // 初始化场景管理器和门检测
+    this.sceneManager = new SceneManager(this);
+    this.collectDoorTiles();
+
     // 添加场景名称提示
     this.add.text(10, 10, '百草镇 - 室外', {
       fontSize: '16px',
       color: '#ffffff',
       backgroundColor: '#000000aa',
       padding: { x: 8, y: 4 }
+    });
+
+    // 添加交互提示
+    this.add.text(10, 40, '走到门前按空格键进入', {
+      fontSize: '12px',
+      color: '#aaaaaa'
     });
   }
 
@@ -130,6 +143,20 @@ export class TownOutdoorScene extends Phaser.Scene {
     }
   }
 
+  private collectDoorTiles(): void {
+    for (let y = 0; y < this.mapData.height; y++) {
+      for (let x = 0; x < this.mapData.width; x++) {
+        const tile = this.mapData.tiles[y][x];
+        if (tile.type === 'door' && tile.properties?.target) {
+          this.doorTiles.set(`${x},${y}`, {
+            targetScene: tile.properties.target as string,
+            spawnPoint: { x: 7, y: 10 } // 默认spawn点
+          });
+        }
+      }
+    }
+  }
+
   private renderMap(): void {
     for (let y = 0; y < this.mapData.height; y++) {
       for (let x = 0; x < this.mapData.width; x++) {
@@ -200,6 +227,20 @@ export class TownOutdoorScene extends Phaser.Scene {
       this.player.move(direction);
     } else {
       this.player.stop();
+    }
+
+    // 检测门交互（空格键）
+    if (this.cursors.space.isDown) {
+      const tilePos = this.player.getTilePosition();
+      const doorInfo = this.sceneManager.checkDoorInteraction(
+        tilePos.x,
+        tilePos.y,
+        this.doorTiles
+      );
+
+      if (doorInfo) {
+        this.sceneManager.changeScene(doorInfo.targetScene, doorInfo.spawnPoint);
+      }
     }
   }
 }

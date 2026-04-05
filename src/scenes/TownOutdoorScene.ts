@@ -1,6 +1,7 @@
 // src/scenes/TownOutdoorScene.ts
 import Phaser from 'phaser';
 import { SCENES, TILE_SIZE } from '../data/constants';
+import { Player } from '../entities/Player';
 
 // 地图数据结构
 interface TileData {
@@ -17,7 +18,7 @@ interface MapData {
 }
 
 export class TownOutdoorScene extends Phaser.Scene {
-  private player!: Phaser.Physics.Arcade.Sprite;
+  private player!: Player;
   private cursors!: Phaser.Types.Input.Keyboard.CursorKeys;
   private mapData!: MapData;
 
@@ -153,12 +154,11 @@ export class TownOutdoorScene extends Phaser.Scene {
     const spawnX = Math.floor(this.mapData.width / 2) * TILE_SIZE + TILE_SIZE / 2;
     const spawnY = Math.floor(this.mapData.height / 2) * TILE_SIZE + TILE_SIZE / 2;
 
-    this.player = this.physics.add.sprite(spawnX, spawnY, 'player');
-    this.player.setDepth(1);
-    this.player.setCollideWorldBounds(true);
-
-    // 设置玩家碰撞体
-    this.player.body?.setSize(TILE_SIZE - 4, TILE_SIZE - 4);
+    this.player = new Player({
+      scene: this,
+      x: spawnX,
+      y: spawnY
+    });
   }
 
   private setupCamera(): void {
@@ -181,29 +181,25 @@ export class TownOutdoorScene extends Phaser.Scene {
   update(): void {
     if (!this.player || !this.cursors) return;
 
-    const speed = 150;
-    let velocityX = 0;
-    let velocityY = 0;
+    const direction = { x: 0, y: 0 };
 
     // 方向键控制
     if (this.cursors.left.isDown || this.input.keyboard?.addKey('A').isDown) {
-      velocityX = -speed;
+      direction.x = -1;
     } else if (this.cursors.right.isDown || this.input.keyboard?.addKey('D').isDown) {
-      velocityX = speed;
+      direction.x = 1;
     }
 
     if (this.cursors.up.isDown || this.input.keyboard?.addKey('W').isDown) {
-      velocityY = -speed;
+      direction.y = -1;
     } else if (this.cursors.down.isDown || this.input.keyboard?.addKey('S').isDown) {
-      velocityY = speed;
+      direction.y = 1;
     }
 
-    // 对角线移动时标准化速度
-    if (velocityX !== 0 && velocityY !== 0) {
-      velocityX *= 0.707;
-      velocityY *= 0.707;
+    if (direction.x !== 0 || direction.y !== 0) {
+      this.player.move(direction);
+    } else {
+      this.player.stop();
     }
-
-    this.player.setVelocity(velocityX, velocityY);
   }
 }

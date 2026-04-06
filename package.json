@@ -10,6 +10,8 @@
     "test:unit": "vitest run tests/unit",
     "test:integration": "vitest run tests/integration",
     "test:e2e": "playwright test",
+    "test:visual": "playwright test tests/visual",
+    "test:visual-phase1": "playwright test tests/visual --reporter=list",
     "test:coverage": "vitest run --coverage",
     "test:all": "npm run test:unit && npm run test:integration"
   },

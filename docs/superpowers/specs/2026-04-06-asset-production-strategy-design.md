@@ -288,30 +288,199 @@ Step 5: 输出决策结果
 
 ## 8. 附录
 
-### 8.1 开源素材推荐来源
+### 8.1 Seed Dream API 最佳实践
 
-| 来源 | 网址 | 特点 |
+#### 8.1.1 API 概述
+
+**Seed Dream** 是字节跳动(ByteDance)推出的AI图像生成模型，在LM Arena排名第#10（得分1147），特别擅长**文字渲染**和**风格一致性**。
+
+| 特性 | 详情 |
+|-----|-----|
+| 模型版本 | Seedream 4.5 / 5.0 Lite |
+| 最大分辨率 | 2048x2048 (4K质量) |
+| 特色能力 | 文字渲染、多图一致性、风格控制 |
+| API平台 | WaveSpeedAI、PiAPI |
+| LM Arena排名 | #10 (得分1147) |
+
+#### 8.1.2 API 接入方式
+
+**方式一: WaveSpeedAI (推荐)**
+```python
+import wavespeed
+
+output = wavespeed.run(
+    "wavespeed-ai/seedream-4-5",
+    {
+        "prompt": "32x32 pixel art tile, lush green grass field, soft green gradient",
+        "size": "1024x1024",
+        "quality": "high"
+    }
+)
+print(output["outputs"][0])  # Output image URL
+```
+
+**方式二: PiAPI**
+```python
+# 通过 PiAPI 平台调用
+# 文档: https://piapi.ai/blogs/seedream-5-0-api-guide
+```
+
+#### 8.1.3 Prompt 最佳实践
+
+**结构化Prompt公式**:
+```
+[Subject] + [Environment/Setting] + [Style] + [Technical Details] + [Text Content]
+```
+
+**像素瓦片生成Prompt模板**:
+```
+32x32 pixel art tile, [元素描述], [颜色要求], [氛围关键词], [细节要求], reference Stardew Valley style
+```
+
+**关键技巧**:
+| 技巧 | 说明 | 示例 |
 |-----|-----|-----|
-| OpenGameArt | https://opengameart.org/ | 大量像素素材，CC0/CC-BY许可 |
-| itch.io | https://itch.io/game-assets/free/tag-pixel-art | 独立游戏开发者素材 |
-| Kenny Assets | https://www.kenney.nl/assets | 高质量免费像素素材包 |
-| Pixel Art References | GitHub仓库合集 | 多风格参考 |
+| 尺寸指定 | 明确指定像素尺寸 | `32x32 pixel art tile` |
+| 风格参考 | 引用目标游戏风格 | `reference Stardew Valley style` |
+| 颜色控制 | 使用HEX颜色值 | `soft green #4a9 to #6c7 gradient` |
+| 氛围词 | 描述整体感觉 | `warm pastoral atmosphere` |
+| 负面提示 | 排除不想要元素 | `negative_prompt: "blurry, low quality, distorted"` |
 
-### 8.2 AI生成工具推荐
+**生成多张一致性图片**:
+```python
+# 使用相同seed保持风格一致
+base_prompt = "32x32 pixel art tile, grass field, soft green"
+for variation in ["morning light", "evening atmosphere", "minimalist design"]:
+    output = wavespeed.run(
+        "wavespeed-ai/seedream-4-5",
+        {"prompt": f"{base_prompt}, {variation}", "seed": 42}
+    )
+```
 
-| 工具 | 特点 | 适用场景 |
-|-----|-----|---------|
-| Stable Diffusion | 本地运行、可控性强 | 批量瓦片生成 |
-| Midjourney | 艺术风格强 | 高清图、氛围图 |
-| DALL-E 3 | 简单易用 | 快速原型测试 |
+#### 8.1.4 定价参考
 
-### 8.3 颜色校准工具
+| 平台 | 计费方式 | 参考价格 |
+|-----|---------|---------|
+| WaveSpeedAI | 按张计费 | 查看官网最新定价 |
+| PiAPI | 按张计费 | 查看官网最新定价 |
+
+**成本优化建议**:
+- 批量生成时使用相同seed控制变量
+- 先用低分辨率测试Prompt效果
+- 确认Prompt后再生成高清版本
+
+#### 8.1.5 像素艺术生成注意事项
+
+| 问题 | 解决方案 |
+|-----|---------|
+| AI生成非精确32x32 | 生成后用图像处理工具裁切/缩放 |
+| 颜色不够精确 | 后处理调色或重新生成 |
+| 风格不统一 | 使用相同的风格关键词和seed |
+| 边缘有抗锯齿 | 后处理转纯像素风格 |
+
+---
+
+### 8.2 开源素材库详细清单
+
+#### 8.2.1 草地/路径类素材
+
+| 素材包 | 来源 | 尺寸 | 许可证 | 价格 | 适用性 |
+|-------|-----|-----|-------|-----|-------|
+| **Pixel art grass tileset** | OpenGameArt | 32x32 | CC-BY 4.0 | 免费 | ✅ 高度适用，112个草地瓦片 |
+| **Basic Tileset 32x32** | itch.io (schwarnhild) | 32x32 | - | 免费 | ✅ 包含草地、路径基础瓦片 |
+| **FREE RPG Tileset 32x32** | itch.io (Pipoya) | 32x32 | - | 免费 | ✅ 大量RPG基础瓦片 |
+| **Decorative Road Tiles** | OpenGameArt | 多尺寸 | CC0 | 免费 | ✅ 路径瓦片变体 |
+| **Grass path tileset** | GameDev Market | - | - | 免费 | ✅ 草地+路径组合 |
+
+**推荐选择**:
+- **草地瓦片**: Pixel art grass tileset (OpenGameArt) - 112个变体，免费CC-BY
+- **路径瓦片**: Decorative Road Tiles (OpenGameArt) - 多种风格，免费CC0
+
+#### 8.2.2 竹林/东方风格素材
+
+| 素材包 | 来源 | 尺寸 | 许可证 | 价格 | 适用性 |
+|-------|-----|-----|-------|-----|-------|
+| **Bamboo Tiles** | OpenGameArt (Sevarihk) | 32x32 | CC-BY 4.0 | 免费 | ✅ 专门竹子瓦片，含RPG Maker自动瓦片格式 |
+| **Bamboo Forest** | OpenGameArt | 多尺寸 | - | 免费 | ⚠️ 可能需要调整尺寸 |
+| **Ancient Chinese Forest** | itch.io (Niao_K) | 16x16 | 付费许可 | $5 | ✅ 中国古风森林，高度适配中医主题 |
+| **Chinese Garden Tileset** | itch.io (BiteMe Games) | 多尺寸 | - | $6.99 | ⚠️ 包含桥梁、莲花等元素 |
+
+**推荐选择**:
+- **竹林瓦片**: Bamboo Tiles (OpenGameArt) - 免费、32x32、CC-BY许可
+- **备选**: Ancient Chinese Forest (itch.io) - 付费但风格匹配度高
+
+#### 8.2.3 农场/药田类素材
+
+| 素材包 | 来源 | 尺寸 | 许可证 | 价格 | 适用性 |
+|-------|-----|-----|-------|-----|-------|
+| **Pixel Platformer Farm Expansion** | Kenney | 像素 | CC0 | 免费 | ✅ Kenney免费农场素材 |
+| **Top-Down Grasslands Sprite** | itch.io (Long Trail) | 多尺寸 | - | 付费 | ⚠️ 草原风格农场元素 |
+| **PixAdvent Grasslands** | itch.io | 32x32 | - | 付费 | ⚠️ 冒险风格农场 |
+
+**推荐选择**:
+- **药田瓦片**: Kenney Pixel Platformer Farm Expansion - 免费CC0，可自由修改
+- **标识牌**: 需要自行添加或AI生成
+
+#### 8.2.4 中医特色素材（药店/诊所）
+
+| 素材包 | 来源 | 尺寸 | 许可证 | 价格 | 适用性 |
+|-------|-----|-----|-------|-----|-------|
+| **Ancient Chinese Medicine Shop** | itch.io (Niao_K) | 16x16 | 付费许可 | $5 | ✅ 古风药铺，高度适配中医主题 |
+| **Ancient Chinese Market** | itch.io (Niao_K) | 16x16 | 付费许可 | 付费 | ✅ 中国古风市场，可配合使用 |
+
+**推荐选择**:
+- **诊所室内**: Ancient Chinese Medicine Shop (itch.io) - 付费$5，但中医风格准确
+- **注意**: 尺寸为16x16，需要放大到32x32或调整游戏设计
+
+#### 8.2.5 开源素材许可证说明
+
+| 许可证 | 要求 | 适用场景 |
+|-------|-----|---------|
+| **CC0** | 无需署名，可商用可修改 | 最佳选择，完全自由 |
+| **CC-BY 4.0** | 需署名，可商用可修改 | 只需在Credits中注明作者 |
+| **付费许可** | 通常可商用，不可转售 | 需购买，查看具体条款 |
+
+---
+
+### 8.3 测试素材来源决策矩阵
+
+| 测试元素 | 推荐开源素材 | 开源评分预期 | AI生成方案 | AI评分预期 |
+|---------|-------------|-------------|-----------|-----------|
+| **草地瓦片** | OpenGameArt Pixel grass tileset | 高 (免费、变体多) | Seedream生成 | 中 (需后处理) |
+| **路径瓦片** | OpenGameArt Decorative Road | 高 (免费、风格多样) | Seedream生成 | 中 (边缘过渡难控制) |
+| **竹林瓦片** | OpenGameArt Bamboo Tiles | 高 (免费、32x32) | Seedream生成 | 高 (可控性强) |
+| **药田瓦片** | Kenney Farm素材 + 标识牌叠加 | 中 (需修改) | Seedream生成 | 高 (可生成完整元素) |
+
+---
+
+### 8.4 颜色校准工具
 
 | 工具 | 用途 |
 |-----|-----|
 | Photoshop/GIMP | 手动调色匹配设计规范 |
 | PIL/Pillow | Python批量调色脚本 |
+| Aseprite | 像素艺术专用编辑器，支持调色板管理 |
 | online color tool | 快速HEX颜色调整 |
+
+### 8.5 素材处理工作流
+
+```
+开源素材处理流程:
+1. 下载原始素材 (PNG格式)
+2. 检查尺寸是否符合32x32 (如不符合，使用Aseprite缩放)
+3. 使用Aseprite/Photoshop调整颜色匹配设计规范
+4. 导出为PNG (透明背景)
+5. 放入 tests/visual/asset-test/opensource/
+
+AI生成素材处理流程:
+1. 编写结构化Prompt (参考8.1.3)
+2. 调用Seedream API生成图片
+3. 下载生成结果
+4. 裁切/缩放到32x32像素
+5. 转换为纯像素风格 (去除抗锯齿)
+6. 调整颜色匹配设计规范
+7. 放入 tests/visual/asset-test/ai-generated/
+```
 
 ---
 

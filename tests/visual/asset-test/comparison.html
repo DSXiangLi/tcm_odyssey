@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>素材对比测试 - 药灵山谷</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: #1a1a2e;
+            color: #eee;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        h1 {
+            text-align: center;
+            margin-bottom: 30px;
+            color: #4a9;
+        }
+        .comparison-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .asset-card {
+            background: #16213e;
+            border-radius: 12px;
+            padding: 20px;
+            border: 1px solid #0f3460;
+        }
+        .asset-card h2 {
+            color: #4a9;
+            margin-bottom: 15px;
+            font-size: 1.2em;
+        }
+        .comparison-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        .tile-preview {
+            background: #0f3460;
+            border-radius: 8px;
+            padding: 15px;
+            text-align: center;
+        }
+        .tile-preview h3 {
+            font-size: 0.9em;
+            margin-bottom: 10px;
+            color: #8ca;
+        }
+        .tile-preview img {
+            max-width: 100%;
+            border-radius: 4px;
+            image-rendering: pixelated;
+        }
+        .placeholder {
+            background: #2a2a4a;
+            border: 2px dashed #4a9;
+            border-radius: 8px;
+            padding: 40px;
+            text-align: center;
+            color: #888;
+            min-height: 150px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+        .scoring {
+            background: #0f3460;
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 10px;
+        }
+        .scoring h4 {
+            margin-bottom: 10px;
+            color: #fd8;
+        }
+        .score-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin: 8px 0;
+            font-size: 0.9em;
+        }
+        .score-input {
+            width: 40px;
+            background: #1a1a2e;
+            border: 1px solid #4a9;
+            color: #fff;
+            padding: 4px;
+            border-radius: 4px;
+            text-align: center;
+            margin: 0 5px;
+        }
+        .decision {
+            margin-top: 15px;
+            padding: 10px;
+            background: #1a1a2e;
+            border-radius: 8px;
+        }
+        .decision select {
+            padding: 5px 10px;
+            background: #16213e;
+            color: #fff;
+            border: 1px solid #4a9;
+            border-radius: 4px;
+        }
+        .notes {
+            width: 100%;
+            background: #1a1a2e;
+            border: 1px solid #4a9;
+            color: #fff;
+            padding: 8px;
+            border-radius: 4px;
+            margin-top: 10px;
+            resize: vertical;
+            font-family: inherit;
+        }
+        .prompt-box {
+            background: #0a0a1a;
+            border-radius: 4px;
+            padding: 8px;
+            margin-top: 10px;
+            font-size: 0.8em;
+            color: #aaa;
+            text-align: left;
+        }
+        @media (max-width: 800px) {
+            .comparison-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1>🎮 素材制作方案对比测试</h1>
+
+    <div class="comparison-grid">
+        <!-- 草地瓦片对比 -->
+        <div class="asset-card">
+            <h2>🌿 草地瓦片 (Grass Tile)</h2>
+            <div class="comparison-row">
+                <div class="tile-preview">
+                    <h3>开源素材</h3>
+                    <div class="placeholder">
+                        <p>📁 OpenGameArt</p>
+                        <p>Pixel art grass tileset</p>
+                        <p style="color:#4a9;">CC-BY 4.0</p>
+                        <p style="font-size:0.7em;margin-top:10px;">需手动下载</p>
+                    </div>
+                </div>
+                <div class="tile-preview">
+                    <h3>AI生成 (Seedream)</h3>
+                    <div class="placeholder" id="ai-grass">
+                        <p>🤖 待生成</p>
+                    </div>
+                </div>
+            </div>
+            <div class="prompt-box">
+                <strong>Prompt:</strong> 32x32像素瓦片，一片茂盛的草地，柔和的绿色从#4a9渐变到#6c7，温馨的田园氛围
+            </div>
+            <div class="scoring">
+                <h4>评分 (1-5分)</h4>
+                <div class="score-item">
+                    <span>视觉效果:</span>
+                    <span>开源<input class="score-input" type="number" min="1" max="5"> vs AI<input class="score-input" type="number" min="1" max="5"></span>
+                </div>
+                <div class="score-item">
+                    <span>拼接无缝隙:</span>
+                    <span>开源<input class="score-input" type="number" min="1" max="5"> vs AI<input class="score-input" type="number" min="1" max="5"></span>
+                </div>
+                <div class="score-item">
+                    <span>风格一致性:</span>
+                    <span>开源<input class="score-input" type="number" min="1" max="5"> vs AI<input class="score-input" type="number" min="1" max="5"></span>
+                </div>
+            </div>
+            <div class="decision">
+                <label>决策: </label>
+                <select>
+                    <option value="">请选择</option>
+                    <option value="opensource">使用开源素材</option>
+                    <option value="ai">使用AI生成</option>
+                    <option value="mixed">混合方案</option>
+                </select>
+                <textarea class="notes" rows="2" placeholder="备注..."></textarea>
+            </div>
+        </div>
+
+        <!-- 路径瓦片对比 -->
+        <div class="asset-card">
+            <h2>🛤️ 路径瓦片 (Path Tile)</h2>
+            <div class="comparison-row">
+                <div class="tile-preview">
+                    <h3>开源素材</h3>
+                    <div class="placeholder">
+                        <p>📁 OpenGameArt</p>
+                        <p>Decorative Road Tiles</p>
+                        <p style="color:#4a9;">CC0</p>
+                        <p style="font-size:0.7em;margin-top:10px;">需手动下载</p>
+                    </div>
+                </div>
+                <div class="tile-preview">
+                    <h3>AI生成 (Seedream)</h3>
+                    <div class="placeholder" id="ai-path">
+                        <p>🤖 待生成</p>
+                    </div>
+                </div>
+            </div>
+            <div class="prompt-box">
+                <strong>Prompt:</strong> 32x32像素瓦片，泥土小径，米黄色#e8d到暖棕色的过渡，蜿蜒小路纹理
+            </div>
+            <div class="scoring">
+                <h4>评分 (1-5分)</h4>
+                <div class="score-item">
+                    <span>视觉效果:</span>
+                    <span>开源<input class="score-input" type="number" min="1" max="5"> vs AI<input class="score-input" type="number" min="1" max="5"></span>
+                </div>
+                <div class="score-item">
+                    <span>边缘过渡:</span>
+                    <span>开源<input class="score-input" type="number" min="1" max="5"> vs AI<input class="score-input" type="number" min="1" max="5"></span>
+                </div>
+                <div class="score-item">
+                    <span>风格一致性:</span>
+                    <span>开源<input class="score-input" type="number" min="1" max="5"> vs AI<input class="score-input" type="number" min="1" max="5"></span>
+                </div>
+            </div>
+            <div class="decision">
+                <label>决策: </label>
+                <select>
+                    <option value="">请选择</option>
+                    <option value="opensource">使用开源素材</option>
+                    <option value="ai">使用AI生成</option>
+                    <option value="mixed">混合方案</option>
+                </select>
+                <textarea class="notes" rows="2" placeholder="备注..."></textarea>
+            </div>
+        </div>
+
+        <!-- 竹林瓦片对比 -->
+        <div class="asset-card">
+            <h2>🎋 竹林瓦片 (Bamboo Tile)</h2>
+            <div class="comparison-row">
+                <div class="tile-preview">
+                    <h3>开源素材</h3>
+                    <div class="placeholder">
+                        <p>📁 OpenGameArt</p>
+                        <p>Bamboo Tiles</p>
+                        <p style="color:#4a9;">CC-BY 4.0</p>
+                        <p style="font-size:0.7em;margin-top:10px;">需手动下载</p>
+                    </div>
+                </div>
+                <div class="tile-preview">
+                    <h3>AI生成 (Seedream)</h3>
+                    <div class="placeholder" id="ai-bamboo">
+                        <p>🤖 待生成</p>
+                    </div>
+                </div>
+            </div>
+            <div class="prompt-box">
+                <strong>Prompt:</strong> 32x32像素瓦片，竹林丛，深绿色#2d5色系，可见竹节细节，中医园林氛围
+            </div>
+            <div class="scoring">
+                <h4>评分 (1-5分)</h4>
+                <div class="score-item">
+                    <span>视觉效果:</span>
+                    <span>开源<input class="score-input" type="number" min="1" max="5"> vs AI<input class="score-input" type="number" min="1" max="5"></span>
+                </div>
+                <div class="score-item">
+                    <span>竹节细节:</span>
+                    <span>开源<input class="score-input" type="number" min="1" max="5"> vs AI<input class="score-input" type="number" min="1" max="5"></span>
+                </div>
+                <div class="score-item">
+                    <span>中医风格:</span>
+                    <span>开源<input class="score-input" type="number" min="1" max="5"> vs AI<input class="score-input" type="number" min="1" max="5"></span>
+                </div>
+            </div>
+            <div class="decision">
+                <label>决策: </label>
+                <select>
+                    <option value="">请选择</option>
+                    <option value="opensource">使用开源素材</option>
+                    <option value="ai">使用AI生成</option>
+                    <option value="mixed">混合方案</option>
+                </select>
+                <textarea class="notes" rows="2" placeholder="备注..."></textarea>
+            </div>
+        </div>
+
+        <!-- 药田瓦片对比 -->
+        <div class="asset-card">
+            <h2>🌱 药田瓦片 (Herb Field Tile)</h2>
+            <div class="comparison-row">
+                <div class="tile-preview">
+                    <h3>开源素材</h3>
+                    <div class="placeholder">
+                        <p>📁 Kenney</p>
+                        <p>Farm Expansion</p>
+                        <p style="color:#4a9;">CC0</p>
+                        <p style="font-size:0.7em;margin-top:10px;">需手动下载</p>
+                    </div>
+                </div>
+                <div class="tile-preview">
+                    <h3>AI生成 (Seedream)</h3>
+                    <div class="placeholder" id="ai-herb-field">
+                        <p>🤖 待生成</p>
+                    </div>
+                </div>
+            </div>
+            <div class="prompt-box">
+                <strong>Prompt:</strong> 32x32像素瓦片，药田种植区，深绿色#2d5区域，有品种标识牌，规整的种植布局
+            </div>
+            <div class="scoring">
+                <h4>评分 (1-5分)</h4>
+                <div class="score-item">
+                    <span>视觉效果:</span>
+                    <span>开源<input class="score-input" type="number" min="1" max="5"> vs AI<input class="score-input" type="number" min="1" max="5"></span>
+                </div>
+                <div class="score-item">
+                    <span>标识牌融合:</span>
+                    <span>开源<input class="score-input" type="number" min="1" max="5"> vs AI<input class="score-input" type="number" min="1" max="5"></span>
+                </div>
+                <div class="score-item">
+                    <span>功能清晰:</span>
+                    <span>开源<input class="score-input" type="number" min="1" max="5"> vs AI<input class="score-input" type="number" min="1" max="5"></span>
+                </div>
+            </div>
+            <div class="decision">
+                <label>决策: </label>
+                <select>
+                    <option value="">请选择</option>
+                    <option value="opensource">使用开源素材</option>
+                    <option value="ai">使用AI生成</option>
+                    <option value="mixed">混合方案</option>
+                </select>
+                <textarea class="notes" rows="2" placeholder="备注..."></textarea>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 页面加载完成后检查图片
+        document.addEventListener('DOMContentLoaded', function() {
+            const assetTypes = ['grass', 'path', 'bamboo', 'herb-field'];
+
+            assetTypes.forEach(type => {
+                // 开源素材
+                const osImgPath = `opensource/${type}/${type}_opensource_demo.png`;
+                const osPlaceholder = document.querySelector(`.asset-card:has(#ai-${type}) .tile-preview:first-child .placeholder`);
+                if (osPlaceholder) {
+                    const img = new Image();
+                    img.onload = function() {
+                        osPlaceholder.innerHTML = '';
+                        img.style.maxWidth = '100%';
+                        img.style.imageRendering = 'pixelated';
+                        img.style.borderRadius = '4px';
+                        osPlaceholder.appendChild(img);
+                    };
+                    img.src = osImgPath;
+                }
+
+                // AI生成素材
+                const aiImgPath = `ai-generated/${type}/${type}_ai_demo.png`;
+                const aiPlaceholder = document.getElementById(`ai-${type}`);
+                if (aiPlaceholder) {
+                    const img = new Image();
+                    img.onload = function() {
+                        aiPlaceholder.innerHTML = '';
+                        img.style.maxWidth = '100%';
+                        img.style.imageRendering = 'pixelated';
+                        img.style.borderRadius = '4px';
+                        aiPlaceholder.appendChild(img);
+                    };
+                    img.onerror = function() {
+                        aiPlaceholder.innerHTML = '<p>🤖 图片待生成</p><p style="font-size:0.7em;margin-top:5px;">运行 generate_ai_assets.py</p>';
+                    };
+                    img.src = aiImgPath;
+                }
+            });
+        });
+    </script>
+</body>
+</html>

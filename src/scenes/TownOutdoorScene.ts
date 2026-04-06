@@ -3,6 +3,8 @@ import Phaser from 'phaser';
 import { SCENES, TILE_SIZE } from '../data/constants';
 import { Player } from '../entities/Player';
 import { SceneManager, DoorInfo } from '../systems/SceneManager';
+import { EventBus, GameEvents } from '../systems/EventBus';
+import { GameStateBridge } from '../utils/GameStateBridge';
 
 // 地图数据结构
 interface TileData {
@@ -27,14 +29,37 @@ export class TownOutdoorScene extends Phaser.Scene {
   private spaceKey!: Phaser.Input.Keyboard.Key;
   private isTransitioning: boolean = false;
   private walls!: Phaser.Physics.Arcade.StaticGroup;
+  private eventBus!: EventBus;
+  private gameStateBridge!: GameStateBridge;
 
   constructor() {
     super({ key: SCENES.TOWN_OUTDOOR });
   }
 
   create(): void {
+    // 初始化事件系统
+    this.eventBus = EventBus.getInstance();
+    this.gameStateBridge = GameStateBridge.getInstance();
+
+    // 发送场景创建事件
+    this.eventBus.emit(GameEvents.SCENE_CREATE, { sceneName: SCENES.TOWN_OUTDOOR });
+
     // 创建地图数据
     this.mapData = this.createTownMapData();
+
+    // 更新状态桥接器
+    this.gameStateBridge.updateCurrentScene(SCENES.TOWN_OUTDOOR);
+    this.gameStateBridge.updateSceneSize({ width: this.mapData.width, height: this.mapData.height });
+    this.gameStateBridge.updateMapData({
+      width: this.mapData.width,
+      height: this.mapData.height,
+      tiles: this.mapData.tiles.map(row => row.map(tile => ({
+        x: tile.x,
+        y: tile.y,
+        type: tile.type,
+        properties: tile.properties
+      })))
+    });
 
     // 渲染地图
     this.renderMap();
@@ -68,6 +93,9 @@ export class TownOutdoorScene extends Phaser.Scene {
       fontSize: '12px',
       color: '#aaaaaa'
     });
+
+    // 发送场景就绪事件
+    this.eventBus.emit(GameEvents.SCENE_READY, { sceneName: SCENES.TOWN_OUTDOOR });
   }
 
   private createTownMapData(): MapData {
@@ -221,6 +249,16 @@ export class TownOutdoorScene extends Phaser.Scene {
       x: spawnX,
       y: spawnY
     });
+
+    // 更新玩家状态到桥接器
+    this.gameStateBridge.updatePlayerState({
+      x: this.player.x,
+      y: this.player.y,
+      tileX: Math.floor(this.player.x / TILE_SIZE),
+      tileY: Math.floor(this.player.y / TILE_SIZE),
+      speed: this.player.speed,
+      velocity: { x: 0, y: 0 }
+    });
   }
 
   private createWallCollisions(): void {
@@ -287,6 +325,20 @@ export class TownOutdoorScene extends Phaser.Scene {
       this.player.stop();
     }
 
+    // 更新玩家位置追踪
+    this.player.updatePositionTracking();
+
+    // 更新状态桥接器中的玩家状态
+    const body = this.player.body as Phaser.Physics.Arcade.Body;
+    this.gameStateBridge.updatePlayerState({
+      x: this.player.x,
+      y: this.player.y,
+      tileX: Math.floor(this.player.x / TILE_SIZE),
+      tileY: Math.floor(this.player.y / TILE_SIZE),
+      speed: this.player.speed,
+      velocity: { x: body.velocity.x, y: body.velocity.y }
+    });
+
     // 检测门交互（空格键）- 使用JustDown防止多次触发
     if (Phaser.Input.Keyboard.JustDown(this.spaceKey) && !this.isTransitioning) {
       const tilePos = this.player.getTilePosition();
@@ -297,9 +349,27 @@ export class TownOutdoorScene extends Phaser.Scene {
       );
 
       if (doorInfo) {
+        // 发送门交互事件
+        this.eventBus.emit(GameEvents.DOOR_INTERACT, {
+          from: SCENES.TOWN_OUTDOOR,
+          to: doorInfo.targetScene,
+          doorPosition: tilePos
+        });
+
+        // 发送场景切换事件
+        this.eventBus.emit(GameEvents.SCENE_SWITCH, {
+          from: SCENES.TOWN_OUTDOOR,
+          to: doorInfo.targetScene
+        });
+
         this.isTransitioning = true;
         this.sceneManager.changeScene(doorInfo.targetScene, doorInfo.spawnPoint);
       }
     }
+  }
+
+  shutdown(): void {
+    // 发送场景销毁事件
+    this.eventBus.emit(GameEvents.SCENE_DESTROY, { sceneName: SCENES.TOWN_OUTDOOR });
   }
 }

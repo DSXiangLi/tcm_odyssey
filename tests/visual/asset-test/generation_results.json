@@ -1,1 +1,14 @@
-{}
+{
+  "clinic_building": {
+    "name": "诊所建筑整体",
+    "tile_size": "8x10",
+    "pixel_size": "256x320",
+    "local_path": "/home/lixiang/Desktop/zhongyi_game_v3/tests/visual/asset-test/ai-generated/clinic_building/clinic_building_ai.png"
+  },
+  "herb_field_area": {
+    "name": "药田区域",
+    "tile_size": "10x8",
+    "pixel_size": "320x256",
+    "local_path": "/home/lixiang/Desktop/zhongyi_game_v3/tests/visual/asset-test/ai-generated/herb_field_area/herb_field_area_ai.png"
+  }
+}

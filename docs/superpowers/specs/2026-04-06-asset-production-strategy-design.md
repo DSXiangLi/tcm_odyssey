@@ -288,95 +288,230 @@ Step 5: 输出决策结果
 
 ## 8. 附录
 
-### 8.1 Seed Dream API 最佳实践
+### 8.1 Seedream API 最佳实践（火山引擎官方）
 
 #### 8.1.1 API 概述
 
-**Seed Dream** 是字节跳动(ByteDance)推出的AI图像生成模型，在LM Arena排名第#10（得分1147），特别擅长**文字渲染**和**风格一致性**。
+**Seedream** 是字节跳动(ByteDance)火山引擎推出的AI图像生成模型，支持文生图、图像编辑、多图融合和批量序列生成。
 
 | 特性 | 详情 |
 |-----|-----|
-| 模型版本 | Seedream 4.5 / 5.0 Lite |
-| 最大分辨率 | 2048x2048 (4K质量) |
-| 特色能力 | 文字渲染、多图一致性、风格控制 |
-| API平台 | WaveSpeedAI、PiAPI |
-| LM Arena排名 | #10 (得分1147) |
+| 模型版本 | Seedream 4.0 / 4.5 / 5.0-Lite |
+| 最大分辨率 | 4096x4096 (4K) |
+| 特色能力 | 文字渲染、布局感知、多图一致性、联网搜索(5.0) |
+| API平台 | 火山引擎（国内）、BytePlus（海外）、WaveSpeedAI、一步API |
+| 官方文档 | https://www.volcengine.com/docs/82379/1541523 |
 
-#### 8.1.2 API 接入方式
+#### 8.1.2 模型版本选择
 
-**方式一: WaveSpeedAI (推荐)**
+| 版本 | 定位 | 最适合场景 | 推荐指数 |
+|-----|-----|-----------|---------|
+| **4.0** | 高效率 | 快速迭代、网格布局、成本敏感 | ⭐⭐⭐ |
+| **4.5** | 深度编辑与排版 | 文字渲染、品牌视觉、4K海报 | ⭐⭐⭐⭐⭐ |
+| **5.0-Lite** | 轻量级智能 | 联网搜索、知识推理、快速生成 | ⭐⭐⭐⭐ |
+
+**像素瓦片推荐**: 使用 **Seedream 4.5**，文字渲染能力强，支持精确控制。
+
+#### 8.1.3 API 接入方式
+
+**方式一: 火山引擎（国内官方，推荐）**
+```python
+import requests
+import os
+
+# 配置火山引擎 API
+api_key = os.getenv("VOLCANO_API_KEY")
+endpoint = "https://ark.cn-beijing.volces.com/api/v3/images/generations"
+
+headers = {
+    "Authorization": f"Bearer {api_key}",
+    "Content-Type": "application/json"
+}
+
+payload = {
+    "model": "doubao-seedream-4-5-251128",  # 火山引擎模型标识符
+    "prompt": "32x32像素瓦片，草地，柔和绿色渐变，温馨田园氛围",
+    "size": "1024x1024"
+}
+
+response = requests.post(endpoint, headers=headers, json=payload)
+result = response.json()
+image_url = result["data"][0]["url"]
+```
+
+**方式二: WaveSpeedAI（API聚合平台）**
 ```python
 import wavespeed
 
 output = wavespeed.run(
-    "wavespeed-ai/seedream-4-5",
+    "bytedance/seedream-v4.5",
     {
-        "prompt": "32x32 pixel art tile, lush green grass field, soft green gradient",
-        "size": "1024x1024",
-        "quality": "high"
+        "prompt": "32x32 pixel art tile, grass field, soft green gradient, warm pastoral atmosphere",
+        "size": "1024x1024"
     }
 )
 print(output["outputs"][0])  # Output image URL
 ```
 
-**方式二: PiAPI**
+**方式三: 一步API（国内便捷接入）**
 ```python
-# 通过 PiAPI 平台调用
-# 文档: https://piapi.ai/blogs/seedream-5-0-api-guide
+from openai import OpenAI
+
+client = OpenAI(
+    api_key="your-yibu-api-key",
+    base_url="https://yibuapi.com/v1"
+)
+
+response = client.images.generate(
+    model="doubao-seedream-5-0-lite",
+    prompt="32x32像素瓦片，草地，柔和绿色渐变",
+    size="1024x1024"
+)
+print(response.data[0].url)
 ```
 
-#### 8.1.3 Prompt 最佳实践
+#### 8.1.4 核心参数配置
+
+| 参数名 | 类型 | 说明 | 推荐值 |
+|-------|-----|------|-------|
+| `model` | string | 模型标识符 | `doubao-seedream-4-5-251128` |
+| `prompt` | string | 文本提示词 | 50-200字，结构化描述 |
+| `size` | string | 输出分辨率 | `"1024x1024"` 或 `"2048x2048"` |
+| `seed` | integer | 随机种子，可重复生成 | 固定值保持一致性 |
+| `guidance_scale` | float | 提示词遵循度 (1-20) | 7-9 (推荐7.5) |
+| `image` | string | 参考图URL（编辑模式） | 图生图时使用 |
+
+**guidance_scale 调优指南**:
+- **7-9**: 大多数场景最佳，平衡提示词遵循和自然度
+- **5-7**: 更自然、更艺术，适合创意探索
+- **9-12**: 强提示词遵循，适合精确控制
+- **>12**: 不推荐，可能出现过饱和
+
+#### 8.1.5 Prompt 最佳实践（官方指南）
 
 **结构化Prompt公式**:
 ```
-[Subject] + [Environment/Setting] + [Style] + [Technical Details] + [Text Content]
+[主体] + [动作/状态] + [环境/背景] + [风格] + [技术细节] + [文字内容]
 ```
 
 **像素瓦片生成Prompt模板**:
 ```
-32x32 pixel art tile, [元素描述], [颜色要求], [氛围关键词], [细节要求], reference Stardew Valley style
+32x32像素瓦片，[元素描述]，[颜色要求]，[氛围关键词]，[细节要求]，像素艺术风格
 ```
 
 **关键技巧**:
+
 | 技巧 | 说明 | 示例 |
 |-----|-----|-----|
-| 尺寸指定 | 明确指定像素尺寸 | `32x32 pixel art tile` |
-| 风格参考 | 引用目标游戏风格 | `reference Stardew Valley style` |
-| 颜色控制 | 使用HEX颜色值 | `soft green #4a9 to #6c7 gradient` |
-| 氛围词 | 描述整体感觉 | `warm pastoral atmosphere` |
-| 负面提示 | 排除不想要元素 | `negative_prompt: "blurry, low quality, distorted"` |
+| 使用自然语言 | 写连贯叙述而非关键词列表 | ✅ "一片柔和的草地，绿色渐变，温馨田园氛围" |
+| 明确尺寸 | 指定像素尺寸 | "32x32像素瓦片" |
+| 颜色精确控制 | 使用HEX或中文描述 | "柔和绿色#4a9渐变" |
+| 氛围词 | 描述整体感觉 | "温馨田园氛围"、"中医古风" |
+| 风格参考 | 引用目标风格 | "像素艺术风格"、"星露谷物语风格" |
 
-**生成多张一致性图片**:
+**文字渲染技巧（Seedream 4.5特色）**:
+```
+# 使用双引号括住必须出现的文字
+咖啡店菜单板，标题"每日特惠"，项目：美式$3、拿铁$4
+
+# 指定字体特征
+极简海报，标题"AI创新峰会"，粗体无衬线字体，深蓝色背景
+```
+
+**像素瓦片Prompt示例**:
+
 ```python
-# 使用相同seed保持风格一致
-base_prompt = "32x32 pixel art tile, grass field, soft green"
-for variation in ["morning light", "evening atmosphere", "minimalist design"]:
+# 草地瓦片
+grass_prompt = """
+32x32像素瓦片，一片茂盛的草地，柔和的绿色从#4a9渐变到#6c7，
+温馨的田园氛围，有细微的高度变化，草叶细节清晰，像素艺术风格
+"""
+
+# 路径瓦片
+path_prompt = """
+32x32像素瓦片，泥土小径，米黄色#e8d到暖棕色的过渡，
+蜿蜒小路纹理，边缘自然融入草地，鹅卵石纹理细节，像素艺术风格
+"""
+
+# 竹林瓦片
+bamboo_prompt = """
+32x32像素瓦片，竹林丛，深绿色#2d5色系，
+可见竹节细节，中医园林氛围，叶片纹理清晰，像素艺术风格
+"""
+
+# 药田瓦片
+herb_field_prompt = """
+32x32像素瓦片，药田种植区，深绿色#2d5区域，
+有品种标识牌，规整的种植布局，工具痕迹细节，植物形态清晰，像素艺术风格
+"""
+```
+
+#### 8.1.6 保持多图一致性的技巧
+
+**使用固定seed**:
+```python
+# 批量生成同风格草地变体
+base_prompt = "32x32像素瓦片，草地，柔和绿色渐变，像素艺术风格"
+variations = ["清晨光照", "傍晚氛围", "有花朵点缀"]
+
+for variation in variations:
     output = wavespeed.run(
-        "wavespeed-ai/seedream-4-5",
-        {"prompt": f"{base_prompt}, {variation}", "seed": 42}
+        "bytedance/seedream-v4.5",
+        {
+            "prompt": f"{base_prompt}，{variation}",
+            "seed": 42,  # 固定seed保持风格一致
+            "size": "1024x1024"
+        }
     )
 ```
 
-#### 8.1.4 定价参考
+**使用序列生成模式**:
+```python
+# 一次生成多张一致风格图片
+output = wavespeed.run(
+    "bytedance/seedream-v4.5/sequential",
+    {
+        "prompt": "生成4张草地瓦片变体。图1：浅绿；图2：中绿；图3：深绿；图4：带小花点缀。统一像素艺术风格",
+        "max_images": 4,
+        "size": "1024x1024"
+    }
+)
+for url in output["outputs"]:
+    print(url)
+```
 
-| 平台 | 计费方式 | 参考价格 |
-|-----|---------|---------|
-| WaveSpeedAI | 按张计费 | 查看官网最新定价 |
-| PiAPI | 按张计费 | 查看官网最新定价 |
-
-**成本优化建议**:
-- 批量生成时使用相同seed控制变量
-- 先用低分辨率测试Prompt效果
-- 确认Prompt后再生成高清版本
-
-#### 8.1.5 像素艺术生成注意事项
+#### 8.1.7 像素艺术生成注意事项
 
 | 问题 | 解决方案 |
 |-----|---------|
-| AI生成非精确32x32 | 生成后用图像处理工具裁切/缩放 |
-| 颜色不够精确 | 后处理调色或重新生成 |
-| 风格不统一 | 使用相同的风格关键词和seed |
-| 边缘有抗锯齿 | 后处理转纯像素风格 |
+| AI生成非精确32x32 | 生成后用Aseprite/Photoshop裁切缩放 |
+| 颜色不够精确 | 后处理调色或使用颜色描述词 |
+| 风格不统一 | 使用固定seed和相同风格关键词 |
+| 边缘有抗锯齿 | 后处理转为纯像素风格（关闭抗锯齿） |
+| 细节过多 | 简化Prompt，强调"简洁"、"示意" |
+
+**后处理工作流**:
+```
+1. 生成1024x1024或2048x2048图像
+2. 使用图像处理工具裁切/缩放到32x32像素
+3. 关闭抗锯齿，保持像素锐利边缘
+4. 调整颜色匹配设计规范HEX值
+5. 导出PNG透明背景
+```
+
+#### 8.1.8 定价参考
+
+| 平台 | 模型 | 价格 | 特点 |
+|-----|-----|------|-----|
+| 火山引擎 | Seedream 4.5 | ¥0.30/图 | 官方直连，企业级支持 |
+| BytePlus | Seedream 4.5 | $0.045/图 | 海外官方，免费试用200张 |
+| WaveSpeedAI | Seedream 4.5 | $0.04/图 | API聚合，多模型对比 |
+| 一步API | Seedream 5.0 Lite | ¥0.12-0.20/图 | 价格优惠，国内便捷 |
+
+**成本优化建议**:
+- 开发测试阶段：使用一步API或WaveSpeedAI，价格优惠40-60%
+- 生产环境：使用火山引擎官方，企业级SLA保障
+- 批量生成：使用固定seed减少重复尝试成本
 
 ---
 

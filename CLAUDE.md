@@ -174,35 +174,63 @@ zhongyi_game_v3/
 
 | 测试类型 | 工具 | 自动化 | 状态 |
 |----------|------|--------|------|
-| 单元测试 | Vitest | 100% | ✅ 16个测试通过 |
-| 集成测试 | Vitest | 100% | ✅ 28个测试通过 |
-| 回归测试 | Vitest | 100% | ✅ 8个测试通过 |
-| 方案一致性 | Vitest | 100% | ✅ 19个测试通过 |
-| E2E测试 | Playwright | 100% | ✅ 7个测试已创建 |
-| **AI端到端测试** | Playwright + QWEN VL + GLM | 100% | ⏳ Phase 1验收执行中 |
-| 视觉风格验证 | 多模态LLM | 半自动 | ⏳ Phase 1.5执行 |
-| 氛围验证 | 多模态LLM + 用户 | 半自动 | ⏳ Phase 1.5执行 |
+| 单元测试 | Vitest | 100% | ✅ 待验证 |
+| 集成测试 | Vitest | 100% | ✅ 待验证 |
+| 回归测试 | Vitest | 100% | ✅ 待验证 |
+| 方案一致性 | Vitest | 100% | ✅ 待验证 |
+| E2E测试 | Playwright | 100% | ✅ 待验证 |
+| **AI端到端测试** | Playwright + QWEN VL + GLM | 100% | ⏳ 待实现执行 |
 
-### AI端到端测试设计
+### Phase 1 测试执行计划 (2026-04-06)
+
+**执行顺序:**
+
+| 步骤 | 内容 | 状态 |
+|-----|------|------|
+| Step 1 | 运行现有功能测试（单元/集成/回归/一致性/E2E） | ⏳ 待执行 |
+| Step 2 | 分析测试结果，定位问题根因 | ⏳ 待执行 |
+| Step 3 | 修复所有发现的问题 | ⏳ 待执行 |
+| Step 4 | 实现AI端到端测试基础设施 | ⏳ 待执行 |
+| Step 5 | 执行AI端到端测试验收 | ⏳ 待执行 |
+| Step 6 | 生成最终验收报告 | ⏳ 待执行 |
+
+**核心原则:**
+- ❌ 禁止猜测问题根因
+- ✅ 必须从代码、日志、错误信息定位问题
+- ✅ 找不到线索时搜索查询相关文档
+- ✅ 问题修复后必须重新验证
+
+### AI端到端测试架构
 
 **测试定位**: 功能性验证（布局、移动、碰撞、场景切换），剔除UI视觉风格
 
-**验证方式**:
-- 截图分析（QWEN VL）+ 状态数据 + 游戏日志 + AI Feedback（GLM）
-- 最大自动化，人工验收标准精度
+**验证维度:**
+- 截图分析（QWEN VL）→ 视觉布局验证
+- 状态数据（GameState）→ 硬性数值验证
+- 游戏日志（EventBus）→ 事件序列验证
+- AI综合判断（GLM）→ 报告生成与建议
 
-**判定标准**:
+**三级判定标准:**
 | 类型 | 定义 | 通过条件 |
 |------|------|---------|
 | 硬性精确 | 设计文档明确数值 | 必须100%匹配 |
+| 软性容忍 | 有±误差范围 | 在误差范围内 |
 | 视觉阈值 | AI截图分析判断 | 置信度≥80% |
-| 日志验证 | 事件日志记录检查 | 存在预期事件序列 |
 
-详见: [Phase 1 AI端到端测试设计](docs/superpowers/specs/2026-04-05-phase1-ai-e2e-test-design.md) ⭐新增
+**测试用例清单 (23项):**
+| 分类 | 测试ID范围 | 数量 |
+|-----|-----------|------|
+| 布局验证 | T-V001~T-V011 | 11项 |
+| 移动验证 | T-V012~T-V019 | 8项 |
+| 场景切换 | T-V020~T-V023 | 4项 |
+
+详见:
+- [Phase 1 AI端到端测试设计](docs/superpowers/specs/2026-04-05-phase1-ai-e2e-test-design.md)
+- [Phase 1 AI端到端测试实现计划](docs/superpowers/plans/2026-04-06-phase1-ai-e2e-test-implementation.md) ⭐新增
 
 ### Phase 1 功能验收标准
 
-**硬性标准（必须通过）**:
+**硬性标准（必须通过）:**
 | 类别 | 标准数量 | 状态 |
 |-----|---------|------|
 | 游戏启动 | 3项 | ⏳ 待验收 |
@@ -218,23 +246,29 @@ zhongyi_game_v3/
 ### 运行测试命令
 
 ```bash
-# 运行所有单元和集成测试
-npm run test:all
+# Step 1: 运行所有现有功能测试
+npm run test:all              # 单元 + 集成测试
+npx vitest run tests/regression tests/conformance  # 回归 + 一致性
+npm run dev & npm run test:e2e  # E2E测试
 
-# 运行特定类型测试
-npm run test:unit        # 单元测试
-npm run test:integration # 集成测试
+# Step 4-5: AI端到端测试（需先实现基础设施）
+npm run test:visual-phase1    # Phase 1 AI验收测试
 
-# 运行E2E测试
-npm run dev &            # 先启动开发服务器
-npm run test:e2e
-
-# 运行回归和一致性测试
-npx vitest run tests/regression tests/conformance
-
-# 运行AI端到端测试 (Phase 1验收) ⭐新增
-npm run test:visual-phase1
+# Step 6: 查看测试报告
+cat tests/visual/reports/phase1-report-*.md
 ```
+
+---
+
+### 实现计划
+- [Phase 1 实现计划](docs/superpowers/plans/2026-04-05-mvp-phase1-foundation.md)
+- [Phase 1 测试计划](docs/superpowers/plans/2026-04-05-phase1-test-plan.md)
+- [Phase 1 AI端到端测试实现计划](docs/superpowers/plans/2026-04-06-phase1-ai-e2e-test-implementation.md) ⭐新增
+- [Phase 1.5 视觉实现计划](docs/superpowers/plans/2026-04-05-phase1.5-visual-implementation.md)
+
+---
+
+*本文档由 Claude Code 维护，更新于 2026-04-06*
 
 ---
 

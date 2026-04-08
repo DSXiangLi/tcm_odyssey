@@ -624,3 +624,92 @@ AI生成素材处理流程:
 ---
 
 *本设计由 brainstorming 技能生成，待用户审批后进入实现阶段*
+
+---
+
+## 9. 决策结果（2026-04-06 更新）
+
+### 9.1 最终方案确定
+
+**测试日期**: 2026-04-06
+
+**测试结论**: 采用**混合方案**，区分室外建筑和室内场景：
+
+| 场景类型 | 最终方案 | 理由 |
+|---------|---------|------|
+| **室外建筑外观** | 方案A：背景层整体 | 玩家只需整体交互（进入建筑），无需元素级交互 |
+| **室内场景** | 方案B：瓦片合并 | 玩家需要元素级交互（点击药柜/药田查看详情） |
+
+### 9.2 测试数据
+
+**AI素材生成结果**:
+
+| 素材名称 | Prompt摘要 | 尺寸 | 文件大小 |
+|---------|-----------|-----|---------|
+| 诊所外观 | 中医诊所建筑外观，古朴棕色木质建筑，传统中式屋顶 | 2048x2048 | 958KB |
+| 诊所室内 | 中医诊所室内俯视图，诊台、药柜、经络图、药炉 | 2048x2048 | 814KB |
+| 药田区域 | 药田种植区域，4块药田（人参、黄芪、当归、甘草） | 2048x2048 | 1110KB |
+
+**瓦片合并效果**:
+
+| 场景 | 原瓦片数 | 合并后瓦片数 | 合并率 | 原文件大小 | 合并后大小 |
+|-----|---------|------------|-------|-----------|----------|
+| 诊所室内 | 4096 | 62 | 98.5% | 4.4MB | 93KB |
+| 药田区域 | 4096 | 104 | 97.5% | 4.4MB | ~120KB |
+
+### 9.3 技术实现细节
+
+#### 方案A：背景层（室外建筑）
+
+```typescript
+// 室外建筑作为背景层使用
+// 玩家接近时触发交互，整体进入
+class BuildingSprite extends Phaser.GameObjects.Image {
+    constructor(scene: Phaser.Scene, x: number, y: number, texture: string) {
+        super(scene, x, y, texture);
+        this.setInteractive();
+        this.on('pointerdown', () => {
+            // 触发进入建筑场景切换
+            scene.scene.switch('ClinicScene');
+        });
+    }
+}
+```
+
+#### 方案B：瓦片合并（室内场景）
+
+```
+处理流程：
+1. AI生成2048x2048场景图
+2. 切割成32x32瓦片（64x64网格 = 4096瓦片）
+3. 使用相似度算法合并（阈值0.85）
+4. 生成合并后的tileset（62-104瓦片）
+5. 创建瓦片映射文件
+6. 集成到Phaser TileMap系统
+```
+
+### 9.4 输出物清单
+
+| 文件路径 | 描述 |
+|---------|------|
+| `tests/visual/asset-test/ai-generated/clinic_building/clinic_building_exterior.png` | 诊所外观背景图 |
+| `tests/visual/asset-test/ai-generated/indoor_scenes/clinic_interior.png` | 诊所室内原图 |
+| `tests/visual/asset-test/ai-generated/indoor_scenes/clinic_tiles_merged/tileset_merged.png` | 诊所室内瓦片集（62瓦片） |
+| `tests/visual/asset-test/ai-generated/indoor_scenes/clinic_tiles_merged/tilemap_merged.json` | 诊所室内瓦片映射 |
+| `tests/visual/asset-test/ai-generated/herb_field_area/herb_field_area.png` | 药田区域原图 |
+| `tests/visual/asset-test/ai-generated/herb_field_area/herb_tiles_merged/tileset_merged.png` | 药田区域瓦片集（104瓦片） |
+| `tests/visual/asset-test/comparison.html` | 素材对比展示页面 |
+| `tests/visual/asset-test/generate_ai_assets.py` | AI素材生成脚本 |
+| `tests/visual/asset-test/tile_extractor.py` | 瓦片切割工具 |
+| `tests/visual/asset-test/tile_merger.py` | 瓦片合并工具 |
+
+### 9.5 下一步工作
+
+1. **标注可交互元素** - 在合并后的瓦片集中识别并标注药柜、经络图、药田等可交互元素的瓦片ID
+2. **集成到游戏场景** - 更新ClinicScene.ts和GardenScene.ts使用新的瓦片集
+3. **实现点击交互** - 为可交互元素添加点击事件和详情弹窗
+4. **用户体验验证** - 让用户实际体验室内场景的元素级交互
+
+---
+
+*决策结果更新于 2026-04-06*

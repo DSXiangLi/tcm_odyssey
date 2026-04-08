@@ -1,0 +1,31 @@
+{
+  "version": "3.0-complete-fused",
+  "generated_at": "2026-04-06 16:44:28",
+  "style": "Complete fused panorama - all elements in one image",
+  "improvements": [
+    "Single complete scene image per location",
+    "Unified lighting, perspective and style",
+    "No layering issues - all elements naturally blended",
+    "Matches map-config.ts exactly"
+  ],
+  "assets": {
+    "town_panorama": "/home/lixiang/Desktop/zhongyi_game_v3/tests/visual/asset-test/ai-generated/town_outdoor/complete_panorama/town_complete_panorama.png",
+    "indoor_scenes": [
+      {
+        "id": "clinic_interior",
+        "name": "青木诊所室内",
+        "path": "/home/lixiang/Desktop/zhongyi_game_v3/tests/visual/asset-test/ai-generated/indoor_scenes_complete/clinic_interior_complete.png"
+      },
+      {
+        "id": "garden_interior",
+        "name": "老张药园室内",
+        "path": "/home/lixiang/Desktop/zhongyi_game_v3/tests/visual/asset-test/ai-generated/indoor_scenes_complete/garden_interior_complete.png"
+      },
+      {
+        "id": "home_interior",
+        "name": "玩家之家室内",
+        "path": "/home/lixiang/Desktop/zhongyi_game_v3/tests/visual/asset-test/ai-generated/indoor_scenes_complete/home_interior_complete.png"
+      }
+    ]
+  }
+}

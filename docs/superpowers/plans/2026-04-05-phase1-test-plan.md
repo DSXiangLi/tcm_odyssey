@@ -648,12 +648,12 @@ describe('Phase 1 完成检查清单', () => {
 
 | 任务ID | 任务描述 | 文件 | 状态 |
 |--------|---------|------|------|
-| LOG-001 | 创建EventBus事件总线 | `src/systems/EventBus.ts` | ⏳ |
-| LOG-002 | 定义GameEvents事件常量 | `src/systems/EventBus.ts` | ⏳ |
-| LOG-003 | 创建GameLogger日志收集器 | `src/utils/GameLogger.ts` | ⏳ |
-| LOG-004 | 实现分文件日志导出功能 | `src/utils/GameLogger.ts` | ⏳ |
-| LOG-005 | 在Player中添加事件发送 | `src/entities/Player.ts` | ⏳ |
-| LOG-006 | 在各Scene中添加事件发送 | `src/scenes/*.ts` | ⏳ |
+| LOG-001 | 创建EventBus事件总线 | `src/systems/EventBus.ts` | ✅ |
+| LOG-002 | 定义GameEvents事件常量 | `src/systems/EventBus.ts` | ✅ |
+| LOG-003 | 创建GameLogger日志收集器 | `src/utils/GameLogger.ts` | ✅ |
+| LOG-004 | 实现分文件日志导出功能 | `src/utils/GameLogger.ts` | ✅ |
+| LOG-005 | 在Player中添加事件发送 | `src/entities/Player.ts` | ✅ |
+| LOG-006 | 在各Scene中添加事件发送 | `src/scenes/*.ts` | ✅ |
 | LOG-007 | 在SceneManager中添加事件发送 | `src/systems/SceneManager.ts` | ⏳ |
 
 **EventBus事件定义**:
@@ -696,11 +696,11 @@ export const GameEvents = {
 
 | 任务ID | 任务描述 | 实现方式 | 状态 |
 |--------|---------|---------|------|
-| STATE-001 | 暴露地图瓦片数据 | `window.__GAME_STATE__.mapData` | ⏳ |
-| STATE-002 | 暴露玩家位置数据 | `window.__GAME_STATE__.player` | ⏳ |
-| STATE-003 | 暴露场景尺寸数据 | `window.__GAME_STATE__.sceneSize` | ⏳ |
-| STATE-004 | 暴露当前场景名称 | `window.__GAME_STATE__.currentScene` | ⏳ |
-| STATE-005 | 暴露碰撞检测结果 | `window.__GAME_STATE__.collision` | ⏳ |
+| STATE-001 | 暴露地图瓦片数据 | `window.__GAME_STATE__.mapData` | ✅ |
+| STATE-002 | 暴露玩家位置数据 | `window.__GAME_STATE__.player` | ✅ |
+| STATE-003 | 暴露场景尺寸数据 | `window.__GAME_STATE__.sceneSize` | ✅ |
+| STATE-004 | 暴露当前场景名称 | `window.__GAME_STATE__.currentScene` | ✅ |
+| STATE-005 | 暴露碰撞检测结果 | `window.__GAME_STATE__.collision` | ✅ |
 
 **状态接口结构**:
 ```typescript
@@ -736,14 +736,14 @@ interface GameStateForTest {
 
 | 任务ID | 任务描述 | 路径 | 状态 |
 |--------|---------|------|------|
-| DIR-001 | 创建visual测试根目录 | `tests/visual/` | ⏳ |
-| DIR-002 | 创建布局测试目录 | `tests/visual/layout/` | ⏳ |
-| DIR-003 | 创建移动测试目录 | `tests/visual/movement/` | ⏳ |
-| DIR-004 | 创建场景切换测试目录 | `tests/visual/scene-switch/` | ⏳ |
-| DIR-005 | 创建报告输出目录 | `tests/visual/reports/` | ⏳ |
-| DIR-006 | 创建日志采集目录 | `tests/visual/logs/` | ⏳ |
-| DIR-007 | 创建截图存储目录 | `tests/visual/screenshots/` | ⏳ |
-| DIR-008 | 创建动作序列帧目录 | `tests/visual/screenshots/sequences/` | ⏳ |
+| DIR-001 | 创建visual测试根目录 | `tests/visual/` | ✅ |
+| DIR-002 | 创建布局测试目录 | `tests/visual/layout/` | ✅ |
+| DIR-003 | 创建移动测试目录 | `tests/visual/movement/` | ✅ |
+| DIR-004 | 创建场景切换测试目录 | `tests/visual/scene-switch/` | ✅ |
+| DIR-005 | 创建报告输出目录 | `tests/visual/reports/` | ✅ |
+| DIR-006 | 创建日志采集目录 | `tests/visual/logs/` | ✅ |
+| DIR-007 | 创建截图存储目录 | `tests/visual/screenshots/` | ✅ |
+| DIR-008 | 创建动作序列帧目录 | `tests/visual/screenshots/sequences/` | ✅ |
 
 ### 5.1 测试脚本实现任务
 
@@ -751,22 +751,22 @@ interface GameStateForTest {
 
 | 任务ID | 任务描述 | 文件 | 状态 |
 |--------|---------|------|------|
-| TOOL-001 | 实现游戏启动器 | `tests/visual/utils/game-launcher.ts` | ⏳ |
-| TOOL-002 | 实现截图采集器 | `tests/visual/utils/screenshot-capture.ts` | ⏳ |
-| TOOL-003 | 实现状态提取器 | `tests/visual/utils/state-extractor.ts` | ⏳ |
-| TOOL-004 | 实现日志读取器 | `tests/visual/utils/log-reader.ts` | ⏳ |
+| TOOL-001 | 实现游戏启动器 | `tests/visual/utils/game-launcher.ts` | ✅ |
+| TOOL-002 | 实现截图采集器 | `tests/visual/utils/screenshot-capture.ts` | ✅ |
+| TOOL-003 | 实现状态提取器 | `tests/visual/utils/state-extractor.ts` | ✅ |
+| TOOL-004 | 实现日志读取器 | `tests/visual/utils/log-reader.ts` | ✅ |
 | TOOL-005 | 实现动作序列录制器 | `tests/visual/utils/action-recorder.ts` | ⏳ |
 
 #### 5.1.2 AI分析模块实现
 
 | 任务ID | 任务描述 | 文件 | 状态 |
 |--------|---------|------|------|
-| AI-001 | 实现QWEN VL API调用封装 | `tests/visual/ai/qwen-vl-client.ts` | ⏳ |
-| AI-002 | 实现GLM API调用封装 | `tests/visual/ai/glm-client.ts` | ⏳ |
+| AI-001 | 实现QWEN VL API调用封装 | `tests/visual/ai/qwen-vl-client.ts` | ✅ |
+| AI-002 | 实现GLM API调用封装 | `tests/visual/ai/glm-client.ts` | ✅ |
 | AI-003 | 实现截图分析器（布局判断） | `tests/visual/ai/analyzers/layout-analyzer.ts` | ⏳ |
 | AI-004 | 实现移动分析器（流畅性判断） | `tests/visual/ai/analyzers/movement-analyzer.ts` | ⏳ |
-| AI-005 | 实现综合判断器（结果生成） | `tests/visual/ai/analyzers/result-judge.ts` | ⏳ |
-| AI-006 | 实现报告生成器 | `tests/visual/ai/report-generator.ts` | ⏳ |
+| AI-005 | 实现综合判断器（结果生成） | `tests/visual/ai/analyzers/result-judge.ts` | ✅ |
+| AI-006 | 实现报告生成器 | `tests/visual/ai/report-generator.ts` | ✅ |
 
 ### 5.2 测试用例执行清单
 

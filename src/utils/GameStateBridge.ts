@@ -1,5 +1,6 @@
 // src/utils/GameStateBridge.ts
 import Phaser from 'phaser';
+import { TOWN_OUTDOOR_CONFIG } from '../data/map-config';
 
 /**
  * 瓦片数据
@@ -189,6 +190,22 @@ export class GameStateBridge {
   clearCollision(): void {
     this.state.collision.isColliding = false;
     this.state.timestamp = Date.now();
+  }
+
+  /**
+   * 暴露地图配置到全局对象
+   * 供测试代码访问地图的可行走瓦片、尺寸、门配置
+   */
+  public exposeMapConfig(): void {
+    if (typeof window !== 'undefined') {
+      (window as unknown as Record<string, unknown>).__MAP_CONFIG__ = {
+        walkableTiles: TOWN_OUTDOOR_CONFIG.walkableTiles,
+        width: TOWN_OUTDOOR_CONFIG.width,
+        height: TOWN_OUTDOOR_CONFIG.height,
+        doors: TOWN_OUTDOOR_CONFIG.doors
+      };
+      console.log('[GameStateBridge] Map config exposed to window.__MAP_CONFIG__');
+    }
   }
 
   /**

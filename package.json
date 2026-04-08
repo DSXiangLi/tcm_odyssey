@@ -13,7 +13,12 @@
     "test:visual": "playwright test tests/visual",
     "test:visual-phase1": "playwright test tests/visual --reporter=list",
     "test:coverage": "vitest run --coverage",
-    "test:all": "npm run test:unit && npm run test:integration"
+    "test:all": "npm run test:unit && npm run test:integration",
+    "test:phase1-5": "npx playwright test tests/visual/phase1-5 --workers=1",
+    "test:phase1-5:smoke": "npx playwright test tests/visual/phase1-5/smoke --workers=1",
+    "test:phase1-5:functional": "npx playwright test tests/visual/phase1-5/functional --workers=1",
+    "test:phase1-5:deep": "npx playwright test tests/visual/phase1-5/deep-validation --workers=1",
+    "test:phase1-5:performance": "npx playwright test tests/visual/phase1-5/performance --workers=1"
   },
   "dependencies": {
     "phaser": "^3.80.1"

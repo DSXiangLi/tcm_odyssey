@@ -1,23 +1,29 @@
 // src/scenes/TownOutdoorScene.ts
+/**
+ * 百草镇室外场景
+ *
+ * Phase 1.5 更新:
+ * - 使用AI生成的小镇全景图作为背景
+ * - 基于黑白遮罩分析的可行走瓦片实现碰撞检测
+ * - 地图尺寸: 86×48瓦片 (2752×1536像素)
+ */
+
 import Phaser from 'phaser';
 import { SCENES, TILE_SIZE } from '../data/constants';
+import {
+  TOWN_OUTDOOR_CONFIG,
+  isWalkable
+} from '../data/map-config';
 import { Player } from '../entities/Player';
 import { SceneManager, DoorInfo } from '../systems/SceneManager';
 import { EventBus, GameEvents } from '../systems/EventBus';
 import { GameStateBridge } from '../utils/GameStateBridge';
 
-// 地图数据结构
-interface TileData {
-  x: number;
-  y: number;
-  type: 'grass' | 'path' | 'wall' | 'door';
-  properties?: Record<string, unknown>;
-}
-
+// 简化的地图数据结构（Phase 1.5不再使用瓦片渲染）
 interface MapData {
   width: number;
   height: number;
-  tiles: TileData[][];
+  walkableTiles: Set<string>;
 }
 
 export class TownOutdoorScene extends Phaser.Scene {
@@ -28,9 +34,10 @@ export class TownOutdoorScene extends Phaser.Scene {
   private doorTiles: Map<string, DoorInfo> = new Map();
   private spaceKey!: Phaser.Input.Keyboard.Key;
   private isTransitioning: boolean = false;
-  private walls!: Phaser.Physics.Arcade.StaticGroup;
   private eventBus!: EventBus;
   private gameStateBridge!: GameStateBridge;
+  private playerTileText!: Phaser.GameObjects.Text;
+  private background!: Phaser.GameObjects.Image;
 
   constructor() {
     super({ key: SCENES.TOWN_OUTDOOR });
@@ -41,34 +48,30 @@ export class TownOutdoorScene extends Phaser.Scene {
     this.eventBus = EventBus.getInstance();
     this.gameStateBridge = GameStateBridge.getInstance();
 
-    // 发送场景创建事件
     this.eventBus.emit(GameEvents.SCENE_CREATE, { sceneName: SCENES.TOWN_OUTDOOR });
 
-    // 创建地图数据
-    this.mapData = this.createTownMapData();
+    // Phase 1.5: 加载背景图
+    this.createBackground();
+
+    // 创建地图数据（基于可行走瓦片）
+    this.mapData = {
+      width: TOWN_OUTDOOR_CONFIG.width,
+      height: TOWN_OUTDOOR_CONFIG.height,
+      walkableTiles: TOWN_OUTDOOR_CONFIG.walkableTiles
+    };
 
     // 更新状态桥接器
     this.gameStateBridge.updateCurrentScene(SCENES.TOWN_OUTDOOR);
-    this.gameStateBridge.updateSceneSize({ width: this.mapData.width, height: this.mapData.height });
-    this.gameStateBridge.updateMapData({
+    this.gameStateBridge.updateSceneSize({
       width: this.mapData.width,
-      height: this.mapData.height,
-      tiles: this.mapData.tiles.map(row => row.map(tile => ({
-        x: tile.x,
-        y: tile.y,
-        type: tile.type,
-        properties: tile.properties
-      })))
+      height: this.mapData.height
     });
-
-    // 渲染地图
-    this.renderMap();
 
     // 创建玩家
     this.createPlayer();
 
-    // 创建墙壁碰撞
-    this.createWallCollisions();
+    // Phase 1.5: 创建碰撞检测（基于可行走瓦片边界）
+    this.createWalkableCollision();
 
     // 设置相机
     this.setupCamera();
@@ -80,156 +83,85 @@ export class TownOutdoorScene extends Phaser.Scene {
     this.sceneManager = new SceneManager(this);
     this.collectDoorTiles();
 
-    // 添加场景名称提示
-    this.add.text(10, 10, '百草镇 - 室外', {
+    // 添加固定UI提示（setScrollFactor(0)使其不跟随相机）
+    this.add.text(10, 10, '百草镇 - 室外 (Phase 1.5)', {
       fontSize: '16px',
       color: '#ffffff',
       backgroundColor: '#000000aa',
       padding: { x: 8, y: 4 }
-    });
+    }).setScrollFactor(0);
 
-    // 添加交互提示
     this.add.text(10, 40, '走到门前按空格键进入', {
       fontSize: '12px',
       color: '#aaaaaa'
-    });
+    }).setScrollFactor(0);
 
-    // 发送场景就绪事件
+    this.playerTileText = this.add.text(10, 70, '', {
+      fontSize: '12px',
+      color: '#ffff00',
+      backgroundColor: '#000000aa',
+      padding: { x: 4, y: 2 }
+    }).setScrollFactor(0);
+
     this.eventBus.emit(GameEvents.SCENE_READY, { sceneName: SCENES.TOWN_OUTDOOR });
+
+    // Phase 1.5: 暴露地图配置到全局对象，供测试代码访问
+    this.gameStateBridge.exposeMapConfig();
   }
 
-  private createTownMapData(): MapData {
-    // 40x30 瓦片的地图
-    const width = 40;
-    const height = 30;
-    const tiles: TileData[][] = [];
+  /**
+   * Phase 1.5: 加载背景图
+   */
+  private createBackground(): void {
+    const config = TOWN_OUTDOOR_CONFIG;
+    const mapPixelWidth = config.width * TILE_SIZE;
+    const mapPixelHeight = config.height * TILE_SIZE;
 
-    // 填充草地
-    for (let y = 0; y < height; y++) {
-      tiles[y] = [];
-      for (let x = 0; x < width; x++) {
-        tiles[y][x] = { x, y, type: 'grass' };
-      }
-    }
+    this.background = this.add.image(
+      mapPixelWidth / 2,
+      mapPixelHeight / 2,
+      'town_background'
+    );
 
-    // 创建中心路径（十字形）
-    const centerX = Math.floor(width / 2);
-    const centerY = Math.floor(height / 2);
-
-    // 横向路径
-    for (let x = 5; x < width - 5; x++) {
-      tiles[centerY][x] = { x, y: centerY, type: 'path' };
-      tiles[centerY - 1][x] = { x, y: centerY - 1, type: 'path' };
-    }
-
-    // 纵向路径
-    for (let y = 5; y < height - 5; y++) {
-      tiles[y][centerX] = { x: centerX, y, type: 'path' };
-      tiles[y][centerX - 1] = { x: centerX - 1, y, type: 'path' };
-    }
-
-    // 添加建筑位置（用墙壁表示）
-    // 青木诊所（左上）
-    this.addBuilding(tiles, 3, 3, 8, 6, 'clinic');
-
-    // 老张药园（右上）
-    this.addBuilding(tiles, width - 11, 3, 8, 6, 'garden');
-
-    // 玩家之家（左下）
-    this.addBuilding(tiles, 3, height - 9, 6, 6, 'home');
-
-    // 边界墙
-    for (let x = 0; x < width; x++) {
-      tiles[0][x] = { x, y: 0, type: 'wall' };
-      tiles[height - 1][x] = { x, y: height - 1, type: 'wall' };
-    }
-    for (let y = 0; y < height; y++) {
-      tiles[y][0] = { x: 0, y, type: 'wall' };
-      tiles[y][width - 1] = { x: width - 1, y, type: 'wall' };
-    }
-
-    return { width, height, tiles };
+    this.background.setDisplaySize(mapPixelWidth, mapPixelHeight);
+    this.background.setOrigin(0.5);
+    this.background.setDepth(0);  // 背景层
   }
 
-  private addBuilding(
-    tiles: TileData[][],
-    startX: number,
-    startY: number,
-    buildingWidth: number,
-    buildingHeight: number,
-    doorTarget: string
-  ): void {
-    for (let y = startY; y < startY + buildingHeight; y++) {
-      for (let x = startX; x < startX + buildingWidth; x++) {
-        if (y >= 0 && y < tiles.length && x >= 0 && x < tiles[0].length) {
-          // 门的位置（建筑底部中间）
-          if (y === startY + buildingHeight - 1 && x === startX + Math.floor(buildingWidth / 2)) {
-            tiles[y][x] = {
-              x, y,
-              type: 'door',
-              properties: { target: doorTarget, interactive: true }
-            };
-          } else {
-            tiles[y][x] = { x, y, type: 'wall' };
-          }
-        }
-      }
-    }
+  /**
+   * Phase 1.5: 创建碰撞检测
+   * 简化方案：不创建物理碰撞墙，而是在update中检查位置是否可行走
+   */
+  private createWalkableCollision(): void {
+    // Phase 1.5: 使用位置检查代替物理碰撞
+    // 玩家移动时会在update中检查目标位置是否可行走
+  }
+
+  /**
+   * 检查目标位置是否可行走
+   */
+  private canMoveTo(x: number, y: number): boolean {
+    const tileX = Math.floor(x / TILE_SIZE);
+    const tileY = Math.floor(y / TILE_SIZE);
+    return this.mapData.walkableTiles.has(`${tileX},${tileY}`);
   }
 
   private collectDoorTiles(): void {
-    // 门目标到实际场景键的映射
-    const sceneMap: Record<string, string> = {
-      'clinic': SCENES.CLINIC,
-      'garden': SCENES.GARDEN,
-      'home': SCENES.HOME
-    };
+    for (const doorConfig of TOWN_OUTDOOR_CONFIG.doors) {
+      const sceneMap: Record<string, string> = {
+        'ClinicScene': SCENES.CLINIC,
+        'GardenScene': SCENES.GARDEN,
+        'HomeScene': SCENES.HOME
+      };
 
-    // 每个建筑的门位置和对应的出生点（当从建筑返回时，玩家应该出现在门外）
-    const buildingSpawnPoints: Record<string, { x: number; y: number }> = {
-      'clinic': { x: 7, y: 10 },   // 诊所门外
-      'garden': { x: 33, y: 10 },  // 药园门外
-      'home': { x: 6, y: 28 }      // 家门外
-    };
-
-    for (let y = 0; y < this.mapData.height; y++) {
-      for (let x = 0; x < this.mapData.width; x++) {
-        const tile = this.mapData.tiles[y][x];
-        if (tile.type === 'door' && tile.properties?.target) {
-          const targetKey = tile.properties.target as string;
-          const mappedScene = sceneMap[targetKey] || targetKey;
-          const spawnPoint = buildingSpawnPoints[targetKey] || { x: 7, y: 10 };
-
-          this.doorTiles.set(`${x},${y}`, {
-            targetScene: mappedScene,
-            spawnPoint: spawnPoint
-          });
-        }
-      }
-    }
-  }
-
-  private renderMap(): void {
-    for (let y = 0; y < this.mapData.height; y++) {
-      for (let x = 0; x < this.mapData.width; x++) {
-        const tile = this.mapData.tiles[y][x];
-        const texture = tile.type === 'grass' ? 'grass' :
-                       tile.type === 'path' ? 'path' :
-                       tile.type === 'wall' ? 'wall' : 'door';
-
-        const sprite = this.add.sprite(
-          x * TILE_SIZE + TILE_SIZE / 2,
-          y * TILE_SIZE + TILE_SIZE / 2,
-          texture
-        );
-
-        sprite.setDepth(0);
-      }
+      this.doorTiles.set(`${doorConfig.tileX},${doorConfig.tileY}`, {
+        targetScene: sceneMap[doorConfig.targetScene] || doorConfig.targetScene,
+        spawnPoint: doorConfig.spawnPoint
+      });
     }
   }
 
   private createPlayer(): void {
-    // 从registry获取出生点，如果没有则使用默认位置（地图中心）
     let spawnX: number;
     let spawnY: number;
 
@@ -237,20 +169,25 @@ export class TownOutdoorScene extends Phaser.Scene {
     if (registrySpawnPoint) {
       spawnX = registrySpawnPoint.x * TILE_SIZE + TILE_SIZE / 2;
       spawnY = registrySpawnPoint.y * TILE_SIZE + TILE_SIZE / 2;
-      // 清除出生点，避免下次进入时仍使用旧值
       this.registry.remove('spawnPoint');
     } else {
-      spawnX = Math.floor(this.mapData.width / 2) * TILE_SIZE + TILE_SIZE / 2;
-      spawnY = Math.floor(this.mapData.height / 2) * TILE_SIZE + TILE_SIZE / 2;
+      const configSpawn = TOWN_OUTDOOR_CONFIG.playerSpawnPoint;
+      spawnX = configSpawn.x * TILE_SIZE + TILE_SIZE / 2;
+      spawnY = configSpawn.y * TILE_SIZE + TILE_SIZE / 2;
     }
+
+    // Phase 1.5: 更新物理世界边界
+    const mapPixelWidth = this.mapData.width * TILE_SIZE;
+    const mapPixelHeight = this.mapData.height * TILE_SIZE;
+    this.physics.world.setBounds(0, 0, mapPixelWidth, mapPixelHeight);
 
     this.player = new Player({
       scene: this,
       x: spawnX,
       y: spawnY
     });
+    this.player.setDepth(10);  // 玩家层（高于背景）
 
-    // 更新玩家状态到桥接器
     this.gameStateBridge.updatePlayerState({
       x: this.player.x,
       y: this.player.y,
@@ -259,28 +196,6 @@ export class TownOutdoorScene extends Phaser.Scene {
       speed: this.player.speed,
       velocity: { x: 0, y: 0 }
     });
-  }
-
-  private createWallCollisions(): void {
-    this.walls = this.physics.add.staticGroup();
-
-    for (let y = 0; y < this.mapData.height; y++) {
-      for (let x = 0; x < this.mapData.width; x++) {
-        const tile = this.mapData.tiles[y][x];
-        if (tile.type === 'wall') {
-          const wall = this.walls.create(
-            x * TILE_SIZE + TILE_SIZE / 2,
-            y * TILE_SIZE + TILE_SIZE / 2,
-            ''
-          );
-          wall.setVisible(false);
-          wall.body?.setSize(TILE_SIZE, TILE_SIZE);
-        }
-      }
-    }
-
-    // 添加玩家与墙壁的碰撞
-    this.physics.add.collider(this.player, this.walls);
   }
 
   private setupCamera(): void {
@@ -295,8 +210,6 @@ export class TownOutdoorScene extends Phaser.Scene {
     if (this.input.keyboard) {
       this.cursors = this.input.keyboard.createCursorKeys();
       this.spaceKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE);
-
-      // 添加WASD支持
       this.input.keyboard.addKeys('W,A,S,D');
     }
   }
@@ -306,7 +219,6 @@ export class TownOutdoorScene extends Phaser.Scene {
 
     const direction = { x: 0, y: 0 };
 
-    // 方向键控制
     if (this.cursors.left.isDown || this.input.keyboard?.addKey('A').isDown) {
       direction.x = -1;
     } else if (this.cursors.right.isDown || this.input.keyboard?.addKey('D').isDown) {
@@ -319,27 +231,67 @@ export class TownOutdoorScene extends Phaser.Scene {
       direction.y = 1;
     }
 
+    // Phase 1.5: 检查目标位置是否可行走
     if (direction.x !== 0 || direction.y !== 0) {
-      this.player.move(direction);
+      // 计算预测位置
+      let velocityX = direction.x * this.player.speed;
+      let velocityY = direction.y * this.player.speed;
+
+      // 对角线移动标准化
+      if (velocityX !== 0 && velocityY !== 0) {
+        velocityX *= 0.707;
+        velocityY *= 0.707;
+      }
+
+      // 预测下一帧位置（使用固定的deltaTime约16ms）
+      const predictedX = this.player.x + velocityX * 0.016;
+      const predictedY = this.player.y + velocityY * 0.016;
+
+      // 检查预测位置是否可行走
+      if (this.canMoveTo(predictedX, predictedY)) {
+        this.player.move(direction);
+      } else {
+        // 尝试只沿一个轴移动（滑墙效果）
+        const predictedXOnly = this.player.x + velocityX * 0.016;
+        const predictedYOnly = this.player.y + velocityY * 0.016;
+
+        if (direction.x !== 0 && this.canMoveTo(predictedXOnly, this.player.y)) {
+          this.player.move({ x: direction.x, y: 0 });
+        } else if (direction.y !== 0 && this.canMoveTo(this.player.x, predictedYOnly)) {
+          this.player.move({ x: 0, y: direction.y });
+        } else {
+          this.player.stop();
+        }
+      }
     } else {
       this.player.stop();
     }
 
-    // 更新玩家位置追踪
     this.player.updatePositionTracking();
 
-    // 更新状态桥接器中的玩家状态
+    // 更新状态桥接器
     const body = this.player.body as Phaser.Physics.Arcade.Body;
+    const tileX = Math.floor(this.player.x / TILE_SIZE);
+    const tileY = Math.floor(this.player.y / TILE_SIZE);
+
     this.gameStateBridge.updatePlayerState({
       x: this.player.x,
       y: this.player.y,
-      tileX: Math.floor(this.player.x / TILE_SIZE),
-      tileY: Math.floor(this.player.y / TILE_SIZE),
+      tileX: tileX,
+      tileY: tileY,
       speed: this.player.speed,
       velocity: { x: body.velocity.x, y: body.velocity.y }
     });
 
-    // 检测门交互（空格键）- 使用JustDown防止多次触发
+    // 更新调试显示
+    const isWalkableTile = isWalkable(tileX, tileY);
+    const doorKey = `${tileX},${tileY}`;
+    const isOnDoor = this.doorTiles.has(doorKey);
+    this.playerTileText.setText(
+      `位置: (${tileX}, ${tileY}) ${isWalkableTile ? '可行走' : '不可行走'}${isOnDoor ? ' [门]' : ''}`
+    );
+
+    // 检测门交互
     if (Phaser.Input.Keyboard.JustDown(this.spaceKey) && !this.isTransitioning) {
       const tilePos = this.player.getTilePosition();
       const doorInfo = this.sceneManager.checkDoorInteraction(
@@ -349,14 +301,12 @@ export class TownOutdoorScene extends Phaser.Scene {
       );
 
       if (doorInfo) {
-        // 发送门交互事件
         this.eventBus.emit(GameEvents.DOOR_INTERACT, {
           from: SCENES.TOWN_OUTDOOR,
           to: doorInfo.targetScene,
           doorPosition: tilePos
         });
 
-        // 发送场景切换事件
         this.eventBus.emit(GameEvents.SCENE_SWITCH, {
           from: SCENES.TOWN_OUTDOOR,
           to: doorInfo.targetScene
@@ -369,7 +319,6 @@ export class TownOutdoorScene extends Phaser.Scene {
   }
 
   shutdown(): void {
-    // 发送场景销毁事件
     this.eventBus.emit(GameEvents.SCENE_DESTROY, { sceneName: SCENES.TOWN_OUTDOOR });
   }
 }

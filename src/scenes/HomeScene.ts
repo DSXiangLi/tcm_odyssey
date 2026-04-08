@@ -1,4 +1,10 @@
 // src/scenes/HomeScene.ts
+/**
+ * 玩家之家场景
+ *
+ * 使用占位符瓦片渲染（Phase 1）
+ * Phase 1.5 将替换为真实UI素材
+ */
 import Phaser from 'phaser';
 import { SCENES, TILE_SIZE } from '../data/constants';
 import { Player } from '../entities/Player';
@@ -21,14 +27,11 @@ export class HomeScene extends Phaser.Scene {
   }
 
   create(): void {
-    // 初始化事件系统
     this.eventBus = EventBus.getInstance();
     this.gameStateBridge = GameStateBridge.getInstance();
 
-    // 发送场景创建事件
     this.eventBus.emit(GameEvents.SCENE_CREATE, { sceneName: SCENES.HOME });
 
-    // 更新状态桥接器
     this.gameStateBridge.updateCurrentScene(SCENES.HOME);
     this.gameStateBridge.updateSceneSize({ width: this.roomWidth, height: this.roomHeight });
 
@@ -38,7 +41,6 @@ export class HomeScene extends Phaser.Scene {
     this.addUI();
     this.setupInput();
 
-    // 发送场景就绪事件
     this.eventBus.emit(GameEvents.SCENE_READY, { sceneName: SCENES.HOME });
   }
 
@@ -73,7 +75,6 @@ export class HomeScene extends Phaser.Scene {
     this.add.rectangle(6 * TILE_SIZE, 7 * TILE_SIZE, TILE_SIZE * 2, TILE_SIZE, 0x4a3728);
     this.add.text(5 * TILE_SIZE, 6.5 * TILE_SIZE, '🛏️', { fontSize: '20px' });
 
-    // 门
     const doorX = Math.floor(this.roomWidth / 2);
     this.add.sprite(
       doorX * TILE_SIZE + TILE_SIZE / 2,
@@ -102,7 +103,6 @@ export class HomeScene extends Phaser.Scene {
       y: spawnY
     });
 
-    // 更新玩家状态到桥接器
     this.gameStateBridge.updatePlayerState({
       x: this.player.x,
       y: this.player.y,
@@ -183,10 +183,8 @@ export class HomeScene extends Phaser.Scene {
       this.player.stop();
     }
 
-    // 更新玩家位置追踪
     this.player.updatePositionTracking();
 
-    // 更新状态桥接器中的玩家状态
     const body = this.player.body as Phaser.Physics.Arcade.Body;
     this.gameStateBridge.updatePlayerState({
       x: this.player.x,
@@ -197,9 +195,7 @@ export class HomeScene extends Phaser.Scene {
       velocity: { x: body.velocity.x, y: body.velocity.y }
     });
 
-    // 检测空格键返回
     if (Phaser.Input.Keyboard.JustDown(this.spaceKey) && !this.isTransitioning) {
-      // 发送场景切换事件
       this.eventBus.emit(GameEvents.SCENE_SWITCH, {
         from: SCENES.HOME,
         to: SCENES.TOWN_OUTDOOR

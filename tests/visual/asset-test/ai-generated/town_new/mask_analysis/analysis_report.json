@@ -1,0 +1,114 @@
+{
+  "timestamp": "2026-04-07T16:11:31.912375",
+  "alignment": {
+    "original_size": [
+      2752,
+      1536
+    ],
+    "mask_size": [
+      2784,
+      1536
+    ],
+    "width_diff": 32,
+    "height_diff": 0,
+    "needs_adjustment": true
+  },
+  "special_colors": {
+    "red_clusters": [
+      {
+        "pixel_count": 2430,
+        "center": [
+          1947,
+          269
+        ],
+        "tile": [
+          60,
+          8
+        ]
+      },
+      {
+        "pixel_count": 3000,
+        "center": [
+          495,
+          271
+        ],
+        "tile": [
+          15,
+          8
+        ]
+      },
+      {
+        "pixel_count": 2152,
+        "center": [
+          1967,
+          1149
+        ],
+        "tile": [
+          61,
+          35
+        ]
+      }
+    ],
+    "yellow_clusters": [
+      {
+        "pixel_count": 38922,
+        "center": [
+          1395,
+          787
+        ],
+        "tile": [
+          43,
+          24
+        ]
+      }
+    ]
+  },
+  "tiles": {
+    "total": 4128,
+    "walkable": 916,
+    "connected_region_size": 916
+  },
+  "validation": {
+    "main_region_size": 916,
+    "total_tiles": 4128,
+    "walkable_ratio": 0.22189922480620156,
+    "all_doors_reachable": true,
+    "door_validation": {
+      "garden": {
+        "tile_position": [
+          15,
+          8
+        ],
+        "in_connected_region": false,
+        "adjacent_walkable": true,
+        "reachable": true
+      },
+      "clinic": {
+        "tile_position": [
+          60,
+          8
+        ],
+        "in_connected_region": false,
+        "adjacent_walkable": true,
+        "reachable": true
+      },
+      "home": {
+        "tile_position": [
+          61,
+          35
+        ],
+        "in_connected_region": true,
+        "adjacent_walkable": true,
+        "reachable": true
+      }
+    }
+  },
+  "output_files": {
+    "alignment_check": "/home/lixiang/Desktop/zhongyi_game_v3/tests/visual/asset-test/ai-generated/town_new/mask_analysis/alignment_check.png",
+    "json_config": "/home/lixiang/Desktop/zhongyi_game_v3/tests/visual/asset-test/ai-generated/town_new/mask_analysis/map_config.json",
+    "ts_config": "/home/lixiang/Desktop/zhongyi_game_v3/tests/visual/asset-test/ai-generated/town_new/mask_analysis/town-walkable-config.ts",
+    "walkable_overlay": "/home/lixiang/Desktop/zhongyi_game_v3/tests/visual/asset-test/ai-generated/town_new/mask_analysis/walkable_overlay.png",
+    "connectivity_grid": "/home/lixiang/Desktop/zhongyi_game_v3/tests/visual/asset-test/ai-generated/town_new/mask_analysis/connectivity_grid.png",
+    "final_result": "/home/lixiang/Desktop/zhongyi_game_v3/tests/visual/asset-test/ai-generated/town_new/mask_analysis/final_result.png"
+  }
+}

@@ -8,93 +8,112 @@ import path from 'path';
 export interface TestResult {
   testId: string;
   testName: string;
-  layer: string; // 'layer1-state', 'layer2-visual', 'layer3-ai'
-  status: 'PASS' | 'FAIL' | 'SKIP' | 'ERROR';
-  confidence?: number; // 0-1, AI判定置信度
-  executionTime: number; // 毫秒
-  actualValue?: unknown; // 实际值
-  expectedValue?: unknown; // 期望值
-  errorMessage?: string; // 错误信息
-  screenshot?: string; // 截图路径
-  aiAnalysis?: string; // AI分析结果
-  issues?: string[]; // 发现的问题
+  layer: 'smoke' | 'functional' | 'deep-validation' | 'performance' | 'user';
+  passed: boolean;
+  judgmentType: 'hard' | 'soft' | 'visual' | 'threshold' | 'user-score';
+  confidence?: number;
+  score?: number;
+  executionTime: number;
+  expected?: unknown;
+  actual?: unknown;
+  issues: string[];
+  evidence?: {
+    stateVerification?: string;
+    logValidation?: string;
+    screenshotAnalysis?: string;
+    performanceMetric?: string;
+  };
 }
 
 /**
  * Layer测试结果
  */
 export interface LayerResult {
-  layerName: string; // 'layer1-state', 'layer2-visual', 'layer3-ai'
+  layer: 'smoke' | 'functional' | 'deep-validation' | 'performance' | 'user';
+  layerName: string;
   totalTests: number;
   passedTests: number;
   failedTests: number;
-  skippedTests: number;
-  errorTests: number;
-  passRate: number; // 百分比
-  averageExecutionTime: number; // 平均执行时间(ms)
+  passRate: number;
+  score?: number;
+  executionTime: number;
+  status: 'passed' | 'failed' | 'blocked' | 'pending';
   results: TestResult[];
-  criticalFailures: TestResult[]; // 关键失败
-  summary: string; // Layer摘要
+  blockingReason?: string;
 }
 
 /**
  * 完整测试结果
  */
 export interface TestResults {
-  meta: {
-    phase: string; // 'Phase 1.5'
-    timestamp: string; // ISO时间
-    duration: number; // 总执行时间(ms)
-    environment: {
-      browser: string;
-      os: string;
-      nodeVersion: string;
+  phase: string;
+  testType: string;
+  timestamp: string;
+  totalExecutionTime: number;
+  overallPassed: boolean;
+  layerResults: LayerResult[];
+  summary: {
+    totalTests: number;
+    totalPassed: number;
+    totalFailed: number;
+    overallPassRate: number;
+    overallScore?: number;
+  };
+  scores?: {
+    atmosphere?: {
+      pastoral_healing?: number;
+      tcm_culture?: number;
+      exploration_guide?: number;
+      style_consistency?: number;
+    };
+    technical?: {
+      layer_architecture?: number;
+      color_match?: number;
     };
   };
-  overall: {
-    totalTests: number;
-    passedTests: number;
-    failedTests: number;
-    skippedTests: number;
-    errorTests: number;
-    overallPassed: boolean;
-    passRate: number;
+  aiFeedback?: {
+    summary: string;
+    strengths: string[];
+    improvements: string[];
   };
-  layers: LayerResult[];
-  recommendations?: string[]; // AI推荐
-  diagnosis?: string; // AI诊断
+  screenshots?: string[];
 }
 
 /**
  * 报告生成器
- * 用于生成Phase 1.5测试报告
  */
 export class ReportGenerator {
-  private outputDir: string;
+  private outputDirectory: string;
 
-  /**
-   * 初始化报告生成器
-   * @param outputDir 输出目录路径
-   */
-  constructor(outputDir: string = 'tests/visual/phase1-5/reports') {
-    this.outputDir = outputDir;
-    // 确保输出目录存在
-    if (!fs.existsSync(outputDir)) {
-      fs.mkdirSync(outputDir, { recursive: true });
+  constructor(outputDirectory: string = 'tests/visual/reports/phase1-5') {
+    this.outputDirectory = outputDirectory;
+    if (!fs.existsSync(outputDirectory)) {
+      fs.mkdirSync(outputDirectory, { recursive: true });
     }
   }
 
   /**
    * 生成JSON报告
    * @param results 完整测试结果
-   * @returns 生成的JSON文件路径
+   * @returns 生成的报告文件路径
    */
   generateJsonReport(results: TestResults): string {
-    const filename = `phase1-5-report-${Date.now()}.json`;
-    const filepath = path.join(this.outputDir, filename);
+    const report: TestResults = {
+      phase: results.phase || 'Phase 1.5',
+      testType: results.testType || '视觉验收',
+      timestamp: results.timestamp || new Date().toISOString(),
+      totalExecutionTime: results.totalExecutionTime,
+      overallPassed: results.overallPassed,
+      layerResults: results.layerResults,
+      summary: results.summary,
+      scores: results.scores,
+      aiFeedback: results.aiFeedback,
+      screenshots: results.screenshots
+    };
 
-    const jsonData = JSON.stringify(results, null, 2);
-    fs.writeFileSync(filepath, jsonData, 'utf-8');
+    const filename = `phase1-5-report-${Date.now()}.json`;
+    const filepath = path.join(this.outputDirectory, filename);
+    fs.writeFileSync(filepath, JSON.stringify(report, null, 2));
 
     return filepath;
   }
@@ -102,126 +121,129 @@ export class ReportGenerator {
   /**
    * 生成Markdown报告
    * @param results 完整测试结果
-   * @returns 生成的Markdown文件路径
+   * @returns 生成的报告文件路径
    */
   generateMarkdownReport(results: TestResults): string {
     const lines: string[] = [];
 
     // 标题
-    lines.push('# Phase 1.5 AI端到端视觉验收测试报告');
+    lines.push(`# ${results.phase} 测试报告`);
     lines.push('');
-    lines.push(`**生成时间**: ${results.meta.timestamp}`);
-    lines.push(`**总执行时间**: ${(results.meta.duration / 1000).toFixed(2)}秒`);
-    lines.push('');
-
-    // 环境信息
-    lines.push('## 测试环境');
-    lines.push('');
-    lines.push('| 项目 | 值 |');
-    lines.push('|------|-----|');
-    lines.push(`| 浏览器 | ${results.meta.environment.browser} |`);
-    lines.push(`| 操作系统 | ${results.meta.environment.os} |`);
-    lines.push(`| Node版本 | ${results.meta.environment.nodeVersion} |`);
+    lines.push(`**测试类型**: ${results.testType}`);
+    lines.push(`**执行时间**: ${results.timestamp}`);
+    lines.push(`**总耗时**: ${(results.totalExecutionTime / 1000).toFixed(1)}秒`);
+    lines.push(`**总体结果**: ${results.overallPassed ? 'PASS' : 'FAIL'}`);
     lines.push('');
 
-    // 总体结果
-    lines.push('## 总体测试结果');
+    // 测试结果概览
+    lines.push('## 测试结果概览');
+    lines.push('');
+    lines.push('| Layer | 通过率 | 状态 | 说明 |');
+    lines.push('|-------|--------|------|------|');
+
+    for (const layer of results.layerResults) {
+      const statusIcon = this.getStatusIcon(layer.status);
+      const passRateDisplay = layer.score !== undefined
+        ? `${layer.score.toFixed(1)}/5`
+        : `${(layer.passRate * 100).toFixed(0)}%`;
+      const note = layer.blockingReason || '';
+      lines.push(`| ${layer.layerName} | ${passRateDisplay} | ${statusIcon} | ${note} |`);
+    }
+    lines.push('');
+
+    // 总体统计
+    lines.push('## 总体统计');
     lines.push('');
     lines.push('| 指标 | 数值 |');
     lines.push('|------|------|');
-    lines.push(`| 总测试数 | ${results.overall.totalTests} |`);
-    lines.push(`| 通过 | ${results.overall.passedTests} |`);
-    lines.push(`| 失败 | ${results.overall.failedTests} |`);
-    lines.push(`| 跳过 | ${results.overall.skippedTests} |`);
-    lines.push(`| 错误 | ${results.overall.errorTests} |`);
-    lines.push(`| 通过率 | ${results.overall.passRate.toFixed(1)}% |`);
-    lines.push(`| 总体判定 | ${this.getStatusEmoji(results.overall.overallPassed ? 'PASS' : 'FAIL')} |`);
+    lines.push(`| 总测试数 | ${results.summary.totalTests} |`);
+    lines.push(`| 通过数 | ${results.summary.totalPassed} |`);
+    lines.push(`| 失败数 | ${results.summary.totalFailed} |`);
+    if (results.summary.overallScore !== undefined) {
+      lines.push(`| 总体评分 | ${results.summary.overallScore.toFixed(1)}/5 |`);
+    } else {
+      lines.push(`| 通过率 | ${(results.summary.overallPassRate * 100).toFixed(1)}% |`);
+    }
     lines.push('');
 
-    // 各Layer结果
-    lines.push('## 分层测试结果');
+    // 各Layer详细结果
+    lines.push('## 详细测试结果');
     lines.push('');
 
-    for (const layer of results.layers) {
+    for (const layer of results.layerResults) {
       lines.push(`### ${layer.layerName}`);
       lines.push('');
-      lines.push('| 指标 | 数值 |');
-      lines.push('|------|------|');
-      lines.push(`| 测试数 | ${layer.totalTests} |`);
-      lines.push(`| 通过 | ${layer.passedTests} |`);
-      lines.push(`| 失败 | ${layer.failedTests} |`);
-      lines.push(`| 通过率 | ${layer.passRate.toFixed(1)}% |`);
-      lines.push(`| 平均执行时间 | ${layer.averageExecutionTime.toFixed(0)}ms |`);
+      lines.push(`- **通过率**: ${(layer.passRate * 100).toFixed(0)}%`);
+      lines.push(`- **通过/失败**: ${layer.passedTests}/${layer.failedTests}`);
+      lines.push(`- **执行时间**: ${(layer.executionTime / 1000).toFixed(1)}秒`);
       lines.push('');
 
-      // 测试详情表格
       if (layer.results.length > 0) {
-        lines.push('| 测试ID | 测试名称 | 状态 | 置信度 | 执行时间 |');
-        lines.push('|--------|----------|------|--------|----------|');
+        lines.push('| 测试ID | 测试项 | 判定类型 | 结果 | 详情 |');
+        lines.push('|--------|--------|----------|------|------|');
 
         for (const result of layer.results) {
-          const statusEmoji = this.getStatusEmoji(result.status);
-          const confidence = result.confidence !== undefined
-            ? `${(result.confidence * 100).toFixed(0)}%`
-            : '-';
-          const execTime = `${result.executionTime}ms`;
-          lines.push(`| ${result.testId} | ${result.testName} | ${statusEmoji} | ${confidence} | ${execTime} |`);
+          const status = result.passed ? 'PASS' : 'FAIL';
+          const detail = result.issues.length > 0 ? result.issues[0] : '-';
+          lines.push(`| ${result.testId} | ${result.testName} | ${result.judgmentType} | ${status} | ${detail} |`);
         }
         lines.push('');
       }
 
-      // 关键失败
-      if (layer.criticalFailures.length > 0) {
-        lines.push('#### 关键失败项');
+      // 失败详情
+      const failedResults = layer.results.filter(r => !r.passed);
+      if (failedResults.length > 0) {
+        lines.push('#### 失败项详情');
         lines.push('');
-        for (const failure of layer.criticalFailures) {
-          lines.push(`- **${failure.testName}** (${failure.testId})`);
-          if (failure.errorMessage) {
-            lines.push(`  - 错误: ${failure.errorMessage}`);
+        for (const result of failedResults) {
+          lines.push(`**${result.testId}: ${result.testName}**`);
+          lines.push('');
+          if (result.issues.length > 0) {
+            lines.push(`- 问题: ${result.issues.join(', ')}`);
           }
-          if (failure.issues && failure.issues.length > 0) {
-            lines.push(`  - 问题: ${failure.issues.join(', ')}`);
-          }
+          lines.push('');
+        }
+      }
+    }
+
+    // AI反馈（如果有）
+    if (results.aiFeedback) {
+      lines.push('## AI反馈');
+      lines.push('');
+      lines.push('### 总结');
+      lines.push(results.aiFeedback.summary);
+      lines.push('');
+      if (results.aiFeedback.strengths.length > 0) {
+        lines.push('### 优点');
+        lines.push('');
+        for (const strength of results.aiFeedback.strengths) {
+          lines.push(`- ${strength}`);
         }
         lines.push('');
       }
-
-      // Layer摘要
-      lines.push(`> ${layer.summary}`);
-      lines.push('');
-    }
-
-    // AI诊断和建议
-    if (results.diagnosis) {
-      lines.push('## AI诊断分析');
-      lines.push('');
-      lines.push(results.diagnosis);
-      lines.push('');
-    }
-
-    if (results.recommendations && results.recommendations.length > 0) {
-      lines.push('## AI推荐行动');
-      lines.push('');
-      for (const rec of results.recommendations) {
-        lines.push(`- ${rec}`);
+      if (results.aiFeedback.improvements.length > 0) {
+        lines.push('### 改进建议');
+        lines.push('');
+        for (const improvement of results.aiFeedback.improvements) {
+          lines.push(`- ${improvement}`);
+        }
+        lines.push('');
       }
-      lines.push('');
     }
 
     // 结论
     lines.push('## 结论');
     lines.push('');
-    if (results.overall.overallPassed) {
-      lines.push('**所有测试通过**, Phase 1.5 视觉验收完成, 可以进入下一阶段开发。');
+    if (results.overallPassed) {
+      lines.push('**所有测试通过**，Phase 1.5 验收完成。');
     } else {
-      lines.push(`**${results.overall.failedTests}项测试失败**, 需要修复问题后再进行验收。`);
-      lines.push('');
-      lines.push('建议优先处理关键失败项, 确保核心功能正常运行。');
+      lines.push(`**${results.summary.totalFailed} 项测试失败**，需要修复后再进行验收。`);
     }
+    lines.push('');
 
     const filename = `phase1-5-report-${Date.now()}.md`;
-    const filepath = path.join(this.outputDir, filename);
-    fs.writeFileSync(filepath, lines.join('\n'), 'utf-8');
+    const filepath = path.join(this.outputDirectory, filename);
+    fs.writeFileSync(filepath, lines.join('\n'));
 
     return filepath;
   }
@@ -229,101 +251,249 @@ export class ReportGenerator {
   /**
    * 生成汇总报告
    * @param layerResults 各Layer测试结果
-   * @returns 生成的汇总Markdown文件路径
+   * @returns 生成的汇总报告文件路径
    */
   generateSummaryReport(layerResults: LayerResult[]): string {
     const lines: string[] = [];
 
-    lines.push('# Phase 1.5 测试汇总报告');
-    lines.push('');
-    lines.push(`**生成时间**: ${new Date().toISOString()}`);
-    lines.push('');
-
-    // Layer汇总表
-    lines.push('## Layer测试汇总');
-    lines.push('');
-    lines.push('| Layer | 总测试 | 通过 | 失败 | 通过率 | 平均耗时 |');
-    lines.push('|-------|--------|------|------|--------|----------|');
-
-    for (const layer of layerResults) {
-      const statusEmoji = layer.passRate >= 80 ? '✅' : (layer.passRate >= 50 ? '⚠️' : '❌');
-      lines.push(
-        `| ${layer.layerName} | ${layer.totalTests} | ${layer.passedTests} | ${layer.failedTests} | ` +
-        `${layer.passRate.toFixed(1)}% ${statusEmoji} | ${layer.averageExecutionTime.toFixed(0)}ms |`
-      );
-    }
-    lines.push('');
-
-    // 总计
+    const timestamp = new Date().toISOString();
+    const totalExecutionTime = layerResults.reduce((sum, l) => sum + l.executionTime, 0);
     const totalTests = layerResults.reduce((sum, l) => sum + l.totalTests, 0);
     const totalPassed = layerResults.reduce((sum, l) => sum + l.passedTests, 0);
     const totalFailed = layerResults.reduce((sum, l) => sum + l.failedTests, 0);
-    const totalRate = (totalPassed / totalTests) * 100;
+    const overallPassRate = totalTests > 0 ? totalPassed / totalTests : 0;
 
-    lines.push('## 总体汇总');
+    const scoredLayers = layerResults.filter(l => l.score !== undefined);
+    const overallScore = scoredLayers.length > 0
+      ? scoredLayers.reduce((sum, l) => sum + (l.score || 0), 0) / scoredLayers.length
+      : undefined;
+
+    const overallPassed = this.determineOverallPassed(layerResults);
+
+    // 标题
+    lines.push('# Phase 1.5 测试汇总报告');
     lines.push('');
-    lines.push(`- **总测试数**: ${totalTests}`);
-    lines.push(`- **通过数**: ${totalPassed}`);
-    lines.push(`- **失败数**: ${totalFailed}`);
-    lines.push(`- **通过率**: ${totalRate.toFixed(1)}%`);
+    lines.push(`**执行时间**: ${timestamp}`);
+    lines.push(`**总耗时**: ${(totalExecutionTime / 1000).toFixed(1)}秒`);
+    lines.push(`**总体结果**: ${overallPassed ? 'PASS' : 'FAIL'}`);
     lines.push('');
 
-    // 快速状态判定
-    lines.push('## 状态判定');
+    // 测试结果概览
+    lines.push('## 测试结果概览');
     lines.push('');
-    if (totalFailed === 0) {
-      lines.push('✅ **全部通过** - Phase 1.5验收完成');
-    } else if (totalRate >= 80) {
-      lines.push('⚠️ **大部分通过** - 有少量失败需要关注');
-    } else if (totalRate >= 50) {
-      lines.push('⚠️ **半数通过** - 需要重点修复失败项');
-    } else {
-      lines.push('❌ **大量失败** - 需要全面检查和修复');
+    lines.push('| Layer | 通过率 | 通过/总数 | 状态 | 阻断原因 |');
+    lines.push('|-------|--------|-----------|------|----------|');
+
+    for (const layer of layerResults) {
+      const statusIcon = this.getStatusIcon(layer.status);
+      const passRateDisplay = layer.score !== undefined
+        ? `${layer.score.toFixed(1)}/5`
+        : `${(layer.passRate * 100).toFixed(0)}%`;
+      const passCount = `${layer.passedTests}/${layer.totalTests}`;
+      const blocking = layer.blockingReason || '-';
+      lines.push(`| ${layer.layerName} | ${passRateDisplay} | ${passCount} | ${statusIcon} | ${blocking} |`);
     }
-
-    // 关键问题汇总
-    lines.push('');
-    lines.push('## 关键问题汇总');
     lines.push('');
 
-    const allCriticalFailures = layerResults.flatMap(l => l.criticalFailures);
-    if (allCriticalFailures.length === 0) {
-      lines.push('无关键失败项');
+    // 总体统计
+    lines.push('## 总体统计');
+    lines.push('');
+    lines.push('| 指标 | 数值 |');
+    lines.push('|------|------|');
+    lines.push(`| 总测试数 | ${totalTests} |`);
+    lines.push(`| 通过数 | ${totalPassed} |`);
+    lines.push(`| 失败数 | ${totalFailed} |`);
+    if (overallScore !== undefined) {
+      lines.push(`| 总体评分 | ${overallScore.toFixed(1)}/5 |`);
     } else {
-      for (const failure of allCriticalFailures) {
-        lines.push(`- **${failure.layer}**: ${failure.testName} (${failure.testId})`);
+      lines.push(`| 通过率 | ${(overallPassRate * 100).toFixed(1)}% |`);
+    }
+    lines.push('');
+
+    // 阻断分析
+    const blockedLayers = layerResults.filter(l => l.status === 'blocked' || l.status === 'failed');
+    if (blockedLayers.length > 0) {
+      lines.push('## 阻断分析');
+      lines.push('');
+      for (const layer of blockedLayers) {
+        lines.push(`### ${layer.layerName}`);
+        lines.push('');
+        if (layer.blockingReason) {
+          lines.push(`- **阻断原因**: ${layer.blockingReason}`);
+        }
+        const failedTests = layer.results.filter(r => !r.passed);
+        if (failedTests.length > 0) {
+          lines.push(`- **失败测试项**: ${failedTests.map(r => r.testId).join(', ')}`);
+        }
+        lines.push('');
       }
     }
 
-    const filename = `phase1-5-summary-${Date.now()}.md`;
-    const filepath = path.join(this.outputDir, filename);
-    fs.writeFileSync(filepath, lines.join('\n'), 'utf-8');
+    // 失败项汇总
+    const allFailedTests = layerResults.flatMap(l => l.results.filter(r => !r.passed));
+    if (allFailedTests.length > 0) {
+      lines.push('## 失败项汇总');
+      lines.push('');
+      lines.push('| Layer | 测试ID | 测试项 | 问题 |');
+      lines.push('|-------|--------|--------|------|');
+      for (const result of allFailedTests) {
+        const layer = layerResults.find(l => l.results.includes(result));
+        const layerName = layer?.layerName || '-';
+        const issue = result.issues.length > 0 ? result.issues[0] : '-';
+        lines.push(`| ${layerName} | ${result.testId} | ${result.testName} | ${issue} |`);
+      }
+      lines.push('');
+    }
+
+    // 建议改进
+    lines.push('## 建议改进');
+    lines.push('');
+    if (allFailedTests.length > 0) {
+      const suggestions = this.generateSuggestions(allFailedTests);
+      for (const suggestion of suggestions) {
+        lines.push(`- ${suggestion}`);
+      }
+    } else {
+      lines.push('- 无需要改进的项，所有测试已通过。');
+    }
+    lines.push('');
+
+    // 结论
+    lines.push('## 结论');
+    lines.push('');
+    if (overallPassed) {
+      lines.push('**Phase 1.5 测试验收完成**。');
+      lines.push('');
+      lines.push('下一步：');
+      lines.push('- 执行用户验收测试（Layer 5）');
+      lines.push('- 收集用户反馈问卷');
+      lines.push('- 根据反馈进行优化调整');
+    } else {
+      lines.push(`**Phase 1.5 测试未通过**，共 ${allFailedTests.length} 项失败。`);
+      lines.push('');
+      lines.push('下一步：');
+      lines.push('- 分析失败项的根因');
+      lines.push('- 补充必要的日志和截图');
+      lines.push('- 修复问题后重新执行测试');
+    }
+    lines.push('');
+
+    const filename = `summary-report-${Date.now()}.md`;
+    const filepath = path.join(this.outputDirectory, filename);
+    fs.writeFileSync(filepath, lines.join('\n'));
 
     return filepath;
   }
 
   /**
-   * 获取状态表情符号
-   * @param status 测试状态
-   * @returns 状态表情符号字符串
+   * 获取状态图标
    */
-  private getStatusEmoji(status: 'PASS' | 'FAIL' | 'SKIP' | 'ERROR'): string {
+  private getStatusIcon(status: 'passed' | 'failed' | 'blocked' | 'pending'): string {
     switch (status) {
-      case 'PASS':
-        return '✅ 通过';
-      case 'FAIL':
-        return '❌ 失败';
-      case 'SKIP':
-        return '⏭️ 跳过';
-      case 'ERROR':
-        return '⚠️ 错误';
+      case 'passed':
+        return 'PASS';
+      case 'failed':
+        return 'FAIL';
+      case 'blocked':
+        return 'BLOCKED';
+      case 'pending':
+        return 'PENDING';
       default:
-        return '❓ 未知';
+        return '-';
     }
+  }
+
+  /**
+   * 判断总体是否通过
+   */
+  private determineOverallPassed(layerResults: LayerResult[]): boolean {
+    // Layer 1 (smoke) 必须100%通过
+    const smokeLayer = layerResults.find(l => l.layer === 'smoke');
+    if (smokeLayer && smokeLayer.passRate < 1) {
+      return false;
+    }
+
+    // Layer 2 (functional) 必须>=90%通过
+    const functionalLayer = layerResults.find(l => l.layer === 'functional');
+    if (functionalLayer && functionalLayer.passRate < 0.9) {
+      return false;
+    }
+
+    // Layer 3 (deep-validation) 评分>=3.5/5
+    const deepLayer = layerResults.find(l => l.layer === 'deep-validation');
+    if (deepLayer && deepLayer.score !== undefined && deepLayer.score < 3.5) {
+      return false;
+    }
+
+    // 没有阻断的Layer
+    const blockedLayers = layerResults.filter(l => l.status === 'blocked');
+    if (blockedLayers.length > 0) {
+      return false;
+    }
+
+    return true;
+  }
+
+  /**
+   * 基于失败项生成建议
+   */
+  private generateSuggestions(failedTests: TestResult[]): string[] {
+    const suggestions: string[] = [];
+
+    const hardFailures = failedTests.filter(r => r.judgmentType === 'hard');
+    const softFailures = failedTests.filter(r => r.judgmentType === 'soft');
+    const visualFailures = failedTests.filter(r => r.judgmentType === 'visual');
+    const thresholdFailures = failedTests.filter(r => r.judgmentType === 'threshold');
+
+    if (hardFailures.length > 0) {
+      suggestions.push(`有 ${hardFailures.length} 项硬性标准未通过，需要精确修复数值匹配问题`);
+    }
+    if (softFailures.length > 0) {
+      suggestions.push(`有 ${softFailures.length} 项软性标准未通过，需要检查误差范围是否合理`);
+    }
+    if (visualFailures.length > 0) {
+      suggestions.push(`有 ${visualFailures.length} 项视觉验证未通过，需要检查素材质量或调整AI判定阈值`);
+    }
+    if (thresholdFailures.length > 0) {
+      suggestions.push(`有 ${thresholdFailures.length} 项阈值判定未通过，需要检查性能指标是否达标`);
+    }
+
+    const collisionFailures = failedTests.filter(r =>
+      r.testId.includes('F-001') || r.testId.includes('F-002') || r.testId.includes('collision')
+    );
+    if (collisionFailures.length > 0) {
+      suggestions.push('碰撞检测存在问题，建议检查可行走瓦片数据配置');
+    }
+
+    const doorFailures = failedTests.filter(r =>
+      r.testId.includes('F-007') || r.testId.includes('F-008') || r.testId.includes('F-009') ||
+      r.testName.includes('门')
+    );
+    if (doorFailures.length > 0) {
+      suggestions.push('门交互存在问题，建议检查门坐标配置和场景切换逻辑');
+    }
+
+    const performanceFailures = failedTests.filter(r => r.layer === 'performance');
+    if (performanceFailures.length > 0) {
+      suggestions.push('性能指标未达标，建议优化背景图加载或减少渲染负载');
+    }
+
+    if (suggestions.length === 0) {
+      suggestions.push('请分析具体失败项的详细信息进行针对性修复');
+    }
+
+    return suggestions;
+  }
+
+  /**
+   * 添加AI反馈到JSON报告
+   */
+  addAiFeedback(jsonReportPath: string, summary: string, strengths: string[], improvements: string[]): void {
+    const report: TestResults = JSON.parse(fs.readFileSync(jsonReportPath, 'utf-8'));
+    report.aiFeedback = { summary, strengths, improvements };
+    fs.writeFileSync(jsonReportPath, JSON.stringify(report, null, 2));
   }
 }
 
-/**
- * 默认报告生成器实例
- */
+// 默认实例
 export const reportGenerator = new ReportGenerator();

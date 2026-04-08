@@ -3,328 +3,226 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>场景素材对比测试 - 药灵山谷</title>
+    <title>药灵山谷 - AI素材对比展示（最终方案）</title>
     <style>
-        * { box-sizing: border-box; margin: 0; padding: 0; }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            font-family: 'Microsoft YaHei', sans-serif;
             background: #1a1a2e;
             color: #eee;
             padding: 20px;
-            line-height: 1.6;
         }
-        h1 {
-            text-align: center;
-            margin-bottom: 10px;
-            color: #4a9;
-        }
-        .subtitle {
-            text-align: center;
-            color: #888;
+        h1 { color: #4a9; margin-bottom: 20px; }
+        h2 { color: #fd8; margin-bottom: 15px; }
+        .section {
             margin-bottom: 30px;
-        }
-        .comparison-container {
-            max-width: 1400px;
-            margin: 0 auto;
-        }
-        .scene-card {
             background: #16213e;
-            border-radius: 12px;
             padding: 20px;
-            margin-bottom: 30px;
-            border: 1px solid #0f3460;
+            border-radius: 8px;
         }
-        .scene-card h2 {
-            color: #4a9;
-            margin-bottom: 5px;
-            font-size: 1.3em;
+        .success-box {
+            background: #2d5;
+            color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
         }
-        .scene-info {
-            color: #888;
-            font-size: 0.9em;
-            margin-bottom: 15px;
-        }
-        .comparison-row {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
+        .comparison {
+            display: flex;
             gap: 20px;
+            flex-wrap: wrap;
         }
-        .tile-preview {
+        .asset-card {
             background: #0f3460;
-            border-radius: 8px;
             padding: 15px;
-            text-align: center;
+            border-radius: 6px;
+            max-width: 550px;
         }
-        .tile-preview h3 {
-            font-size: 1em;
-            margin-bottom: 10px;
-            color: #8ca;
-        }
-        .tile-preview img {
+        .asset-card img {
             max-width: 100%;
-            max-height: 500px;
             border-radius: 4px;
-            image-rendering: auto;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
-        }
-        .placeholder {
-            background: #2a2a4a;
-            border: 2px dashed #4a9;
-            border-radius: 8px;
-            padding: 60px;
-            text-align: center;
-            color: #888;
-            min-height: 300px;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-        }
-        .scoring {
-            background: #0f3460;
-            border-radius: 8px;
-            padding: 15px;
-            margin-top: 20px;
-        }
-        .scoring h4 {
             margin-bottom: 10px;
-            color: #fd8;
+            border: 1px solid #865;
         }
-        .score-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin: 8px 0;
-            font-size: 0.9em;
-        }
-        .score-input {
-            width: 40px;
-            background: #1a1a2e;
-            border: 1px solid #4a9;
-            color: #fff;
-            padding: 4px;
-            border-radius: 4px;
-            text-align: center;
-            margin: 0 5px;
-        }
-        .decision {
-            margin-top: 15px;
-            padding: 15px;
-            background: #1a1a2e;
-            border-radius: 8px;
-        }
-        .decision select {
-            padding: 8px 15px;
-            background: #16213e;
-            color: #fff;
-            border: 1px solid #4a9;
-            border-radius: 4px;
-            font-size: 1em;
-        }
-        .notes {
-            width: 100%;
-            background: #1a1a2e;
-            border: 1px solid #4a9;
-            color: #fff;
-            padding: 10px;
-            border-radius: 4px;
+        .asset-info {
+            font-size: 14px;
+            color: #8ca;
             margin-top: 10px;
-            resize: vertical;
-            font-family: inherit;
         }
-        .prompt-box {
-            background: #0a0a1a;
-            border-radius: 4px;
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
+            margin: 20px 0;
+        }
+        .stat-box {
+            background: #0f3460;
+            padding: 15px;
+            border-radius: 6px;
+            text-align: center;
+        }
+        .stat-value {
+            font-size: 28px;
+            color: #fd8;
+            font-weight: bold;
+        }
+        .stat-label {
+            font-size: 12px;
+            color: #8ca;
+            margin-top: 5px;
+        }
+        .stat-diff {
+            font-size: 14px;
+            color: #2d5;
+        }
+        .approach-box {
+            background: #865;
+            color: #fff;
+            padding: 15px;
+            border-radius: 6px;
+            margin-top: 10px;
+        }
+        .merged-preview {
+            max-width: 300px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 15px 0;
+        }
+        th, td {
             padding: 10px;
-            margin-top: 15px;
-            font-size: 0.85em;
-            color: #aaa;
             text-align: left;
+            border: 1px solid #865;
         }
-        .prompt-box strong {
-            color: #4a9;
+        th {
+            background: #5a3;
+            color: #fff;
         }
-        @media (max-width: 900px) {
-            .comparison-row {
-                grid-template-columns: 1fr;
-            }
+        td.improved {
+            color: #2d5;
+            font-weight: bold;
         }
     </style>
 </head>
 <body>
-    <h1>🎮 场景素材对比测试</h1>
-    <p class="subtitle">对比开源素材拼接 vs AI生成整体场景的效果</p>
+    <h1>药灵山谷 - AI素材与瓦片系统集成方案（已完成）</h1>
 
-    <div class="comparison-container">
-        <!-- 诊所建筑对比 -->
-        <div class="scene-card">
-            <h2>🏠 诊所建筑整体（外层建筑）</h2>
-            <p class="scene-info">场景规格: 8x10瓦片 (256x320像素) | 包含: 墙壁、门、窗户、屋顶、招牌</p>
+    <div class="success-box">
+        <h2>最终方案确定</h2>
+        <p style="margin-top: 10px;">
+            <strong>方案A（背景层）</strong>用于室外建筑外观整体交互<br>
+            <strong>方案B（瓦片合并）</strong>用于室内场景元素级交互<br>
+            瓦片合并效果：4096瓦片 → 62瓦片，tileset大小 4.4MB → 93KB
+        </p>
+    </div>
 
-            <div class="comparison-row">
-                <div class="tile-preview">
-                    <h3>📁 开源素材拼接</h3>
-                    <div class="placeholder">
-                        <p style="font-size:1.1em;">待下载拼接</p>
-                        <p style="margin-top:15px;">来源: Niao_K古风素材 + OpenGameArt建筑</p>
-                        <p style="color:#4a9;">需手工拼接成整体建筑</p>
-                    </div>
-                </div>
-                <div class="tile-preview">
-                    <h3>🤖 AI生成整体 (Seedream)</h3>
-                    <div class="placeholder" id="ai-clinic">
-                        <p>加载中...</p>
-                    </div>
+    <div class="section">
+        <h2>合并效果对比</h2>
+        <table>
+            <tr>
+                <th>场景</th>
+                <th>原瓦片数</th>
+                <th>合并后瓦片数</th>
+                <th>合并率</th>
+                <th>原文件大小</th>
+                <th>合并后大小</th>
+            </tr>
+            <tr>
+                <td>诊所室内</td>
+                <td>4096</td>
+                <td class="improved">62</td>
+                <td class="improved">98.5%</td>
+                <td>4.4MB</td>
+                <td class="improved">93KB</td>
+            </tr>
+            <tr>
+                <td>药田区域</td>
+                <td>4096</td>
+                <td class="improved">104</td>
+                <td class="improved">97.5%</td>
+                <td>4.4MB</td>
+                <td class="improved">~120KB</td>
+            </tr>
+        </table>
+    </div>
+
+    <div class="section">
+        <h2>素材展示</h2>
+
+        <div class="comparison">
+            <div class="asset-card">
+                <h3>诊所外观（方案A - 背景层）</h3>
+                <img src="ai-generated/clinic_building/clinic_building_exterior.png">
+                <div class="approach-box">
+                    <strong>用途：室外建筑整体显示</strong><br>
+                    玩家接近时触发"进入诊所"交互<br>
+                    无需切割瓦片，直接作为背景层使用
                 </div>
             </div>
 
-            <div class="prompt-box">
-                <strong>AI Prompt:</strong> 像素艺术游戏素材，中医诊所建筑外观，古朴棕色墙壁，底部中央有诊所门，左右两侧有阳光窗户，顶部有传统中式屋顶轮廓，门上方有'青木诊所'招牌，温馨的中医文化氛围，像素艺术风格，参考星露谷物语风格
-            </div>
-
-            <div class="scoring">
-                <h4>📊 评分 (1-5分)</h4>
-                <div class="score-item">
-                    <span>整体风格统一:</span>
-                    <span>开源<input class="score-input" type="number" min="1" max="5"> vs AI<input class="score-input" type="number" min="1" max="5"></span>
+            <div class="asset-card">
+                <h3>诊所室内（方案B - 瓦片合并后）</h3>
+                <img src="ai-generated/indoor_scenes/clinic_tiles_merged/tileset_merged.png" class="merged-preview">
+                <div class="approach-box">
+                    <strong>用途：室内场景元素级交互</strong><br>
+                    62个瓦片支持点击药柜/经络图等详情<br>
+                    瓦片可定位每个可交互元素
                 </div>
-                <div class="score-item">
-                    <span>元素协调性:</span>
-                    <span>开源<input class="score-input" type="number" min="1" max="5"> vs AI<input class="score-input" type="number" min="1" max="5"></span>
-                </div>
-                <div class="score-item">
-                    <span>中医特色准确:</span>
-                    <span>开源<input class="score-input" type="number" min="1" max="5"> vs AI<input class="score-input" type="number" min="1" max="5"></span>
-                </div>
-                <div class="score-item">
-                    <span>功能性清晰:</span>
-                    <span>开源<input class="score-input" type="number" min="1" max="5"> vs AI<input class="score-input" type="number" min="1" max="5"></span>
-                </div>
-                <div class="score-item">
-                    <span>像素风格:</span>
-                    <span>开源<input class="score-input" type="number" min="1" max="5"> vs AI<input class="score-input" type="number" min="1" max="5"></span>
-                </div>
-                <div class="score-item">
-                    <span>制作效率:</span>
-                    <span>开源<input class="score-input" type="number" min="1" max="5"> vs AI<input class="score-input" type="number" min="1" max="5"></span>
+                <div class="asset-info">
+                    <img src="ai-generated/indoor_scenes/clinic_interior.png" style="max-height: 150px;">
+                    <p>原图2048x2048切割合并效果</p>
                 </div>
             </div>
 
-            <div class="decision">
-                <label>🎯 决策: </label>
-                <select>
-                    <option value="">请选择</option>
-                    <option value="opensource">使用开源素材拼接</option>
-                    <option value="ai">使用AI生成整体</option>
-                    <option value="mixed">混合方案</option>
-                </select>
-                <textarea class="notes" rows="2" placeholder="备注说明..."></textarea>
-            </div>
-        </div>
-
-        <!-- 药田区域对比 -->
-        <div class="scene-card">
-            <h2>🌱 药田区域（内层区域）</h2>
-            <p class="scene-info">场景规格: 10x8瓦片 (320x256像素) | 包含: 4个药田、标识牌、路径、工具</p>
-
-            <div class="comparison-row">
-                <div class="tile-preview">
-                    <h3>📁 开源素材拼接</h3>
-                    <div class="placeholder">
-                        <p style="font-size:1.1em;">待下载拼接</p>
-                        <p style="margin-top:15px;">来源: Kenney Farm + 农田素材</p>
-                        <p style="color:#4a9;">需手工拼接并添加标识牌</p>
-                    </div>
+            <div class="asset-card">
+                <h3>药田区域（方案B - 瓦片合并后）</h3>
+                <img src="ai-generated/herb_field_area/herb_tiles_merged/tileset_merged.png" class="merged-preview">
+                <div class="approach-box">
+                    <strong>用途：药园场景元素级交互</strong><br>
+                    104个瓦片支持点击药田/工具墙等<br>
+                    每块药田可单独交互获取药材
                 </div>
-                <div class="tile-preview">
-                    <h3>🤖 AI生成整体 (Seedream)</h3>
-                    <div class="placeholder" id="ai-herb">
-                        <p>加载中...</p>
-                    </div>
+                <div class="asset-info">
+                    <img src="ai-generated/herb_field_area/herb_field_area.png" style="max-height: 150px;">
+                    <p>原图2048x2048切割合并效果</p>
                 </div>
-            </div>
-
-            <div class="prompt-box">
-                <strong>AI Prompt:</strong> 像素艺术游戏素材，药田种植区域俯视图，田园治愈氛围，四个规整药田分别种植不同中药材，每个药田有品种标识牌，中间有泥土小径连接各药田，边缘有农具摆放，深绿色主色调，像素艺术风格，参考星露谷物语风格
-            </div>
-
-            <div class="scoring">
-                <h4>📊 评分 (1-5分)</h4>
-                <div class="score-item">
-                    <span>整体风格统一:</span>
-                    <span>开源<input class="score-input" type="number" min="1" max="5"> vs AI<input class="score-input" type="number" min="1" max="5"></span>
-                </div>
-                <div class="score-item">
-                    <span>元素协调性:</span>
-                    <span>开源<input class="score-input" type="number" min="1" max="5"> vs AI<input class="score-input" type="number" min="1" max="5"></span>
-                </div>
-                <div class="score-item">
-                    <span>中医特色准确:</span>
-                    <span>开源<input class="score-input" type="number" min="1" max="5"> vs AI<input class="score-input" type="number" min="1" max="5"></span>
-                </div>
-                <div class="score-item">
-                    <span>功能性清晰:</span>
-                    <span>开源<input class="score-input" type="number" min="1" max="5"> vs AI<input class="score-input" type="number" min="1" max="5"></span>
-                </div>
-                <div class="score-item">
-                    <span>像素风格:</span>
-                    <span>开源<input class="score-input" type="number" min="1" max="5"> vs AI<input class="score-input" type="number" min="1" max="5"></span>
-                </div>
-                <div class="score-item">
-                    <span>制作效率:</span>
-                    <span>开源<input class="score-input" type="number" min="1" max="5"> vs AI<input class="score-input" type="number" min="1" max="5"></span>
-                </div>
-            </div>
-
-            <div class="decision">
-                <label>🎯 决策: </label>
-                <select>
-                    <option value="">请选择</option>
-                    <option value="opensource">使用开源素材拼接</option>
-                    <option value="ai">使用AI生成整体</option>
-                    <option value="mixed">混合方案</option>
-                </select>
-                <textarea class="notes" rows="2" placeholder="备注说明..."></textarea>
             </div>
         </div>
     </div>
 
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            // 加载诊所建筑AI图片
-            const clinicPlaceholder = document.getElementById('ai-clinic');
-            if (clinicPlaceholder) {
-                const img = new Image();
-                img.onload = function() {
-                    clinicPlaceholder.innerHTML = '';
-                    img.style.maxWidth = '100%';
-                    img.style.maxHeight = '500px';
-                    img.style.borderRadius = '4px';
-                    clinicPlaceholder.appendChild(img);
-                };
-                img.onerror = function() {
-                    clinicPlaceholder.innerHTML = '<p style="color:#f66;">加载失败</p>';
-                };
-                img.src = 'ai-generated/clinic_building/clinic_building_ai.png';
-            }
+    <div class="section">
+        <h2>集成建议</h2>
 
-            // 加载药田区域AI图片
-            const herbPlaceholder = document.getElementById('ai-herb');
-            if (herbPlaceholder) {
-                const img = new Image();
-                img.onload = function() {
-                    herbPlaceholder.innerHTML = '';
-                    img.style.maxWidth = '100%';
-                    img.style.maxHeight = '500px';
-                    img.style.borderRadius = '4px';
-                    herbPlaceholder.appendChild(img);
-                };
-                img.onerror = function() {
-                    herbPlaceholder.innerHTML = '<p style="color:#f66;">加载失败</p>';
-                };
-                img.src = 'ai-generated/herb_field_area/herb_field_area_ai.png';
-            }
-        });
-    </script>
+        <div class="stats-grid">
+            <div class="stat-box">
+                <div class="stat-value">方案A</div>
+                <div class="stat-label">室外建筑</div>
+                <div class="stat-diff">背景层整体</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-value">方案B</div>
+                <div class="stat-label">室内场景</div>
+                <div class="stat-diff">瓦片元素交互</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-value">62</div>
+                <div class="stat-label">诊所瓦片数</div>
+                <div class="stat-diff">可控范围</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-value">104</div>
+                <div class="stat-label">药田瓦片数</div>
+                <div class="stat-diff">可控范围</div>
+            </div>
+        </div>
+
+        <div class="approach-box" style="background: #2d5;">
+            <strong>下一步：</strong><br>
+            1. 标注可交互元素位置（药柜ID、经络图ID等）<br>
+            2. 集成到游戏场景（ClinicScene.ts、GardenScene.ts）<br>
+            3. 实现点击交互弹窗显示详情
+        </div>
+    </div>
 </body>
 </html>

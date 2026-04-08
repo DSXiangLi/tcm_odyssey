@@ -59,42 +59,43 @@ export interface AtmosphereScore {
 
 /**
  * AI视觉分析器
- * 使用多模态AI进行视觉质量分析
+ * 使用QWEN VL多模态AI进行视觉质量分析
  */
 export class VisualAnalyzer {
   private apiKey: string | null = null;
-  private apiEndpoint: string = 'https://openrouter.ai/api/v1/chat/completions';
+  private apiUrl: string | null = null;
+  private modelName: string | null = null;
 
   constructor() {
-    // 从环境变量获取API密钥
-    this.apiKey = process.env.OPENROUTER_API_KEY || null;
+    // 从环境变量获取QWEN VL API配置
+    this.apiKey = process.env.QWEN_VL_KEY || null;
+    this.apiUrl = process.env.QWEN_VL_URL || 'https://dashscope.aliyuncs.com/compatible-mode/v1';
+    this.modelName = process.env.QWEN_VL_MODEL_NAME || 'qwen-vl-max';
   }
 
   /**
    * 检查API是否可用
    */
   isApiAvailable(): boolean {
-    return this.apiKey !== null;
+    return this.apiKey !== null && this.apiKey.length > 0;
   }
 
   /**
-   * 调用多模态AI分析图片
+   * 调用QWEN VL多模态AI分析图片
    */
   private async analyzeWithAI(imageBase64: string, prompt: string): Promise<string> {
     if (!this.apiKey) {
-      throw new Error('OpenRouter API key not configured');
+      throw new Error('QWEN VL API key not configured. Please set QWEN_VL_KEY in .env');
     }
 
-    const response = await fetch(this.apiEndpoint, {
+    const response = await fetch(`${this.apiUrl}/chat/completions`, {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${this.apiKey}`,
-        'Content-Type': 'application/json',
-        'HTTP-Referer': 'https://yaoling-shangu.local',
-        'X-Title': 'Yaoling Shangu Test'
+        'Content-Type': 'application/json'
       },
       body: JSON.stringify({
-        model: 'qwen/qwen-2-vl-7b-instruct',
+        model: this.modelName,
         messages: [
           {
             role: 'user',
@@ -104,12 +105,12 @@ export class VisualAnalyzer {
             ]
           }
         ],
-        max_tokens: 1000
+        max_tokens: 2000
       })
     });
 
     if (!response.ok) {
-      throw new Error(`AI API error: ${response.status}`);
+      throw new Error(`QWEN VL API error: ${response.status}`);
     }
 
     const data = await response.json() as { choices: Array<{ message: { content: string } }> };
@@ -321,6 +322,13 @@ export class VisualAnalyzer {
         suggestions: []
       };
     }
+  }
+
+  /**
+   * 通用图像分析
+   */
+  async analyzeImage(imageBase64: string, prompt: string): Promise<string> {
+    return await this.analyzeWithAI(imageBase64, prompt);
   }
 }
 

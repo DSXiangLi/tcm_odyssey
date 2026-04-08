@@ -1,0 +1,16 @@
+[
+  {
+    "name": "诊所室内",
+    "unique_tiles": 4096,
+    "total_tiles": 4096,
+    "tileset_path": "/home/lixiang/Desktop/zhongyi_game_v3/tests/visual/asset-test/ai-generated/indoor_scenes/clinic_tiles/tileset.png",
+    "tilemap_path": "/home/lixiang/Desktop/zhongyi_game_v3/tests/visual/asset-test/ai-generated/indoor_scenes/clinic_tiles/tilemap.json"
+  },
+  {
+    "name": "药田区域",
+    "unique_tiles": 4096,
+    "total_tiles": 4096,
+    "tileset_path": "/home/lixiang/Desktop/zhongyi_game_v3/tests/visual/asset-test/ai-generated/herb_field_area/herb_tiles/tileset.png",
+    "tilemap_path": "/home/lixiang/Desktop/zhongyi_game_v3/tests/visual/asset-test/ai-generated/herb_field_area/herb_tiles/tilemap.json"
+  }
+]

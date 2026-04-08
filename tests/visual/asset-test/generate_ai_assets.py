@@ -1,147 +1,179 @@
 #!/usr/bin/env python3
 """
-AI场景素材生成脚本 - 使用火山引擎Seedream API生成场景组合素材
+使用火山引擎Seedream API生成药灵山谷游戏素材
+
+需求分析：
+- 室外建筑外观：整体交互，AI生成整体图片作为背景层
+- 室内场景：元素级交互，需要切割成32x32瓦片
+
+生成素材：
+1. clinic_building_exterior.png - 诊所外观（室外整体）
+2. clinic_interior.png - 诊所室内场景（需切割瓦片）
+3. herb_field_area.png - 药田区域（需切割瓦片）
 """
-import json
+
 import os
 import requests
-import time
+import json
+import base64
 from pathlib import Path
-from dotenv import load_dotenv
 
-# 加载.env环境变量
-load_dotenv(Path(__file__).parent.parent.parent.parent / ".env")
+# 从.env读取配置
+ENV_PATH = Path(__file__).parent.parent.parent.parent / ".env"
 
-# 配置
-BASE_DIR = Path(__file__).parent
-PROMPTS_FILE = BASE_DIR / "prompts.json"
-OUTPUT_DIR = BASE_DIR / "ai-generated"
+def load_env():
+    """加载.env配置"""
+    env_vars = {}
+    with open(ENV_PATH, 'r') as f:
+        for line in f:
+            if '=' in line and not line.startswith('#'):
+                key, value = line.strip().split('=', 1)
+                # 去除引号
+                value = value.strip('"').strip("'")
+                env_vars[key] = value
+    return env_vars
 
-# API配置 - 从.env读取
-API_URL = os.getenv("SEED_IMAGE_URL", "https://ark.cn-beijing.volces.com/api/v3/images/generations")
-API_KEY = os.getenv("SEED_IMAGE_KEY", "")
-MODEL_NAME = os.getenv("SEED_MODEL_NAME", "doubao-seedream-4-5-251128")
+def generate_image(prompt: str, size: str = "2048x2048", output_path: str = None) -> bytes:
+    """
+    使用Seedream API生成图片
 
-def load_prompts():
-    """加载Prompt配置"""
-    with open(PROMPTS_FILE, 'r', encoding='utf-8') as f:
-        return json.load(f)
+    Args:
+        prompt: 图片描述prompt
+        size: 图片尺寸，最小3686400像素（如2048x2048）
+        output_path: 输出文件路径
 
-def generate_image(scene_type: str, config: dict) -> str:
-    """调用火山引擎Seedream API生成图片"""
-    if not API_KEY:
-        print(f"❌ 未设置SEED_IMAGE_KEY，无法生成 {scene_type}")
-        return None
+    Returns:
+        图片二进制数据
+    """
+    env = load_env()
+
+    url = env.get("SEED_IMAGE_URL", "https://ark.cn-beijing.volces.com/api/v3/images/generations")
+    api_key = env.get("SEED_IMAGE_KEY", "")
+    model = env.get("SEED_MODEL_NAME", "doubao-seedream-4-5-251128")
 
     headers = {
-        "Authorization": f"Bearer {API_KEY}",
+        "Authorization": f"Bearer {api_key}",
         "Content-Type": "application/json"
     }
 
     payload = {
-        "model": MODEL_NAME,
-        "prompt": config["prompt"],
-        "size": config["size"]
+        "model": model,
+        "prompt": prompt,
+        "size": "2k",  # 使用2k表示2048x2048
+        "response_format": "b64_json"  # 返回base64编码
     }
 
-    try:
-        print(f"🎨 正在生成 {config['name']} ({config['tile_size']}={config['pixel_size']}像素)...")
-        print(f"   Prompt: {config['prompt'][:80]}...")
+    print(f"正在生成图片...")
+    print(f"  Prompt: {prompt[:100]}...")
+    print(f"  尺寸: 2048x2048 (2k)")
 
-        response = requests.post(API_URL, headers=headers, json=payload, timeout=120)
-        response.raise_for_status()
-        result = response.json()
+    response = requests.post(url, headers=headers, json=payload, timeout=120)
 
-        if "data" in result and len(result["data"]) > 0:
-            image_url = result["data"][0].get("url")
-            if image_url:
-                print(f"✅ {config['name']} 生成成功")
-                return image_url
+    if response.status_code != 200:
+        raise Exception(f"API请求失败: {response.status_code} - {response.text}")
 
-            # 可能是base64
-            b64 = result["data"][0].get("b64_json")
-            if b64:
-                return f"data:image/png;base64,{b64}"
+    result = response.json()
 
-        print(f"❌ {config['name']} 响应格式异常: {result}")
-        return None
+    if "data" not in result or len(result["data"]) == 0:
+        raise Exception(f"API返回异常: {result}")
 
-    except requests.exceptions.HTTPError as e:
-        print(f"❌ {config['name']} HTTP错误: {e}")
-        if hasattr(e.response, 'text'):
-            print(f"   响应内容: {e.response.text[:500]}")
-        return None
-    except Exception as e:
-        print(f"❌ {config['name']} 生成失败: {e}")
-        return None
-
-def download_image(url: str, save_path: Path):
-    """下载图片"""
-    import base64
-    try:
-        if url.startswith("data:image"):
-            # Base64图片
-            b64_data = url.split(",", 1)[1]
-            img_data = base64.b64decode(b64_data)
-            with open(save_path, 'wb') as f:
-                f.write(img_data)
+    # 获取base64图片数据
+    image_b64 = result["data"][0].get("b64_json")
+    if not image_b64:
+        # 可能返回URL格式
+        image_url = result["data"][0].get("url")
+        if image_url:
+            img_response = requests.get(image_url, timeout=60)
+            image_data = img_response.content
         else:
-            response = requests.get(url, timeout=60)
-            response.raise_for_status()
-            with open(save_path, 'wb') as f:
-                f.write(response.content)
-        print(f"📥 已保存: {save_path.name}")
-    except Exception as e:
-        print(f"❌ 下载失败: {e}")
+            raise Exception(f"无法获取图片数据: {result['data'][0]}")
+    else:
+        image_data = base64.b64decode(image_b64)
+
+    if output_path:
+        Path(output_path).parent.mkdir(parents=True, exist_ok=True)
+        with open(output_path, 'wb') as f:
+            f.write(image_data)
+        print(f"  已保存: {output_path} ({len(image_data)} bytes)")
+
+    return image_data
+
 
 def main():
-    """主函数"""
+    """生成所有素材"""
+    base_dir = Path(__file__).parent / "ai-generated"
+
+    # 素材定义
+    assets = [
+        # 室外建筑外观（整体交互）
+        {
+            "name": "诊所外观",
+            "prompt": (
+                "像素艺术游戏素材，中医诊所建筑外观，俯视图视角，"
+                "古朴棕色木质建筑，传统中式屋顶，门窗有中医元素装饰，"
+                "建筑旁边有草药晾晒架，周围是绿色草地，"
+                "温馨治愈风格，参考星露谷物语建筑风格但更精致，"
+                "32x32像素瓦片风格放大版，2048x2048整体场景图，"
+                "建筑位于画面中央，周围留有草地空间"
+            ),
+            "output": base_dir / "clinic_building" / "clinic_building_exterior.png"
+        },
+        # 室内场景（需切割瓦片）
+        {
+            "name": "诊所室内",
+            "prompt": (
+                "像素艺术游戏素材，中医诊所室内俯视图，"
+                "米色地板，棕色墙壁，室内摆放：深色木质诊台、多抽屉药柜、"
+                "墙上挂经络穴位图、熬药炉具、窗户透进阳光，"
+                "温馨光线，中医专业氛围，祖师爷画像有金色光晕，"
+                "32x32像素瓦片风格放大版，2048x2048整体场景图，"
+                "元素有明确边界便于切割成瓦片，各元素间有间距"
+            ),
+            "output": base_dir / "indoor_scenes" / "clinic_interior.png"
+        },
+        # 药田区域（需切割瓦片）
+        {
+            "name": "药田区域",
+            "prompt": (
+                "像素艺术游戏素材，药田种植区域俯视图，"
+                "4块规整药田，每块有不同的药材植物形态（人参、黄芪、当归、甘草），"
+                "每块药田有品种标识牌，药田之间有小路径分隔，"
+                "周围有蜜蜂飞舞、蝴蝶点缀，自然蓝小溪流过，"
+                "有老张的工具墙和简易休息棚，"
+                "田园生机感，规整但有自然野趣点缀，"
+                "32x32像素瓦片风格放大版，2048x2048整体场景图，"
+                "元素有明确边界便于切割成瓦片"
+            ),
+            "output": base_dir / "herb_field_area" / "herb_field_area.png"
+        }
+    ]
+
     print("=" * 60)
-    print("🎨 AI场景素材生成工具 - 火山引擎Seedream API")
+    print("开始使用Seedream API生成游戏素材")
     print("=" * 60)
 
-    print(f"\n📋 配置信息:")
-    print(f"   API URL: {API_URL}")
-    print(f"   Model: {MODEL_NAME}")
-    print(f"   API Key: {API_KEY[:10]}...{API_KEY[-4:] if len(API_KEY) > 14 else '***'}")
-
-    if not API_KEY:
-        print("\n❌ 错误: 未检测到SEED_IMAGE_KEY")
-        print("请在.env文件中配置: SEED_IMAGE_KEY=your_key")
-        return
-
-    # 加载配置
-    prompts = load_prompts()
-    print(f"\n📁 待生成场景: {list(prompts.keys())}")
-
-    # 确保输出目录存在
-    for scene_type in prompts.keys():
-        (OUTPUT_DIR / scene_type).mkdir(parents=True, exist_ok=True)
-
-    # 生成每个场景
-    results = {}
-    for scene_type, config in prompts.items():
-        image_url = generate_image(scene_type, config)
-        if image_url:
-            save_path = OUTPUT_DIR / scene_type / f"{scene_type}_ai.png"
-            download_image(image_url, save_path)
-            results[scene_type] = {
-                "name": config["name"],
-                "tile_size": config["tile_size"],
-                "pixel_size": config["pixel_size"],
-                "local_path": str(save_path)
-            }
-            time.sleep(3)  # 避免请求过快
-
-    # 保存结果
-    results_file = BASE_DIR / "generation_results.json"
-    with open(results_file, 'w', encoding='utf-8') as f:
-        json.dump(results, f, ensure_ascii=False, indent=2)
+    for asset in assets:
+        print(f"\n[{asset['name']}]")
+        try:
+            generate_image(
+                prompt=asset["prompt"],
+                size="2048x2048",
+                output_path=str(asset["output"])
+            )
+        except Exception as e:
+            print(f"  生成失败: {e}")
+            continue
 
     print("\n" + "=" * 60)
-    print(f"✅ 完成！生成 {len(results)} 个场景")
-    print(f"📄 结果已保存到 {results_file}")
+    print("素材生成完成！")
     print("=" * 60)
+
+    # 列出生成的文件
+    print("\n生成的素材文件：")
+    for path in base_dir.rglob("*.png"):
+        size_kb = path.stat().st_size / 1024
+        print(f"  {path.relative_to(base_dir)}: {size_kb:.1f} KB")
+
 
 if __name__ == "__main__":
     main()

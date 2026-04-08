@@ -1,0 +1,18 @@
+[
+  {
+    "name": "诊所室内",
+    "original_count": 4096,
+    "merged_count": 62,
+    "merge_ratio": 98.486328125,
+    "tileset_path": "/home/lixiang/Desktop/zhongyi_game_v3/tests/visual/asset-test/ai-generated/indoor_scenes/clinic_tiles_merged/tileset_merged.png",
+    "mapping_path": "/home/lixiang/Desktop/zhongyi_game_v3/tests/visual/asset-test/ai-generated/indoor_scenes/clinic_tiles_merged/tile_mapping.json"
+  },
+  {
+    "name": "药田区域",
+    "original_count": 4096,
+    "merged_count": 104,
+    "merge_ratio": 97.4609375,
+    "tileset_path": "/home/lixiang/Desktop/zhongyi_game_v3/tests/visual/asset-test/ai-generated/herb_field_area/herb_tiles_merged/tileset_merged.png",
+    "mapping_path": "/home/lixiang/Desktop/zhongyi_game_v3/tests/visual/asset-test/ai-generated/herb_field_area/herb_tiles_merged/tile_mapping.json"
+  }
+]

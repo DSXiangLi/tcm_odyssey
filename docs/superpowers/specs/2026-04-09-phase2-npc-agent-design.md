@@ -1,6 +1,6 @@
 # 药灵山谷 - Phase 2: NPC Agent 系统设计
 
-**版本**: v2.1
+**版本**: v2.2
 **日期**: 2026-04-10
 **状态**: 设计完成，待评审
 
@@ -619,7 +619,31 @@
 
 ## 5. 任务系统设计 (TASKS.json)
 
-### 5.1 任务数据结构
+### 5.1 两层结构：Task → Todo
+
+**设计理念**：
+- **Task**：对应方剂/内科证型层级，玩家看到的主要单位
+- **Todo**：每个Task的具体知识维度细分，用于精确追踪
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│ Task（任务）- 方剂/内科证型层级                              │
+│ 例："麻黄汤学习"、"风寒表实证辨证"                            │
+│ - 有整体进度(0-100%)                                        │
+│ - 当所有Todo完成时，Task自动完成                             │
+└─────────────────────┬───────────────────────────────────────┘
+                      │ 包含多个
+                      ▼
+┌─────────────────────────────────────────────────────────────┐
+│ Todo（待办）- 知识维度细分                                   │
+│ 方剂类：组成、配伍、煎服法、禁忌、鉴别、方歌                  │
+│ 内科类：病机、辨证要点、脉诊、舌诊、选方                      │
+│ - 有独立掌握度(0-1)                                         │
+│ - mastery ≥ 0.7 视为完成                                    │
+└─────────────────────────────────────────────────────────────┘
+```
+
+### 5.2 Task数据结构
 
 ```json
 {
@@ -627,80 +651,96 @@
   "player_id": "player_001",
   "last_updated": "2026-04-10T14:30:00Z",
 
-  "task_templates": {
-    "guizhi_tang_basic": {
-      "title": "桂枝汤基础学习",
-      "category": "prescription",
-      "description": "学习桂枝汤的组成、功效和主治",
-      "prerequisites": [],
-      "knowledge_modules": ["guizhi-tang-composition", "guizhi-tang-effect"],
-      "estimated_lessons": 3,
-      "importance": "core"
-    },
-    "guizhi_tang_diagnosis": {
-      "title": "桂枝汤辨证应用",
-      "category": "diagnosis",
-      "description": "学会辨析桂枝汤证的脉症",
-      "prerequisites": ["guizhi_tang_basic"],
-      "knowledge_modules": ["guizhi-tang-syndrome"],
-      "estimated_lessons": 2,
-      "importance": "core"
-    }
-  },
-
   "tasks": [
     {
-      "task_id": "guizhi_tang_basic_001",
-      "template_id": "guizhi_tang_basic",
-      "status": "completed",
-      "progress": 1.0,
-      "created_at": "2026-04-08T10:00:00Z",
-      "completed_at": "2026-04-08T14:00:00Z",
-      "lessons_completed": 3,
-      "mastery_score": 0.85
-    },
-    {
-      "task_id": "guizhi_tang_diagnosis_001",
-      "template_id": "guizhi_tang_diagnosis",
+      "task_id": "mahuang-tang-learning",
+      "title": "麻黄汤学习",
+      "type": "prescription",
       "status": "in_progress",
-      "progress": 0.5,
-      "created_at": "2026-04-09T10:00:00Z",
-      "current_lesson": 1,
-      "lessons_completed": 1,
-      "next_milestone": "理解风寒表虚的脉象特点"
+      "progress": 0.65,
+      "created_at": "2026-04-10T10:00:00Z",
+
+      "todos": [
+        {"id": "composition", "name": "组成", "mastery": 0.9, "status": "completed"},
+        {"id": "compatibility", "name": "配伍", "mastery": 0.7, "status": "in_progress"},
+        {"id": "decoction", "name": "煎服法", "mastery": 0.6, "status": "in_progress"},
+        {"id": "contraindication", "name": "禁忌", "mastery": 0.0, "status": "pending"},
+        {"id": "differentiation", "name": "鉴别", "mastery": 0.0, "status": "pending"},
+        {"id": "formula", "name": "方歌", "mastery": 0.8, "status": "completed"}
+      ],
+
+      "weaknesses": ["配伍理解", "禁忌记忆"]
     },
+
     {
-      "task_id": "review_guizhi_20260410",
-      "template_id": null,
-      "type": "temporary",
+      "task_id": "wind-cold-excess-syndrome",
+      "title": "风寒表实证辨证",
+      "type": "diagnosis",
+      "status": "in_progress",
+      "progress": 0.4,
+
+      "todos": [
+        {"id": "pathology", "name": "病机", "mastery": 0.8, "status": "completed"},
+        {"id": "key_points", "name": "辨证要点", "mastery": 0.6, "status": "in_progress"},
+        {"id": "pulse", "name": "脉诊", "mastery": 0.3, "status": "in_progress"},
+        {"id": "tongue", "name": "舌诊", "mastery": 0.0, "status": "pending"},
+        {"id": "prescription", "name": "选方", "mastery": 0.5, "status": "pending"}
+      ],
+
+      "weaknesses": ["脉诊古文理解"]
+    },
+
+    {
+      "task_id": "review-mahuang-compatibility",
+      "title": "麻黄汤配伍复习",
+      "type": "review",
       "trigger": "weakness_detected",
-      "title": "桂枝汤组成复习",
-      "description": "玩家对桂枝汤组成记忆不牢，需要复习",
       "status": "pending",
-      "created_at": "2026-04-10T09:00:00Z",
-      "related_weakness": "guizhi-tang-composition",
-      "expires_at": "2026-04-12T09:00:00Z"
+      "related_task": "mahuang-tang-learning",
+      "related_todo": "compatibility",
+      "expires_at": "2026-04-12T10:00:00Z"
     }
   ],
 
   "current_focus": {
-    "primary_task_id": "guizhi_tang_diagnosis_001",
-    "primary_todo": "理解风寒表虚的脉象特点",
-    "secondary_task_ids": ["review_guizhi_20260410"]
+    "primary_task_id": "mahuang-tang-learning",
+    "primary_todo": "配伍",
+    "secondary_task_ids": ["wind-cold-excess-syndrome"]
   },
 
   "statistics": {
     "total_tasks": 5,
     "completed": 1,
-    "in_progress": 1,
-    "pending": 3,
-    "mastery_average": 0.85,
-    "weak_areas": ["guizhi-tang-composition"]
+    "in_progress": 2,
+    "mastery_average": 0.72,
+    "weak_areas": ["配伍理解", "脉诊古文"]
   }
 }
 ```
 
-### 5.2 任务工具定义
+### 5.3 Todo维度模板
+
+**方剂类Task的Todo模板**：
+| Todo ID | 名称 | 内容 | 游戏形式 |
+|---------|------|------|---------|
+| composition | 组成 | 君臣佐使、用量比例 | 煎药游戏 |
+| compatibility | 配伍 | 药对配伍意义 | 煎药游戏+对话 |
+| effect | 功效 | 功效主治 | 选择题 |
+| decoction | 煎服法 | 特殊煎煮服用方法 | 对话+游戏 |
+| contraindication | 禁忌 | 使用禁忌 | 选择题 |
+| differentiation | 鉴别 | 类方鉴别要点 | 对比选择+论述 |
+| formula | 方歌 | 记忆口诀 | 填空题 |
+
+**内科证型类Task的Todo模板**：
+| Todo ID | 名称 | 内容 | 游戏形式 |
+|---------|------|------|---------|
+| pathology | 病机 | 病因病机分析 | 对话讲解 |
+| key_points | 辨证要点 | 核心症状、鉴别要点 | 选择题 |
+| pulse | 脉诊 | 脉象古文理解 | 诊治游戏 |
+| tongue | 舌诊 | 舌象特征观察 | 诊治游戏 |
+| prescription | 选方 | 证型对应方剂 | 诊治游戏 |
+
+### 5.4 任务工具定义
 
 ```python
 # ========== 任务查询工具 ==========
@@ -715,7 +755,7 @@ def get_task_list(status: str = "all") -> dict:
 
     Returns:
         {
-            "tasks": [{task_id, title, status, progress, category}],
+            "tasks": [{task_id, title, status, progress, todo_summary}],
             "statistics": {...}
         }
     """
@@ -727,39 +767,60 @@ def get_current_task() -> dict:
     获取当前进行中的任务
 
     Returns:
-        {task_id, title, progress, current_lesson, next_milestone, remaining_lessons}
+        {task_id, title, progress, current_todo, remaining_todos}
     """
     pass
 
 @tool
 def get_task_detail(task_id: str) -> dict:
-    """获取任务详情"""
+    """获取任务详情（含所有Todo）"""
     pass
 
 
-# ========== 任务状态更新工具 ==========
+# ========== Todo状态更新工具 ==========
 
 @tool
-def update_task_status(
+def update_todo_status(
     task_id: str,
-    status: str,
-    progress_delta: float = None,
-    lesson_completed: bool = False,
-    mastery_score: float = None,
+    todo_id: str,
+    mastery: float,
     notes: str = None
 ) -> dict:
     """
-    更新任务状态
+    更新Todo状态，自动判断Task是否完成
+
+    Args:
+        task_id: 任务ID
+        todo_id: Todo ID
+        mastery: 掌握度(0-1)，≥0.7视为完成
+        notes: 备注
 
     Returns:
-        {success, new_status, new_progress, unlocked_tasks}
+        {
+            "todo_updated": todo_id,
+            "todo_status": "completed" | "in_progress",
+            "task_progress": 0.65,
+            "task_completed": false,
+            "unlocked_tasks": [...]
+        }
     """
-    pass
+    # 更新todo状态
+    todo["mastery"] = mastery
+    todo["status"] = "completed" if mastery >= 0.7 else "in_progress"
 
-@tool
-def set_current_task(task_id: str) -> bool:
-    """设置当前主攻任务"""
-    pass
+    # 检查是否所有todo都完成
+    all_completed = all(t["status"] == "completed" for t in task["todos"])
+
+    if all_completed:
+        task["status"] = "completed"
+        task["progress"] = 1.0
+        # 解锁后续任务
+        unlocked = unlock_next_tasks(task_id)
+
+    # 计算整体进度
+    task["progress"] = sum(t["mastery"] for t in task["todos"]) / len(task["todos"])
+
+    return result
 
 
 # ========== 任务创建工具 ==========
@@ -767,30 +828,39 @@ def set_current_task(task_id: str) -> bool:
 @tool
 def create_task(
     title: str,
-    description: str,
-    category: str,
-    task_type: str = "planned",
-    trigger: str = None,
-    prerequisites: list = None,
-    knowledge_modules: list = None,
-    estimated_lessons: int = 1,
-    expires_at: str = None,
-    related_weakness: str = None
+    type: str,
+    todos: list,
+    prerequisites: list = None
 ) -> dict:
-    """创建新任务"""
+    """
+    创建新任务
+
+    Args:
+        title: 任务标题
+        type: "prescription" | "diagnosis" | "review"
+        todos: Todo列表 [{"id": "composition", "name": "组成"}, ...]
+        prerequisites: 前置任务ID列表
+
+    Returns:
+        {task_id, title, status: "pending"}
+    """
     pass
 
 @tool
 def create_review_task(
-    weakness_area: str,
-    reason: str,
-    urgency: str = "normal"
+    task_id: str,
+    todo_id: str,
+    reason: str
 ) -> dict:
-    """创建复习任务（便捷方法）"""
+    """
+    创建复习任务（便捷方法）
+
+    基于薄弱Todo自动创建复习任务
+    """
     pass
 
 
-# ========== 任务统计工具 ==========
+# ========== 统计查询工具 ==========
 
 @tool
 def get_learning_statistics() -> dict:
@@ -799,22 +869,23 @@ def get_learning_statistics() -> dict:
 
     Returns:
         {
-            total_lessons, completed_tasks, mastery_average,
-            weak_areas, recent_progress, recommended_next
+            total_tasks, completed_tasks,
+            mastery_average, weak_todos,
+            recent_progress
         }
     """
     pass
 ```
 
-### 5.3 任务触发机制
+### 5.5 任务触发机制
 
 | 触发类型 | 说明 | 示例 |
 |---------|------|------|
-| **大纲驱动** | 前置任务完成后自动解锁 | 桂枝汤基础完成 → 桂枝汤辨证解锁 |
-| **定时任务(Cron)** | 定期课程或复习提醒 | 每天早上检查复习需求 |
-| **玩家行为触发** | 玩家主动请求 | 玩家进入诊所、询问学习内容 |
-| **薄弱点检测** | AI检测到学习问题 | 连续3次答错 → 创建复习任务 |
-| **随机事件** | 增加趣味性 | 随机病人来诊，实践机会 |
+| **大纲驱动** | 前置Task完成后自动解锁 | 麻黄汤学习完成 → 麻黄汤辨证解锁 |
+| **Todo更新** | 游戏完成更新Todo掌握度 | 煎药游戏完成 → 更新组成/配伍Todo |
+| **薄弱点检测** | Todo mastery < 0.5 连续2次 | 创建复习任务 |
+| **定时复习(Cron)** | 定期检查薄弱Todo | 提醒复习未掌握内容 |
+| **玩家请求** | 玩家主动询问学习 | NPC推荐下一个Task |
 
 ---
 
@@ -1941,4 +2012,4 @@ npcs:
 ---
 
 *本文档创建于 2026-04-09*
-*更新于 2026-04-10 v2.1：重构教学大纲，以中医内科学为主线，完善病症/方剂核心要素*
+*更新于 2026-04-10 v2.2：简化任务系统为Task→Todo两层结构*

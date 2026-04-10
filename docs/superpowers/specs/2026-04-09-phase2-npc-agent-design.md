@@ -1,6 +1,6 @@
 # 药灵山谷 - Phase 2: NPC Agent 系统设计
 
-**版本**: v2.3
+**版本**: v2.4
 **日期**: 2026-04-10
 **状态**: 设计完成，待评审
 
@@ -2668,7 +2668,317 @@ npcs:
 
 ---
 
-## 18. 待确认事项
+## 18. 任务发布与触发机制
+
+### 18.1 全链路触发流程
+
+```
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                         任务触发全链路                                        │
+├─────────────────────────────────────────────────────────────────────────────┤
+│                                                                             │
+│   ┌─────────────┐                                                           │
+│   │ NPC主动发起 │ ← Cron定时任务 / 任务解锁检测                              │
+│   └─────────────┘                                                           │
+│         │                                                                   │
+│         ▼                                                                   │
+│   ┌─────────────┐     ┌─────────────┐     ┌─────────────┐                  │
+│   │ 对话通知玩家│ ──→ │ 玩家确认接受│ ──→ │ 任务添加到  │                  │
+│   │ "来学桂枝汤│     │ 任务         │     │ TASKS.json  │                  │
+│   │ 吧"        │     │             │     │             │                  │
+│   └─────────────┘     └─────────────┘     └─────────────┘                  │
+│                             │                                               │
+│                             ▼                                               │
+│                      ┌─────────────┐                                        │
+│                      │ 玩家开始学习│                                        │
+│                      └─────────────┘                                        │
+│                             │                                               │
+│            ┌────────────────┼────────────────┐                              │
+│            │                │                │                              │
+│            ▼                ▼                ▼                              │
+│   ┌─────────────┐   ┌─────────────┐   ┌─────────────┐                      │
+│   │ 方剂学习    │   │ 辨证学习    │   │ 其他学习    │                      │
+│   │ → 煎药游戏 │   │ → 诊治游戏 │   │ → 对话讲解 │                      │
+│   └─────────────┘   └─────────────┘   └─────────────┘                      │
+│         │                 │                 │                              │
+│         ▼                 ▼                 ▼                              │
+│   ┌─────────────────────────────────────────────────────────────────────┐ │
+│   │                       游戏结果反馈                                   │ │
+│   │  POST /v1/game/result → Hermes → 更新Todo掌握度 → 更新USER.md       │ │
+│   └─────────────────────────────────────────────────────────────────────┘ │
+│                             │                                               │
+│                             ▼                                               │
+│   ┌─────────────────────────────────────────────────────────────────────┐ │
+│   │                       任务完成判定                                   │ │
+│   │  所有Todo完成 → Task完成 → 解锁下一个Task → NPC通知新任务            │ │
+│   └─────────────────────────────────────────────────────────────────────┘ │
+│                                                                             │
+└─────────────────────────────────────────────────────────────────────────────┘
+```
+
+### 18.2 触发类型详解
+
+#### 18.2.1 NPC主动发起（Cron）
+
+**定时任务配置**：
+
+```yaml
+npcs:
+  qingmu:
+    - name: new_lesson_offer
+      schedule: "玩家上线后首次对话"
+      condition: "has_unlocked_task && not_started"
+      action: offer_task
+      message: "上次的学习进度不错，今天我们来学习{next_task}吧。"
+
+    - name: daily_review_check
+      schedule: "每天10:00"
+      condition: "has_weakness && weakness_count > 0"
+      action: suggest_review
+      message: "我注意到你在{weak_area}还有些薄弱，要不要复习一下？"
+```
+
+**NPC主动发起对话界面**：
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│  NPC对话                                                     │
+├─────────────────────────────────────────────────────────────┤
+│                                                             │
+│  青木先生：                                                  │
+│  "上次你已经学会了桂枝汤的组成，                             │
+│   今天我们继续学习桂枝汤的辨证应用吧。"                       │
+│                                                             │
+│  [接受任务]  [稍后再说]                                      │
+└─────────────────────────────────────────────────────────────┘
+```
+
+#### 18.2.2 玩家主动请求
+
+**玩家触发任务的入口**：
+
+| 入口 | 触发方式 | NPC响应 |
+|-----|---------|---------|
+| **进入诊所** | 玩家走入青木诊所场景 | NPC主动问候，询问学习进度 |
+| **点击NPC** | 玩家点击NPC交互 | NPC询问"今天想学什么？" |
+| **任务面板** | UI界面查看任务列表 | 显示可接受的任务 |
+| **对话提及** | 玩家问"今天学什么？" | NPC推荐下一个任务 |
+
+**场景触发代码示例**：
+
+```typescript
+// 玩家进入诊所场景时
+class ClinicScene extends Phaser.Scene {
+  create() {
+    this.npcInteractionZone.on('playerenter', () => {
+      this.showNpcGreeting();
+    });
+  }
+
+  async showNpcGreeting() {
+    const taskStatus = await this.getTaskStatus('qingmu');
+
+    if (taskStatus.hasUnlockedTask) {
+      this.showDialog({
+        npc: 'qingmu',
+        text: `上次你学会了${taskStatus.lastCompleted}，今天来学${taskStatus.nextTask}吧？`,
+        options: ['接受任务', '稍后再说']
+      });
+    } else if (taskStatus.hasInProgressTask) {
+      this.showDialog({
+        npc: 'qingmu',
+        text: `你的${taskStatus.currentTask}还在学习中，要继续吗？`,
+        options: ['继续学习', '先聊天']
+      });
+    }
+  }
+}
+```
+
+### 18.3 任务发布流程
+
+#### 18.3.1 NPC发布任务工具
+
+```python
+@tool
+def offer_task(task_id: str) -> dict:
+    """NPC向玩家提议新任务"""
+    task = get_task_template(task_id)
+    return {
+        "task_info": task,
+        "dialog_response": f"今天我们来学习{task['title']}吧。"
+    }
+
+@tool
+def confirm_task_accept(task_id: str) -> dict:
+    """玩家确认接受任务，添加到TASKS.json"""
+    new_task = create_task_instance(task_id)
+    tasks = load_tasks_json()
+    tasks["tasks"].append(new_task)
+    save_tasks_json(tasks)
+    return {"success": True, "task_id": new_task["task_id"]}
+```
+
+#### 18.3.2 任务发布界面
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│  任务发布                                                    │
+├─────────────────────────────────────────────────────────────┤
+│                                                             │
+│  青木先生："今天我们来学习麻黄汤吧。"                        │
+│                                                             │
+│  任务详情：                                                  │
+│  ┌─────────────────────────────────────────────────────┐  │
+│  │ 【麻黄汤学习】                                        │  │
+│  │ 学习内容：组成、配伍、煎服法、禁忌、鉴别              │  │
+│  │ 预计学习：约3次                                       │  │
+│  └─────────────────────────────────────────────────────┘  │
+│                                                             │
+│  [接受任务]  [稍后再说]                                      │
+└─────────────────────────────────────────────────────────────┘
+```
+
+### 18.4 游戏触发流程
+
+#### 18.4.1 Todo到游戏的映射
+
+| Task类型 | Todo | 游戏类型 |
+|---------|------|---------|
+| prescription | composition | 煎药游戏 |
+| prescription | compatibility | 煎药游戏 |
+| prescription | formula | 方歌填空 |
+| diagnosis | pulse | 诊治游戏（脉诊） |
+| diagnosis | tongue | 诊治游戏（舌诊） |
+| diagnosis | prescription | 诊治游戏（全流程） |
+
+#### 18.4.2 游戏启动入口
+
+**入口1：任务学习菜单**
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│  学习菜单 - 麻黄汤学习                                       │
+├─────────────────────────────────────────────────────────────┤
+│  任务进度：65%                                               │
+│                                                             │
+│  已完成：✓ 组成（90分）  ✓ 方歌（85分）                      │
+│  进行中：○ 配伍  [继续学习]  ○ 煎服法  [继续学习]            │
+│  未开始：○ 禁忌  [开始学习]  ○ 鉴别  [开始学习]              │
+│                                                             │
+│  [综合练习]  [返回]                                          │
+└─────────────────────────────────────────────────────────────┘
+```
+
+**入口2：NPC对话直接触发**
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│  青木先生："要学习麻黄汤的配伍，我们通过煎药游戏来练习。"    │
+│                                                             │
+│  [开始煎药游戏]                                              │
+└─────────────────────────────────────────────────────────────┘
+```
+
+**入口3：场景物体触发**
+
+```typescript
+// 玩家点击诊台 → 进入诊治游戏
+class ClinicScene {
+  onDeskClick() {
+    const diagnosisTask = this.getCurrentDiagnosisTask();
+    if (diagnosisTask) {
+      this.scene.start('DiagnosisGameScene', { taskId: diagnosisTask.id });
+    }
+  }
+}
+```
+
+#### 18.4.3 游戏启动代码
+
+```typescript
+class GameLauncher {
+  async launchFromTask(taskId: string, todoId: string) {
+    const task = await this.getTask(taskId);
+    const gameType = this.mapTodoToGame(todoId, task.type);
+    const gameParams = { taskId, todoId, npcId: task.npcId };
+    this.scene.start(gameType, gameParams);
+  }
+
+  mapTodoToGame(todoId: string, taskType: string): string {
+    if (taskType === "prescription" && ["composition", "compatibility"].includes(todoId)) {
+      return "DecoctionGameScene";
+    }
+    if (taskType === "diagnosis") {
+      return "DiagnosisGameScene";
+    }
+    return "DialogLearningScene";
+  }
+}
+```
+
+### 18.5 任务完成与解锁
+
+#### 18.5.1 任务完成触发流程
+
+```typescript
+class TaskCompletionHandler {
+  async handleGameEnd(gameResult: GameResult) {
+    // 1. 更新Todo掌握度
+    await this.updateTodoMastery(gameResult.taskId, gameResult.todoId, gameResult.score / 100);
+
+    // 2. 检查是否所有Todo完成
+    const task = await this.getTask(gameResult.taskId);
+    const allCompleted = task.todos.every(t => t.mastery >= 0.7);
+
+    // 3. 全部完成 → 解锁下一个任务 → NPC通知
+    if (allCompleted) {
+      await this.completeTask(gameResult.taskId);
+      const nextTask = await this.unlockNextTask(gameResult.taskId);
+      if (nextTask) {
+        await this.notifyTaskUnlock(nextTask);
+      }
+    }
+  }
+}
+```
+
+#### 18.5.2 任务解锁通知
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│  青木先生："很好！麻黄汤的学习你已经完成了。                 │
+│   下一步，我们来学习风寒表实证的辨证应用。"                   │
+│                                                             │
+│  ★ 新任务解锁：风寒表实证辨证                                │
+│                                                             │
+│  [开始新任务]  [稍后再说]                                    │
+└─────────────────────────────────────────────────────────────┘
+```
+
+### 18.6 交互入口汇总
+
+| 入口类型 | 触发方式 | 流程 |
+|---------|---------|------|
+| **NPC主动** | Cron定时/上线检测 | NPC对话→玩家确认→添加任务 |
+| **进入场景** | 玩家走入诊所/药园 | NPC问候→询问学习→选择任务 |
+| **点击NPC** | 玩家点击交互 | NPC询问→玩家选择→启动游戏 |
+| **任务面板** | UI菜单查看 | 查看进度→选择Todo→启动游戏 |
+| **场景物体** | 点击诊台/药柜 | 检查任务→启动对应游戏 |
+
+### 18.7 触发时机设计
+
+| 触发时机 | 说明 | NPC行为 |
+|---------|------|---------|
+| **首次进入场景** | 玩家第一次进入诊所 | 介绍场景功能，建议学习路径 |
+| **每日首次对话** | 玩家每天第一次和NPC对话 | 问候+询问学习进度 |
+| **任务完成后** | 任务完成时立即触发 | 解锁通知+推荐下一步 |
+| **薄弱点检测后** | 游戏失败后检测薄弱点 | 建议复习薄弱内容 |
+| **长时间未学习** | 3天未登录/未学习 | NPC发送提醒消息 |
+
+---
+
+## 19. 待确认事项
 
 - [ ] Hermes Agent API Server 是否已支持工具调用扩展？
 - [ ] 是否需要实现 Hermes Gateway 接入其他平台？
@@ -2677,4 +2987,4 @@ npcs:
 ---
 
 *本文档创建于 2026-04-09*
-*更新于 2026-04-10 v2.3：完善诊治游戏设计，补充病案系统、问诊/舌诊/选方细节、评分系统、NPC点评*
+*更新于 2026-04-10 v2.4：补充任务发布与触发机制全链路设计*

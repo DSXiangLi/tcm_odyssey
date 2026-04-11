@@ -334,13 +334,43 @@ npx playwright test tests/visual --workers=1
 
 详见: [黑白遮罩层自动映射设计](docs/superpowers/specs/2026-04-07-mask-to-config-design.md)
 
-### Phase 2: NPC系统 ⏳ 待开发（Phase 1.5之后）
+### Phase 2: AI核心改造 ⏳ 设计完成，待实施（Phase 1.5之后）
 
-- [ ] NPC系统框架
-- [ ] AI对话接口
-- [ ] TASK/MEMORY文件管理
-- [ ] 青木先生NPC (临床导师)
-- [ ] 老张NPC (药物导师)
+> **Phase 2 聚焦AI核心改造**：问诊环节重构、病案系统、Hermes集成、病人视觉
+
+| 模块 | 功能点 | 设计状态 |
+|------|--------|---------|
+| **问诊环节** | AI病人对话、自由追问、线索追踪 | ✅ 已设计 |
+| **病案系统** | 病案库、blocked_by解锁机制、回顾界面 | ✅ 已设计 |
+| **Hermes集成** | 自动启动、API可用性、SSE流式输出 | ✅ 已设计 |
+| **病人视觉** | 5类病人模板、头像预缓存、风格区分 | ✅ 已设计 |
+| **诊治场景过渡** | 场景切换、弹出确认、NPC触发 | ✅ 已设计 |
+
+**设计文档**:
+- [Phase 2 NPC Agent系统设计](docs/superpowers/specs/2026-04-11-phase2-npc-augment-phase2.md)
+- [Phase 2 测试验收标准](docs/superpowers/specs/2026-04-11-phase2-test-acceptance.md)
+
+**Phase 2验收标准**:
+- P0测试 100% 通过
+- P1测试 ≥90% 通过
+- 人工AI质量评估 平均分 ≥3分
+
+### Phase 2.5: 游戏功能补充 ⏳ 设计完成，待Phase 2验收后实施
+
+> **Phase 2.5 包含传统游戏功能**：背包、存档、经验值、新手引导等
+
+| 模块 | 功能点 | 设计状态 |
+|------|--------|---------|
+| **背包系统** | 4类背包 + 药袋分类 + Tab切换UI | ✅ 已设计 |
+| **存档系统** | 单存档 + 全数据覆盖 + Hermes同步 | ✅ 已设计 |
+| **经验值框架** | 多渠道获取 + 直接解锁（无等级） | ✅ 已设计 |
+| **方剂加减预留** | 未解锁按钮预留 | ✅ 已设计 |
+| **新手引导** | 可跳过集中引导 + 分散场景提示 | ✅ 已设计 |
+| **NPC帮助机制** | 自由对话求助 + 主动观察介入 | ✅ 已设计 |
+| **时间触发系统** | 登录触发替代定时任务 | ✅ 已设计 |
+
+**设计文档**:
+- [Phase 2.5 游戏功能补充设计](docs/superpowers/specs/2026-04-11-phase2-npc-augment-phase2.5.md)
 
 ### Phase 3: 学习系统 ⏳ 待开发
 
@@ -760,7 +790,8 @@ npx playwright test tests/visual
 
 ### 后续规划
 
-- **Phase 2**: NPC系统（Phase 1.5完成后）
+- **Phase 2**: AI核心改造（问诊重构、病案系统、Hermes集成）→ Phase 1.5完成后实施
+- **Phase 2.5**: 游戏功能补充（背包、存档、经验值、新手引导）→ Phase 2验收后实施
 - **Phase 3**: 学习系统（种植、炮制、药袋）
 - **Phase 4**: 探索系统（药王谷、采集）
 - **Phase 5**: 生活系统（药膳、家园）
@@ -793,7 +824,10 @@ npm run preview
 - [Phase 1验收标准](docs/superpowers/specs/2026-04-05-phase1-acceptance-criteria.md)
 - [Phase 1 AI端到端测试设计](docs/superpowers/specs/2026-04-05-phase1-ai-e2e-test-design.md)
 - [Phase 1.5 AI端到端视觉验收计划](docs/superpowers/specs/2026-04-06-phase1-5-ai-e2e-acceptance-plan.md)
-- [黑白遮罩层自动映射设计](docs/superpowers/specs/2026-04-07-mask-to-config-design.md) ⭐最新
+- [黑白遮罩层自动映射设计](docs/superpowers/specs/2026-04-07-mask-to-config-design.md)
+- [Phase 2 NPC Agent系统设计](docs/superpowers/specs/2026-04-11-phase2-npc-augment-phase2.md) ⭐新增
+- [Phase 2.5 游戏功能补充设计](docs/superpowers/specs/2026-04-11-phase2-npc-augment-phase2.5.md) ⭐新增
+- [Phase 2 测试验收标准](docs/superpowers/specs/2026-04-11-phase2-test-acceptance.md) ⭐新增
 
 ### 实现计划
 - [Phase 1 实现计划](docs/superpowers/plans/2026-04-05-mvp-phase1-foundation.md)

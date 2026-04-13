@@ -2,85 +2,114 @@
 /**
  * 老张药园场景
  *
- * 使用占位符瓦片渲染（Phase 1）
- * Phase 1.5 将替换为真实UI素材
+ * Phase 1.5 更新:
+ * - 使用AI生成的药园全景图作为背景
+ * - 基于可行走瓦片实现碰撞检测
+ * - 地图尺寸: 44×24瓦片 (1408×768像素)
  */
 import Phaser from 'phaser';
 import { SCENES, TILE_SIZE } from '../data/constants';
+import { GARDEN_CONFIG } from '../data/garden-walkable-config';
 import { Player } from '../entities/Player';
 import { EventBus, GameEvents } from '../systems/EventBus';
 import { GameStateBridge } from '../utils/GameStateBridge';
+
+interface MapData {
+  width: number;
+  height: number;
+  walkableTiles: Set<string>;
+}
 
 export class GardenScene extends Phaser.Scene {
   private player!: Player;
   private cursors!: Phaser.Types.Input.Keyboard.CursorKeys;
   private spaceKey!: Phaser.Input.Keyboard.Key;
   private isTransitioning: boolean = false;
-  private walls!: Phaser.Physics.Arcade.StaticGroup;
   private eventBus!: EventBus;
   private gameStateBridge!: GameStateBridge;
-  private roomWidth: number = 20;
-  private roomHeight: number = 15;
+  private mapData!: MapData;
+  private background!: Phaser.GameObjects.Image;
 
   constructor() {
     super({ key: SCENES.GARDEN });
   }
 
   create(): void {
+    // ⭐ 关键修复：显式重置isTransitioning，确保create()时状态正确
+    this.isTransitioning = false;
+
+    // 初始化事件系统
     this.eventBus = EventBus.getInstance();
     this.gameStateBridge = GameStateBridge.getInstance();
 
     this.eventBus.emit(GameEvents.SCENE_CREATE, { sceneName: SCENES.GARDEN });
 
-    this.gameStateBridge.updateCurrentScene(SCENES.GARDEN);
-    this.gameStateBridge.updateSceneSize({ width: this.roomWidth, height: this.roomHeight });
+    // ⭐ 关键修复：订阅wake事件，确保从sleep状态唤醒时重置isTransitioning
+    this.events.on('wake', () => {
+      this.isTransitioning = false;
+      this.gameStateBridge.updateCurrentScene(SCENES.GARDEN);
+      console.log('[GardenScene] wake event received, isTransitioning reset to false');
+    });
 
-    this.createRoom();
+    // Phase 1.5: 加载背景图
+    this.createBackground();
+
+    // 创建地图数据
+    this.mapData = {
+      width: GARDEN_CONFIG.width,
+      height: GARDEN_CONFIG.height,
+      walkableTiles: GARDEN_CONFIG.walkableTiles
+    };
+
+    // 更新状态桥接器
+    this.gameStateBridge.updateCurrentScene(SCENES.GARDEN);
+    this.gameStateBridge.updateSceneSize({
+      width: this.mapData.width,
+      height: this.mapData.height
+    });
+
+    // 创建玩家
     this.createPlayer();
-    this.createWallCollisions(this.roomWidth, this.roomHeight);
-    this.addUI();
+
+    // 设置相机
+    this.setupCamera();
+
+    // 设置输入
     this.setupInput();
+
+    // 添加UI提示
+    this.add.text(10, 10, '老张药园 (Phase 1.5)', {
+      fontSize: '16px',
+      color: '#ffffff',
+      backgroundColor: '#000000aa',
+      padding: { x: 8, y: 4 }
+    }).setScrollFactor(0);
+
+    this.add.text(10, 40, '按空格键返回室外', {
+      fontSize: '12px',
+      color: '#aaaaaa'
+    }).setScrollFactor(0);
 
     this.eventBus.emit(GameEvents.SCENE_READY, { sceneName: SCENES.GARDEN });
   }
 
-  private createRoom(): void {
-    for (let y = 0; y < this.roomHeight; y++) {
-      for (let x = 0; x < this.roomWidth; x++) {
-        if (x === 0 || x === this.roomWidth - 1 || y === 0 || y === this.roomHeight - 1) {
-          this.add.sprite(
-            x * TILE_SIZE + TILE_SIZE / 2,
-            y * TILE_SIZE + TILE_SIZE / 2,
-            'wall'
-          );
-        } else {
-          this.add.sprite(
-            x * TILE_SIZE + TILE_SIZE / 2,
-            y * TILE_SIZE + TILE_SIZE / 2,
-            'grass'
-          );
-        }
-      }
-    }
+  /**
+   * Phase 1.5: 加载背景图
+   */
+  private createBackground(): void {
+    const config = GARDEN_CONFIG;
+    const mapPixelWidth = config.width * TILE_SIZE;
+    const mapPixelHeight = config.height * TILE_SIZE;
 
-    // 药田占位
-    for (let i = 0; i < 4; i++) {
-      const plot = this.add.rectangle(
-        4 * TILE_SIZE + i * 3 * TILE_SIZE,
-        6 * TILE_SIZE,
-        TILE_SIZE * 2,
-        TILE_SIZE * 2,
-        0x2d5a27
-      );
-      plot.setStrokeStyle(2, 0x4a7c59);
-    }
-
-    const doorX = Math.floor(this.roomWidth / 2);
-    this.add.sprite(
-      doorX * TILE_SIZE + TILE_SIZE / 2,
-      (this.roomHeight - 1) * TILE_SIZE + TILE_SIZE / 2,
-      'door'
+    this.background = this.add.image(
+      mapPixelWidth / 2,
+      mapPixelHeight / 2,
+      'garden_background'
     );
+
+    this.background.setDisplaySize(mapPixelWidth, mapPixelHeight);
+    this.background.setOrigin(0.5);
+    this.background.setDepth(0);
   }
 
   private createPlayer(): void {
@@ -89,19 +118,30 @@ export class GardenScene extends Phaser.Scene {
 
     const registrySpawnPoint = this.registry.get('spawnPoint');
     if (registrySpawnPoint) {
-      spawnX = 10 * TILE_SIZE + TILE_SIZE / 2;
-      spawnY = 13 * TILE_SIZE + TILE_SIZE / 2;
+      spawnX = registrySpawnPoint.x * TILE_SIZE + TILE_SIZE / 2;
+      spawnY = registrySpawnPoint.y * TILE_SIZE + TILE_SIZE / 2;
       this.registry.remove('spawnPoint');
     } else {
-      spawnX = Math.floor(this.roomWidth / 2) * TILE_SIZE + TILE_SIZE / 2;
-      spawnY = Math.floor(this.roomHeight / 2) * TILE_SIZE + TILE_SIZE / 2;
+      const configSpawn = GARDEN_CONFIG.playerSpawnPoint;
+      spawnX = configSpawn.x * TILE_SIZE + TILE_SIZE / 2;
+      spawnY = configSpawn.y * TILE_SIZE + TILE_SIZE / 2;
     }
+
+    // 更新物理世界边界
+    const mapPixelWidth = this.mapData.width * TILE_SIZE;
+    const mapPixelHeight = this.mapData.height * TILE_SIZE;
+    this.physics.world.setBounds(0, 0, mapPixelWidth, mapPixelHeight);
 
     this.player = new Player({
       scene: this,
       x: spawnX,
       y: spawnY
     });
+    this.player.setDepth(10);
+
+    // Phase 1.5: 药园场景玩家放大
+    // 药园背景图尺寸较小(44x24)，玩家需要适度放大
+    this.player.setScale(0.35);  // 药园用35%（64像素 -> 约89像素）
 
     this.gameStateBridge.updatePlayerState({
       x: this.player.x,
@@ -113,43 +153,12 @@ export class GardenScene extends Phaser.Scene {
     });
   }
 
-  private createWallCollisions(roomWidth: number, roomHeight: number): void {
-    this.walls = this.physics.add.staticGroup();
+  private setupCamera(): void {
+    const mapPixelWidth = this.mapData.width * TILE_SIZE;
+    const mapPixelHeight = this.mapData.height * TILE_SIZE;
 
-    const doorX = Math.floor(roomWidth / 2);
-    const doorY = roomHeight - 1;
-
-    for (let y = 0; y < roomHeight; y++) {
-      for (let x = 0; x < roomWidth; x++) {
-        if (x === doorX && y === doorY) continue;
-
-        if (x === 0 || x === roomWidth - 1 || y === 0 || y === roomHeight - 1) {
-          const wall = this.walls.create(
-            x * TILE_SIZE + TILE_SIZE / 2,
-            y * TILE_SIZE + TILE_SIZE / 2,
-            ''
-          );
-          wall.setVisible(false);
-          wall.body?.setSize(TILE_SIZE, TILE_SIZE);
-        }
-      }
-    }
-
-    this.physics.add.collider(this.player, this.walls);
-  }
-
-  private addUI(): void {
-    this.add.text(10, 10, '老张药园', {
-      fontSize: '16px',
-      color: '#ffffff',
-      backgroundColor: '#000000aa',
-      padding: { x: 8, y: 4 }
-    });
-
-    this.add.text(10, 40, '按空格键返回室外', {
-      fontSize: '12px',
-      color: '#aaaaaa'
-    });
+    this.cameras.main.setBounds(0, 0, mapPixelWidth, mapPixelHeight);
+    this.cameras.main.startFollow(this.player, true, 0.1, 0.1);
   }
 
   private setupInput(): void {
@@ -160,8 +169,62 @@ export class GardenScene extends Phaser.Scene {
     }
   }
 
+  /**
+   * 检查目标位置是否可行走
+   */
+  private canMoveTo(x: number, y: number): boolean {
+    const tileX = Math.floor(x / TILE_SIZE);
+    const tileY = Math.floor(y / TILE_SIZE);
+    return this.mapData.walkableTiles.has(`${tileX},${tileY}`);
+  }
+
+  /**
+   * 确保玩家位置在可行走区域
+   */
+  private enforceWalkablePosition(): void {
+    const currentTileX = Math.floor(this.player.x / TILE_SIZE);
+    const currentTileY = Math.floor(this.player.y / TILE_SIZE);
+    const currentKey = `${currentTileX},${currentTileY}`;
+
+    if (!this.mapData.walkableTiles.has(currentKey)) {
+      const directions = [
+        { dx: 0, dy: -1 },
+        { dx: 0, dy: 1 },
+        { dx: -1, dy: 0 },
+        { dx: 1, dy: 0 },
+        { dx: -1, dy: -1 },
+        { dx: 1, dy: -1 },
+        { dx: -1, dy: 1 },
+        { dx: 1, dy: 1 },
+      ];
+
+      for (const dir of directions) {
+        const checkX = currentTileX + dir.dx;
+        const checkY = currentTileY + dir.dy;
+        const checkKey = `${checkX},${checkY}`;
+
+        if (this.mapData.walkableTiles.has(checkKey)) {
+          const newX = checkX * TILE_SIZE + TILE_SIZE / 2;
+          const newY = checkY * TILE_SIZE + TILE_SIZE / 2;
+          this.player.setPosition(newX, newY);
+          this.player.stop();
+          return;
+        }
+      }
+
+      // 推回出生点
+      const spawnX = GARDEN_CONFIG.playerSpawnPoint.x * TILE_SIZE + TILE_SIZE / 2;
+      const spawnY = GARDEN_CONFIG.playerSpawnPoint.y * TILE_SIZE + TILE_SIZE / 2;
+      this.player.setPosition(spawnX, spawnY);
+      this.player.stop();
+    }
+  }
+
   update(): void {
     if (!this.player || !this.cursors) return;
+
+    // 确保玩家位置在可行走区域
+    this.enforceWalkablePosition();
 
     const direction = { x: 0, y: 0 };
 
@@ -177,8 +240,33 @@ export class GardenScene extends Phaser.Scene {
       direction.y = 1;
     }
 
+    // 检查目标位置是否可行走
     if (direction.x !== 0 || direction.y !== 0) {
-      this.player.move(direction);
+      let velocityX = direction.x * this.player.speed;
+      let velocityY = direction.y * this.player.speed;
+
+      if (velocityX !== 0 && velocityY !== 0) {
+        velocityX *= 0.707;
+        velocityY *= 0.707;
+      }
+
+      const predictedX = this.player.x + velocityX * 0.016;
+      const predictedY = this.player.y + velocityY * 0.016;
+
+      if (this.canMoveTo(predictedX, predictedY)) {
+        this.player.move(direction);
+      } else {
+        const predictedXOnly = this.player.x + velocityX * 0.016;
+        const predictedYOnly = this.player.y + velocityY * 0.016;
+
+        if (direction.x !== 0 && this.canMoveTo(predictedXOnly, this.player.y)) {
+          this.player.move({ x: direction.x, y: 0 });
+        } else if (direction.y !== 0 && this.canMoveTo(this.player.x, predictedYOnly)) {
+          this.player.move({ x: 0, y: direction.y });
+        } else {
+          this.player.stop();
+        }
+      }
     } else {
       this.player.stop();
     }
@@ -195,6 +283,7 @@ export class GardenScene extends Phaser.Scene {
       velocity: { x: body.velocity.x, y: body.velocity.y }
     });
 
+    // 空格键返回室外
     if (Phaser.Input.Keyboard.JustDown(this.spaceKey) && !this.isTransitioning) {
       this.eventBus.emit(GameEvents.SCENE_SWITCH, {
         from: SCENES.GARDEN,
@@ -202,12 +291,22 @@ export class GardenScene extends Phaser.Scene {
       });
 
       this.isTransitioning = true;
-      this.registry.set('spawnPoint', { x: 12, y: 15 });
+      this.registry.set('spawnPoint', { x: 15, y: 10 });
       this.scene.start(SCENES.TOWN_OUTDOOR);
     }
   }
 
   shutdown(): void {
+    // ⭐ 关键修复：重置 isTransitioning 状态
+    this.isTransitioning = false;
+
     this.eventBus.emit(GameEvents.SCENE_DESTROY, { sceneName: SCENES.GARDEN });
+  }
+
+  // ⭐ 关键修复：当场景从sleep状态唤醒时，重置isTransitioning
+  // Phaser场景生命周期：sleep → wake() 而非 shutdown() → create()
+  wake(): void {
+    this.isTransitioning = false;
+    console.log('[GardenScene] wake() called, isTransitioning reset to false');
   }
 }

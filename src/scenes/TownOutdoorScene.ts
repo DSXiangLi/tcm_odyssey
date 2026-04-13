@@ -44,11 +44,22 @@ export class TownOutdoorScene extends Phaser.Scene {
   }
 
   create(): void {
+    // ⭐ 关键修复：显式重置isTransitioning，确保create()时状态正确
+    // Phaser场景reuse时，类字段可能保留旧值
+    this.isTransitioning = false;
+
     // 初始化事件系统
     this.eventBus = EventBus.getInstance();
     this.gameStateBridge = GameStateBridge.getInstance();
 
     this.eventBus.emit(GameEvents.SCENE_CREATE, { sceneName: SCENES.TOWN_OUTDOOR });
+
+    // ⭐ 关键修复：订阅wake事件，确保从sleep状态唤醒时重置isTransitioning
+    this.events.on('wake', () => {
+      this.isTransitioning = false;
+      this.gameStateBridge.updateCurrentScene(SCENES.TOWN_OUTDOOR);
+      console.log('[TownOutdoorScene] wake event received, isTransitioning reset to false');
+    });
 
     // Phase 1.5: 加载背景图
     this.createBackground();
@@ -138,12 +149,114 @@ export class TownOutdoorScene extends Phaser.Scene {
   }
 
   /**
-   * 检查目标位置是否可行走
+   * Phase 1.5改进: 检查玩家能否向指定方向移动
+   * 使用更宽松的检测，检查前进方向的多个点
    */
-  private canMoveTo(x: number, y: number): boolean {
-    const tileX = Math.floor(x / TILE_SIZE);
-    const tileY = Math.floor(y / TILE_SIZE);
-    return this.mapData.walkableTiles.has(`${tileX},${tileY}`);
+  private canMoveInDirection(direction: { x: number; y: number }): boolean {
+    const checkDistance = TILE_SIZE * 0.5;  // 检查前方半个瓦片距离
+
+    // 计算目标位置
+    let targetX = this.player.x;
+    let targetY = this.player.y;
+
+    if (direction.x !== 0) {
+      targetX += direction.x * checkDistance;
+    }
+    if (direction.y !== 0) {
+      targetY += direction.y * checkDistance;
+    }
+
+    // 检查目标位置及其周围的可行走情况
+    const tileX = Math.floor(targetX / TILE_SIZE);
+    const tileY = Math.floor(targetY / TILE_SIZE);
+
+    // 检查目标瓦片和相邻瓦片（允许滑墙）
+    const positionsToCheck = [
+      `${tileX},${tileY}`,
+      `${tileX + direction.x},${tileY}`,
+      `${tileX},${tileY + direction.y}`
+    ];
+
+    for (const key of positionsToCheck) {
+      if (this.mapData.walkableTiles.has(key)) {
+        return true;
+      }
+    }
+
+    return false;
+  }
+
+  /**
+   * Phase 1.5修复: 确保玩家当前位置在可行走区域
+   * 改进：只在玩家确实进入不可行走瓦片中心时才推回，避免边缘误判
+   */
+  private enforceWalkablePosition(): void {
+    const tileX = Math.floor(this.player.x / TILE_SIZE);
+    const tileY = Math.floor(this.player.y / TILE_SIZE);
+    const tileKey = `${tileX},${tileY}`;
+
+    // 如果当前瓦片可行走，无需处理
+    if (this.mapData.walkableTiles.has(tileKey)) {
+      return;
+    }
+
+    // 当前瓦片不可行走，检查是否是边缘情况
+    // 计算玩家在瓦片内的相对位置
+    const tileCenterX = tileX * TILE_SIZE + TILE_SIZE / 2;
+    const tileCenterY = tileY * TILE_SIZE + TILE_SIZE / 2;
+    const distanceFromCenter = Math.sqrt(
+      Math.pow(this.player.x - tileCenterX, 2) +
+      Math.pow(this.player.y - tileCenterY, 2)
+    );
+
+    // 如果玩家离瓦片中心较远（在边缘），检查相邻瓦片是否可行走
+    // 这种情况可能是正常的边缘移动，不推回
+    if (distanceFromCenter > TILE_SIZE * 0.3) {
+      // 检查相邻瓦片是否有可行走的
+      const adjacentTiles = [
+        { dx: 0, dy: -1 }, { dx: 0, dy: 1 },
+        { dx: -1, dy: 0 }, { dx: 1, dy: 0 }
+      ];
+
+      for (const adj of adjacentTiles) {
+        const adjKey = `${tileX + adj.dx},${tileY + adj.dy}`;
+        if (this.mapData.walkableTiles.has(adjKey)) {
+          // 玩家在可行走瓦片的边缘，这是正常的，不推回
+          return;
+        }
+      }
+    }
+
+    // 确实进入了不可行走区域，需要推回
+    // 寻找最近的可行走瓦片
+    const directions = [
+      { dx: 0, dy: -1 }, { dx: 0, dy: 1 },
+      { dx: -1, dy: 0 }, { dx: 1, dy: 0 },
+      { dx: -1, dy: -1 }, { dx: 1, dy: -1 },
+      { dx: -1, dy: 1 }, { dx: 1, dy: 1 },
+    ];
+
+    for (const dir of directions) {
+      const checkKey = `${tileX + dir.dx},${tileY + dir.dy}`;
+      if (this.mapData.walkableTiles.has(checkKey)) {
+        const newX = (tileX + dir.dx) * TILE_SIZE + TILE_SIZE / 2;
+        const newY = (tileY + dir.dy) * TILE_SIZE + TILE_SIZE / 2;
+        this.player.setPosition(newX, newY);
+        this.player.stop();
+
+        this.eventBus.emit(GameEvents.PLAYER_COLLIDE, {
+          collisionWith: 'unwalkable_correction',
+          position: { x: newX, y: newY }
+        });
+        return;
+      }
+    }
+
+    // 如果周围没有可行走瓦片，推回到出生点
+    const spawnX = TOWN_OUTDOOR_CONFIG.playerSpawnPoint.x * TILE_SIZE + TILE_SIZE / 2;
+    const spawnY = TOWN_OUTDOOR_CONFIG.playerSpawnPoint.y * TILE_SIZE + TILE_SIZE / 2;
+    this.player.setPosition(spawnX, spawnY);
+    this.player.stop();
   }
 
   private collectDoorTiles(): void {
@@ -156,7 +269,8 @@ export class TownOutdoorScene extends Phaser.Scene {
 
       this.doorTiles.set(`${doorConfig.tileX},${doorConfig.tileY}`, {
         targetScene: sceneMap[doorConfig.targetScene] || doorConfig.targetScene,
-        spawnPoint: doorConfig.spawnPoint
+        spawnPoint: doorConfig.spawnPoint,
+        indoorSpawnPoint: doorConfig.indoorSpawnPoint
       });
     }
   }
@@ -217,6 +331,9 @@ export class TownOutdoorScene extends Phaser.Scene {
   update(): void {
     if (!this.player || !this.cursors) return;
 
+    // Phase 1.5修复: 确保玩家位置始终在可行走区域
+    this.enforceWalkablePosition();
+
     const direction = { x: 0, y: 0 };
 
     if (this.cursors.left.isDown || this.input.keyboard?.addKey('A').isDown) {
@@ -231,41 +348,26 @@ export class TownOutdoorScene extends Phaser.Scene {
       direction.y = 1;
     }
 
-    // Phase 1.5: 检查目标位置是否可行走
+    // Phase 1.5改进: 只在有按键时设置velocity，无按键时让物理引擎自然减速
+    // 不再每帧调用stop()清零velocity
     if (direction.x !== 0 || direction.y !== 0) {
-      // 计算预测位置
-      let velocityX = direction.x * this.player.speed;
-      let velocityY = direction.y * this.player.speed;
-
-      // 对角线移动标准化
-      if (velocityX !== 0 && velocityY !== 0) {
-        velocityX *= 0.707;
-        velocityY *= 0.707;
-      }
-
-      // 预测下一帧位置（使用固定的deltaTime约16ms）
-      const predictedX = this.player.x + velocityX * 0.016;
-      const predictedY = this.player.y + velocityY * 0.016;
-
-      // 检查预测位置是否可行走
-      if (this.canMoveTo(predictedX, predictedY)) {
+      // 有按键按下
+      if (this.canMoveInDirection(direction)) {
         this.player.move(direction);
       } else {
         // 尝试只沿一个轴移动（滑墙效果）
-        const predictedXOnly = this.player.x + velocityX * 0.016;
-        const predictedYOnly = this.player.y + velocityY * 0.016;
-
-        if (direction.x !== 0 && this.canMoveTo(predictedXOnly, this.player.y)) {
+        if (direction.x !== 0 && this.canMoveInDirection({ x: direction.x, y: 0 })) {
           this.player.move({ x: direction.x, y: 0 });
-        } else if (direction.y !== 0 && this.canMoveTo(this.player.x, predictedYOnly)) {
+        } else if (direction.y !== 0 && this.canMoveInDirection({ x: 0, y: direction.y })) {
           this.player.move({ x: 0, y: direction.y });
         } else {
+          // 无法移动，停止
           this.player.stop();
         }
       }
-    } else {
-      this.player.stop();
     }
+    // 无按键时不调用stop()，让物理引擎自然处理
+    // 玩家会因为碰撞边界或enforceWalkablePosition而停止
 
     this.player.updatePositionTracking();
 
@@ -287,8 +389,18 @@ export class TownOutdoorScene extends Phaser.Scene {
     const isWalkableTile = isWalkable(tileX, tileY);
     const doorKey = `${tileX},${tileY}`;
     const isOnDoor = this.doorTiles.has(doorKey);
+
+    // Phase 1.5修复: 检查是否在门附近（相邻瓦片）
+    const adjacentDoorPositions = [
+      { x: tileX, y: tileY - 1 },
+      { x: tileX, y: tileY + 1 },
+      { x: tileX - 1, y: tileY },
+      { x: tileX + 1, y: tileY },
+    ];
+    const isNearDoor = adjacentDoorPositions.some(pos => this.doorTiles.has(`${pos.x},${pos.y}`));
+
     this.playerTileText.setText(
-      `位置: (${tileX}, ${tileY}) ${isWalkableTile ? '可行走' : '不可行走'}${isOnDoor ? ' [门]' : ''}`
+      `位置: (${tileX}, ${tileY}) ${isWalkableTile ? '可行走' : '不可行走'}${isOnDoor ? ' [门]' : (isNearDoor ? ' [门附近]' : '')}`
     );
 
     // 检测门交互
@@ -301,24 +413,26 @@ export class TownOutdoorScene extends Phaser.Scene {
       );
 
       if (doorInfo) {
-        this.eventBus.emit(GameEvents.DOOR_INTERACT, {
-          from: SCENES.TOWN_OUTDOOR,
-          to: doorInfo.targetScene,
-          doorPosition: tilePos
-        });
-
-        this.eventBus.emit(GameEvents.SCENE_SWITCH, {
-          from: SCENES.TOWN_OUTDOOR,
-          to: doorInfo.targetScene
-        });
-
         this.isTransitioning = true;
-        this.sceneManager.changeScene(doorInfo.targetScene, doorInfo.spawnPoint);
+        // 进入室内时，使用室内出生点
+        this.sceneManager.changeScene(doorInfo.targetScene, doorInfo.indoorSpawnPoint);
       }
     }
   }
 
   shutdown(): void {
+    // ⭐ 关键修复：重置 isTransitioning 状态，确保再次进入时能触发门交互
+    this.isTransitioning = false;
+
     this.eventBus.emit(GameEvents.SCENE_DESTROY, { sceneName: SCENES.TOWN_OUTDOOR });
+  }
+
+  // ⭐ 关键修复：当场景从sleep状态唤醒时，重置isTransitioning
+  // Phaser场景生命周期：sleep → wake() 而非 shutdown() → create()
+  wake(): void {
+    this.isTransitioning = false;
+    // 更新GameStateBridge，确保测试能正确检测场景
+    this.gameStateBridge.updateCurrentScene(SCENES.TOWN_OUTDOOR);
+    console.log('[TownOutdoorScene] wake() called, isTransitioning reset to false');
   }
 }

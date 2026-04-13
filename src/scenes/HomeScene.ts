@@ -27,10 +27,20 @@ export class HomeScene extends Phaser.Scene {
   }
 
   create(): void {
+    // ⭐ 关键修复：显式重置isTransitioning，确保create()时状态正确
+    this.isTransitioning = false;
+
     this.eventBus = EventBus.getInstance();
     this.gameStateBridge = GameStateBridge.getInstance();
 
     this.eventBus.emit(GameEvents.SCENE_CREATE, { sceneName: SCENES.HOME });
+
+    // ⭐ 关键修复：订阅wake事件，确保从sleep状态唤醒时重置isTransitioning
+    this.events.on('wake', () => {
+      this.isTransitioning = false;
+      this.gameStateBridge.updateCurrentScene(SCENES.HOME);
+      console.log('[HomeScene] wake event received, isTransitioning reset to false');
+    });
 
     this.gameStateBridge.updateCurrentScene(SCENES.HOME);
     this.gameStateBridge.updateSceneSize({ width: this.roomWidth, height: this.roomHeight });
@@ -202,12 +212,23 @@ export class HomeScene extends Phaser.Scene {
       });
 
       this.isTransitioning = true;
-      this.registry.set('spawnPoint', { x: 18, y: 20 });
+      // Phase 1.5: 使用玩家之家门的正确出生点坐标
+      this.registry.set('spawnPoint', { x: 61, y: 37 });
       this.scene.start(SCENES.TOWN_OUTDOOR);
     }
   }
 
   shutdown(): void {
+    // ⭐ 关键修复：重置 isTransitioning 状态
+    this.isTransitioning = false;
+
     this.eventBus.emit(GameEvents.SCENE_DESTROY, { sceneName: SCENES.HOME });
+  }
+
+  // ⭐ 关键修复：当场景从sleep状态唤醒时，重置isTransitioning
+  // Phaser场景生命周期：sleep → wake() 而非 shutdown() → create()
+  wake(): void {
+    this.isTransitioning = false;
+    console.log('[HomeScene] wake() called, isTransitioning reset to false');
   }
 }

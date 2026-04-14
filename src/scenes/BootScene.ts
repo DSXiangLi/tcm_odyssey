@@ -4,24 +4,64 @@
  *
  * Phase 1.5 更新:
  * - 加载AI生成的小镇全景图
- * - 创建占位纹理（用于室内场景和玩家）
+ * - 加载玩家sprite素材（4方向各4帧动画）
+ * - 创建玩家行走动画
+ *
+ * Phase 2 S11: 初始化管理器并暴露到全局
  */
 import Phaser from 'phaser';
 import { SCENES, TILE_SIZE } from '../data/constants';
+import { GameStateBridge } from '../utils/GameStateBridge';
+import { PlantingManager } from '../systems/PlantingManager';
+
+// 玩家sprite配置 - user2素材（正确配置）
+// 源图896x1195，布局4行×3列，每帧298x298
+// 切分后每方向sprite sheet为894x298（3帧横向）
+const PLAYER_FRAME_WIDTH = 298;   // 每帧宽度
+const PLAYER_FRAME_HEIGHT = 298;  // 每帧高度
+// 缩放比例：将224x298像素缩放到合适游戏尺寸
+// 目标高度约64像素（2个瓦片高），按高度缩放
+const PLAYER_SCALE = 64 / PLAYER_FRAME_HEIGHT; // 298 * 0.214 = 64像素
 
 export class BootScene extends Phaser.Scene {
   private loadingText!: Phaser.GameObjects.Text;
   private progressBar!: Phaser.GameObjects.Graphics;
+  private gameStateBridge!: GameStateBridge;
 
   constructor() {
     super({ key: SCENES.BOOT });
   }
 
   preload(): void {
+    this.gameStateBridge = GameStateBridge.getInstance();
+    this.gameStateBridge.updateCurrentScene(SCENES.BOOT);
+
     this.createLoadingUI();
 
     // Phase 1.5: 加载小镇全景背景图
     this.load.image('town_background', 'assets/town_outdoor/town_background.jpeg');
+
+    // Phase 1.5: 加载室内场景背景图（缩放后的诊所）
+    this.load.image('clinic_background', 'assets/indoor/clinic_scaled/clinic_scaled.png');
+    this.load.image('garden_background', 'assets/indoor/garden/herb_field_area.png');
+
+    // Phase 1.5: 加载玩家sprite素材（user2更新版）
+    this.load.spritesheet('player_down', 'assets/sprites/player/user2_down.png', {
+      frameWidth: PLAYER_FRAME_WIDTH,
+      frameHeight: PLAYER_FRAME_HEIGHT
+    });
+    this.load.spritesheet('player_up', 'assets/sprites/player/user2_up.png', {
+      frameWidth: PLAYER_FRAME_WIDTH,
+      frameHeight: PLAYER_FRAME_HEIGHT
+    });
+    this.load.spritesheet('player_left', 'assets/sprites/player/user2_left.png', {
+      frameWidth: PLAYER_FRAME_WIDTH,
+      frameHeight: PLAYER_FRAME_HEIGHT
+    });
+    this.load.spritesheet('player_right', 'assets/sprites/player/user2_right.png', {
+      frameWidth: PLAYER_FRAME_WIDTH,
+      frameHeight: PLAYER_FRAME_HEIGHT
+    });
   }
 
   private createLoadingUI(): void {
@@ -53,12 +93,88 @@ export class BootScene extends Phaser.Scene {
   }
 
   create(): void {
+    this.createPlayerAnimations();
     this.createPlaceholderTextures();
+
+    // Phase 2 S11: 初始化管理器并暴露到全局
+    this.initializeManagers();
+
     this.scene.start(SCENES.TOWN_OUTDOOR);
   }
 
+  /**
+   * Phase 2 S11: 初始化管理器
+   */
+  private initializeManagers(): void {
+    // 初始化PlantingManager并暴露到window
+    const plantingManager = PlantingManager.getInstance();
+    plantingManager.exposeToWindow();
+  }
+
+  /**
+   * 创建玩家行走动画
+   */
+  private createPlayerAnimations(): void {
+    const animConfig = {
+      frameRate: 8, // 8帧/秒，行走速度适中
+      repeat: -1 // 无限循环
+    };
+
+    // 向下行走动画（3帧：帧0、帧1、帧2）
+    this.anims.create({
+      key: 'player_walk_down',
+      frames: this.anims.generateFrameNumbers('player_down', { start: 0, end: 2 }),
+      ...animConfig
+    });
+
+    // 向上行走动画（3帧）
+    this.anims.create({
+      key: 'player_walk_up',
+      frames: this.anims.generateFrameNumbers('player_up', { start: 0, end: 2 }),
+      ...animConfig
+    });
+
+    // 向左行走动画（3帧）
+    this.anims.create({
+      key: 'player_walk_left',
+      frames: this.anims.generateFrameNumbers('player_left', { start: 0, end: 2 }),
+      ...animConfig
+    });
+
+    // 向右行走动画（3帧）
+    this.anims.create({
+      key: 'player_walk_right',
+      frames: this.anims.generateFrameNumbers('player_right', { start: 0, end: 2 }),
+      ...animConfig
+    });
+
+    // 静止状态动画（每方向的第0帧）
+    this.anims.create({
+      key: 'player_idle_down',
+      frames: [{ key: 'player_down', frame: 0 }],
+      frameRate: 1
+    });
+    this.anims.create({
+      key: 'player_idle_up',
+      frames: [{ key: 'player_up', frame: 0 }],
+      frameRate: 1
+    });
+    this.anims.create({
+      key: 'player_idle_left',
+      frames: [{ key: 'player_left', frame: 0 }],
+      frameRate: 1
+    });
+    this.anims.create({
+      key: 'player_idle_right',
+      frames: [{ key: 'player_right', frame: 0 }],
+      frameRate: 1
+    });
+
+    console.log('Phase 1.5: 玩家动画创建完成');
+  }
+
   private createPlaceholderTextures(): void {
-    // Phase 1.5: 保留占位纹理（用于室内场景和玩家）
+    // Phase 1.5: 保留占位纹理（用于室内场景）
 
     // 草地纹理（室内场景可能需要）
     const grassGraphics = this.add.graphics();
@@ -90,13 +206,13 @@ export class BootScene extends Phaser.Scene {
     doorGraphics.generateTexture('door', TILE_SIZE, TILE_SIZE);
     doorGraphics.destroy();
 
-    // 玩家纹理
-    const playerGraphics = this.add.graphics();
-    playerGraphics.fillStyle(0xff6b6b);
-    playerGraphics.fillCircle(TILE_SIZE / 2, TILE_SIZE / 2, TILE_SIZE / 3);
-    playerGraphics.generateTexture('player', TILE_SIZE, TILE_SIZE);
-    playerGraphics.destroy();
+    console.log('Phase 1.5: 占位纹理创建完成');
+  }
 
-    console.log('Phase 1.5: 资源加载完成');
+  /**
+   * 获取玩家缩放比例
+   */
+  static getPlayerScale(): number {
+    return PLAYER_SCALE;
   }
 }

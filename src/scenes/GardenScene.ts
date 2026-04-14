@@ -6,6 +6,10 @@
  * - 使用AI生成的药园全景图作为背景
  * - 基于可行走瓦片实现碰撞检测
  * - 地图尺寸: 44×24瓦片 (1408×768像素)
+ *
+ * Phase 2 S11.4 更新:
+ * - 添加种植游戏入口（G键）
+ * - 集成PlantingManager
  */
 import Phaser from 'phaser';
 import { SCENES, TILE_SIZE } from '../data/constants';
@@ -13,6 +17,7 @@ import { GARDEN_CONFIG } from '../data/garden-walkable-config';
 import { Player } from '../entities/Player';
 import { EventBus, GameEvents } from '../systems/EventBus';
 import { GameStateBridge } from '../utils/GameStateBridge';
+import { PlantingManager } from '../systems/PlantingManager';
 
 interface MapData {
   width: number;
@@ -24,11 +29,13 @@ export class GardenScene extends Phaser.Scene {
   private player!: Player;
   private cursors!: Phaser.Types.Input.Keyboard.CursorKeys;
   private spaceKey!: Phaser.Input.Keyboard.Key;
+  private gKey!: Phaser.Input.Keyboard.Key;  // S11.4: 种植快捷键
   private isTransitioning: boolean = false;
   private eventBus!: EventBus;
   private gameStateBridge!: GameStateBridge;
   private mapData!: MapData;
   private background!: Phaser.GameObjects.Image;
+  private plantingManager!: PlantingManager;  // S11.4: 种植管理器
 
   constructor() {
     super({ key: SCENES.GARDEN });
@@ -41,6 +48,7 @@ export class GardenScene extends Phaser.Scene {
     // 初始化事件系统
     this.eventBus = EventBus.getInstance();
     this.gameStateBridge = GameStateBridge.getInstance();
+    this.plantingManager = PlantingManager.getInstance();  // S11.4
 
     this.eventBus.emit(GameEvents.SCENE_CREATE, { sceneName: SCENES.GARDEN });
 
@@ -85,7 +93,7 @@ export class GardenScene extends Phaser.Scene {
       padding: { x: 8, y: 4 }
     }).setScrollFactor(0);
 
-    this.add.text(10, 40, '按空格键返回室外', {
+    this.add.text(10, 40, '按空格键返回室外 | 按G键种植', {
       fontSize: '12px',
       color: '#aaaaaa'
     }).setScrollFactor(0);
@@ -165,6 +173,7 @@ export class GardenScene extends Phaser.Scene {
     if (this.input.keyboard) {
       this.cursors = this.input.keyboard.createCursorKeys();
       this.spaceKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE);
+      this.gKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.G);  // S11.4
       this.input.keyboard.addKeys('W,A,S,D');
     }
   }
@@ -294,6 +303,25 @@ export class GardenScene extends Phaser.Scene {
       this.registry.set('spawnPoint', { x: 15, y: 10 });
       this.scene.start(SCENES.TOWN_OUTDOOR);
     }
+
+    // S11.4: G键进入种植游戏
+    if (Phaser.Input.Keyboard.JustDown(this.gKey) && !this.isTransitioning) {
+      this.togglePlanting();
+    }
+  }
+
+  /**
+   * S11.4: 进入种植游戏
+   */
+  private togglePlanting(): void {
+    this.eventBus.emit(GameEvents.SCENE_SWITCH, {
+      from: SCENES.GARDEN,
+      to: SCENES.PLANTING
+    });
+
+    // 切换到种植场景
+    this.scene.launch(SCENES.PLANTING);
+    this.scene.pause();
   }
 
   shutdown(): void {

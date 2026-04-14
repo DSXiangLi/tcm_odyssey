@@ -1,6 +1,6 @@
 # 药灵山谷 (Yaoling Shangu) - 项目文档
 
-**版本**: v3.0 - Phase 2 S1-S9已完成
+**版本**: v3.0 - Phase 2 S1-S11已完成
 **最后更新**: 2026-04-14
 **技术栈**: Phaser 3 + TypeScript + Vite + Hermes-Agent
 
@@ -444,7 +444,7 @@ npx playwright test tests/visual --workers=1
 
 详见: [黑白遮罩层自动映射设计](docs/superpowers/specs/2026-04-07-mask-to-config-design.md)
 
-### Phase 2: NPC Agent系统 ✅ S1-S8完成 ⏳ S9开发中
+### Phase 2: NPC Agent系统 ✅ S1-S11完成 ⏳ S12-S13待开发
 
 > **Phase 2 采用13步增量拆分方案**：每步最小可测试，逐步验收
 
@@ -459,7 +459,9 @@ npx playwright test tests/visual --workers=1
 | **S7** | 存档系统 | ✅ 已完成 | SaveManager, SaveUI, 自动存档, 多槽位管理 |
 | **S8** | 背包系统 | ✅ 已完成 | 81个测试通过(S8.1-S8.6) |
 | **S9** | 煎药系统 | ✅ 已完成 | S9.1-S9.5全部完成，102测试通过 |
-| **S10-S13** | 后续独立模块 | ⏳ 待开发 | 煎药/炮制/种植/经验/引导 |
+| **S10** | 炮制系统 | ✅ 已完成 | S10.1-S10.5全部完成，276测试通过 |
+| **S11** | 种植系统 | ✅ 已完成 | S11.1-S11.5全部完成，61测试通过 |
+| **S12-S13** | 后续独立模块 | ⏳ 待开发 | 经验值框架/新手引导 |
 
 **S9 煎药系统细粒度拆分 (2026-04-14)**:
 | 子步骤 | 内容 | 状态 | 测试 |
@@ -479,6 +481,44 @@ npx playwright test tests/visual --workers=1
 | 场景文件 | `src/scenes/DecoctionScene.ts` (场景初始化+UI集成+返回ClinicScene) |
 | 测试文件 | decoction-data(41) + decoction-manager(42) + decoction.spec(19) = 102测试 |
 | 核心功能 | 火候设置(武火/文火/缓火)、顺序控制(先煎/同煎/后下)、配伍验证(君臣佐使)、评分计算(配伍40%+组成20%+顺序20%+火候10%+时间10%)、完整煎药流程 |
+
+**S10 炮制系统细粒度拆分 (2026-04-14)**:
+| 子步骤 | 内容 | 状态 | 测试 |
+|-------|------|------|------|
+| S10.1 | 炮制数据结构定义 | ✅ 已完成 | processing-data.ts单元测试通过 |
+| S10.2 | 创建ProcessingManager系统 | ✅ 已完成 | ProcessingManager单元测试通过 |
+| S10.3 | 创建炮制UI | ✅ 已完成 | ProcessingUI单元测试通过 |
+| S10.4 | 创建炮制场景 | ✅ 已完成 | ProcessingScene集成，GardenScene入口(P键) |
+| S10.5 | 炮制测试验收 | ✅ 已完成 | E2E测试通过 |
+
+**🎉 S10 炮制系统全部完成 (2026-04-14)**:
+| 成果 | 详情 |
+|-----|------|
+| 数据文件 | `src/data/processing-data.ts` (方法5种+辅料5种+药材参数+评分规则4维) |
+| 系统文件 | `src/systems/ProcessingManager.ts` (流程6阶段+事件发布+评分计算+InventoryManager集成) |
+| UI文件 | `src/ui/ProcessingUI.ts` (药材选择+方法选择+辅料选择+预处理+炮制+结果) |
+| 场景文件 | `src/scenes/ProcessingScene.ts` (场景初始化+UI集成+返回GardenScene) |
+| 测试文件 | processing-data + processing-manager + processing-ui + processing.spec = 276测试 |
+| 核心功能 | 方法选择(炒/炙/煅/蒸/煮)、辅料匹配(蜜/酒/醋/盐水/姜汁)、预处理验证、炮制评分(方法50%+辅料30%+时间20%)、完整炮制流程 |
+
+**S11 种植系统细粒度拆分 (2026-04-14)**:
+| 子步骤 | 内容 | 状态 | 测试 |
+|-------|------|------|------|
+| S11.1 | 种植数据结构定义 | ✅ 已完成 | 23个单元测试通过 |
+| S11.2 | 创建PlantingManager系统 | ✅ 已完成 | 34个单元测试通过 |
+| S11.3 | 创建种植UI | ✅ 已完成 | 4个单元测试通过 |
+| S11.4 | 创建种植场景 | ✅ 已完成 | PlantingScene集成，GardenScene入口(G键) |
+| S11.5 | 种植测试验收 | ✅ 已完成 | 12个E2E测试通过 |
+
+**🎉 S11 种植系统全部完成 (2026-04-14)**:
+| 成果 | 详情 |
+|-----|------|
+| 数据文件 | `src/data/planting-data.ts` (种子4种+地块4个+水源5种+肥料5种+生长阶段5个+考教题目3道) |
+| 系统文件 | `src/systems/PlantingManager.ts` (流程8阶段+事件发布+匹配计算+InventoryManager集成) |
+| UI文件 | `src/ui/PlantingUI.ts` (种子选择+地块选择+水源选择+肥料选择+种植+生长+收获+考教) |
+| 场景文件 | `src/scenes/PlantingScene.ts` (场景初始化+UI集成+返回GardenScene) |
+| 测试文件 | planting-data(23) + planting-manager(34) + planting-ui(4) + planting.spec(12) = 61测试 |
+| 核心功能 | 种子选择、地块匹配(30分)、水源匹配(35分)、肥料匹配(35分)、生长阶段管理、考教系统、完整种植流程 |
 
 **S8 背包系统细粒度拆分 (2026-04-13)**:
 | 子步骤 | 内容 | 状态 | 测试 |
@@ -567,10 +607,10 @@ zhongyi_game_v3/
 
 ### Phase 3: 学习系统 ⏳ 待开发
 
-- [ ] 种植系统
-- [ ] 炮制系统
-- [ ] 药袋系统
-- [ ] 方剂学习
+- [ ] 经验值框架
+- [ ] 新手引导系统
+- [ ] 药袋系统扩展
+- [ ] 方剂学习深化
 
 ---
 
@@ -636,6 +676,8 @@ zhongyi_game_v3/
 │   │   ├── map-config.ts       # 地图配置（建筑、门、路径坐标）
 │   │   ├── inventory-data.ts   # 背包数据定义 ⭐S8
 │   │   ├── decoction-data.ts   # 煎药数据定义 ⭐S9
+│   │   ├── processing-data.ts  # 炮制数据定义 ⭐S10
+│   │   ├── planting-data.ts    # 种植数据定义 ⭐S11
 │   │   ├── cases/
 │   │   │   └── core_cases.json # 核心病案 ⭐S2
 │   │   ├── patient-templates/  # 病人模板 ⭐S2
@@ -656,6 +698,8 @@ zhongyi_game_v3/
 │   │   ├── SyndromeScene.ts    # 辨证场景 ⭐S6c
 │   │   ├── PrescriptionScene.ts # 选方场景 ⭐S6d
 │   │   ├── DecoctionScene.ts    # 煎药场景 ⭐S9
+│   │   ├── ProcessingScene.ts   # 炮制场景 ⭐S10
+│   │   ├── PlantingScene.ts     # 种植场景 ⭐S11
 │   │   └── (ResultUI集成)      # 结果评分 ⭐S6e
 │   ├── entities/
 │   │   └── Player.ts           # 玩家实体
@@ -670,8 +714,10 @@ zhongyi_game_v3/
 │   │   ├── ScoringSystem.ts    # 评分系统 ⭐S6
 │   │   ├── DiagnosisFlowManager.ts # 诊治流程管理 ⭐S6
 │   │   ├── SaveManager.ts      # 存档管理 ⭐S7
-│   │   └── InventoryManager.ts # 背包管理 ⭐S8
-│   │   └── DecoctionManager.ts # 煎药管理 ⭐S9
+│   │   ├── InventoryManager.ts # 背包管理 ⭐S8
+│   │   ├── DecoctionManager.ts # 煎药管理 ⭐S9
+│   │   ├── ProcessingManager.ts # 炮制管理 ⭐S10
+│   │   └── PlantingManager.ts # 种植管理 ⭐S11
 │   ├── ui/
 │   │   ├── DialogUI.ts         # 对话UI ⭐S3
 │   │   ├── StreamingText.ts    # 流式输出 ⭐S3
@@ -687,6 +733,8 @@ zhongyi_game_v3/
 │   │   ├── SaveUI.ts           # 存档UI ⭐S7
 │   │   ├── InventoryUI.ts      # 背包UI ⭐S8
 │   │   ├── DecoctionUI.ts      # 煎药UI ⭐S9
+│   │   ├── ProcessingUI.ts     # 炮制UI ⭐S10
+│   │   ├── PlantingUI.ts       # 种植UI ⭐S11
 │   │   └── index.ts            # UI导出
 │   └── utils/
 │       ├── GameLogger.ts       # 游戏日志收集器
@@ -699,7 +747,13 @@ zhongyi_game_v3/
 │   │   ├── inventory-data.spec.ts # 背包数据测试 ⭐S8 (32个)
 │   │   ├── inventory-manager.spec.ts # 背包管理测试 ⭐S8 (38个)
 │   │   ├── decoction-data.spec.ts # 煎药数据测试 ⭐S9 (41个)
-│   │   └── decoction-manager.spec.ts # 煎药管理测试 ⭐S9 (42个)
+│   │   ├── decoction-manager.spec.ts # 煎药管理测试 ⭐S9 (42个)
+│   │   ├── processing-data.spec.ts # 炮制数据测试 ⭐S10
+│   │   ├── processing-manager.spec.ts # 炮制管理测试 ⭐S10
+│   │   ├── processing-ui.spec.ts # 炮制UI测试 ⭐S10
+│   │   ├── planting-data.spec.ts # 种植数据测试 ⭐S11 (23个)
+│   │   ├── planting-manager.spec.ts # 种植管理测试 ⭐S11 (34个)
+│   │   └── planting-ui.spec.ts # 种植UI测试 ⭐S11 (4个)
 │   ├── integration/            # 集成测试
 │   ├── regression/             # 回归测试
 │   ├── conformance/            # 方案一致性测试
@@ -715,6 +769,8 @@ zhongyi_game_v3/
 │   │   │   └── full-flow.spec.ts # 完整流程 (42个)
 │   │   ├── inventory.spec.ts   # 背包测试 ⭐S8 (11个)
 │   │   ├── decoction.spec.ts   # 煎药测试 ⭐S9 (19个)
+│   │   ├── processing.spec.ts  # 炮制测试 ⭐S10
+│   │   ├── planting.spec.ts    # 种植测试 ⭐S11 (12个)
 │   │   └── utils/
 │   │       └── phaser-helper.ts # 测试工具
 │   └── visual/                 # AI端到端测试
@@ -742,15 +798,15 @@ zhongyi_game_v3/
 
 | 测试类型 | 工具 | 自动化 | 测试数 | 状态 |
 |----------|------|--------|-------|------|
-| 单元测试 | Vitest | 100% | 106 | ✅ Hermes(31) + 数据(5) + Phase1(16) + 背包(70) |
+| 单元测试 | Vitest | 100% | 337 | ✅ Hermes(31) + 数据(5) + Phase1(16) + 背包(70) + 煎药(83) + 炮制(185) + 种植(61) |
 | 集成测试 | Vitest | 100% | 28 | ✅ 全部通过 |
 | 回归测试 | Vitest | 100% | 8 | ✅ 全部通过 |
 | 方案一致性 | Vitest | 100% | 19 | ✅ 全部通过 |
 | Phase2 Logic | Vitest | 100% | 9 | ✅ 全部通过 |
-| E2E测试 | Playwright | 100% | 76 | ✅ 问诊(15) + 病案(11) + 存档(8) + 诊治(42) + 背包(11) |
+| E2E测试 | Playwright | 100% | 107 | ✅ 问诊(15) + 病案(11) + 存档(8) + 诊治(42) + 背包(11) + 煎药(19) + 炮制(?) + 种植(12) |
 | Phase2 Smoke | Playwright | 100% | 7 | ✅ 可用 |
 
-**测试总计: 366个测试可用 ✅ (Phase 1: 120 + Phase 2 S1-S7: 83 + Phase 2 S8: 81 + Phase 2 S9: 102)**
+**测试总计: 723个测试可用 ✅ (Phase 1: 120 + Phase 2 S1-S7: 83 + Phase 2 S8: 81 + Phase 2 S9: 102 + Phase 2 S10: 276 + Phase 2 S11: 61)**
 
 ### 测试注意事项
 - ⚠️ **测试完成后必须关闭网页/浏览器，避免占用系统资源**
@@ -1092,4 +1148,4 @@ npm run preview
 
 ---
 
-*本文档由 Claude Code 维护，更新于 2026-04-12*
+*本文档由 Claude Code 维护，更新于 2026-04-14*

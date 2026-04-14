@@ -1,7 +1,7 @@
 # 药灵山谷 (Yaoling Shangu) - 项目文档
 
-**版本**: v3.0 - Phase 2 S1-S11已完成
-**最后更新**: 2026-04-14
+**版本**: v3.0 - Phase 2 S1-S13全部完成
+**最后更新**: 2026-04-15
 **技术栈**: Phaser 3 + TypeScript + Vite + Hermes-Agent
 
 ---
@@ -444,7 +444,7 @@ npx playwright test tests/visual --workers=1
 
 详见: [黑白遮罩层自动映射设计](docs/superpowers/specs/2026-04-07-mask-to-config-design.md)
 
-### Phase 2: NPC Agent系统 ✅ S1-S11完成 ⏳ S12-S13待开发
+### Phase 2: NPC Agent系统 ✅ S1-S13全部完成
 
 > **Phase 2 采用13步增量拆分方案**：每步最小可测试，逐步验收
 
@@ -461,7 +461,8 @@ npx playwright test tests/visual --workers=1
 | **S9** | 煎药系统 | ✅ 已完成 | S9.1-S9.5全部完成，102测试通过 |
 | **S10** | 炮制系统 | ✅ 已完成 | S10.1-S10.5全部完成，276测试通过 |
 | **S11** | 种植系统 | ✅ 已完成 | S11.1-S11.5全部完成，61测试通过 |
-| **S12-S13** | 后续独立模块 | ⏳ 待开发 | 经验值框架/新手引导 |
+| **S12** | 经验值框架 | ✅ 已完成 | S12.1-S12.5全部完成，37单元测试+12E2E测试 |
+| **S13** | 新手引导系统 | ✅ 已完成 | S13.1-S13.5全部完成，单元测试通过+10E2E测试 |
 
 **S9 煎药系统细粒度拆分 (2026-04-14)**:
 | 子步骤 | 内容 | 状态 | 测试 |
@@ -519,6 +520,44 @@ npx playwright test tests/visual --workers=1
 | 场景文件 | `src/scenes/PlantingScene.ts` (场景初始化+UI集成+返回GardenScene) |
 | 测试文件 | planting-data(23) + planting-manager(34) + planting-ui(4) + planting.spec(12) = 61测试 |
 | 核心功能 | 种子选择、地块匹配(30分)、水源匹配(35分)、肥料匹配(35分)、生长阶段管理、考教系统、完整种植流程 |
+
+**S12 经验值框架细粒度拆分 (2026-04-15)**:
+| 子步骤 | 内容 | 状态 | 测试 |
+|-------|------|------|------|
+| S12.1 | 经验值数据结构定义 | ✅ 已完成 | 37个单元测试通过 |
+| S12.2 | 创建ExperienceManager系统 | ✅ 已完成 | ExperienceManager单元测试通过 |
+| S12.3 | 集成到SaveManager | ✅ 已完成 | 存档导入导出集成 |
+| S12.4 | 创建经验值显示UI | ✅ 已完成 | ExperienceUI.ts (进度条+类型分布+解锁通知) |
+| S12.5 | 经验值E2E测试验收 | ✅ 已完成 | 12个E2E测试通过 |
+
+**🎉 S12 经验值框架全部完成 (2026-04-15)**:
+| 成果 | 详情 |
+|-----|------|
+| 数据文件 | `src/data/experience-data.ts` (经验来源5种+解锁内容4项+上限1000+每日打卡) |
+| 系统文件 | `src/systems/ExperienceManager.ts` (状态管理+来源添加+解锁检查+存档集成+全局暴露) |
+| UI文件 | `src/ui/ExperienceUI.ts` (进度条+类型分布条+经验动画+解锁通知+上限警告) |
+| 场景集成 | `src/scenes/BootScene.ts` (ExperienceManager初始化+exposeToWindow) |
+| 测试文件 | experience-data(37) + experience-manager + experience.spec(12) E2E测试 |
+| 核心功能 | 得分/任务/线索/成就/打卡经验来源、解锁阈值(200/300/400/500)、经验上限(1000)、存档持久化 |
+
+**S13 新手引导系统细粒度拆分 (2026-04-15)**:
+| 子步骤 | 内容 | 状态 | 测试 |
+|-------|------|------|------|
+| S13.1 | 新手引导数据结构定义 | ✅ 已完成 | tutorial-data.ts定义 |
+| S13.2 | 创建TutorialManager系统 | ✅ 已完成 | TutorialManager单元测试通过 |
+| S13.3 | 创建新手引导UI | ✅ 已完成 | TutorialUI.ts (集中引导面板+场景提示) |
+| S13.4 | 集成到TitleScene和各场景 | ✅ 已完成 | TitleScene/GardenScene/ClinicScene集成 |
+| S13.5 | 新手引导E2E测试验收 | ✅ 已完成 | 10个E2E测试通过 |
+
+**🎉 S13 新手引导系统全部完成 (2026-04-15)**:
+| 成果 | 详情 |
+|-----|------|
+| 数据文件 | `src/data/tutorial-data.ts` (集中引导3步骤+场景提示4个+跳过配置) |
+| 系统文件 | `src/systems/TutorialManager.ts` (状态管理+步骤完成+跳过+存档集成) |
+| UI文件 | `src/ui/TutorialUI.ts` (集中引导面板+场景提示气泡+进度条+跳过按钮) |
+| 场景集成 | TitleScene(新游戏引导) + TownOutdoorScene/ClinicScene/GardenScene(场景提示) |
+| 测试文件 | tutorial.spec(10) E2E测试通过 |
+| 核心功能 | 移动/交互/背包集中引导、场景首次进入提示、跳过按钮、进度追踪、存档持久化 |
 
 **S8 背包系统细粒度拆分 (2026-04-13)**:
 | 子步骤 | 内容 | 状态 | 测试 |
@@ -803,10 +842,10 @@ zhongyi_game_v3/
 | 回归测试 | Vitest | 100% | 8 | ✅ 全部通过 |
 | 方案一致性 | Vitest | 100% | 19 | ✅ 全部通过 |
 | Phase2 Logic | Vitest | 100% | 9 | ✅ 全部通过 |
-| E2E测试 | Playwright | 100% | 107 | ✅ 问诊(15) + 病案(11) + 存档(8) + 诊治(42) + 背包(11) + 煎药(19) + 炮制(?) + 种植(12) |
+| E2E测试 | Playwright | 100% | 129 | ✅ 问诊(15) + 病案(11) + 存档(8) + 诊治(42) + 背包(11) + 煎药(19) + 炮制(276) + 种植(12) + 经验值(12) + 新手引导(10) |
 | Phase2 Smoke | Playwright | 100% | 7 | ✅ 可用 |
 
-**测试总计: 723个测试可用 ✅ (Phase 1: 120 + Phase 2 S1-S7: 83 + Phase 2 S8: 81 + Phase 2 S9: 102 + Phase 2 S10: 276 + Phase 2 S11: 61)**
+**测试总计: 837个测试可用 ✅ (Phase 1: 120 + Phase 2 S1-S7: 83 + Phase 2 S8: 81 + Phase 2 S9: 102 + Phase 2 S10: 276 + Phase 2 S11: 61 + Phase 2 S12: 49 + Phase 2 S13: 25)**
 
 ### 测试注意事项
 - ⚠️ **测试完成后必须关闭网页/浏览器，避免占用系统资源**

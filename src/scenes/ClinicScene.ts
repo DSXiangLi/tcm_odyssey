@@ -72,6 +72,9 @@ export class ClinicScene extends Phaser.Scene {
   // Phase 2 S9: 煎药系统
   private decoctionButton!: Phaser.GameObjects.Text;
   private decoctionKey!: Phaser.Input.Keyboard.Key;
+  // Phase 2 S10: 炮制系统
+  private processingButton!: Phaser.GameObjects.Text;
+  private processingKey!: Phaser.Input.Keyboard.Key;
 
   constructor() {
     super({ key: SCENES.CLINIC });
@@ -151,6 +154,9 @@ export class ClinicScene extends Phaser.Scene {
 
     // Phase 2 S9: 创建煎药入口按钮
     this.createDecoctionButton();
+
+    // Phase 2 S10: 创建炮制入口按钮
+    this.createProcessingButton();
 
     // Phase 2 S5: 初始化病案管理器
     this.initializeCaseManager();
@@ -408,6 +414,8 @@ export class ClinicScene extends Phaser.Scene {
       this.inventoryKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.B);
       // Phase 2 S9: 煎药快捷键
       this.decoctionKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.D);
+      // Phase 2 S10: 炮制快捷键
+      this.processingKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.P);
       this.input.keyboard.addKeys('W,A,S,D');
     }
   }
@@ -470,6 +478,21 @@ export class ClinicScene extends Phaser.Scene {
     this.decoctionButton.setScrollFactor(0);
     this.decoctionButton.setInteractive({ useHandCursor: true });
     this.decoctionButton.on('pointerdown', () => this.startDecoction());
+  }
+
+  /**
+   * Phase 2 S10: 创建炮制入口按钮
+   */
+  private createProcessingButton(): void {
+    this.processingButton = this.add.text(10, 190, '[按 P 开始炮制]', {
+      fontSize: '14px',
+      color: '#c9a05c',  // 古朴金色
+      backgroundColor: '#333333aa',
+      padding: { x: 8, y: 4 }
+    });
+    this.processingButton.setScrollFactor(0);
+    this.processingButton.setInteractive({ useHandCursor: true });
+    this.processingButton.on('pointerdown', () => this.startProcessing());
   }
 
   /**
@@ -676,6 +699,27 @@ export class ClinicScene extends Phaser.Scene {
   }
 
   /**
+   * Phase 2 S10: 开始炮制
+   */
+  private startProcessing(): void {
+    if (this.isTransitioning) return;
+
+    console.log('[ClinicScene] Starting processing...');
+
+    // 发送事件
+    this.eventBus.emit(GameEvents.SCENE_SWITCH, {
+      from: SCENES.CLINIC,
+      to: SCENES.PROCESSING,
+      data: {}
+    });
+
+    this.isTransitioning = true;
+
+    // 切换到炮制场景
+    this.scene.start(SCENES.PROCESSING, {});
+  }
+
+  /**
    * 检查目标位置是否可行走
    */
   private canMoveTo(x: number, y: number): boolean {
@@ -821,6 +865,11 @@ export class ClinicScene extends Phaser.Scene {
     // Phase 2 S9: D键开始煎药
     if (Phaser.Input.Keyboard.JustDown(this.decoctionKey) && !this.isTransitioning) {
       this.startDecoction();
+    }
+
+    // Phase 2 S10: P键开始炮制
+    if (Phaser.Input.Keyboard.JustDown(this.processingKey) && !this.isTransitioning) {
+      this.startProcessing();
     }
   }
 

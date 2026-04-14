@@ -15,6 +15,8 @@ import { SyndromeScene } from '../scenes/SyndromeScene';
 import { PrescriptionScene } from '../scenes/PrescriptionScene';
 // Phase 2 S9: 煎药场景
 import { DecoctionScene } from '../scenes/DecoctionScene';
+// Phase 2 S10: 炮制场景
+import { ProcessingScene } from '../scenes/ProcessingScene';
 
 export const gameConfig: Phaser.Types.Core.GameConfig = {
   type: Phaser.AUTO,
@@ -44,7 +46,9 @@ export const gameConfig: Phaser.Types.Core.GameConfig = {
     SyndromeScene,
     PrescriptionScene,
     // Phase 2 S9: 煎药场景
-    DecoctionScene
+    DecoctionScene,
+    // Phase 2 S10: 炮制场景
+    ProcessingScene
   ],
   scale: {
     mode: Phaser.Scale.FIT,

@@ -13,7 +13,7 @@
  * Phase 2 S13.2 实现
  */
 
-import { EventBus, EventData } from './EventBus';
+import { EventBus } from './EventBus';
 import {
   TutorialState,
   TutorialStepId,
@@ -29,8 +29,7 @@ import {
   importTutorialState,
   getTutorialStep,
   getSceneTip,
-  TUTORIAL_STEPS,
-  SCENE_TIPS
+  TUTORIAL_STEPS
 } from '../data/tutorial-data';
 
 /**
@@ -284,7 +283,7 @@ export class TutorialManager {
    */
   importState(state: TutorialState): void {
     // 使用数据层的导入函数，但要保持当前实例的状态
-    const importedState = importTutorialState(state as Record<string, unknown>);
+    const importedState = importTutorialState(state as unknown as Record<string, unknown>);
     this.state = importedState;
 
     console.log(`[TutorialManager] State imported: phase=${this.state.phase}, steps=${this.state.completed_steps.length}`);

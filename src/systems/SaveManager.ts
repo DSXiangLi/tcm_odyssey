@@ -16,6 +16,8 @@
 import { EventBus, EventData } from './EventBus';
 import { GameStateBridge, PlayerState } from '../utils/GameStateBridge';
 import { CaseManager, CaseHistoryRecord } from './CaseManager';
+import { ExperienceManager } from './ExperienceManager';
+import { initializeExperienceState, type ExperienceState } from '../data/experience-data';
 
 // 存档版本
 const SAVE_VERSION = '3.0.0';
@@ -82,6 +84,9 @@ export interface SaveData {
 
   // 场景状态
   scene_state: SceneStateSaveData;
+
+  // 经验值状态 (Phase 2 S12.3)
+  experience: ExperienceState;
 
   // 游戏设置
   settings: {
@@ -238,6 +243,8 @@ export class SaveManager {
         player_position: { x: 47, y: 24 }  // 默认出生点
       },
 
+      experience: initializeExperienceState(),
+
       settings: {
         music_volume: 0.8,
         sfx_volume: 0.8,
@@ -256,6 +263,7 @@ export class SaveManager {
       // 收集当前游戏状态
       const gameState = this.gameStateBridge.getState();
       const caseData = this.caseManager?.exportData();
+      const experienceData = ExperienceManager.getInstance().exportData();
 
       // 构建存档数据
       const saveData: SaveData = {
@@ -274,6 +282,7 @@ export class SaveManager {
             y: gameState.player?.tileY ?? 24
           }
         },
+        experience: experienceData,
         settings: this.collectSettingsData()
       };
 
@@ -423,14 +432,23 @@ export class SaveManager {
       });
     }
 
-    // 4. 同步Task进度到Hermes
+    // 4. 恢复经验值状态（Phase 2 S12.3）
+    if (saveData.experience) {
+      ExperienceManager.getInstance().importData(saveData.experience);
+    } else {
+      // 如果存档中没有经验值数据，使用默认状态
+      ExperienceManager.getInstance().importData(initializeExperienceState());
+    }
+
+    // 5. 同步Task进度到Hermes
     await this.syncTaskDataToHermes(saveData.tasks);
 
-    // 5. 发送恢复完成事件
+    // 6. 发送恢复完成事件
     this.eventBus.emit('save:restored', {
       scene: saveData.scene_state.current_scene,
       position: saveData.scene_state.player_position,
-      cases_completed: saveData.case_history.length
+      cases_completed: saveData.case_history.length,
+      experience: saveData.experience?.total_experience ?? 0
     });
   }
 

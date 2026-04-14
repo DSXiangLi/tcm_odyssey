@@ -31,6 +31,9 @@ import { NPCInteractionSystem, NPCConfig } from '../systems/NPCInteraction';
 import { CaseManager, createCaseManager } from '../systems/CaseManager';
 import { CasesListUI, CasesListUIConfig } from '../ui/CasesListUI';
 import { CaseDetailUI, CaseDetailUIConfig } from '../ui/CaseDetailUI';
+// Phase 2 S8: 背包系统
+import { InventoryManager, createInventoryManager } from '../systems/InventoryManager';
+import { InventoryUI, createInventoryUI } from '../ui/InventoryUI';
 
 interface MapData {
   width: number;
@@ -62,6 +65,13 @@ export class ClinicScene extends Phaser.Scene {
   private casesListUI: CasesListUI | null = null;
   private caseDetailUI: CaseDetailUI | null = null;
   private casesInitialized: boolean = false;
+  // Phase 2 S8: 背包系统
+  private inventoryManager!: InventoryManager;
+  private inventoryKey!: Phaser.Input.Keyboard.Key;
+  private inventoryUI: InventoryUI | null = null;
+  // Phase 2 S9: 煎药系统
+  private decoctionButton!: Phaser.GameObjects.Text;
+  private decoctionKey!: Phaser.Input.Keyboard.Key;
 
   constructor() {
     super({ key: SCENES.CLINIC });
@@ -69,6 +79,8 @@ export class ClinicScene extends Phaser.Scene {
     this.npcSystem = new NPCInteractionSystem('player_001');
     // Phase 2 S5: 初始化病案管理器
     this.caseManager = createCaseManager('player_001', 'qingmu');
+    // Phase 2 S8: 初始化背包管理器
+    this.inventoryManager = createInventoryManager('player_001');
   }
 
   create(): void {
@@ -133,6 +145,12 @@ export class ClinicScene extends Phaser.Scene {
 
     // Phase 2 S5: 创建病案查看入口按钮
     this.createCasesButton();
+
+    // Phase 2 S8: 创建背包入口按钮
+    this.createInventoryButton();
+
+    // Phase 2 S9: 创建煎药入口按钮
+    this.createDecoctionButton();
 
     // Phase 2 S5: 初始化病案管理器
     this.initializeCaseManager();
@@ -386,6 +404,10 @@ export class ClinicScene extends Phaser.Scene {
       this.inquiryStartKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.I);
       // Phase 2 S5: 病案查看快捷键
       this.casesOpenKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.C);
+      // Phase 2 S8: 背包快捷键
+      this.inventoryKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.B);
+      // Phase 2 S9: 煎药快捷键
+      this.decoctionKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.D);
       this.input.keyboard.addKeys('W,A,S,D');
     }
   }
@@ -418,6 +440,36 @@ export class ClinicScene extends Phaser.Scene {
     this.casesButton.setScrollFactor(0);
     this.casesButton.setInteractive({ useHandCursor: true });
     this.casesButton.on('pointerdown', () => this.showCasesList());
+  }
+
+  /**
+   * Phase 2 S8: 创建背包入口按钮
+   */
+  private createInventoryButton(): void {
+    const inventoryButton = this.add.text(10, 130, '[按 B 打开背包]', {
+      fontSize: '14px',
+      color: '#4a7c59',
+      backgroundColor: '#333333aa',
+      padding: { x: 8, y: 4 }
+    });
+    inventoryButton.setScrollFactor(0);
+    inventoryButton.setInteractive({ useHandCursor: true });
+    inventoryButton.on('pointerdown', () => this.toggleInventory());
+  }
+
+  /**
+   * Phase 2 S9: 创建煎药入口按钮
+   */
+  private createDecoctionButton(): void {
+    this.decoctionButton = this.add.text(10, 160, '[按 D 开始煎药]', {
+      fontSize: '14px',
+      color: '#d4a574',  // 古朴金色
+      backgroundColor: '#333333aa',
+      padding: { x: 8, y: 4 }
+    });
+    this.decoctionButton.setScrollFactor(0);
+    this.decoctionButton.setInteractive({ useHandCursor: true });
+    this.decoctionButton.on('pointerdown', () => this.startDecoction());
   }
 
   /**
@@ -564,8 +616,12 @@ export class ClinicScene extends Phaser.Scene {
    */
   private exposeCasesToGlobal(): void {
     if (typeof window !== 'undefined') {
+      // 暴露完整的CaseManager实例（供测试调用方法）
+      (window as any).__CASE_MANAGER__ = this.caseManager;
+
+      // 同时暴露统计数据快照（方便快速检查）
       const stats = this.caseManager.getStatistics();
-      (window as any).__CASE_MANAGER__ = {
+      (window as any).__CASE_STATISTICS__ = {
         initialized: this.casesInitialized,
         totalCases: stats.total,
         completedCases: stats.completed,
@@ -596,6 +652,27 @@ export class ClinicScene extends Phaser.Scene {
 
     // 切换到问诊场景
     this.scene.start(SCENES.INQUIRY, { caseId: 'case_001' });
+  }
+
+  /**
+   * Phase 2 S9: 开始煎药
+   */
+  private startDecoction(): void {
+    if (this.isTransitioning) return;
+
+    console.log('[ClinicScene] Starting decoction...');
+
+    // 发送事件
+    this.eventBus.emit(GameEvents.SCENE_SWITCH, {
+      from: SCENES.CLINIC,
+      to: SCENES.DECOCTION,
+      data: {}
+    });
+
+    this.isTransitioning = true;
+
+    // 切换到煎药场景
+    this.scene.start(SCENES.DECOCTION, {});
   }
 
   /**
@@ -735,6 +812,16 @@ export class ClinicScene extends Phaser.Scene {
     if (Phaser.Input.Keyboard.JustDown(this.casesOpenKey) && !this.isTransitioning) {
       this.showCasesList();
     }
+
+    // Phase 2 S8: B键打开背包
+    if (Phaser.Input.Keyboard.JustDown(this.inventoryKey)) {
+      this.toggleInventory();
+    }
+
+    // Phase 2 S9: D键开始煎药
+    if (Phaser.Input.Keyboard.JustDown(this.decoctionKey) && !this.isTransitioning) {
+      this.startDecoction();
+    }
   }
 
   shutdown(): void {
@@ -758,6 +845,15 @@ export class ClinicScene extends Phaser.Scene {
     if (this.caseManager) {
       this.caseManager.destroy();
     }
+    // Phase 2 S8: 清理背包系统
+    if (this.inventoryUI) {
+      this.inventoryUI.destroy();
+      this.inventoryUI = null;
+    }
+    if (this.inventoryManager) {
+      this.inventoryManager.destroy();
+    }
+    // Phase 2 S9: 煎药按钮会随场景自动销毁
     this.dialogShown = false;
     this.casesInitialized = false;
 
@@ -771,6 +867,26 @@ export class ClinicScene extends Phaser.Scene {
     }
 
     this.eventBus.emit(GameEvents.SCENE_DESTROY, { sceneName: SCENES.CLINIC });
+  }
+
+  /**
+   * Phase 2 S8: 切换背包显示
+   */
+  private toggleInventory(): void {
+    if (!this.inventoryUI) {
+      // 创建背包UI
+      this.inventoryUI = createInventoryUI(this, () => {
+        console.log('[ClinicScene] Inventory closed');
+      });
+      this.inventoryManager.exposeToWindow();
+      console.log('[ClinicScene] Inventory UI created');
+    }
+
+    if (this.inventoryUI.isShowing()) {
+      this.inventoryUI.hide();
+    } else {
+      this.inventoryUI.show();
+    }
   }
 
   // ⭐ 关键修复：当场景从sleep状态唤醒时，重置isTransitioning

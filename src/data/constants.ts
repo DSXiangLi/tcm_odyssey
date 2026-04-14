@@ -12,7 +12,16 @@ export const SCENES = {
   TOWN_OUTDOOR: 'TownOutdoorScene',
   CLINIC: 'ClinicScene',
   GARDEN: 'GardenScene',
-  HOME: 'HomeScene'
+  HOME: 'HomeScene',
+  // Phase 2 S4: 问诊场景
+  INQUIRY: 'InquiryScene',
+  // Phase 2 S6: 诊治场景
+  PULSE: 'PulseScene',
+  TONGUE: 'TongueScene',
+  SYNDROME: 'SyndromeScene',
+  PRESCRIPTION: 'PrescriptionScene',
+  // Phase 2 S9: 煎药场景
+  DECOCTION: 'DecoctionScene'
 } as const;
 
 // 玩家移动速度

@@ -12,22 +12,67 @@
 import { test, expect } from '@playwright/test';
 import { waitForGameReady } from './utils/phaser-helper';
 
+// ===== 测试常量 =====
+/** 等待时间常量（毫秒） */
+const WAIT_TIME = {
+  RESET: 300,
+  STABLE: 500,
+  SCENE_LOAD: 2000,
+  BOOT_INIT: 3000,
+  UNLOCK_CHECK: 1000
+};
+
+/** 经验值常量（参考 experience-data.ts） */
+const EXPERIENCE = {
+  MAX_TOTAL: 1000,
+  MAX_SCORE_PER_CALL: 100,
+  TASK_BONUS: 50,
+  CLUE_BONUS: 10,
+  ACHIEVEMENT_BONUS: 100,
+  CHECKIN_BONUS: 20
+};
+
+/** 解锁阈值（参考 experience-data.ts UNLOCK_THRESHOLDS） */
+const UNLOCK_THRESHOLDS = {
+  PRESCRIPTION_MODIFICATION: 200,
+  NEW_NPC: 300,
+  HERB_COLLECTION: 400
+};
+
+// ===== 辅助函数 =====
+
 /**
- * 确保ExperienceManager已初始化并暴露到window
- * 如果BootScene未自动暴露，手动初始化
- * 同时重置状态确保测试隔离
+ * 重置ExperienceManager状态
  */
-async function ensureExperienceManager(page: import('@playwright/test').Page): Promise<boolean> {
-  // 检查是否已暴露
-  const available = await page.evaluate(() => {
+async function resetExperienceState(page: import('@playwright/test').Page): Promise<void> {
+  await page.evaluate(() => {
+    const manager = (window as any).__EXPERIENCE_MANAGER__;
+    if (manager) {
+      manager.reset();
+    }
+  });
+  await page.waitForTimeout(WAIT_TIME.STABLE);
+}
+
+/**
+ * 检查ExperienceManager是否可用
+ */
+async function isExperienceManagerAvailable(page: import('@playwright/test').Page): Promise<boolean> {
+  return await page.evaluate(() => {
     return typeof (window as any).__EXPERIENCE_MANAGER__ !== 'undefined';
   });
+}
+
+/**
+ * 确保ExperienceManager可用（初始化并暴露到window）
+ */
+async function ensureExperienceManagerAvailable(page: import('@playwright/test').Page): Promise<void> {
+  const available = await isExperienceManagerAvailable(page);
 
   if (!available) {
     // 手动初始化 - 动态导入模块并创建实例
     await page.evaluate(async () => {
       try {
-        // 尝试动态导入
         const module = await import('/src/systems/ExperienceManager.ts');
         const ExperienceManager = module.ExperienceManager;
         const manager = ExperienceManager.getInstance();
@@ -36,21 +81,19 @@ async function ensureExperienceManager(page: import('@playwright/test').Page): P
         console.error('Failed to dynamically import ExperienceManager:', e);
       }
     });
+    await page.waitForTimeout(WAIT_TIME.RESET);
   }
+}
 
-  // 完全重置状态（确保测试隔离）
-  await page.evaluate(async () => {
-    const module = await import('/src/systems/ExperienceManager.ts');
-    const ExperienceManager = module.ExperienceManager;
-    // 重置单例实例
-    ExperienceManager.resetInstance();
-    // 重新获取实例
-    const manager = ExperienceManager.getInstance();
-    manager.exposeToWindow();
-  });
-
-  // 等待重置生效
-  await page.waitForTimeout(300);
+/**
+ * 完整的ExperienceManager初始化流程：
+ * 1. 检查可用性
+ * 2. 如果不可用则初始化
+ * 3. 重置状态确保测试隔离
+ */
+async function initializeExperienceManagerForTest(page: import('@playwright/test').Page): Promise<boolean> {
+  await ensureExperienceManagerAvailable(page);
+  await resetExperienceState(page);
 
   // 验证状态已重置
   const state = await page.evaluate(() => {
@@ -72,26 +115,22 @@ test.describe('Experience System Smoke Tests (S12-S001~S002)', () => {
   });
 
   test('S12-S001: ExperienceManager全局暴露正确', async ({ page }) => {
-    // 等待BootScene完成初始化（ExperienceManager在BootScene.create()中暴露）
-    await page.waitForTimeout(3000);
+    // 等待BootScene完成初始化
+    await page.waitForTimeout(WAIT_TIME.BOOT_INIT);
 
     // 检查ExperienceManager是否暴露到全局
-    const managerAvailable = await page.evaluate(() => {
-      return typeof (window as any).__EXPERIENCE_MANAGER__ !== 'undefined';
-    });
+    const managerAvailable = await isExperienceManagerAvailable(page);
 
-    // 如果Manager没有自动暴露，手动初始化（确保测试可运行）
+    // 如果Manager没有自动暴露，尝试手动初始化
     if (!managerAvailable) {
       console.log('ExperienceManager not auto-exposed, initializing manually...');
       await page.evaluate(() => {
         try {
-          // 尝试从全局类创建实例
           if (typeof (window as any).__EXPERIENCE_MANAGER_CLASS__ !== 'undefined') {
             const manager = (window as any).__EXPERIENCE_MANAGER_CLASS__.getInstance();
             manager.exposeToWindow();
             return true;
           }
-          // 如果类未暴露，检查是否有模块可用
           return false;
         } catch (e) {
           console.error('Failed to initialize ExperienceManager:', e);
@@ -101,13 +140,9 @@ test.describe('Experience System Smoke Tests (S12-S001~S002)', () => {
     }
 
     // 再次检查是否可用
-    const managerAvailableAfterInit = await page.evaluate(() => {
-      return typeof (window as any).__EXPERIENCE_MANAGER__ !== 'undefined';
-    });
+    const managerAvailableAfterInit = await isExperienceManagerAvailable(page);
 
-    // 验证Manager基本功能（即使需要手动初始化）
     if (managerAvailableAfterInit) {
-      // 检查Manager方法和状态
       const managerState = await page.evaluate(() => {
         const manager = (window as any).__EXPERIENCE_MANAGER__;
         if (!manager) return null;
@@ -134,7 +169,7 @@ test.describe('Experience System Smoke Tests (S12-S001~S002)', () => {
       expect(managerState?.experience_by_type).toHaveProperty('practice');
       expect(managerState?.experience_by_type).toHaveProperty('exploration');
     } else {
-      // 如果仍然不可用，记录日志但验证游戏基础功能正常
+      // 验证游戏基础功能正常
       const gameReady = await page.evaluate(() => {
         return typeof (window as any).__PHASER_GAME__ !== 'undefined';
       });
@@ -144,10 +179,9 @@ test.describe('Experience System Smoke Tests (S12-S001~S002)', () => {
   });
 
   test('S12-S002: ExperienceUI创建和显示', async ({ page }) => {
-    // 等待状态稳定
-    await page.waitForTimeout(2000);
+    await page.waitForTimeout(WAIT_TIME.STABLE);
 
-    // 进入ClinicScene（经验值UI可能在诊所场景中显示）
+    // 进入ClinicScene
     await page.evaluate(() => {
       const game = (window as any).__PHASER_GAME__;
       if (game) {
@@ -155,16 +189,12 @@ test.describe('Experience System Smoke Tests (S12-S001~S002)', () => {
       }
     });
 
-    await page.waitForTimeout(2000);
+    await page.waitForTimeout(WAIT_TIME.SCENE_LOAD);
 
-    // 确保ExperienceManager可用（这是核心功能）
-    await ensureExperienceManager(page);
+    // 确保ExperienceManager可用
+    await ensureExperienceManagerAvailable(page);
 
-    // 验证Manager可用即可通过测试
-    const managerAvailable = await page.evaluate(() => {
-      return typeof (window as any).__EXPERIENCE_MANAGER__ !== 'undefined';
-    });
-
+    const managerAvailable = await isExperienceManagerAvailable(page);
     expect(managerAvailable).toBe(true);
 
     // 检查UI是否可用（可选功能）
@@ -172,7 +202,6 @@ test.describe('Experience System Smoke Tests (S12-S001~S002)', () => {
       return typeof (window as any).__EXPERIENCE_UI__ !== 'undefined';
     });
 
-    // UI是否可用不影响测试通过（UI依赖场景初始化）
     if (!uiAvailable) {
       console.log('ExperienceUI not available (requires scene context), but ExperienceManager is working correctly');
     }
@@ -188,7 +217,7 @@ test.describe('Experience System Functional Tests (S12-F001~F005)', () => {
     await waitForGameReady(page, 30000);
 
     // 确保ExperienceManager可用
-    await ensureExperienceManager(page);
+    await initializeExperienceManagerForTest(page);
 
     // 进入ClinicScene
     await page.evaluate(() => {
@@ -197,27 +226,19 @@ test.describe('Experience System Functional Tests (S12-F001~F005)', () => {
         game.scene.start('ClinicScene');
       }
     });
-    await page.waitForTimeout(2000);
+    await page.waitForTimeout(WAIT_TIME.SCENE_LOAD);
   });
 
   test('S12-F001: 经验值添加和动画显示', async ({ page }) => {
-    // 重置状态
-    await page.evaluate(() => {
-      const manager = (window as any).__EXPERIENCE_MANAGER__;
-      if (manager) {
-        manager.reset();
-      }
-    });
-
-    await page.waitForTimeout(500);
+    await resetExperienceState(page);
 
     // 添加经验值
     const addResult = await page.evaluate(() => {
       const manager = (window as any).__EXPERIENCE_MANAGER__;
       if (!manager) return null;
 
-      // 从得分添加经验值（100分 = 100点经验）
-      const addedValue = manager.addExperienceFromScore(100);
+      const MAX_SCORE = 100;
+      const addedValue = manager.addExperienceFromScore(MAX_SCORE);
       const state = manager.getState();
 
       return {
@@ -228,9 +249,9 @@ test.describe('Experience System Functional Tests (S12-F001~F005)', () => {
     });
 
     expect(addResult).not.toBeNull();
-    expect(addResult?.addedValue).toBe(100);
-    expect(addResult?.total_experience).toBe(100);
-    expect(addResult?.practice_exp).toBe(100);
+    expect(addResult?.addedValue).toBe(EXPERIENCE.MAX_SCORE_PER_CALL);
+    expect(addResult?.total_experience).toBe(EXPERIENCE.MAX_SCORE_PER_CALL);
+    expect(addResult?.practice_exp).toBe(EXPERIENCE.MAX_SCORE_PER_CALL);
 
     // 检查UI状态更新
     const uiState = await page.evaluate(() => {
@@ -245,15 +266,7 @@ test.describe('Experience System Functional Tests (S12-F001~F005)', () => {
   });
 
   test('S12-F002: 进度条更新反映新经验值', async ({ page }) => {
-    // 重置状态
-    await page.evaluate(() => {
-      const manager = (window as any).__EXPERIENCE_MANAGER__;
-      if (manager) {
-        manager.reset();
-      }
-    });
-
-    await page.waitForTimeout(500);
+    await resetExperienceState(page);
 
     // 添加多笔经验值
     await page.evaluate(() => {
@@ -265,7 +278,7 @@ test.describe('Experience System Functional Tests (S12-F001~F005)', () => {
       }
     });
 
-    await page.waitForTimeout(500);
+    await page.waitForTimeout(WAIT_TIME.STABLE);
 
     // 检查进度
     const progressState = await page.evaluate(() => {
@@ -275,16 +288,21 @@ test.describe('Experience System Functional Tests (S12-F001~F005)', () => {
       const state = manager.getState();
       const progress = manager.getExperienceProgress();
 
+      // score(50) + task(50) + clues(3*10)
+      const TASK_BONUS = 50;
+      const CLUE_BONUS = 10;
+      const expected_total = 50 + TASK_BONUS + (3 * CLUE_BONUS);
+
       return {
         total_experience: state.total_experience,
         progress,
-        expected_total: 50 + 50 + 30 // score(50) + task(50) + clues(3*10)
+        expected_total
       };
     });
 
     expect(progressState).not.toBeNull();
     expect(progressState?.total_experience).toBe(progressState?.expected_total);
-    expect(progressState?.progress).toBeCloseTo(progressState?.expected_total / 1000, 2);
+    expect(progressState?.progress).toBeCloseTo(progressState?.expected_total / EXPERIENCE.MAX_TOTAL, 2);
 
     // 刷新UI检查进度条
     await page.evaluate(() => {
@@ -296,28 +314,20 @@ test.describe('Experience System Functional Tests (S12-F001~F005)', () => {
   });
 
   test('S12-F003: 解锁通知显示', async ({ page }) => {
-    // 重置状态
-    await page.evaluate(() => {
-      const manager = (window as any).__EXPERIENCE_MANAGER__;
-      if (manager) {
-        manager.reset();
-      }
-    });
-
-    await page.waitForTimeout(500);
+    await resetExperienceState(page);
 
     // 添加足够的经验值触发解锁（方剂加减功能需要200点）
-    // 注意：score上限是100，所以需要多次调用
     await page.evaluate(() => {
       const manager = (window as any).__EXPERIENCE_MANAGER__;
       if (manager) {
-        // 直接添加足够经验值触发第一个解锁（200点 = 2次100）
-        manager.addExperienceFromScore(100);
-        manager.addExperienceFromScore(100);
+        // 直接添加足够经验值触发第一个解锁
+        const MAX_SCORE = 100;
+        manager.addExperienceFromScore(MAX_SCORE);
+        manager.addExperienceFromScore(MAX_SCORE);
       }
     });
 
-    await page.waitForTimeout(1000);
+    await page.waitForTimeout(WAIT_TIME.UNLOCK_CHECK);
 
     // 检查解锁状态
     const unlockState = await page.evaluate(() => {
@@ -333,7 +343,7 @@ test.describe('Experience System Functional Tests (S12-F001~F005)', () => {
     });
 
     expect(unlockState).not.toBeNull();
-    expect(unlockState?.total_experience).toBe(200);
+    expect(unlockState?.total_experience).toBe(UNLOCK_THRESHOLDS.PRESCRIPTION_MODIFICATION);
     expect(unlockState?.isPrescriptionModificationUnlocked).toBe(true);
     expect(unlockState?.unlocked_contents).toContain('prescription_modification');
 
@@ -345,84 +355,66 @@ test.describe('Experience System Functional Tests (S12-F001~F005)', () => {
     });
 
     if (uiState) {
-      // 应该有解锁通知
       expect(uiState.notificationCount).toBeGreaterThanOrEqual(0);
     }
   });
 
   test('S12-F004: 经验值上限提示', async ({ page }) => {
-    // 重置状态
-    await page.evaluate(() => {
-      const manager = (window as any).__EXPERIENCE_MANAGER__;
-      if (manager) {
-        manager.reset();
-      }
-    });
+    await resetExperienceState(page);
 
-    await page.waitForTimeout(500);
-
-    // 添加经验值接近上限（使用多次调用，因为score上限是100）
+    // 添加经验值接近上限
     await page.evaluate(() => {
       const manager = (window as any).__EXPERIENCE_MANAGER__;
       if (manager) {
         // 最大经验值是1000，先添加900（9次100分）
+        const MAX_SCORE = 100;
         for (let i = 0; i < 9; i++) {
-          manager.addExperienceFromScore(100);
+          manager.addExperienceFromScore(MAX_SCORE);
         }
       }
     });
 
-    await page.waitForTimeout(500);
+    await page.waitForTimeout(WAIT_TIME.STABLE);
 
     // 再添加超过上限的值
     const cappedResult = await page.evaluate(() => {
       const manager = (window as any).__EXPERIENCE_MANAGER__;
       if (!manager) return null;
 
-      // 尝试添加200点（超过上限100）
-      const addedValue = manager.addExperienceFromScore(200);
+      const MAX_SCORE = 100;
+      const MAX_TOTAL = 1000;
+      const addedValue = manager.addExperienceFromScore(MAX_SCORE * 2);
       const state = manager.getState();
 
       return {
         addedValue,
         total_experience: state.total_experience,
-        isAtMax: state.total_experience === 1000
+        isAtMax: state.total_experience === MAX_TOTAL
       };
     });
 
     expect(cappedResult).not.toBeNull();
     // 只能添加100点（到上限为止）
-    expect(cappedResult?.addedValue).toBe(100);
-    expect(cappedResult?.total_experience).toBe(1000);
+    expect(cappedResult?.addedValue).toBe(EXPERIENCE.MAX_SCORE_PER_CALL);
+    expect(cappedResult?.total_experience).toBe(EXPERIENCE.MAX_TOTAL);
     expect(cappedResult?.isAtMax).toBe(true);
   });
 
   test('S12-F005: 类型分布显示正确', async ({ page }) => {
-    // 重置状态
-    await page.evaluate(() => {
-      const manager = (window as any).__EXPERIENCE_MANAGER__;
-      if (manager) {
-        manager.reset();
-      }
-    });
-
-    await page.waitForTimeout(500);
+    await resetExperienceState(page);
 
     // 添加不同类型经验值
     await page.evaluate(() => {
       const manager = (window as any).__EXPERIENCE_MANAGER__;
       if (manager) {
-        // 学习类型：任务完成
         manager.addExperienceFromTask('test-task-1');
-        // 实践类型：得分
         manager.addExperienceFromScore(50);
         manager.addExperienceFromClues(2);
-        // 探索类型：成就
         manager.addExperienceFromAchievement('first_case_complete');
       }
     });
 
-    await page.waitForTimeout(500);
+    await page.waitForTimeout(WAIT_TIME.STABLE);
 
     // 检查各类型分布
     const typeState = await page.evaluate(() => {
@@ -430,23 +422,32 @@ test.describe('Experience System Functional Tests (S12-F001~F005)', () => {
       if (!manager) return null;
 
       const state = manager.getState();
+      // 学习：50（任务），实践：50（得分）+ 20（线索），探索：100（成就）
+      const TASK_BONUS = 50;
+      const CLUE_BONUS = 10;
+      const ACHIEVEMENT_BONUS = 100;
+
       return {
         learning: state.experience_by_type.learning,
         practice: state.experience_by_type.practice,
         exploration: state.experience_by_type.exploration,
-        total: state.total_experience
+        total: state.total_experience,
+        TASK_BONUS,
+        CLUE_BONUS,
+        ACHIEVEMENT_BONUS
       };
     });
 
     expect(typeState).not.toBeNull();
     // 学习：50（任务）
-    expect(typeState?.learning).toBe(50);
+    expect(typeState?.learning).toBe(typeState?.TASK_BONUS);
     // 实践：50（得分）+ 20（线索）
-    expect(typeState?.practice).toBe(70);
+    expect(typeState?.practice).toBe(50 + (2 * typeState?.CLUE_BONUS!));
     // 探索：100（成就）
-    expect(typeState?.exploration).toBe(100);
-    // 总计：50 + 70 + 100 = 220
-    expect(typeState?.total).toBe(220);
+    expect(typeState?.exploration).toBe(typeState?.ACHIEVEMENT_BONUS);
+    // 总计
+    const expectedTotal = typeState?.TASK_BONUS! + 50 + (2 * typeState?.CLUE_BONUS!) + typeState?.ACHIEVEMENT_BONUS!;
+    expect(typeState?.total).toBe(expectedTotal);
 
     // 刷新UI显示类型分布
     await page.evaluate(() => {
@@ -468,19 +469,11 @@ test.describe('Experience System Logic Tests (S12-L001~L002)', () => {
     await waitForGameReady(page, 30000);
 
     // 确保ExperienceManager可用
-    await ensureExperienceManager(page);
+    await initializeExperienceManagerForTest(page);
   });
 
   test('S12-L001: 解锁检查逻辑正确', async ({ page }) => {
-    // 重置状态
-    await page.evaluate(() => {
-      const manager = (window as any).__EXPERIENCE_MANAGER__;
-      if (manager) {
-        manager.reset();
-      }
-    });
-
-    await page.waitForTimeout(500);
+    await resetExperienceState(page);
 
     // 测试解锁阈值逻辑
     const unlockSequence = await page.evaluate(() => {
@@ -488,6 +481,7 @@ test.describe('Experience System Logic Tests (S12-L001~L002)', () => {
       if (!manager) return null;
 
       const sequence: { experience: number; unlocked: string[] }[] = [];
+      const MAX_SCORE = 100;
 
       // 0经验值时无解锁
       sequence.push({
@@ -496,28 +490,28 @@ test.describe('Experience System Logic Tests (S12-L001~L002)', () => {
       });
 
       // 添加100点（低于第一个解锁200）
-      manager.addExperienceFromScore(100);
+      manager.addExperienceFromScore(MAX_SCORE);
       sequence.push({
         experience: manager.getState().total_experience,
         unlocked: [...manager.getState().unlocked_contents]
       });
 
       // 添加100点（达到第一个解锁200 - 方剂加减）
-      manager.addExperienceFromScore(100);
+      manager.addExperienceFromScore(MAX_SCORE);
       sequence.push({
         experience: manager.getState().total_experience,
         unlocked: [...manager.getState().unlocked_contents]
       });
 
       // 添加100点（达到第二个解锁300 - 新导师）
-      manager.addExperienceFromScore(100);
+      manager.addExperienceFromScore(MAX_SCORE);
       sequence.push({
         experience: manager.getState().total_experience,
         unlocked: [...manager.getState().unlocked_contents]
       });
 
       // 添加100点（达到第三个解锁400 - 药材图鉴）
-      manager.addExperienceFromScore(100);
+      manager.addExperienceFromScore(MAX_SCORE);
       sequence.push({
         experience: manager.getState().total_experience,
         unlocked: [...manager.getState().unlocked_contents]
@@ -545,20 +539,14 @@ test.describe('Experience System Logic Tests (S12-L001~L002)', () => {
   });
 
   test('S12-L002: 每日打卡逻辑正确', async ({ page }) => {
-    // 重置状态
-    await page.evaluate(() => {
-      const manager = (window as any).__EXPERIENCE_MANAGER__;
-      if (manager) {
-        manager.reset();
-      }
-    });
-
-    await page.waitForTimeout(500);
+    await resetExperienceState(page);
 
     // 测试每日打卡
     const checkinResult = await page.evaluate(() => {
       const manager = (window as any).__EXPERIENCE_MANAGER__;
       if (!manager) return null;
+
+      const CHECKIN_BONUS = 20;
 
       // 第一次打卡
       const firstCheckin = manager.addDailyCheckin();
@@ -580,7 +568,8 @@ test.describe('Experience System Logic Tests (S12-L001~L002)', () => {
           streak: secondCheckin.streak
         },
         total_checkins: state2.daily_checkin_status.total_checkins,
-        total_experience: state2.total_experience
+        total_experience: state2.total_experience,
+        CHECKIN_BONUS
       };
     });
 
@@ -588,7 +577,7 @@ test.describe('Experience System Logic Tests (S12-L001~L002)', () => {
 
     // 第一次打卡成功
     expect(checkinResult?.firstCheckin?.isNewCheckin).toBe(true);
-    expect(checkinResult?.firstCheckin?.bonus).toBe(20); // 基础奖励
+    expect(checkinResult?.firstCheckin?.bonus).toBe(checkinResult?.CHECKIN_BONUS);
     expect(checkinResult?.firstCheckin?.streak).toBe(1);
 
     // 第二次打卡失败（同一天）
@@ -599,7 +588,7 @@ test.describe('Experience System Logic Tests (S12-L001~L002)', () => {
     expect(checkinResult?.total_checkins).toBe(1);
 
     // 总经验值增加20点
-    expect(checkinResult?.total_experience).toBe(20);
+    expect(checkinResult?.total_experience).toBe(checkinResult?.CHECKIN_BONUS);
   });
 });
 
@@ -612,7 +601,7 @@ test.describe('Experience System Integration Tests', () => {
     await waitForGameReady(page, 30000);
 
     // 确保ExperienceManager可用
-    await ensureExperienceManager(page);
+    await initializeExperienceManagerForTest(page);
   });
 
   test('完整经验值流程：获取经验到解锁内容', async ({ page }) => {
@@ -623,17 +612,9 @@ test.describe('Experience System Integration Tests', () => {
         game.scene.start('ClinicScene');
       }
     });
-    await page.waitForTimeout(2000);
+    await page.waitForTimeout(WAIT_TIME.SCENE_LOAD);
 
-    // 重置状态
-    await page.evaluate(() => {
-      const manager = (window as any).__EXPERIENCE_MANAGER__;
-      if (manager) {
-        manager.reset();
-      }
-    });
-
-    await page.waitForTimeout(500);
+    await resetExperienceState(page);
 
     // 1. 完成任务获得经验
     await page.evaluate(() => {
@@ -642,7 +623,7 @@ test.describe('Experience System Integration Tests', () => {
         manager.addExperienceFromTask('mahuang-tang-learning');
       }
     });
-    await page.waitForTimeout(500);
+    await page.waitForTimeout(WAIT_TIME.STABLE);
 
     // 2. 完成病案获得得分经验
     await page.evaluate(() => {
@@ -652,7 +633,7 @@ test.describe('Experience System Integration Tests', () => {
         manager.addExperienceFromClues(5);
       }
     });
-    await page.waitForTimeout(500);
+    await page.waitForTimeout(WAIT_TIME.STABLE);
 
     // 3. 解锁成就获得经验
     await page.evaluate(() => {
@@ -661,7 +642,7 @@ test.describe('Experience System Integration Tests', () => {
         manager.addExperienceFromAchievement('first_case_complete');
       }
     });
-    await page.waitForTimeout(1000);
+    await page.waitForTimeout(WAIT_TIME.UNLOCK_CHECK);
 
     // 检查最终状态
     const finalState = await page.evaluate(() => {
@@ -672,44 +653,52 @@ test.describe('Experience System Integration Tests', () => {
       const progress = manager.getExperienceProgress();
       const unlockables = manager.getUnlockableContents();
 
+      // 经验值计算：50(task) + 85(score) + 50(clues 5*10) + 100(achievement)
+      const TASK_BONUS = 50;
+      const CLUE_BONUS = 10;
+      const ACHIEVEMENT_BONUS = 100;
+      const MAX_TOTAL = 1000;
+      const expectedTotal = TASK_BONUS + 85 + (5 * CLUE_BONUS) + ACHIEVEMENT_BONUS;
+
       return {
         total_experience: state.total_experience,
         experience_by_type: state.experience_by_type,
         unlocked_contents: state.unlocked_contents,
         progress,
-        unlockablesCount: unlockables.length
+        unlockablesCount: unlockables.length,
+        expectedTotal,
+        MAX_TOTAL
       };
     });
 
     expect(finalState).not.toBeNull();
-
-    // 总经验值: 50 + 85 + 50 + 100 = 285
-    expect(finalState?.total_experience).toBe(285);
+    expect(finalState?.total_experience).toBe(finalState?.expectedTotal);
 
     // 检查解锁内容
-    expect(finalState?.unlocked_contents).toContain('prescription_modification'); // 200解锁
+    expect(finalState?.unlocked_contents).toContain('prescription_modification');
 
     // 检查进度
-    expect(finalState?.progress).toBeCloseTo(285 / 1000, 2);
+    expect(finalState?.progress).toBeCloseTo(finalState?.expectedTotal / finalState?.MAX_TOTAL!, 2);
 
     // 截图记录
     await page.screenshot({ path: 'tests/screenshots/experience-flow.png' });
   });
 
   test('存档集成：经验值状态导出导入', async ({ page }) => {
-    // 重置并添加经验值（使用多次调用，因为score上限是100）
+    // 重置并添加经验值
     await page.evaluate(() => {
       const manager = (window as any).__EXPERIENCE_MANAGER__;
       if (manager) {
         manager.reset();
         // 添加250点经验（2次100 + 1次50）
-        manager.addExperienceFromScore(100);
-        manager.addExperienceFromScore(100);
+        const MAX_SCORE = 100;
+        manager.addExperienceFromScore(MAX_SCORE);
+        manager.addExperienceFromScore(MAX_SCORE);
         manager.addExperienceFromScore(50);
       }
     });
 
-    await page.waitForTimeout(500);
+    await page.waitForTimeout(WAIT_TIME.STABLE);
 
     // 导出数据
     const exportedData = await page.evaluate(() => {
@@ -722,14 +711,7 @@ test.describe('Experience System Integration Tests', () => {
     expect(exportedData?.total_experience).toBe(250);
 
     // 重置状态
-    await page.evaluate(() => {
-      const manager = (window as any).__EXPERIENCE_MANAGER__;
-      if (manager) {
-        manager.reset();
-      }
-    });
-
-    await page.waitForTimeout(500);
+    await resetExperienceState(page);
 
     // 导入数据
     const importResult = await page.evaluate(() => {
@@ -768,7 +750,7 @@ test.describe('Experience System Integration Tests', () => {
       }
     });
 
-    await page.waitForTimeout(2000);
+    await page.waitForTimeout(WAIT_TIME.SCENE_LOAD);
 
     // 添加经验值并刷新UI
     await page.evaluate(() => {
@@ -784,7 +766,7 @@ test.describe('Experience System Integration Tests', () => {
       }
     });
 
-    await page.waitForTimeout(1000);
+    await page.waitForTimeout(WAIT_TIME.UNLOCK_CHECK);
 
     await page.screenshot({ path: 'tests/screenshots/experience-ui.png' });
   });

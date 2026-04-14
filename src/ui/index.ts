@@ -54,3 +54,8 @@ export { createSaveUI } from './SaveUI';
 export { InventoryUI } from './InventoryUI';
 export type { InventoryUIConfig, InventoryTabType } from './InventoryUI';
 export { createInventoryUI } from './InventoryUI';
+
+// Phase 2 S13: 新手引导UI
+export { TutorialUI } from './TutorialUI';
+export type { TutorialUIConfig } from './TutorialUI';
+export { createCentralTutorialUI, createSceneTipUI } from './TutorialUI';

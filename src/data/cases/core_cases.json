@@ -1,0 +1,172 @@
+{
+  "cases": [
+    {
+      "case_id": "case_001",
+      "case_type": "core",
+      "blocked_by": "mahuang-tang-learning",
+
+      "syndrome": {
+        "type": "风寒表实证",
+        "category": "风寒外感"
+      },
+
+      "prescription": {
+        "name": "麻黄汤",
+        "alternatives": []
+      },
+
+      "chief_complaint_template": "昨天冒雨干活后怕冷发热无汗一天",
+
+      "clues": {
+        "required": ["恶寒重", "无汗", "发热轻", "脉浮紧"],
+        "auxiliary": ["身痛", "头痛", "起病原因", "口渴情况"]
+      },
+
+      "pulse": {
+        "position": "浮",
+        "tension": "紧",
+        "description": "脉来浮取即得，重按稍减，紧如转索"
+      },
+
+      "tongue": {
+        "body_color": "淡红",
+        "coating": "薄白",
+        "shape": "正常",
+        "moisture": "润"
+      },
+
+      "difficulty": "easy",
+
+      "teaching_notes": {
+        "key_points": ["无汗是关键鉴别", "脉浮紧配合无汗确认表实"],
+        "common_mistakes": ["混淆表实与表虚", "忽视汗出情况"]
+      }
+    },
+    {
+      "case_id": "case_002",
+      "case_type": "core",
+      "blocked_by": "guizhi-tang-learning",
+
+      "syndrome": {
+        "type": "风寒表虚证",
+        "category": "风寒外感"
+      },
+
+      "prescription": {
+        "name": "桂枝汤",
+        "alternatives": []
+      },
+
+      "chief_complaint_template": "昨天吹风后怕风发热出汗一天",
+
+      "clues": {
+        "required": ["恶风", "有汗", "发热", "脉浮缓"],
+        "auxiliary": ["头痛", "鼻鸣干呕", "起病原因"]
+      },
+
+      "pulse": {
+        "position": "浮",
+        "tension": "缓",
+        "description": "脉来浮取即得，重按无力，缓如风吹"
+      },
+
+      "tongue": {
+        "body_color": "淡红",
+        "coating": "薄白",
+        "shape": "正常",
+        "moisture": "润"
+      },
+
+      "difficulty": "easy",
+
+      "teaching_notes": {
+        "key_points": ["有汗是关键鉴别", "脉浮缓配合有汗确认表虚"],
+        "common_mistakes": ["混淆表虚与表实", "忽视汗出情况"]
+      }
+    },
+    {
+      "case_id": "case_003",
+      "case_type": "core",
+      "blocked_by": "yin-qiao-san-learning",
+
+      "syndrome": {
+        "type": "风热犯卫证",
+        "category": "风热外感"
+      },
+
+      "prescription": {
+        "name": "银翘散",
+        "alternatives": []
+      },
+
+      "chief_complaint_template": "昨天开始发热嗓子疼有点怕冷",
+
+      "clues": {
+        "required": ["发热重", "咽痛", "恶寒轻", "脉浮数"],
+        "auxiliary": ["口渴", "头痛", "咳嗽情况"]
+      },
+
+      "pulse": {
+        "position": "浮",
+        "tension": "数",
+        "description": "脉来浮取即得，一息六至以上"
+      },
+
+      "tongue": {
+        "body_color": "红",
+        "coating": "薄黄",
+        "shape": "正常",
+        "moisture": "润"
+      },
+
+      "difficulty": "normal",
+
+      "teaching_notes": {
+        "key_points": ["咽痛明显是关键", "发热重恶寒轻"],
+        "common_mistakes": ["混淆风寒与风热", "忽视咽痛"]
+      }
+    },
+    {
+      "case_id": "case_004",
+      "case_type": "core",
+      "blocked_by": "sang-ju-yin-learning",
+
+      "syndrome": {
+        "type": "风温咳嗽证",
+        "category": "风热外感"
+      },
+
+      "prescription": {
+        "name": "桑菊饮",
+        "alternatives": []
+      },
+
+      "chief_complaint_template": "这两天咳嗽有点发热微恶风",
+
+      "clues": {
+        "required": ["咳嗽", "发热轻", "微恶风", "脉浮数"],
+        "auxiliary": ["咽痒", "口渴", "痰色"]
+      },
+
+      "pulse": {
+        "position": "浮",
+        "tension": "数",
+        "description": "脉来浮取即得，一息五六至"
+      },
+
+      "tongue": {
+        "body_color": "淡红",
+        "coating": "薄黄",
+        "shape": "正常",
+        "moisture": "润"
+      },
+
+      "difficulty": "normal",
+
+      "teaching_notes": {
+        "key_points": ["咳嗽为主是关键", "发热轻"],
+        "common_mistakes": ["混淆银翘散与桑菊饮", "忽视咳嗽主症"]
+      }
+    }
+  ]
+}

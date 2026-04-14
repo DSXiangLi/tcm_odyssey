@@ -1,0 +1,118 @@
+{
+  "save_version": "3.0.0",
+  "saved_at": null,
+  "slot_id": 1,
+
+  "player": {
+    "experience": 0,
+    "unlocked_features": [],
+    "achievements": []
+  },
+
+  "inventory": {
+    "herbs": {},
+    "seeds": {},
+    "tools": [],
+    "knowledge_cards": []
+  },
+
+  "tasks": [
+    {
+      "npc_id": "qingmu",
+      "tasks": [
+        {
+          "task_id": "mahuang-tang-learning",
+          "status": "pending",
+          "progress": 0,
+          "todos": [
+            { "id": "composition", "mastery": 0, "status": "pending" },
+            { "id": "compatibility", "mastery": 0, "status": "pending" },
+            { "id": "decoction", "mastery": 0, "status": "pending" },
+            { "id": "contraindication", "mastery": 0, "status": "pending" },
+            { "id": "differentiation", "mastery": 0, "status": "pending" },
+            { "id": "formula", "mastery": 0, "status": "pending" }
+          ]
+        },
+        {
+          "task_id": "guizhi-tang-learning",
+          "status": "pending",
+          "progress": 0,
+          "todos": [
+            { "id": "composition", "mastery": 0, "status": "pending" },
+            { "id": "compatibility", "mastery": 0, "status": "pending" },
+            { "id": "decoction", "mastery": 0, "status": "pending" },
+            { "id": "contraindication", "mastery": 0, "status": "pending" },
+            { "id": "differentiation", "mastery": 0, "status": "pending" },
+            { "id": "formula", "mastery": 0, "status": "pending" }
+          ]
+        },
+        {
+          "task_id": "yin-qiao-san-learning",
+          "status": "pending",
+          "progress": 0,
+          "todos": [
+            { "id": "composition", "mastery": 0, "status": "pending" },
+            { "id": "compatibility", "mastery": 0, "status": "pending" },
+            { "id": "decoction", "mastery": 0, "status": "pending" },
+            { "id": "contraindication", "mastery": 0, "status": "pending" },
+            { "id": "differentiation", "mastery": 0, "status": "pending" },
+            { "id": "formula", "mastery": 0, "status": "pending" }
+          ]
+        },
+        {
+          "task_id": "sang-ju-yin-learning",
+          "status": "pending",
+          "progress": 0,
+          "todos": [
+            { "id": "composition", "mastery": 0, "status": "pending" },
+            { "id": "compatibility", "mastery": 0, "status": "pending" },
+            { "id": "decoction", "mastery": 0, "status": "pending" },
+            { "id": "contraindication", "mastery": 0, "status": "pending" },
+            { "id": "differentiation", "mastery": 0, "status": "pending" },
+            { "id": "formula", "mastery": 0, "status": "pending" }
+          ]
+        },
+        {
+          "task_id": "wind-cold-syndrome",
+          "status": "pending",
+          "progress": 0,
+          "todos": [
+            { "id": "pathology", "mastery": 0, "status": "pending" },
+            { "id": "key_points", "mastery": 0, "status": "pending" },
+            { "id": "pulse", "mastery": 0, "status": "pending" },
+            { "id": "tongue", "mastery": 0, "status": "pending" },
+            { "id": "prescription", "mastery": 0, "status": "pending" }
+          ]
+        },
+        {
+          "task_id": "wind-heat-syndrome",
+          "status": "pending",
+          "progress": 0,
+          "todos": [
+            { "id": "pathology", "mastery": 0, "status": "pending" },
+            { "id": "key_points", "mastery": 0, "status": "pending" },
+            { "id": "pulse", "mastery": 0, "status": "pending" },
+            { "id": "tongue", "mastery": 0, "status": "pending" },
+            { "id": "prescription", "mastery": 0, "status": "pending" }
+          ]
+        }
+      ]
+    }
+  ],
+
+  "case_history": [],
+
+  "scene_state": {
+    "current_scene": "TownOutdoorScene",
+    "player_position": {
+      "x": 47,
+      "y": 24
+    }
+  },
+
+  "settings": {
+    "music_volume": 0.8,
+    "sfx_volume": 0.8,
+    "language": "zh-CN"
+  }
+}

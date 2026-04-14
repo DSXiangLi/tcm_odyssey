@@ -1,0 +1,222 @@
+{
+  "prescriptions": [
+    {
+      "id": "mahuang-tang",
+      "name": "麻黄汤",
+      "category": "解表剂",
+      "syndrome": "风寒表实证",
+      "composition": [
+        {
+          "herb": "麻黄",
+          "role": "君",
+          "dosage": "三两",
+          "effect": "宣肺解表，发汗散寒"
+        },
+        {
+          "herb": "桂枝",
+          "role": "臣",
+          "dosage": "二两",
+          "effect": "解肌发表，温通经脉"
+        },
+        {
+          "herb": "杏仁",
+          "role": "佐",
+          "dosage": "七十个",
+          "effect": "降利肺气，助麻黄平喘"
+        },
+        {
+          "herb": "甘草",
+          "role": "使",
+          "dosage": "一两（炙）",
+          "effect": "调和诸药"
+        }
+      ],
+      "effect": "发汗解表，宣肺平喘",
+      "indication": "外感风寒表实证。恶寒发热，头身疼痛，无汗而喘，脉浮紧",
+      "contraindication": "表虚自汗、外感风热、阴虚盗汗者禁用",
+      "formula_song": "麻黄汤中用桂枝，杏仁甘草四般施；发热恶寒头项痛，无汗而喘服之宜。",
+      "decoction_method": "先煎麻黄去沫，后入诸药",
+      "key_differentiation": "无汗是关键鉴别点"
+    },
+    {
+      "id": "guizhi-tang",
+      "name": "桂枝汤",
+      "category": "解表剂",
+      "syndrome": "风寒表虚证",
+      "composition": [
+        {
+          "herb": "桂枝",
+          "role": "君",
+          "dosage": "三两",
+          "effect": "解肌发表，温通经脉"
+        },
+        {
+          "herb": "芍药",
+          "role": "臣",
+          "dosage": "三两",
+          "effect": "益阴敛营，敛固营阴"
+        },
+        {
+          "herb": "甘草",
+          "role": "佐",
+          "dosage": "二两（炙）",
+          "effect": "调和诸药，益气和中"
+        },
+        {
+          "herb": "生姜",
+          "role": "佐",
+          "dosage": "三两",
+          "effect": "助桂枝散寒，和胃止呕"
+        },
+        {
+          "herb": "大枣",
+          "role": "使",
+          "dosage": "十二枚",
+          "effect": "助芍药益气补中"
+        }
+      ],
+      "effect": "解肌发表，调和营卫",
+      "indication": "外感风寒表虚证。恶风发热，汗出头痛，鼻鸣干呕，脉浮缓",
+      "contraindication": "表实无汗、外感风热者禁用",
+      "formula_song": "桂枝汤治太阳风，芍药甘草姜枣同；解肌发表调营卫，表虚有汗此为功。",
+      "decoction_method": "水煎，温服，服后啜热稀粥以助药力",
+      "key_differentiation": "有汗是关键鉴别点"
+    },
+    {
+      "id": "yin-qiao-san",
+      "name": "银翘散",
+      "category": "解表剂",
+      "syndrome": "风热犯卫证",
+      "composition": [
+        {
+          "herb": "金银花",
+          "role": "君",
+          "dosage": "一两",
+          "effect": "清热解毒，轻宣疏散"
+        },
+        {
+          "herb": "连翘",
+          "role": "君",
+          "dosage": "一两",
+          "effect": "清热解毒，透邪外出"
+        },
+        {
+          "herb": "薄荷",
+          "role": "臣",
+          "dosage": "六钱",
+          "effect": "疏风散热，清利头目"
+        },
+        {
+          "herb": "荆芥",
+          "role": "臣",
+          "dosage": "四钱",
+          "effect": "疏风解表，透邪外出"
+        },
+        {
+          "herb": "牛蒡子",
+          "role": "佐",
+          "dosage": "六钱",
+          "effect": "疏散风热，宣肺利咽"
+        },
+        {
+          "herb": "豆豉",
+          "role": "佐",
+          "dosage": "五钱",
+          "effect": "宣散表邪"
+        },
+        {
+          "herb": "竹叶",
+          "role": "佐",
+          "dosage": "四钱",
+          "effect": "清热除烦"
+        },
+        {
+          "herb": "桔梗",
+          "role": "使",
+          "dosage": "六钱",
+          "effect": "宣肺利咽，载药上行"
+        },
+        {
+          "herb": "甘草",
+          "role": "使",
+          "dosage": "五钱",
+          "effect": "调和诸药"
+        }
+      ],
+      "effect": "辛凉解表，清热解毒",
+      "indication": "风热犯卫证。发热重，恶寒轻，咽痛，口渴，脉浮数",
+      "contraindication": "风寒表证、阴虚发热者慎用",
+      "formula_song": "银翘散主风热疴，竹叶荆牛豉薄荷；甘桔芦根凉解法，风热初起此方宜。",
+      "decoction_method": "原方杵为散，每服六钱，鲜苇根汤煎；现多用汤剂",
+      "key_differentiation": "咽痛明显、发热重是关键鉴别点"
+    },
+    {
+      "id": "sang-ju-yin",
+      "name": "桑菊饮",
+      "category": "解表剂",
+      "syndrome": "风温咳嗽证",
+      "composition": [
+        {
+          "herb": "桑叶",
+          "role": "君",
+          "dosage": "二钱五分",
+          "effect": "疏散风热，清宣肺热"
+        },
+        {
+          "herb": "菊花",
+          "role": "君",
+          "dosage": "一钱",
+          "effect": "疏散风热，清利头目"
+        },
+        {
+          "herb": "杏仁",
+          "role": "臣",
+          "dosage": "二钱",
+          "effect": "降利肺气，止咳化痰"
+        },
+        {
+          "herb": "桔梗",
+          "role": "臣",
+          "dosage": "二钱",
+          "effect": "宣肺止咳，载药上行"
+        },
+        {
+          "herb": "连翘",
+          "role": "佐",
+          "dosage": "一钱五分",
+          "effect": "清热透邪"
+        },
+        {
+          "herb": "薄荷",
+          "role": "佐",
+          "dosage": "八分",
+          "effect": "疏风散热"
+        },
+        {
+          "herb": "芦根",
+          "role": "佐",
+          "dosage": "二钱",
+          "effect": "清热生津"
+        },
+        {
+          "herb": "甘草",
+          "role": "使",
+          "dosage": "八分",
+          "effect": "调和诸药"
+        }
+      ],
+      "effect": "疏风清热，宣肺止咳",
+      "indication": "风温犯肺证。咳嗽，发热轻，微恶风，口微渴，脉浮数",
+      "contraindication": "风寒咳嗽、阴虚咳嗽者慎用",
+      "formula_song": "桑菊饮中桔梗翘，杏仁甘草薄荷饶；芦根为引轻清剂，风温咳嗽服之消。",
+      "decoction_method": "水煎服",
+      "key_differentiation": "咳嗽为主症是关键鉴别点"
+    }
+  ],
+  "syndrome_prescription_mapping": {
+    "风寒表实证": "mahuang-tang",
+    "风寒表虚证": "guizhi-tang",
+    "风热犯卫证": "yin-qiao-san",
+    "风温咳嗽证": "sang-ju-yin"
+  }
+}

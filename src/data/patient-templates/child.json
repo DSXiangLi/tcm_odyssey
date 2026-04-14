@@ -1,0 +1,14 @@
+{
+  "template_id": "child",
+  "occupation": "儿童",
+  "speaking_style": "简单直接",
+  "age_range": [5, 12],
+  "example_phrases": {
+    "greeting": "大夫叔叔，我不舒服...",
+    "complaint_intro": "昨天在外面玩，",
+    "pain_description": "疼疼疼...",
+    "cold_description": "好冷好冷...",
+    "heat_description": "好热好热..."
+  },
+  "possible_contexts": ["外面玩耍", "淋雨", "吹风", "玩累了"]
+}

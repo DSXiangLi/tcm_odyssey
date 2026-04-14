@@ -1,0 +1,14 @@
+{
+  "template_id": "merchant",
+  "occupation": "商人",
+  "speaking_style": "文雅客气",
+  "age_range": [30, 45],
+  "example_phrases": {
+    "greeting": "大夫好，我这几日身体有些不适...",
+    "complaint_intro": "前日外出经商，",
+    "pain_description": "隐隐作痛，有些不适",
+    "cold_description": "有些畏寒，不甚舒适",
+    "heat_description": "身热烦躁，颇为不适"
+  },
+  "possible_contexts": ["旅途劳累", "外出经商", "舟车劳顿", "风寒侵袭"]
+}

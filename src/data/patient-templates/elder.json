@@ -1,0 +1,14 @@
+{
+  "template_id": "elder",
+  "occupation": "老人",
+  "speaking_style": "缓慢虚弱",
+  "age_range": [60, 75],
+  "example_phrases": {
+    "greeting": "大夫...我这老身子...",
+    "complaint_intro": "这两天天气变化，",
+    "pain_description": "疼...疼得很...",
+    "cold_description": "冷...裹了被子还是冷...",
+    "heat_description": "热...热得慌..."
+  },
+  "possible_contexts": ["体质虚弱", "天气变化", "年老体衰", "反复外感"]
+}

@@ -1,0 +1,129 @@
+{
+  "body_colors": [
+    {
+      "id": "淡白",
+      "name": "淡白舌",
+      "description": "舌色较正常浅淡，白多红少",
+      "clinical_meaning": "主虚证、寒证，气血不足或阳虚"
+    },
+    {
+      "id": "淡红",
+      "name": "淡红舌",
+      "description": "舌色淡红润泽，为正常舌色",
+      "clinical_meaning": "正常舌色，或见于轻证"
+    },
+    {
+      "id": "红",
+      "name": "红舌",
+      "description": "舌色较淡红更深，呈鲜红色",
+      "clinical_meaning": "主热证，实热或阴虚"
+    },
+    {
+      "id": "绛红",
+      "name": "绛红舌",
+      "description": "舌色深红，如绛绸之色",
+      "clinical_meaning": "主热盛，热入营血"
+    },
+    {
+      "id": "青紫",
+      "name": "青紫舌",
+      "description": "舌色发青或带紫",
+      "clinical_meaning": "主瘀血或寒凝"
+    }
+  ],
+  "coatings": [
+    {
+      "id": "薄白",
+      "name": "薄白苔",
+      "description": "舌苔薄白，铺于舌面，透过舌苔可见舌体",
+      "clinical_meaning": "正常舌苔，或见于表证初起"
+    },
+    {
+      "id": "薄黄",
+      "name": "薄黄苔",
+      "description": "舌苔薄黄，铺于舌面",
+      "clinical_meaning": "主表热证，热邪初入"
+    },
+    {
+      "id": "白腻",
+      "name": "白腻苔",
+      "description": "舌苔白而厚腻，难以透过看见舌体",
+      "clinical_meaning": "主湿浊、痰饮"
+    },
+    {
+      "id": "黄腻",
+      "name": "黄腻苔",
+      "description": "舌苔黄而厚腻",
+      "clinical_meaning": "主湿热、痰热"
+    },
+    {
+      "id": "无苔",
+      "name": "无苔",
+      "description": "舌面光剥无苔",
+      "clinical_meaning": "主胃阴枯竭，气血两虚"
+    }
+  ],
+  "shapes": [
+    {
+      "id": "正常",
+      "name": "正常舌形",
+      "description": "舌体大小适中，不胖不瘦",
+      "clinical_meaning": "正常舌形"
+    },
+    {
+      "id": "胖大",
+      "name": "胖大舌",
+      "description": "舌体胖大，边有齿痕",
+      "clinical_meaning": "主水湿、脾虚"
+    },
+    {
+      "id": "瘦薄",
+      "name": "瘦薄舌",
+      "description": "舌体瘦小薄嫩",
+      "clinical_meaning": "主气血两虚、阴虚"
+    },
+    {
+      "id": "有齿痕",
+      "name": "齿痕舌",
+      "description": "舌边有牙齿压迫痕迹",
+      "clinical_meaning": "主脾虚、水湿"
+    }
+  ],
+  "moistures": [
+    {
+      "id": "润",
+      "name": "润舌",
+      "description": "舌面润泽，不干不滑",
+      "clinical_meaning": "津液未伤，或见于正常"
+    },
+    {
+      "id": "燥",
+      "name": "燥舌",
+      "description": "舌面干燥，津液不足",
+      "clinical_meaning": "主津液损伤，热盛伤津"
+    },
+    {
+      "id": "滑",
+      "name": "滑舌",
+      "description": "舌面润滑，水分过多",
+      "clinical_meaning": "主水湿内停"
+    }
+  ],
+  "tongue_combinations": {
+    "淡红薄白润": {
+      "syndrome": "风寒表实/表虚证",
+      "description": "舌淡红，苔薄白，润泽，为风寒外感常见舌象",
+      "prescription": "麻黄汤或桂枝汤"
+    },
+    "红薄黄润": {
+      "syndrome": "风热犯卫证",
+      "description": "舌红，苔薄黄，润泽，为风热外感常见舌象",
+      "prescription": "银翘散"
+    },
+    "淡红薄黄润": {
+      "syndrome": "风温咳嗽证",
+      "description": "舌淡红偏红，苔薄黄，润泽，为风温犯肺常见舌象",
+      "prescription": "桑菊饮"
+    }
+  }
+}

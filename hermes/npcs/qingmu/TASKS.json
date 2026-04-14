@@ -1,0 +1,137 @@
+{
+  "npc_id": "qingmu",
+  "player_id": "player_001",
+  "last_updated": "2026-04-12T00:00:00Z",
+
+  "tasks": [
+    {
+      "task_id": "mahuang-tang-learning",
+      "title": "麻黄汤学习",
+      "type": "prescription",
+      "status": "pending",
+      "progress": 0.0,
+      "blocked_by": null,
+
+      "todos": [
+        {"id": "composition", "name": "组成", "mastery": 0.0, "status": "pending"},
+        {"id": "compatibility", "name": "配伍", "mastery": 0.0, "status": "pending"},
+        {"id": "effect", "name": "功效", "mastery": 0.0, "status": "pending"},
+        {"id": "decoction", "name": "煎服法", "mastery": 0.0, "status": "pending"},
+        {"id": "contraindication", "name": "禁忌", "mastery": 0.0, "status": "pending"},
+        {"id": "differentiation", "name": "鉴别", "mastery": 0.0, "status": "pending"},
+        {"id": "formula", "name": "方歌", "mastery": 0.0, "status": "pending"}
+      ],
+
+      "weaknesses": []
+    },
+    {
+      "task_id": "guizhi-tang-learning",
+      "title": "桂枝汤学习",
+      "type": "prescription",
+      "status": "pending",
+      "progress": 0.0,
+      "blocked_by": "mahuang-tang-learning",
+
+      "todos": [
+        {"id": "composition", "name": "组成", "mastery": 0.0, "status": "pending"},
+        {"id": "compatibility", "name": "配伍", "mastery": 0.0, "status": "pending"},
+        {"id": "effect", "name": "功效", "mastery": 0.0, "status": "pending"},
+        {"id": "decoction", "name": "煎服法", "mastery": 0.0, "status": "pending"},
+        {"id": "contraindication", "name": "禁忌", "mastery": 0.0, "status": "pending"},
+        {"id": "differentiation", "name": "鉴别", "mastery": 0.0, "status": "pending"},
+        {"id": "formula", "name": "方歌", "mastery": 0.0, "status": "pending"}
+      ],
+
+      "weaknesses": []
+    },
+    {
+      "task_id": "yin-qiao-san-learning",
+      "title": "银翘散学习",
+      "type": "prescription",
+      "status": "pending",
+      "progress": 0.0,
+      "blocked_by": "guizhi-tang-learning",
+
+      "todos": [
+        {"id": "composition", "name": "组成", "mastery": 0.0, "status": "pending"},
+        {"id": "compatibility", "name": "配伍", "mastery": 0.0, "status": "pending"},
+        {"id": "effect", "name": "功效", "mastery": 0.0, "status": "pending"},
+        {"id": "decoction", "name": "煎服法", "mastery": 0.0, "status": "pending"},
+        {"id": "contraindication", "name": "禁忌", "mastery": 0.0, "status": "pending"},
+        {"id": "differentiation", "name": "鉴别", "mastery": 0.0, "status": "pending"},
+        {"id": "formula", "name": "方歌", "mastery": 0.0, "status": "pending"}
+      ],
+
+      "weaknesses": []
+    },
+    {
+      "task_id": "sang-ju-yin-learning",
+      "title": "桑菊饮学习",
+      "type": "prescription",
+      "status": "pending",
+      "progress": 0.0,
+      "blocked_by": "yin-qiao-san-learning",
+
+      "todos": [
+        {"id": "composition", "name": "组成", "mastery": 0.0, "status": "pending"},
+        {"id": "compatibility", "name": "配伍", "mastery": 0.0, "status": "pending"},
+        {"id": "effect", "name": "功效", "mastery": 0.0, "status": "pending"},
+        {"id": "decoction", "name": "煎服法", "mastery": 0.0, "status": "pending"},
+        {"id": "contraindication", "name": "禁忌", "mastery": 0.0, "status": "pending"},
+        {"id": "differentiation", "name": "鉴别", "mastery": 0.0, "status": "pending"},
+        {"id": "formula", "name": "方歌", "mastery": 0.0, "status": "pending"}
+      ],
+
+      "weaknesses": []
+    },
+    {
+      "task_id": "wind-cold-syndrome",
+      "title": "风寒表实/表虚辨证",
+      "type": "syndrome",
+      "status": "pending",
+      "progress": 0.0,
+      "blocked_by": "mahuang-tang-learning",
+
+      "todos": [
+        {"id": "pathology", "name": "病机", "mastery": 0.0, "status": "pending"},
+        {"id": "key_points", "name": "辨证要点", "mastery": 0.0, "status": "pending"},
+        {"id": "pulse", "name": "脉诊", "mastery": 0.0, "status": "pending"},
+        {"id": "tongue", "name": "舌诊", "mastery": 0.0, "status": "pending"},
+        {"id": "prescription", "name": "选方", "mastery": 0.0, "status": "pending"}
+      ],
+
+      "weaknesses": []
+    },
+    {
+      "task_id": "wind-heat-syndrome",
+      "title": "风热犯卫辨证",
+      "type": "syndrome",
+      "status": "pending",
+      "progress": 0.0,
+      "blocked_by": "yin-qiao-san-learning",
+
+      "todos": [
+        {"id": "pathology", "name": "病机", "mastery": 0.0, "status": "pending"},
+        {"id": "key_points", "name": "辨证要点", "mastery": 0.0, "status": "pending"},
+        {"id": "pulse", "name": "脉诊", "mastery": 0.0, "status": "pending"},
+        {"id": "tongue", "name": "舌诊", "mastery": 0.0, "status": "pending"},
+        {"id": "prescription", "name": "选方", "mastery": 0.0, "status": "pending"}
+      ],
+
+      "weaknesses": []
+    }
+  ],
+
+  "current_focus": {
+    "primary_task_id": null,
+    "primary_todo": null
+  },
+
+  "statistics": {
+    "total_tasks": 6,
+    "completed": 0,
+    "in_progress": 0,
+    "pending": 6,
+    "mastery_average": 0.0
+  }
+}

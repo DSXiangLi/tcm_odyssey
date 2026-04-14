@@ -1,0 +1,14 @@
+{
+  "template_id": "scholar",
+  "occupation": "书生",
+  "speaking_style": "略带书卷气",
+  "age_range": [20, 35],
+  "example_phrases": {
+    "greeting": "先生，学生近日身体有恙...",
+    "complaint_intro": "这几日读书夜深，",
+    "pain_description": "酸痛难忍，如针刺一般",
+    "cold_description": "寒意阵阵，似秋风入骨",
+    "heat_description": "燥热不安，如夏日炎炎"
+  },
+  "possible_contexts": ["读书久坐", "夜读伤风", "书房苦读", "迎风赶路"]
+}

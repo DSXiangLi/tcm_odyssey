@@ -66,6 +66,13 @@ export class DecoctionUI {
   private selectedHerbs: string[] = [];
   private compatibilitySlots: Map<string, Phaser.GameObjects.Container> = new Map();
 
+  // 事件监听器引用（用于正确清理）
+  private phaseChangedHandler!: (data: EventData) => void;
+  private herbAddedHandler!: (data: EventData) => void;
+  private herbRemovedHandler!: (data: EventData) => void;
+  private decoctionTickHandler!: (data: EventData) => void;
+  private scoreCalculatedHandler!: (data: EventData) => void;
+
   constructor(config: DecoctionUIConfig) {
     this.scene = config.scene;
     this.width = config.width;
@@ -89,30 +96,35 @@ export class DecoctionUI {
    * 设置事件监听
    */
   private setupEventListeners(): void {
-    this.eventBus.on(DecoctionEvent.PHASE_CHANGED, (data: EventData) => {
+    this.phaseChangedHandler = (data: EventData) => {
       const newPhase = data.new_phase as DecoctionPhase;
       this.updateUIForPhase(newPhase);
-    });
+    };
+    this.eventBus.on(DecoctionEvent.PHASE_CHANGED, this.phaseChangedHandler);
 
-    this.eventBus.on(DecoctionEvent.HERB_ADDED, (_data: EventData) => {
+    this.herbAddedHandler = (_data: EventData) => {
       this.updateHerbSelection();
-    });
+    };
+    this.eventBus.on(DecoctionEvent.HERB_ADDED, this.herbAddedHandler);
 
-    this.eventBus.on(DecoctionEvent.HERB_REMOVED, (_data: EventData) => {
+    this.herbRemovedHandler = (_data: EventData) => {
       this.updateHerbSelection();
-    });
+    };
+    this.eventBus.on(DecoctionEvent.HERB_REMOVED, this.herbRemovedHandler);
 
-    this.eventBus.on(DecoctionEvent.DECOCTION_TICK, (data: EventData) => {
+    this.decoctionTickHandler = (data: EventData) => {
       const currentTime = data.current_time as number;
       const targetTime = data.target_time as number;
       const progress = data.progress as number;
       this.updateDecoctionProgress(currentTime, targetTime, progress);
-    });
+    };
+    this.eventBus.on(DecoctionEvent.DECOCTION_TICK, this.decoctionTickHandler);
 
-    this.eventBus.on(DecoctionEvent.SCORE_CALCULATED, (data: EventData) => {
+    this.scoreCalculatedHandler = (data: EventData) => {
       const result = data as unknown as DecoctionScoreResult;
       this.showResult(result);
-    });
+    };
+    this.eventBus.on(DecoctionEvent.SCORE_CALCULATED, this.scoreCalculatedHandler);
   }
 
   /**
@@ -803,12 +815,12 @@ export class DecoctionUI {
    * 销毁UI
    */
   destroy(): void {
-    // 移除事件监听
-    this.eventBus.off(DecoctionEvent.PHASE_CHANGED, () => {});
-    this.eventBus.off(DecoctionEvent.HERB_ADDED, () => {});
-    this.eventBus.off(DecoctionEvent.HERB_REMOVED, () => {});
-    this.eventBus.off(DecoctionEvent.DECOCTION_TICK, () => {});
-    this.eventBus.off(DecoctionEvent.SCORE_CALCULATED, () => {});
+    // 移除事件监听（使用保存的引用正确清理）
+    this.eventBus.off(DecoctionEvent.PHASE_CHANGED, this.phaseChangedHandler);
+    this.eventBus.off(DecoctionEvent.HERB_ADDED, this.herbAddedHandler);
+    this.eventBus.off(DecoctionEvent.HERB_REMOVED, this.herbRemovedHandler);
+    this.eventBus.off(DecoctionEvent.DECOCTION_TICK, this.decoctionTickHandler);
+    this.eventBus.off(DecoctionEvent.SCORE_CALCULATED, this.scoreCalculatedHandler);
 
     // 清除内容
     this.clearContent();

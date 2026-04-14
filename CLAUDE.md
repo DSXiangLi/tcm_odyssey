@@ -1,7 +1,7 @@
 # 药灵山谷 (Yaoling Shangu) - 项目文档
 
-**版本**: v3.0 - Phase 2 开发中
-**最后更新**: 2026-04-12
+**版本**: v3.0 - Phase 2 S1-S9已完成
+**最后更新**: 2026-04-14
 **技术栈**: Phaser 3 + TypeScript + Vite + Hermes-Agent
 
 ---
@@ -635,6 +635,7 @@ zhongyi_game_v3/
 │   │   ├── constants.ts        # 常量定义
 │   │   ├── map-config.ts       # 地图配置（建筑、门、路径坐标）
 │   │   ├── inventory-data.ts   # 背包数据定义 ⭐S8
+│   │   ├── decoction-data.ts   # 煎药数据定义 ⭐S9
 │   │   ├── cases/
 │   │   │   └── core_cases.json # 核心病案 ⭐S2
 │   │   ├── patient-templates/  # 病人模板 ⭐S2
@@ -654,6 +655,7 @@ zhongyi_game_v3/
 │   │   ├── TongueScene.ts      # 舌诊场景 ⭐S6b
 │   │   ├── SyndromeScene.ts    # 辨证场景 ⭐S6c
 │   │   ├── PrescriptionScene.ts # 选方场景 ⭐S6d
+│   │   ├── DecoctionScene.ts    # 煎药场景 ⭐S9
 │   │   └── (ResultUI集成)      # 结果评分 ⭐S6e
 │   ├── entities/
 │   │   └── Player.ts           # 玩家实体
@@ -669,6 +671,7 @@ zhongyi_game_v3/
 │   │   ├── DiagnosisFlowManager.ts # 诊治流程管理 ⭐S6
 │   │   ├── SaveManager.ts      # 存档管理 ⭐S7
 │   │   └── InventoryManager.ts # 背包管理 ⭐S8
+│   │   └── DecoctionManager.ts # 煎药管理 ⭐S9
 │   ├── ui/
 │   │   ├── DialogUI.ts         # 对话UI ⭐S3
 │   │   ├── StreamingText.ts    # 流式输出 ⭐S3
@@ -683,6 +686,7 @@ zhongyi_game_v3/
 │   │   ├── NPCFeedbackUI.ts    # NPC反馈 ⭐S6e
 │   │   ├── SaveUI.ts           # 存档UI ⭐S7
 │   │   ├── InventoryUI.ts      # 背包UI ⭐S8
+│   │   ├── DecoctionUI.ts      # 煎药UI ⭐S9
 │   │   └── index.ts            # UI导出
 │   └── utils/
 │       ├── GameLogger.ts       # 游戏日志收集器
@@ -693,7 +697,9 @@ zhongyi_game_v3/
 │   │   ├── hermes.spec.ts      # Hermes测试 ⭐S1 (31个)
 │   │   ├── data-structure.spec.ts # 数据结构测试 ⭐S2 (5个)
 │   │   ├── inventory-data.spec.ts # 背包数据测试 ⭐S8 (32个)
-│   │   └── inventory-manager.spec.ts # 背包管理测试 ⭐S8 (38个)
+│   │   ├── inventory-manager.spec.ts # 背包管理测试 ⭐S8 (38个)
+│   │   ├── decoction-data.spec.ts # 煎药数据测试 ⭐S9 (41个)
+│   │   └── decoction-manager.spec.ts # 煎药管理测试 ⭐S9 (42个)
 │   ├── integration/            # 集成测试
 │   ├── regression/             # 回归测试
 │   ├── conformance/            # 方案一致性测试
@@ -708,6 +714,7 @@ zhongyi_game_v3/
 │   │   ├── diagnosis/          # 诊治测试 ⭐S6
 │   │   │   └── full-flow.spec.ts # 完整流程 (42个)
 │   │   ├── inventory.spec.ts   # 背包测试 ⭐S8 (11个)
+│   │   ├── decoction.spec.ts   # 煎药测试 ⭐S9 (19个)
 │   │   └── utils/
 │   │       └── phaser-helper.ts # 测试工具
 │   └── visual/                 # AI端到端测试
@@ -743,7 +750,7 @@ zhongyi_game_v3/
 | E2E测试 | Playwright | 100% | 76 | ✅ 问诊(15) + 病案(11) + 存档(8) + 诊治(42) + 背包(11) |
 | Phase2 Smoke | Playwright | 100% | 7 | ✅ 可用 |
 
-**测试总计: 264个测试可用 ✅ (Phase 1: 120 + Phase 2 S1-S7: 83 + Phase 2 S8: 81)**
+**测试总计: 366个测试可用 ✅ (Phase 1: 120 + Phase 2 S1-S7: 83 + Phase 2 S8: 81 + Phase 2 S9: 102)**
 
 ### 测试注意事项
 - ⚠️ **测试完成后必须关闭网页/浏览器，避免占用系统资源**

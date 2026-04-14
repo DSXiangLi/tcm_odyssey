@@ -18,6 +18,8 @@ import { Player } from '../entities/Player';
 import { EventBus, GameEvents } from '../systems/EventBus';
 import { GameStateBridge } from '../utils/GameStateBridge';
 import { PlantingManager } from '../systems/PlantingManager';
+import { TutorialManager } from '../systems/TutorialManager';  // S13.4
+import { createSceneTipUI, TutorialUI } from '../ui/TutorialUI';  // S13.4
 
 interface MapData {
   width: number;
@@ -36,6 +38,8 @@ export class GardenScene extends Phaser.Scene {
   private mapData!: MapData;
   private background!: Phaser.GameObjects.Image;
   private plantingManager!: PlantingManager;  // S11.4: 种植管理器
+  private tutorialManager!: TutorialManager;  // S13.4: 新手引导管理器
+  private sceneTipUI: TutorialUI | null = null;  // S13.4: 场景提示UI
 
   constructor() {
     super({ key: SCENES.GARDEN });
@@ -49,8 +53,12 @@ export class GardenScene extends Phaser.Scene {
     this.eventBus = EventBus.getInstance();
     this.gameStateBridge = GameStateBridge.getInstance();
     this.plantingManager = PlantingManager.getInstance();  // S11.4
+    this.tutorialManager = TutorialManager.getInstance();  // S13.4
 
     this.eventBus.emit(GameEvents.SCENE_CREATE, { sceneName: SCENES.GARDEN });
+
+    // S13.4: 检查是否应该显示场景提示
+    this.checkAndShowSceneTip();
 
     // ⭐ 关键修复：订阅wake事件，确保从sleep状态唤醒时重置isTransitioning
     this.events.on('wake', () => {
@@ -328,6 +336,12 @@ export class GardenScene extends Phaser.Scene {
     // ⭐ 关键修复：重置 isTransitioning 状态
     this.isTransitioning = false;
 
+    // S13.4: 清理场景提示UI
+    if (this.sceneTipUI) {
+      this.sceneTipUI.destroy();
+      this.sceneTipUI = null;
+    }
+
     this.eventBus.emit(GameEvents.SCENE_DESTROY, { sceneName: SCENES.GARDEN });
   }
 
@@ -336,5 +350,33 @@ export class GardenScene extends Phaser.Scene {
   wake(): void {
     this.isTransitioning = false;
     console.log('[GardenScene] wake() called, isTransitioning reset to false');
+  }
+
+  /**
+   * S13.4: 检查并显示场景提示
+   */
+  private checkAndShowSceneTip(): void {
+    const sceneKey = SCENES.GARDEN;
+
+    if (this.tutorialManager.shouldShowSceneTip(sceneKey)) {
+      // 获取场景提示配置
+      const tipConfig = this.tutorialManager.getSceneTipInfo(sceneKey);
+
+      if (tipConfig) {
+        console.log(`[GardenScene] Showing scene tip for ${sceneKey}`);
+
+        // 创建场景提示UI
+        this.sceneTipUI = createSceneTipUI(
+          this,
+          tipConfig,
+          () => {
+            // onClose: 提示关闭后标记已显示
+            this.tutorialManager.markSceneTipShown(sceneKey);
+            this.sceneTipUI = null;
+            console.log(`[GardenScene] Scene tip shown and marked for ${sceneKey}`);
+          }
+        );
+      }
+    }
   }
 }

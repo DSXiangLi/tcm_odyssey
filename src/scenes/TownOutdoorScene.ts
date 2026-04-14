@@ -18,6 +18,8 @@ import { Player } from '../entities/Player';
 import { SceneManager, DoorInfo } from '../systems/SceneManager';
 import { EventBus, GameEvents } from '../systems/EventBus';
 import { GameStateBridge } from '../utils/GameStateBridge';
+import { TutorialManager } from '../systems/TutorialManager';  // S13.4
+import { createSceneTipUI, TutorialUI } from '../ui/TutorialUI';  // S13.4
 
 // 简化的地图数据结构（Phase 1.5不再使用瓦片渲染）
 interface MapData {
@@ -38,6 +40,8 @@ export class TownOutdoorScene extends Phaser.Scene {
   private gameStateBridge!: GameStateBridge;
   private playerTileText!: Phaser.GameObjects.Text;
   private background!: Phaser.GameObjects.Image;
+  private tutorialManager!: TutorialManager;  // S13.4: 新手引导管理器
+  private sceneTipUI: TutorialUI | null = null;  // S13.4: 场景提示UI
 
   constructor() {
     super({ key: SCENES.TOWN_OUTDOOR });
@@ -51,8 +55,12 @@ export class TownOutdoorScene extends Phaser.Scene {
     // 初始化事件系统
     this.eventBus = EventBus.getInstance();
     this.gameStateBridge = GameStateBridge.getInstance();
+    this.tutorialManager = TutorialManager.getInstance();  // S13.4
 
     this.eventBus.emit(GameEvents.SCENE_CREATE, { sceneName: SCENES.TOWN_OUTDOOR });
+
+    // S13.4: 检查是否应该显示场景提示
+    this.checkAndShowSceneTip();
 
     // ⭐ 关键修复：订阅wake事件，确保从sleep状态唤醒时重置isTransitioning
     this.events.on('wake', () => {
@@ -424,6 +432,12 @@ export class TownOutdoorScene extends Phaser.Scene {
     // ⭐ 关键修复：重置 isTransitioning 状态，确保再次进入时能触发门交互
     this.isTransitioning = false;
 
+    // S13.4: 清理场景提示UI
+    if (this.sceneTipUI) {
+      this.sceneTipUI.destroy();
+      this.sceneTipUI = null;
+    }
+
     this.eventBus.emit(GameEvents.SCENE_DESTROY, { sceneName: SCENES.TOWN_OUTDOOR });
   }
 
@@ -434,5 +448,33 @@ export class TownOutdoorScene extends Phaser.Scene {
     // 更新GameStateBridge，确保测试能正确检测场景
     this.gameStateBridge.updateCurrentScene(SCENES.TOWN_OUTDOOR);
     console.log('[TownOutdoorScene] wake() called, isTransitioning reset to false');
+  }
+
+  /**
+   * S13.4: 检查并显示场景提示
+   */
+  private checkAndShowSceneTip(): void {
+    const sceneKey = SCENES.TOWN_OUTDOOR;
+
+    if (this.tutorialManager.shouldShowSceneTip(sceneKey)) {
+      // 获取场景提示配置
+      const tipConfig = this.tutorialManager.getSceneTipInfo(sceneKey);
+
+      if (tipConfig) {
+        console.log(`[TownOutdoorScene] Showing scene tip for ${sceneKey}`);
+
+        // 创建场景提示UI
+        this.sceneTipUI = createSceneTipUI(
+          this,
+          tipConfig,
+          () => {
+            // onClose: 提示关闭后标记已显示
+            this.tutorialManager.markSceneTipShown(sceneKey);
+            this.sceneTipUI = null;
+            console.log(`[TownOutdoorScene] Scene tip shown and marked for ${sceneKey}`);
+          }
+        );
+      }
+    }
   }
 }

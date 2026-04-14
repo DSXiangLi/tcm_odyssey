@@ -34,6 +34,9 @@ import { CaseDetailUI, CaseDetailUIConfig } from '../ui/CaseDetailUI';
 // Phase 2 S8: 背包系统
 import { InventoryManager, createInventoryManager } from '../systems/InventoryManager';
 import { InventoryUI, createInventoryUI } from '../ui/InventoryUI';
+// Phase 2 S13.4: 新手引导系统
+import { TutorialManager } from '../systems/TutorialManager';
+import { createSceneTipUI, TutorialUI } from '../ui/TutorialUI';
 
 interface MapData {
   width: number;
@@ -75,6 +78,9 @@ export class ClinicScene extends Phaser.Scene {
   // Phase 2 S10: 炮制系统
   private processingButton!: Phaser.GameObjects.Text;
   private processingKey!: Phaser.Input.Keyboard.Key;
+  // Phase 2 S13.4: 新手引导系统
+  private tutorialManager!: TutorialManager;
+  private sceneTipUI: TutorialUI | null = null;
 
   constructor() {
     super({ key: SCENES.CLINIC });
@@ -94,8 +100,12 @@ export class ClinicScene extends Phaser.Scene {
     // 初始化事件系统
     this.eventBus = EventBus.getInstance();
     this.gameStateBridge = GameStateBridge.getInstance();
+    this.tutorialManager = TutorialManager.getInstance();  // S13.4
 
     this.eventBus.emit(GameEvents.SCENE_CREATE, { sceneName: SCENES.CLINIC });
+
+    // S13.4: 检查是否应该显示场景提示
+    this.checkAndShowSceneTip();
 
     // ⭐ 关键修复：订阅wake事件，确保从sleep状态唤醒时重置isTransitioning
     this.events.on('wake', () => {
@@ -906,6 +916,12 @@ export class ClinicScene extends Phaser.Scene {
     this.dialogShown = false;
     this.casesInitialized = false;
 
+    // S13.4: 清理场景提示UI
+    if (this.sceneTipUI) {
+      this.sceneTipUI.destroy();
+      this.sceneTipUI = null;
+    }
+
     // ⭐ 关键修复：重置 isTransitioning 状态，确保再次进入时能触发门交互
     this.isTransitioning = false;
 
@@ -943,5 +959,33 @@ export class ClinicScene extends Phaser.Scene {
   wake(): void {
     this.isTransitioning = false;
     console.log('[ClinicScene] wake() called, isTransitioning reset to false');
+  }
+
+  /**
+   * S13.4: 检查并显示场景提示
+   */
+  private checkAndShowSceneTip(): void {
+    const sceneKey = SCENES.CLINIC;
+
+    if (this.tutorialManager.shouldShowSceneTip(sceneKey)) {
+      // 获取场景提示配置
+      const tipConfig = this.tutorialManager.getSceneTipInfo(sceneKey);
+
+      if (tipConfig) {
+        console.log(`[ClinicScene] Showing scene tip for ${sceneKey}`);
+
+        // 创建场景提示UI
+        this.sceneTipUI = createSceneTipUI(
+          this,
+          tipConfig,
+          () => {
+            // onClose: 提示关闭后标记已显示
+            this.tutorialManager.markSceneTipShown(sceneKey);
+            this.sceneTipUI = null;
+            console.log(`[ClinicScene] Scene tip shown and marked for ${sceneKey}`);
+          }
+        );
+      }
+    }
   }
 }

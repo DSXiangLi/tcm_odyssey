@@ -568,6 +568,8 @@ export class DecoctionManager {
    */
   exposeToWindow(): void {
     (window as any).__DECOCTION_MANAGER__ = this;
+    // 同时暴露 InventoryManager（确保测试可以添加药材）
+    this.inventoryManager.exposeToWindow();
   }
 
   /**

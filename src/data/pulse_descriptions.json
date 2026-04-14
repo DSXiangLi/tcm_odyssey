@@ -1,0 +1,80 @@
+{
+  "pulse_positions": [
+    {
+      "id": "浮",
+      "name": "浮脉",
+      "description": "脉来浮取即得，重按稍减，如水上漂木",
+      "source": "《脉经》",
+      "clinical_meaning": "主表证，浮脉多见于外感病初起"
+    },
+    {
+      "id": "沉",
+      "name": "沉脉",
+      "description": "脉来沉取始得，轻取不应，如石投水",
+      "source": "《脉经》",
+      "clinical_meaning": "主里证，沉脉多见于里寒、里实"
+    }
+  ],
+  "pulse_tensions": [
+    {
+      "id": "紧",
+      "name": "紧脉",
+      "description": "脉来绷急弹指，如转索无常",
+      "source": "《脉经》",
+      "clinical_meaning": "主寒证，紧脉多见于寒邪束表"
+    },
+    {
+      "id": "缓",
+      "name": "缓脉",
+      "description": "脉来一息四至，来去怠缓",
+      "source": "《脉经》",
+      "clinical_meaning": "主虚证或正常脉，缓脉可见于脾虚或正常人"
+    },
+    {
+      "id": "数",
+      "name": "数脉",
+      "description": "脉来一息六至以上，来去急促",
+      "source": "《脉经》",
+      "clinical_meaning": "主热证，数脉多见于热邪亢盛"
+    }
+  ],
+  "pulse_combinations": {
+    "浮紧": {
+      "syndrome": "风寒表实证",
+      "description": "脉浮且紧，浮主表，紧主寒，风寒束表之象",
+      "prescription": "麻黄汤"
+    },
+    "浮缓": {
+      "syndrome": "风寒表虚证",
+      "description": "脉浮且缓，浮主表，缓主虚，营卫不和之象",
+      "prescription": "桂枝汤"
+    },
+    "浮数": {
+      "syndrome": "风热犯卫证",
+      "description": "脉浮且数，浮主表，数主热，风热犯卫之象",
+      "prescription": "银翘散或桑菊饮"
+    },
+    "沉紧": {
+      "syndrome": "里寒证",
+      "description": "脉沉且紧，沉主里，紧主寒，里寒之象",
+      "prescription": "非本期教学范围"
+    }
+  },
+  "classic_quotes": [
+    {
+      "text": "太阳之为病，脉浮，头项强痛而恶寒",
+      "source": "《伤寒论》第一条",
+      "context": "太阳病提纲证"
+    },
+    {
+      "text": "脉浮紧者，宜以汗解之",
+      "source": "《伤寒论》",
+      "context": "麻黄汤证脉象"
+    },
+    {
+      "text": "脉浮缓者，桂枝汤主之",
+      "source": "《伤寒论》",
+      "context": "桂枝汤证脉象"
+    }
+  ]
+}

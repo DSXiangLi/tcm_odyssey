@@ -1,0 +1,14 @@
+{
+  "template_id": "farmer",
+  "occupation": "农夫",
+  "speaking_style": "朴实直白",
+  "age_range": [25, 50],
+  "example_phrases": {
+    "greeting": "大夫，您帮忙看看，我这身子...",
+    "complaint_intro": "昨天在地里干活，",
+    "pain_description": "疼得厉害，像被人打了一棍子似的",
+    "cold_description": "冷得很，裹了棉袄还是冷",
+    "heat_description": "热得难受，像是火烧一样"
+  },
+  "possible_contexts": ["田间劳作", "冒雨干活", "早起下地", "搬运重物"]
+}

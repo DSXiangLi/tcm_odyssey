@@ -421,10 +421,15 @@ export class ProcessingManager {
         selectHerb: this.selectHerb.bind(this),
         selectMethod: this.selectMethod.bind(this),
         selectAdjuvant: this.selectAdjuvant.bind(this),
+        startPreprocess: this.startPreprocess.bind(this),
         startProcessing: this.startProcessing.bind(this),
         stopProcessing: this.stopProcessing.bind(this),
         submitEndpoint: this.submitEndpoint.bind(this),
-        reset: this.reset.bind(this)
+        reset: this.reset.bind(this),
+        getAvailableHerbs: this.getAvailableHerbs.bind(this),
+        getAvailableMethods: this.getAvailableMethods.bind(this),
+        getAvailableAdjuvants: this.getAvailableAdjuvants.bind(this),
+        recordQualityIndicator: this.recordQualityIndicator.bind(this)
       };
     }
   }

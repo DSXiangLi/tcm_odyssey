@@ -21,7 +21,9 @@ export const SCENES = {
   SYNDROME: 'SyndromeScene',
   PRESCRIPTION: 'PrescriptionScene',
   // Phase 2 S9: 煎药场景
-  DECOCTION: 'DecoctionScene'
+  DECOCTION: 'DecoctionScene',
+  // Phase 2 S10: 炮制场景
+  PROCESSING: 'ProcessingScene'
 } as const;
 
 // 玩家移动速度

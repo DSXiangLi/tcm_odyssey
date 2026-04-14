@@ -13,6 +13,7 @@ import Phaser from 'phaser';
 import { SCENES, TILE_SIZE } from '../data/constants';
 import { GameStateBridge } from '../utils/GameStateBridge';
 import { PlantingManager } from '../systems/PlantingManager';
+import { ExperienceManager } from '../systems/ExperienceManager';
 
 // 玩家sprite配置 - user2素材（正确配置）
 // 源图896x1195，布局4行×3列，每帧298x298
@@ -103,12 +104,16 @@ export class BootScene extends Phaser.Scene {
   }
 
   /**
-   * Phase 2 S11: 初始化管理器
+   * Phase 2 S11/S12: 初始化管理器
    */
   private initializeManagers(): void {
     // 初始化PlantingManager并暴露到window
     const plantingManager = PlantingManager.getInstance();
     plantingManager.exposeToWindow();
+
+    // Phase 2 S12: 初始化ExperienceManager并暴露到window
+    const experienceManager = ExperienceManager.getInstance();
+    experienceManager.exposeToWindow();
   }
 
   /**

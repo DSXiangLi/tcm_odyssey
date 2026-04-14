@@ -59,3 +59,8 @@ export { createInventoryUI } from './InventoryUI';
 export { TutorialUI } from './TutorialUI';
 export type { TutorialUIConfig } from './TutorialUI';
 export { createCentralTutorialUI, createSceneTipUI } from './TutorialUI';
+
+// Phase 2 S12: 经验值系统UI
+export { ExperienceUI } from './ExperienceUI';
+export type { ExperienceUIConfig } from './ExperienceUI';
+export { createExperienceUI, createEmbeddedExperienceUI } from './ExperienceUI';

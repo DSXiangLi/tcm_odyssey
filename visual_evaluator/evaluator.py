@@ -261,7 +261,12 @@ class VisualEvaluator:
 
     def _check_pass(self, evaluation: Dict[str, Any]) -> bool:
         """
-        Check if evaluation passes thresholds.
+        检查是否通过验收
+
+        通过条件:
+        - 总分必须达到阈值 (TOTAL_PASS_THRESHOLD)
+        - 各维度可以低于阈值，但不能低于阈值-10分
+          (即允许维度分数有最多10分的容差)
 
         Args:
             evaluation: Evaluation dict with dimensions and weighted_score
@@ -275,14 +280,15 @@ class VisualEvaluator:
         if weighted_score < TOTAL_PASS_THRESHOLD:
             return False
 
-        # Check individual dimension thresholds
+        # Check individual dimension thresholds with tolerance
+        # Dimensions can fail by up to 10 points without blocking overall pass
         dimensions = evaluation.get("dimensions", {})
         for dim_name, threshold in DIMENSION_THRESHOLDS.items():
             dim_data = dimensions.get(dim_name, {})
             score = dim_data.get("score")
 
             if score is not None and score < threshold:
-                # Allow one dimension to fail slightly
+                # Allow dimension to fail by up to 10 points
                 if score < threshold - 10:
                     return False
 

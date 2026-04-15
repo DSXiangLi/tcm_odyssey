@@ -96,9 +96,21 @@ class CodeModifier:
         match = re.search(color_pattern, code_hint)
 
         if match:
-            old_color = "#" + match.group(1)
+            old_color_hex = match.group(1)  # Without hash
             new_color = "#" + match.group(2)
-            content = content.replace(old_color, new_color)
+
+            # 更精确的颜色替换：只在样式属性上下文中替换
+            # 匹配模式：样式属性名: '#颜色值' 或样式属性名: "#颜色值"
+            style_property_pattern = rf"(backgroundColor|color|borderColor|fill|stroke|textColor|fontColor|background|tint|alpha):\s*(['\"])#({old_color_hex})(['\"])"
+
+            # 使用回调函数进行精确替换
+            def replace_color_in_context(m):
+                prop = m.group(1)
+                open_quote = m.group(2)
+                close_quote = m.group(4)
+                return f"{prop}: {open_quote}{new_color}{close_quote}"
+
+            content = re.sub(style_property_pattern, replace_color_in_context, content)
 
         return content
 

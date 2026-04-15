@@ -1,0 +1,49 @@
+{
+  "textures": [
+    {
+      "image": "user1_down.png",
+      "format": "RGBA8888",
+      "frames": [
+        { "filename": "down_0", "frame": { "x": 0, "y": 0, "w": 512, "h": 512 } },
+        { "filename": "down_1", "frame": { "x": 512, "y": 0, "w": 512, "h": 512 } },
+        { "filename": "down_2", "frame": { "x": 1024, "y": 0, "w": 512, "h": 512 } },
+        { "filename": "down_3", "frame": { "x": 1536, "y": 0, "w": 512, "h": 512 } }
+      ]
+    },
+    {
+      "image": "user1_up.png",
+      "format": "RGBA8888",
+      "frames": [
+        { "filename": "up_0", "frame": { "x": 0, "y": 0, "w": 512, "h": 512 } },
+        { "filename": "up_1", "frame": { "x": 512, "y": 0, "w": 512, "h": 512 } },
+        { "filename": "up_2", "frame": { "x": 1024, "y": 0, "w": 512, "h": 512 } },
+        { "filename": "up_3", "frame": { "x": 1536, "y": 0, "w": 512, "h": 512 } }
+      ]
+    },
+    {
+      "image": "user1_left.png",
+      "format": "RGBA8888",
+      "frames": [
+        { "filename": "left_0", "frame": { "x": 0, "y": 0, "w": 512, "h": 512 } },
+        { "filename": "left_1", "frame": { "x": 512, "y": 0, "w": 512, "h": 512 } },
+        { "filename": "left_2", "frame": { "x": 1024, "y": 0, "w": 512, "h": 512 } },
+        { "filename": "left_3", "frame": { "x": 1536, "y": 0, "w": 512, "h": 512 } }
+      ]
+    },
+    {
+      "image": "user1_right.png",
+      "format": "RGBA8888",
+      "frames": [
+        { "filename": "right_0", "frame": { "x": 0, "y": 0, "w": 512, "h": 512 } },
+        { "filename": "right_1", "frame": { "x": 512, "y": 0, "w": 512, "h": 512 } },
+        { "filename": "right_2", "frame": { "x": 1024, "y": 0, "w": 512, "h": 512 } },
+        { "filename": "right_3", "frame": { "x": 1536, "y": 0, "w": 512, "h": 512 } }
+      ]
+    }
+  ],
+  "meta": {
+    "app": "Yaoling Shangu Asset Generator",
+    "version": "1.0",
+    "scale": 1
+  }
+}

@@ -1,0 +1,68 @@
+{
+  "timestamp": "2026-04-11T13:14:47.309425",
+  "validation_type": "qwen_vl_multimodal",
+  "npcs": {
+    "user1": {
+      "npc": "user1",
+      "source_path": "/home/lixiang/Desktop/zhongyi_game_v3/tests/visual/asset-test/ai-generated/npc/user1.png",
+      "source_size": [
+        2048,
+        2048
+      ],
+      "status": "passed",
+      "analysis_raw": "```\n人物完整性: 完整\n多余元素: 无\n背景状态: 透明\n\n方向识别:\n- 第1行: 下\n- 第2行: 左\n- 第3行: 右\n- 第4行: 上\n方向顺序是否正确: 是\n\n动画连贯性: 连贯\n\n总体评价: 通过\n发现的问题: 无\n置信度: 100\n```",
+      "validation": {
+        "character_complete": "完整",
+        "extra_elements": "无",
+        "background_status": "透明",
+        "directions": {
+          "row1": "下",
+          "row2": "左",
+          "row3": "右",
+          "row4": "上"
+        },
+        "direction_correct": "是",
+        "animation_smooth": "连贯",
+        "overall_pass": "通过",
+        "issues": [],
+        "confidence": 100,
+        "status": "passed"
+      },
+      "timestamp": "2026-04-11T13:14:43.797499"
+    },
+    "teacher1": {
+      "npc": "teacher1",
+      "source_path": "/home/lixiang/Desktop/zhongyi_game_v3/tests/visual/asset-test/ai-generated/npc/teacher1.png",
+      "source_size": [
+        1024,
+        1024
+      ],
+      "status": "passed",
+      "analysis_raw": "```\n人物完整性: 完整\n多余元素: 无\n背景状态: 透明\n\n方向识别:\n- 第1行: 下\n- 第2行: 左\n- 第3行: 右\n- 第4行: 上\n方向顺序是否正确: 是\n\n动画连贯性: 连贯\n\n总体评价: 通过\n发现的问题: 无\n置信度: 100\n```",
+      "validation": {
+        "character_complete": "完整",
+        "extra_elements": "无",
+        "background_status": "透明",
+        "directions": {
+          "row1": "下",
+          "row2": "左",
+          "row3": "右",
+          "row4": "上"
+        },
+        "direction_correct": "是",
+        "animation_smooth": "连贯",
+        "overall_pass": "通过",
+        "issues": [],
+        "confidence": 100,
+        "status": "passed"
+      },
+      "timestamp": "2026-04-11T13:14:47.307406"
+    }
+  },
+  "summary": {
+    "total": 2,
+    "passed": 2,
+    "failed": 0,
+    "needs_review": 0
+  }
+}

@@ -106,9 +106,9 @@ export class PlantingScene extends Phaser.Scene {
    */
   private createPlantingManager(): void {
     const config: PlantingManagerConfig = {
-      growthSpeed: 1,        // 正常生长速度
-      autoAddToInventory: true, // 收获后自动添加到背包
-      quizRequired: true     // 需要考教才能收获
+      growthTickInterval: 1000,   // 生长更新间隔1秒
+      autoAddHerb: true,         // 收获后自动添加到背包
+      autoConsumeSeed: true      // 消耗种子
     };
 
     this.plantingManager = PlantingManager.getInstance(config);

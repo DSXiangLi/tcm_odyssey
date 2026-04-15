@@ -129,7 +129,7 @@ def main():
                 "32x32像素瓦片风格放大版，2048x2048整体场景图，"
                 "元素有明确边界便于切割成瓦片，各元素间有间距"
             ),
-            "output": base_dir / "indoor_scenes" / "clinic_interior.png"
+            "output": base_dir / "clinic" / "clinic_interior.png"
         },
         # 药田区域（需切割瓦片）
         {

@@ -404,7 +404,7 @@ export function addExperience(
   state: ExperienceState,
   source: ExperienceSource,
   value: number,
-  context?: string
+  _context?: string  // 保留参数以备将来扩展
 ): ExperienceState {
   const sourceConfig = getExperienceSourceConfig(source);
   const experienceType = sourceConfig?.experience_type || 'learning';

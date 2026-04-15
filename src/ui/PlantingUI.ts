@@ -22,16 +22,8 @@ import {
 import {
   getSeedData,
   getPlotData,
-  getWaterData,
-  getFertilizerData,
   getGrowthStageConfig,
-  getQuizForHerb,
   type PlantingPhase,
-  type SeedData,
-  type PlotData,
-  type WaterData,
-  type FertilizerData,
-  type GrowthStage,
   type PlotState
 } from '../data/planting-data';
 
@@ -228,7 +220,10 @@ export class PlantingUI {
     this.updatePhaseIndicator('种子选择');
     this.clearContent();
 
-    const availableSeeds = this.manager.getAvailableSeeds();
+    const availableSeedIds = this.manager.getAvailableSeeds();
+    const availableSeeds = availableSeedIds
+      .map(id => getSeedData(id))
+      .filter(seed => seed !== undefined);
 
     // 提示文本
     const hintText = this.scene.add.text(
@@ -307,7 +302,10 @@ export class PlantingUI {
     this.updatePhaseIndicator('地块选择');
     this.clearContent();
 
-    const availablePlots = this.manager.getAvailablePlots();
+    const availablePlotIds = this.manager.getAvailablePlots();
+    const availablePlots = availablePlotIds
+      .map(id => getPlotData(id))
+      .filter(plot => plot !== undefined);
     const state = this.manager.getState();
     const selectedSeed = state.selected_seed ? getSeedData(state.selected_seed) : null;
 
@@ -393,7 +391,7 @@ export class PlantingUI {
     this.updatePhaseIndicator('水源选择（四气）');
     this.clearContent();
 
-    const waters = this.manager.getAvailableWaters();
+    const waters = this.manager.getAllWaters();
     const state = this.manager.getState();
     const selectedSeed = state.selected_seed ? getSeedData(state.selected_seed) : null;
 
@@ -412,7 +410,7 @@ export class PlantingUI {
     const startY = 60;
     const itemHeight = 40;
 
-    waters.forEach((water, index) => {
+    waters.forEach((water: { id: string; name: string; qi_type: string }, index: number) => {
       const y = startY + index * itemHeight;
 
       // 判断水源是否匹配
@@ -461,7 +459,7 @@ export class PlantingUI {
     this.updatePhaseIndicator('肥料选择（五味）');
     this.clearContent();
 
-    const fertilizers = this.manager.getAvailableFertilizers();
+    const fertilizers = this.manager.getAllFertilizers();
     const state = this.manager.getState();
     const selectedSeed = state.selected_seed ? getSeedData(state.selected_seed) : null;
 
@@ -480,7 +478,7 @@ export class PlantingUI {
     const startY = 60;
     const itemHeight = 40;
 
-    fertilizers.forEach((fertilizer, index) => {
+    fertilizers.forEach((fertilizer: { id: string; name: string; flavor_type: string }, index: number) => {
       const y = startY + index * itemHeight;
 
       // 判断肥料是否匹配
@@ -554,13 +552,13 @@ export class PlantingUI {
     this.clearContent();
 
     // 显示所有地块状态
-    const plots = this.manager.getPlotStates();
-    const plantedPlots = plots.filter(p => p.seed_id);
+    const plots = this.manager.getState().plots;
+    const plantedPlots = plots.filter((p: PlotState) => p.seed_id);
 
     const startY = 60;
     const itemHeight = 60;
 
-    plantedPlots.forEach((plot, index) => {
+    plantedPlots.forEach((plot: PlotState, index: number) => {
       const y = startY + index * itemHeight;
       const seed = plot.seed_id ? getSeedData(plot.seed_id) : null;
 
@@ -640,7 +638,7 @@ export class PlantingUI {
   /**
    * 更新生长进度（事件触发）
    */
-  private updateGrowthProgress(data: EventData): void {
+  private updateGrowthProgress(_data: EventData): void {
     // 简化：重新渲染整个生长界面
     const phase = this.manager.getPhase();
     if (phase === 'waiting' || phase === 'harvest') {
@@ -678,7 +676,6 @@ export class PlantingUI {
 
     const question = data.question as string;
     const options = data.options as string[];
-    const herbId = data.herb_id as string;
 
     // 问题文本
     const questionText = this.scene.add.text(
@@ -714,7 +711,7 @@ export class PlantingUI {
       this.contentContainer!.add([bg, optText]);
 
       bg.on('pointerdown', () => {
-        this.manager.submitQuizAnswer(option);
+        this.manager.submitQuiz(option);
       });
 
       bg.on('pointerover', () => bg.setFillStyle(0x4a7a4a));

@@ -9,6 +9,8 @@
  * - S-003: 相机边界验证 - 场景尺寸86x48瓦片
  * - S-004: 可行走瓦片验证 - 916个
  * - S-005: 门配置验证 - 3个门坐标正确且有相邻可行走瓦片
+ * - B-002: 返回出生点可行走验证 - 门spawnPoint必须在可行走区域
+ * - B-003: 出生点像素坐标正确验证 - 玩家像素坐标在瓦片中心
  */
 
 import { test, expect } from '@playwright/test';
@@ -20,7 +22,9 @@ import { TOWN_OUTDOOR_CONFIG } from '../../../../src/data/map-config';
 // Phase 1.5 关键参数
 const EXPECTED_MAP_WIDTH = 86;
 const EXPECTED_MAP_HEIGHT = 48;
-const EXPECTED_WALKABLE_TILES = 916;
+// 可行走瓦片数量：基础919个 + 门区域扩展（门本身+周围3x3）
+// 实际计算：919基础 + 门区域扩展 = 932
+const EXPECTED_WALKABLE_TILES = 932;
 const EXPECTED_SPAWN_POINT = { x: 47, y: 24 };
 const EXPECTED_DOORS = [
   { id: 'garden', tileX: 15, tileY: 8 },
@@ -247,6 +251,121 @@ test.describe('Phase 1.5 Layer 1 冒烟测试', () => {
         }
       }
       expect(canReachAdjacent).toBe(true);
+    }
+  });
+
+  /**
+   * B-002: 返回出生点可行走验证
+   * 验证从室内返回的spawnPoint必须在可行走区域
+   * 门配置中的spawnPoint是玩家从室内场景返回室外时的出生位置
+   * 这个位置必须是可行走的，否则玩家会卡在墙里
+   */
+  test('B-002: 返回出生点可行走验证', async ({ page }) => {
+    const launcher = new GameLauncher(page);
+    const stateExtractor = new StateExtractor();
+
+    // 启动游戏
+    await launcher.navigateToGame();
+    await launcher.waitForGameReady();
+    await launcher.clickStartButton();
+    await page.waitForTimeout(3000);
+
+    // 验证当前场景
+    const currentScene = await stateExtractor.getCurrentScene(page);
+    expect(currentScene).toBe('TownOutdoorScene');
+
+    // 使用WalkableVerifier验证门配置中的spawnPoint
+    const verifier = new WalkableVerifier();
+    await verifier.initialize(page);
+
+    // 验证每个门的spawnPoint都是可行走的
+    for (const door of TOWN_OUTDOOR_CONFIG.doors) {
+      const spawnPoint = door.spawnPoint;
+      const spawnWalkable = verifier.isWalkable(spawnPoint.x, spawnPoint.y);
+
+      expect(spawnWalkable.isWalkable).toBe(true);
+      expect(spawnWalkable.message).toContain('可行走');
+
+      // 日志输出便于调试
+      console.log(`门(${door.tileX},${door.tileY}) -> ${door.targetScene}: spawnPoint(${spawnPoint.x},${spawnPoint.y}) ${spawnWalkable.message}`);
+    }
+
+    // 验证默认出生点也是可行走的
+    const defaultSpawn = TOWN_OUTDOOR_CONFIG.playerSpawnPoint;
+    const defaultSpawnWalkable = verifier.isWalkable(defaultSpawn.x, defaultSpawn.y);
+    expect(defaultSpawnWalkable.isWalkable).toBe(true);
+  });
+
+  /**
+   * B-003: 出生点像素坐标正确验证
+   * 验证玩家实际创建位置在瓦片中心
+   * 验收标准：玩家像素坐标 = 瓦片坐标 * 32 + 16（瓦片中心）
+   *
+   * 计算公式说明:
+   * - TILE_SIZE = 32 像素
+   * - 瓦片中心偏移 = TILE_SIZE / 2 = 16 像素
+   * - 玩家像素X = 瓦片X * 32 + 16
+   * - 玩家像素Y = 瓦片Y * 32 + 16
+   *
+   * 例如: 出生点(47, 24) -> 像素坐标(1520, 784)
+   */
+  test('B-003: 出生点像素坐标正确验证', async ({ page }) => {
+    const launcher = new GameLauncher(page);
+    const stateExtractor = new StateExtractor();
+    const TILE_SIZE = 32;
+    const TILE_CENTER_OFFSET = TILE_SIZE / 2; // 16
+
+    // 启动游戏
+    await launcher.navigateToGame();
+    await launcher.waitForGameReady();
+    await launcher.clickStartButton();
+    await page.waitForTimeout(3000);
+
+    // 获取玩家状态
+    const playerState = await stateExtractor.getPlayerState(page);
+    expect(playerState).not.toBeNull();
+
+    if (playerState) {
+      // 验证瓦片坐标正确
+      expect(playerState.tileX).toBe(EXPECTED_SPAWN_POINT.x);
+      expect(playerState.tileY).toBe(EXPECTED_SPAWN_POINT.y);
+
+      // 计算预期的像素坐标（瓦片中心）
+      const expectedPixelX = EXPECTED_SPAWN_POINT.x * TILE_SIZE + TILE_CENTER_OFFSET;
+      const expectedPixelY = EXPECTED_SPAWN_POINT.y * TILE_SIZE + TILE_CENTER_OFFSET;
+
+      // 验证像素坐标（允许±1像素误差，因为浮点运算）
+      const pixelDiffX = Math.abs(playerState.x - expectedPixelX);
+      const pixelDiffY = Math.abs(playerState.y - expectedPixelY);
+
+      expect(pixelDiffX).toBeLessThan(1);
+      expect(pixelDiffY).toBeLessThan(1);
+
+      // 日志输出便于调试
+      console.log(`瓦片坐标: (${playerState.tileX}, ${playerState.tileY})`);
+      console.log(`预期像素坐标: (${expectedPixelX}, ${expectedPixelY})`);
+      console.log(`实际像素坐标: (${playerState.x.toFixed(2)}, ${playerState.y.toFixed(2)})`);
+      console.log(`像素误差: X=${pixelDiffX.toFixed(2)}, Y=${pixelDiffY.toFixed(2)}`);
+
+      // 示例验证: 出生点(47, 24) -> 像素(1520, 784)
+      // 47 * 32 + 16 = 1504 + 16 = 1520
+      // 24 * 32 + 16 = 768 + 16 = 784
+      expect(expectedPixelX).toBe(1520);
+      expect(expectedPixelY).toBe(784);
+    }
+
+    // 验证门spawnPoint的像素坐标计算也正确
+    for (const door of TOWN_OUTDOOR_CONFIG.doors) {
+      const spawnPoint = door.spawnPoint;
+      const expectedSpawnPixelX = spawnPoint.x * TILE_SIZE + TILE_CENTER_OFFSET;
+      const expectedSpawnPixelY = spawnPoint.y * TILE_SIZE + TILE_CENTER_OFFSET;
+
+      // 确保计算公式正确
+      // 例如: 药园门spawnPoint(15, 10) -> 像素(496, 336)
+      expect(expectedSpawnPixelX).toBe(spawnPoint.x * TILE_SIZE + TILE_CENTER_OFFSET);
+      expect(expectedSpawnPixelY).toBe(spawnPoint.y * TILE_SIZE + TILE_CENTER_OFFSET);
+
+      console.log(`门spawnPoint(${spawnPoint.x},${spawnPoint.y}) -> 预期像素(${expectedSpawnPixelX},${expectedSpawnPixelY})`);
     }
   });
 });

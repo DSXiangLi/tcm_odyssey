@@ -119,6 +119,12 @@ export class GameStateBridge {
     // 将getState方法暴露到window对象
     (window as unknown as Record<string, unknown>).__GAME_STATE__ = this.getState.bind(this);
 
+    // 暴露游戏实例供测试直接操作
+    (window as unknown as Record<string, unknown>).__PHASER_GAME__ = this._game;
+
+    // 暴露GameStateBridge实例供测试调用方法
+    (window as unknown as Record<string, unknown>).__GAME_STATE_BRIDGE__ = this;
+
     this.exposedToWindow = true;
     console.log('[GameStateBridge] State exposed to window.__GAME_STATE__');
   }

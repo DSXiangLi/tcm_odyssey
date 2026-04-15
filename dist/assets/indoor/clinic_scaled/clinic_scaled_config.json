@@ -1,0 +1,10 @@
+{
+  "width": 44,
+  "height": 24,
+  "playerSpawnPoint": {
+    "x": 22,
+    "y": 20
+  },
+  "walkableTileCount": 0,
+  "walkableTiles": []
+}

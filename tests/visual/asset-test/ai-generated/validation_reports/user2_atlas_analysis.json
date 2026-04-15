@@ -1,0 +1,103 @@
+{
+  "total_size": {
+    "width": 300,
+    "height": 400
+  },
+  "layout": {
+    "rows": 4,
+    "cols": 3
+  },
+  "frame_size": {
+    "width": 100,
+    "height": 100
+  },
+  "rows_direction": [
+    "down",
+    "up",
+    "left",
+    "right"
+  ],
+  "position_analysis": [
+    {
+      "row_index": 0,
+      "direction": "down",
+      "frames": [
+        {
+          "frame": 0,
+          "horizontal_position": "居中"
+        },
+        {
+          "frame": 1,
+          "horizontal_position": "居中"
+        },
+        {
+          "frame": 2,
+          "horizontal_position": "居中"
+        }
+      ],
+      "is_consistent": true,
+      "max_offset": 0
+    },
+    {
+      "row_index": 1,
+      "direction": "up",
+      "frames": [
+        {
+          "frame": 0,
+          "horizontal_position": "居中"
+        },
+        {
+          "frame": 1,
+          "horizontal_position": "居中"
+        },
+        {
+          "frame": 2,
+          "horizontal_position": "居中"
+        }
+      ],
+      "is_consistent": true,
+      "max_offset": 0
+    },
+    {
+      "row_index": 2,
+      "direction": "left",
+      "frames": [
+        {
+          "frame": 0,
+          "horizontal_position": "偏右1像素"
+        },
+        {
+          "frame": 1,
+          "horizontal_position": "居中"
+        },
+        {
+          "frame": 2,
+          "horizontal_position": "偏左1像素"
+        }
+      ],
+      "is_consistent": false,
+      "max_offset": 1
+    },
+    {
+      "row_index": 3,
+      "direction": "right",
+      "frames": [
+        {
+          "frame": 0,
+          "horizontal_position": "偏左1像素"
+        },
+        {
+          "frame": 1,
+          "horizontal_position": "居中"
+        },
+        {
+          "frame": 2,
+          "horizontal_position": "偏右1像素"
+        }
+      ],
+      "is_consistent": false,
+      "max_offset": 1
+    }
+  ],
+  "recommendations": "左右方向的行走动画存在轻微水平偏移（±1像素），可能导致播放时角色轻微抖动。建议在切图时统一以角色中心为基准对齐，或使用透明背景进行精确裁剪，确保每帧人物中心点一致。可考虑将每一帧的中心点对齐到同一列像素上，例如通过调整图像边缘的透明区域来微调位置。"
+}

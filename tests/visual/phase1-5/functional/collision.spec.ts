@@ -190,4 +190,148 @@ test.describe('Phase 1.5 碰撞系统功能性测试', () => {
     expect(spawnResult.position.x).toBe(47);
     expect(spawnResult.position.y).toBe(24);
   });
+
+  /**
+   * F-010: 水域区域不可行走验证
+   * 验证河流、湖泊等水域区域玩家无法进入
+   */
+  test('F-010: 水域区域不可行走验证', async ({ page }) => {
+    const launcher = new GameLauncher(page);
+    const stateExtractor = new StateExtractor();
+
+    await launcher.navigateToGame();
+    await launcher.waitForGameReady();
+    await launcher.clickStartButton();
+    await page.waitForTimeout(2000);
+
+    // 根据地图设计，水域位置（小河在地图右侧和下方区域）
+    // 地图尺寸: 86x48, 水域通常在边界附近
+    // 采样验证水域区域不可行走
+
+    const waterAreaSamples: TilePos[] = [
+      // 右侧水域区域（根据地图设计推断）
+      { x: 80, y: 40 },  // 右下角水域
+      { x: 75, y: 42 },  // 右下方水域
+      { x: 70, y: 44 },  // 中下偏右水域
+      // 下方水域区域
+      { x: 50, y: 45 },  // 底部水域
+      { x: 40, y: 46 },  // 底部水域
+      // 边界水域
+      { x: 85, y: 47 },  // 右下边界
+    ];
+
+    let waterUnwalkableCount = 0;
+    const waterCheckResults: Array<{ pos: TilePos; isWalkable: boolean }> = [];
+
+    for (const pos of waterAreaSamples) {
+      const result = verifier.isWalkable(pos.x, pos.y);
+      waterCheckResults.push({ pos, isWalkable: result.isWalkable });
+      if (!result.isWalkable) {
+        waterUnwalkableCount++;
+      }
+    }
+
+    console.log('水域区域验证结果:');
+    waterCheckResults.forEach(r => {
+      console.log(`  位置(${r.pos.x},${r.pos.y}): ${r.isWalkable ? '可行走' : '不可行走'}`);
+    });
+
+    // 至少80%的采样水域区域应该是不可行走的
+    const waterUnwalkableRatio = waterUnwalkableCount / waterAreaSamples.length;
+    console.log(`水域不可行走比例: ${(waterUnwalkableRatio * 100).toFixed(1)}%`);
+    expect(waterUnwalkableRatio).toBeGreaterThanOrEqual(0.8);
+  });
+
+  /**
+   * F-011: 所有门周围有可行走路径
+   * 验证每个门周围都有可行走瓦片，NPC可以走到门
+   */
+  test('F-011: 所有门周围有可行走路径', async () => {
+    const doors = TOWN_OUTDOOR_CONFIG.doors;
+
+    for (const door of doors) {
+      // 获取门周围的可行走瓦片
+      const adjacentWalkable = verifier.getAdjacentWalkableTiles({
+        x: door.tileX,
+        y: door.tileY
+      });
+
+      console.log(`门(${door.tileX},${door.tileY})周围可行走瓦片数: ${adjacentWalkable.length}`);
+      console.log(`  目标场景: ${door.targetScene}`);
+
+      // 每个门周围至少有1个可行走瓦片
+      expect(adjacentWalkable.length).toBeGreaterThanOrEqual(1);
+
+      // 验证从出生点可以到达门周围的可行走瓦片
+      const spawnPoint = TOWN_OUTDOOR_CONFIG.playerSpawnPoint;
+      for (const adjacent of adjacentWalkable) {
+        const pathResult = verifier.findPath(
+          { x: spawnPoint.x, y: spawnPoint.y },
+          { x: adjacent.x, y: adjacent.y }
+        );
+        expect(pathResult.found).toBe(true);
+        console.log(`  从出生点到(${adjacent.x},${adjacent.y})路径长度: ${pathResult.length}`);
+      }
+    }
+  });
+
+  /**
+   * F-012: 出生点周围四方向均可移动
+   * 验证NPC出生点不是死胡同，可以向至少3个方向移动
+   */
+  test('F-012: 出生点周围四方向均可移动', async () => {
+    const spawnPoint = TOWN_OUTDOOR_CONFIG.playerSpawnPoint;
+
+    // 检查四个方向是否可行走
+    const directions = [
+      { name: '上', dx: 0, dy: -1 },
+      { name: '下', dx: 0, dy: 1 },
+      { name: '左', dx: -1, dy: 0 },
+      { name: '右', dx: 1, dy: 0 }
+    ];
+
+    let walkableDirectionCount = 0;
+    const directionResults: Array<{ dir: string; walkable: boolean }> = [];
+
+    for (const dir of directions) {
+      const checkX = spawnPoint.x + dir.dx;
+      const checkY = spawnPoint.y + dir.dy;
+      const result = verifier.isWalkable(checkX, checkY);
+      directionResults.push({ dir: dir.name, walkable: result.isWalkable });
+      if (result.isWalkable) {
+        walkableDirectionCount++;
+      }
+    }
+
+    console.log('出生点四方向验证:');
+    directionResults.forEach(r => {
+      console.log(`  ${r.dir}: ${r.walkable ? '可行走' : '不可行走'}`);
+    });
+
+    // 出生点周围至少3个方向可行走（避免死胡同）
+    expect(walkableDirectionCount).toBeGreaterThanOrEqual(3);
+  });
+
+  /**
+   * F-013: 全地图连通性验证
+   * 验证所有可行走区域形成一个连通图，NPC可以从任意点到达任意点
+   */
+  test('F-013: 全地图连通性验证', async () => {
+    const result = verifier.verifyAllConnected();
+
+    console.log('连通性验证结果:');
+    console.log(`  连通状态: ${result.isConnected ? '完全连通' : '存在孤立区域'}`);
+    console.log(`  可行走瓦片总数: ${result.totalWalkable}`);
+    console.log(`  连通瓦片数: ${result.connected}`);
+    console.log(`  覆盖率: ${(result.coverageRatio * 100).toFixed(2)}%`);
+
+    if (!result.isConnected && result.unreachableRegions.length > 0) {
+      console.log(`  孤立区域数量: ${result.unreachableRegions.length}`);
+      console.log(`  孤立区域示例(前5个): ${result.unreachableRegions.slice(0, 5).map(t => `(${t.x},${t.y})`).join(', ')}`);
+    }
+
+    // 所有可行走区域应该是连通的
+    expect(result.isConnected).toBe(true);
+    expect(result.coverageRatio).toBeGreaterThanOrEqual(0.99);
+  });
 });

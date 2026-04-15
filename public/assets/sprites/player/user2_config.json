@@ -1,0 +1,23 @@
+{
+  "name": "user2",
+  "source": "/home/lixiang/Desktop/zhongyi_game_v3/tests/visual/asset-test/ai-generated/npc/user2.png",
+  "frame_size": [
+    298,
+    298
+  ],
+  "directions": [
+    "down",
+    "left",
+    "right",
+    "up"
+  ],
+  "frames_per_direction": 3,
+  "total_size": [
+    896,
+    1195
+  ],
+  "layout": {
+    "rows": 4,
+    "cols": 3
+  }
+}

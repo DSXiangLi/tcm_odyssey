@@ -582,11 +582,158 @@ git branch -D dev
 
 ---
 
-## 10. 验收时机
+## 10. Skill集成 ⭐ 重要
+
+> **目的**: 利用现有skill让自动化测试流程更顺畅，减少重复劳动，提高测试效率
+
+### 10.1 核心Skill集成
+
+| Skill | 用途 | 集成时机 |
+|-------|------|---------|
+| **webapp-testing** | Web应用端到端测试 | 截图采集阶段 - 启动浏览器、模拟操作、采集截图 |
+| **e2e-testing** | E2E测试框架 | 截图控制器实现 - 复用Playwright基础设施 |
+| **systematic-debugging** | 系统化调试 | 评估失败时 - 根因分析而非猜测 |
+| **verification-loop** | 验证循环 | 修改执行后 - 编译验证、测试验证 |
+| **tdd-workflow** | TDD工作流 | 新模块开发 - 先写测试再实现 |
+| **everything-claude-code:verify** | 代码验证 | 修改完成后 - 确保修改正确 |
+
+### 10.2 Skill调用流程
+
+```
+┌─────────────────────────────────────────────────────────────────────┐
+│                     Skill集成自动化流程                               │
+├─────────────────────────────────────────────────────────────────────┤
+│  1. webapp-testing → 启动浏览器，模拟玩家操作，采集截图集             │
+│  2. visual_evaluator → Qwen VL评估，生成报告                        │
+│  3. modification_executor → 解析建议，修改代码                        │
+│  4. verification-loop → 编译验证 + 测试验证                          │
+│  5. (失败时) systematic-debugging → 根因分析                         │
+│  6. 循环迭代直到通过                                                 │
+└─────────────────────────────────────────────────────────────────────┘
+```
+
+### 10.3 各阶段Skill使用指南
+
+#### 截图采集阶段
+
+**调用**: `example-skills:webapp-testing`
+
+**配置要点**:
+```typescript
+// tests/visual_acceptance/screenshot_config.ts
+const screenshotConfig = {
+  baseUrl: 'http://localhost:5173',
+  gameContainer: '#game-container canvas',
+  scenes: [
+    { id: 'SCENE-01', operations: ['navigate', 'move-player', 'wait'] },
+    { id: 'NPC-01', operations: ['navigate', 'interact-npc', 'wait'] },
+    // ...
+  ],
+  timeout: 30000,
+  screenshotDir: 'reports/visual_acceptance/screenshots/'
+};
+```
+
+**关键操作复用**:
+- `waitForGameReady()` - 等待Phaser初始化
+- `navigateToScene()` - 场景切换
+- `clickCanvas()` - Canvas坐标点击
+- `getGlobalState()` - 获取游戏状态
+
+#### 调试阶段
+
+**调用**: `superpowers:systematic-debugging`
+
+**触发条件**:
+- 编译失败
+- 测试失败
+- 评估连续失败3次
+
+**使用原则**:
+- ❌ 禁止猜测问题根因
+- ✅ 必须从错误日志、代码路径定位
+- ✅ 找不到线索时搜索相关文档
+
+#### 验证阶段
+
+**调用**: `everything-claude-code:verification-loop` 或 `everything-claude-code:verify`
+
+**验证清单**:
+```markdown
+- [ ] TypeScript编译通过 (npx tsc --noEmit)
+- [ ] 相关单元测试通过 (npm run test:unit)
+- [ ] E2E测试通过 (npm run test:e2e)
+- [ ] 修改文件git diff确认
+- [ ] 新截图采集成功
+- [ ] 评估分数提升
+```
+
+### 10.4 Skill协同最佳实践
+
+| 场景 | Skill组合 | 效果 |
+|-----|----------|------|
+| **首次截图采集** | webapp-testing + e2e-testing | 一次性采集全部35张截图 |
+| **修改验证失败** | systematic-debugging + verification-loop | 根因分析 → 修复 → 验证闭环 |
+| **新模块开发** | tdd-workflow + verify | 测试先行，确保质量 |
+| **循环迭代优化** | verification-loop + webapp-testing | 修改 → 验证 → 截图 → 评估 |
+
+---
+
+## 11. 验收时机
 
 本系统在Phase 2功能完成后（S1-S13全部完成）统一执行，验收全部UI、场景、Sprite、整体氛围。
 
 后续可手动触发验收单个改动，或定期运行确保视觉质量持续达标。
+
+---
+
+## 12. Experience文档
+
+> **目的**: 积累自动化测试经验，形成最佳实践文档
+
+### 12.1 Experience文档位置
+
+`docs/testing/visual-acceptance-experience.md`
+
+### 12.2 Experience记录结构
+
+```markdown
+# 视觉验收自动化系统经验记录
+
+## 日期: YYYY-MM-DD
+
+### 经验条目
+
+| ID | 类别 | 问题 | 解决方案 | 效果 | 关联Skill |
+|----|-----|------|---------|------|----------|
+| E001 | 截图 | Canvas元素无法用DOM选择器定位 | 使用page.evaluate访问游戏全局状态 | 成功采集 | webapp-testing |
+| E002 | 评估 | Qwen VL对像素风格识别不准 | 增加像素风格描述Prompt上下文 | 准确率提升15% | - |
+| E003 | 修改 | 页面evaluate无法访问Node.js常量 | 在浏览器环境内定义本地常量 | 测试通过 | systematic-debugging |
+| ... | ... | ... | ... | ... | ... |
+
+### 最佳实践沉淀
+
+#### 截图采集最佳实践
+- [待积累]
+
+#### AI评估最佳实践
+- [待积累]
+
+#### 代码修改最佳实践
+- [待积累]
+
+#### 循环迭代最佳实践
+- [待积累]
+```
+
+### 12.3 Experience积累时机
+
+| 时机 | 记录内容 |
+|-----|---------|
+| **遇到问题时** | 问题描述、尝试方案、最终解决方案 |
+| **发现最佳实践时** | 高效做法、Skill组合效果 |
+| **每轮迭代结束时** | 本轮改进点、效率提升数据 |
+| **验收完成时** | 整体流程总结、优化建议 |
 
 ---
 

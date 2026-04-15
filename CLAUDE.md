@@ -1122,6 +1122,8 @@ zhongyi_game_v3/
 
 **完整设计文档**: [视觉验收自动化系统设计](docs/superpowers/specs/2026-04-15-visual-acceptance-design.md)
 
+**经验积累文档**: [视觉验收自动化经验记录](docs/testing/visual-acceptance-experience.md) ⭐新增
+
 ---
 
 ## 视觉设计规范摘要

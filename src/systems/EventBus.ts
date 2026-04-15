@@ -157,4 +157,21 @@ export class EventBus {
     const listeners = this.listeners.get(event);
     return listeners ? listeners.size > 0 : false;
   }
+
+  /**
+   * 重置单例（用于测试）
+   */
+  static resetInstance(): void {
+    if (EventBus.instance) {
+      EventBus.instance.clearAll();
+    }
+    EventBus.instance = null as any;
+  }
+
+  /**
+   * 销毁实例
+   */
+  destroy(): void {
+    this.clearAll();
+  }
 }

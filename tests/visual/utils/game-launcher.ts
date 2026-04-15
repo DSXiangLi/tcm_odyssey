@@ -34,17 +34,19 @@ export class GameLauncher {
 
   /**
    * 点击开始按钮
+   * TitleScene中"开始游戏"按钮位置: GAME_HEIGHT/2 + 20 = 320
+   * 相对于canvas中心(300)偏移+20
    */
   async clickStartButton(): Promise<void> {
     // Phaser游戏中的按钮是Canvas元素，需要点击特定坐标
-    // 开始按钮位置大约在 (400, 350) 即 (GAME_WIDTH/2, GAME_HEIGHT/2 + 50)
+    // 开始按钮位置在 (GAME_WIDTH/2, GAME_HEIGHT/2 + 20) = (400, 320)
     const canvas = this.page.locator('#game-container canvas');
     const box = await canvas.boundingBox();
 
     if (box) {
-      // 计算按钮位置（相对于canvas中心）
+      // 计算按钮位置（相对于canvas中心偏移+20）
       const buttonX = box.x + box.width / 2;
-      const buttonY = box.y + box.height / 2 + 50;
+      const buttonY = box.y + box.height / 2 + 20;  // 修正：从+50改为+20
 
       await this.page.mouse.click(buttonX, buttonY);
       await this.page.waitForTimeout(1000);

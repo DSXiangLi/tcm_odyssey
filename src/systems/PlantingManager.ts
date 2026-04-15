@@ -22,10 +22,8 @@ import {
   getWaterData,
   getFertilizerData,
   getGrowthStage,
-  getGrowthStageConfig,
   getQuizForHerb,
   calculatePlantingMatch,
-  initializePlotStates,
   initializePlantingState,
   SEEDS_DATA,
   PLOTS_DATA,
@@ -37,9 +35,7 @@ import {
   type FertilizerData,
   type PlantingPhase,
   type PlantingState,
-  type PlotState,
-  type GrowthStage,
-  type QuizQuestion
+  type PlotState
 } from '../data/planting-data';
 import { InventoryManager } from './InventoryManager';
 
@@ -686,7 +682,7 @@ export class PlantingManager {
     }
 
     // 判断是否通过
-    const passed = totalScore >= this.config.passThreshold;
+    const passed = totalScore >= (this.config.passThreshold ?? 60);
 
     // 生成反馈
     const feedback = this.generateFeedback(
@@ -745,6 +741,17 @@ export class PlantingManager {
     }
 
     return parts.join('；');
+  }
+
+  /**
+   * 取消当前选择
+   */
+  cancelSelection(): void {
+    this.state.selected_seed = null;
+    this.state.selected_water = null;
+    this.state.selected_fertilizer = null;
+    this.state.current_plot = null;
+    this.setPhase('select_seed');
   }
 
   /**

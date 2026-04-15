@@ -4,7 +4,7 @@
 
 **创建日期**: 2026-04-15
 **最后更新**: 2026-04-15
-**关联文档**: [视觉验收自动化系统设计](../superpowers/specs/2026-04-15-visual-acceptance-design.md)
+**关联文档**: [Phase2 视觉验收自动化系统设计](../superpowers/specs/2026-04-15-phase2-visual-acceptance-design.md)
 
 ---
 

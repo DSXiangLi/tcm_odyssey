@@ -1,0 +1,28 @@
+{
+  "hooks": {
+    "PreCompact": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/update-session-state.py",
+            "timeout": 60,
+            "statusMessage": "Updating session state before compact..."
+          }
+        ]
+      }
+    ],
+    "SessionEnd": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/update-session-state.py",
+            "timeout": 60,
+            "statusMessage": "Saving session state..."
+          }
+        ]
+      }
+    ]
+  }
+}

@@ -17,7 +17,6 @@ import { GARDEN_CONFIG } from '../data/garden-walkable-config';
 import { Player } from '../entities/Player';
 import { EventBus, GameEvents } from '../systems/EventBus';
 import { GameStateBridge } from '../utils/GameStateBridge';
-import { PlantingManager } from '../systems/PlantingManager';
 import { TutorialManager } from '../systems/TutorialManager';  // S13.4
 import { createSceneTipUI, TutorialUI } from '../ui/TutorialUI';  // S13.4
 
@@ -37,7 +36,7 @@ export class GardenScene extends Phaser.Scene {
   private gameStateBridge!: GameStateBridge;
   private mapData!: MapData;
   private background!: Phaser.GameObjects.Image;
-  private plantingManager!: PlantingManager;  // S11.4: 种植管理器
+  // S11.4: PlantingScene自己获取PlantingManager单例，无需在此声明
   private tutorialManager!: TutorialManager;  // S13.4: 新手引导管理器
   private sceneTipUI: TutorialUI | null = null;  // S13.4: 场景提示UI
 
@@ -52,7 +51,7 @@ export class GardenScene extends Phaser.Scene {
     // 初始化事件系统
     this.eventBus = EventBus.getInstance();
     this.gameStateBridge = GameStateBridge.getInstance();
-    this.plantingManager = PlantingManager.getInstance();  // S11.4
+    // S11.4: PlantingScene自己获取PlantingManager单例
     this.tutorialManager = TutorialManager.getInstance();  // S13.4
 
     this.eventBus.emit(GameEvents.SCENE_CREATE, { sceneName: SCENES.GARDEN });

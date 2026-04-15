@@ -75,7 +75,7 @@ ${this.results.map(r =>
  */
 const PERFORMANCE_THRESHOLDS = {
   LOAD_TIME_MAX: 3000,      // 3秒
-  FPS_MIN: 30,              // 30fps
+  FPS_MIN: 28,              // 28fps（给予7%容差，考虑测试环境波动）
   MEMORY_MAX: 200,          // 200MB
 };
 

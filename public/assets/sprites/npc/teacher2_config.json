@@ -1,0 +1,16 @@
+{
+  "name": "teacher2",
+  "source": "/home/lixiang/Desktop/zhongyi_game_v3/tests/visual/asset-test/ai-generated/npc/teacher2.png",
+  "frame_size": [
+    224,
+    298
+  ],
+  "directions": [
+    "down",
+    "up",
+    "left",
+    "right"
+  ],
+  "frames_per_direction": 4,
+  "timestamp": "2026-04-12T09:51:17.279725"
+}

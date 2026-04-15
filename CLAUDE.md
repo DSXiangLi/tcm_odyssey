@@ -448,80 +448,22 @@ npx playwright test tests/visual --workers=1
 
 ## 测试修复记录 ⚠️
 
-> **重要**: 每个测试问题修复都必须记录问题表现、根本原因、诊断过程和修复方案，避免反复修改同一个问题
+> **重要**: 每个测试问题修复后必须在独立文档中记录诊断过程和修复方案
 
-### ✅ BUG-001: Phaser场景切换返回错误场景 (2026-04-16)
+### 阅读情境
 
-**问题表现**:
-- 测试调用 `navigateToScene('ClinicScene')` 后
-- `getGameState()` 返回 `TitleScene` 而非预期的 `ClinicScene`
-- 所有等待条件都通过，无异常抛出
+遇到以下情况时，请查阅 `docs/testing/test-fixes-record.md`：
 
-**诊断过程**:
-1. 添加诊断日志输出场景状态
-2. 发现 `game.scene.start('ClinicScene')` 后
-   - TitleScene: `isActive=true`
-   - ClinicScene: `isActive=true`
-3. **关键发现**: Phaser允许多个场景同时 `isActive=true`
+- **场景切换测试失败** → 查阅 BUG-001: Phaser多场景并行问题
+- **超时相关测试失败** → 查阅相关超时问题的诊断方法
+- **反复修改同一问题** → 检查是否已有类似问题的记录
 
-**根本原因**:
-- `game.scene.start()` 不自动停止之前活跃的场景
-- Phaser设计允许多个场景并行运行
-- `getGameState()`遍历场景数组返回第一个 `isActive=true` 的场景
-- TitleScene在数组中排在ClinicScene前面，所以总是返回TitleScene
+### 记录要求
 
-**修复方案**:
-```typescript
-// navigateToScene 中先停止所有活跃场景
-await this.page.evaluate(() => {
-  const game = (window as any).__PHASER_GAME__;
-  if (game) {
-    for (const s of game.scene.scenes) {
-      const key = s.scene?.key || s.key;
-      if (key && game.scene.isActive(key)) {
-        game.scene.stop(key);  // 停止旧场景
-      }
-    }
-  }
-});
-await this.page.waitForTimeout(300);  // 等待完全停止
-// 然后启动目标场景
-await this.page.evaluate((name) => {
-  game.scene.start(name);
-}, sceneName);
-```
-
-**修改文件**:
-- `tests/visual_acceptance/scene_operations.ts:71-93`
-
-**验证结果**: ✅ SCENE-02测试通过，返回ClinicScene正确
-
----
-
-### 记录模板
-
-每次修复测试问题后，按以下模板记录：
-
-```markdown
-### ✅ BUG-XXX: [问题名称] (日期)
-
-**问题表现**:
-- [具体的错误信息、测试失败表现]
-
-**诊断过程**:
-- [使用什么方法发现根因]
-
-**根本原因**:
-- [深入分析后的根本原因]
-
-**修复方案**:
-- [具体的代码修改或配置调整]
-
-**修改文件**:
-- [涉及的文件列表]
-
-**验证结果**: ✅/❌ [测试结果]
-```
+每次修复测试问题后：
+1. 在 `docs/testing/test-fixes-record.md` 中添加新条目
+2. 按模板记录：问题表现 → 诊断过程 → 根本原因 → 修复方案 → 验证结果
+3. 包含相关技术知识点，便于后续参考
 
 ---
 

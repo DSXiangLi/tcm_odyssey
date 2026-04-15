@@ -5,12 +5,12 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-# 评估模型配置（从.env读取）
-QWEN_VL_API_URL = os.getenv("QWEN_VL_URL", "")
-QWEN_VL_API_KEY = os.getenv("QWEN_VL_KEY", "")
+# 评估模型配置（从.env读取，使用None作为默认值）
+QWEN_VL_API_URL = os.getenv("QWEN_VL_URL") or None
+QWEN_VL_API_KEY = os.getenv("QWEN_VL_KEY") or None
 QWEN_VL_MODEL = os.getenv("QWEN_VL_MODEL_NAME", "qwen-vl-max")
-GLM_API_URL = os.getenv("GLM_API_BASE", "")
-GLM_API_KEY = os.getenv("GLM_API_KEY", "")
+GLM_API_URL = os.getenv("GLM_API_BASE") or None
+GLM_API_KEY = os.getenv("GLM_API_KEY") or None
 GLM_MODEL = os.getenv("GLM_MODEL_NAME", "glm-4")
 
 # 验收阈值配置
@@ -54,7 +54,7 @@ SUMMARY_REPORT = "reports/visual_acceptance/summary_report.md"
 
 # 验证配置是否正确加载
 def validate_config():
-    """验证必要的环境变量是否配置"""
+    """验证必要的环境变量是否配置，缺失时抛出ValueError"""
     missing_vars = []
     if not QWEN_VL_API_URL:
         missing_vars.append("QWEN_VL_URL")
@@ -66,8 +66,7 @@ def validate_config():
         missing_vars.append("GLM_API_KEY")
 
     if missing_vars:
-        print(f"警告: 以下环境变量未配置: {', '.join(missing_vars)}")
-        return False
+        raise ValueError(f"缺少必要的环境变量: {', '.join(missing_vars)}。请在.env文件中配置这些变量。")
     return True
 
 # 权重总和验证（应为1.0）

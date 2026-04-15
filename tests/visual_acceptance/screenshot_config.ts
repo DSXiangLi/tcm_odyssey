@@ -75,6 +75,17 @@ export const SCREENSHOT_SCENES: SceneConfig[] = [
     ],
     screenshotCount: 2,
   },
+  {
+    id: 'NPC-03',
+    name: '对话历史浏览',
+    operations: [
+      { type: 'navigate', params: { scene: 'ClinicScene' } },
+      { type: 'keypress', params: { key: ' ' }, delayAfter: 500 },
+      { type: 'wait', params: { condition: '__DIALOG_ACTIVE__', timeout: 3000 } },
+      { type: 'keypress', params: { key: 'ArrowUp' }, delayAfter: 300 },
+    ],
+    screenshotCount: 1,
+  },
   // 问诊流程 (2张)
   {
     id: 'INQUIRY-01',
@@ -82,6 +93,17 @@ export const SCREENSHOT_SCENES: SceneConfig[] = [
     operations: [
       { type: 'navigate', params: { scene: 'InquiryScene' } },
       { type: 'wait', params: { condition: '__SCENE_READY__', timeout: 5000 } },
+    ],
+    screenshotCount: 1,
+  },
+  {
+    id: 'INQUIRY-02',
+    name: '线索追踪界面',
+    operations: [
+      { type: 'navigate', params: { scene: 'InquiryScene' } },
+      { type: 'wait', params: { condition: '__SCENE_READY__', timeout: 5000 } },
+      { type: 'keypress', params: { key: 'Tab' }, delayAfter: 500 },
+      { type: 'wait', params: { condition: '__CLUE_TRACKER_VISIBLE__', timeout: 3000 } },
     ],
     screenshotCount: 1,
   },
@@ -119,6 +141,19 @@ export const SCREENSHOT_SCENES: SceneConfig[] = [
     operations: [
       { type: 'navigate', params: { scene: 'PrescriptionScene' } },
       { type: 'wait', params: { condition: '__SCENE_READY__', timeout: 5000 } },
+    ],
+    screenshotCount: 1,
+  },
+  {
+    id: 'DIAG-05',
+    name: '评分结果界面',
+    operations: [
+      { type: 'navigate', params: { scene: 'TitleScene' } },
+      { type: 'click', params: { x: 400, y: 350 } },
+      { type: 'wait', params: { condition: '__GAME_READY__', timeout: 10000 } },
+      { type: 'navigate', params: { scene: 'ClinicScene' } },
+      { type: 'keypress', params: { key: ' ' }, delayAfter: 500 },
+      { type: 'wait', params: { condition: '__RESULT_UI_VISIBLE__', timeout: 5000 } },
     ],
     screenshotCount: 1,
   },

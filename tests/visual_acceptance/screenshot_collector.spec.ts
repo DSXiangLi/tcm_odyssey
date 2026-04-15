@@ -6,9 +6,41 @@ import { SceneOperations } from './scene_operations';
 import * as fs from 'fs';
 import * as path from 'path';
 
+// 开发服务器端口检测
+const DEV_PORTS = [5173, 3000, 3001, 3002];
+let detectedPort: number = 5173;
+
+/**
+ * 检测开发服务器运行端口
+ * 通过 HEAD 请求检测端口可用性，优先使用第一个响应成功的端口
+ */
+async function detectDevServerPort(): Promise<number> {
+  for (const port of DEV_PORTS) {
+    try {
+      const response = await fetch(`http://localhost:${port}`, {
+        method: 'HEAD',
+        signal: AbortSignal.timeout(2000)
+      });
+      if (response.ok) {
+        console.log(`[Port Detection] Found dev server at port ${port}`);
+        return port;
+      }
+    } catch (error) {
+      // Port not available, try next
+    }
+  }
+  console.warn('[Port Detection] No dev server found, assuming port 5173');
+  return 5173;
+}
+
 test.describe('视觉验收截图采集', () => {
   let operations: SceneOperations;
   const screenshotDir = 'reports/visual_acceptance/screenshots/';
+
+  // 在所有测试之前执行端口检测
+  test.beforeAll(async () => {
+    detectedPort = await detectDevServerPort();
+  });
 
   test.beforeEach(async ({ page }) => {
     // 确保截图目录存在
@@ -16,9 +48,10 @@ test.describe('视觉验收截图采集', () => {
       fs.mkdirSync(screenshotDir, { recursive: true });
     }
 
-    // 启动游戏
-    await page.goto('http://localhost:5173');
-    operations = new SceneOperations(page);
+    // 使用检测到的端口启动游戏
+    const baseUrl = `http://localhost:${detectedPort}`;
+    await page.goto(baseUrl);
+    operations = new SceneOperations(page, baseUrl);
     await operations.waitForGameReady();
   });
 

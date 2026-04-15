@@ -238,6 +238,36 @@ class VisualAcceptanceRunner:
     def _collect_screenshots(self) -> List[Dict[str, str]]:
         """Collect screenshots using Playwright tests."""
 
+        # Start dev server first
+        print("Starting dev server...")
+        dev_server = subprocess.Popen(
+            ["npm", "run", "dev"],
+            cwd=self.project_root,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE
+        )
+
+        # Wait for server to be ready
+        import time
+        max_wait = 30  # seconds
+        start_time = time.time()
+        server_ready = False
+
+        while time.time() - start_time < max_wait:
+            try:
+                import urllib.request
+                urllib.request.urlopen("http://localhost:5173", timeout=2)
+                server_ready = True
+                print("Dev server is ready")
+                break
+            except:
+                time.sleep(1)
+
+        if not server_ready:
+            print("Failed to start dev server")
+            dev_server.terminate()
+            return []
+
         # Run Playwright test to collect screenshots
         result = subprocess.run(
             [
@@ -249,6 +279,14 @@ class VisualAcceptanceRunner:
             capture_output=True,
             text=True
         )
+
+        # Stop dev server after test
+        print("Stopping dev server...")
+        dev_server.terminate()
+        try:
+            dev_server.wait(timeout=5)
+        except subprocess.TimeoutExpired:
+            dev_server.kill()
 
         if result.returncode != 0:
             print(f"Screenshot collection test failed: {result.stderr}")
@@ -368,7 +406,10 @@ def main():
         print("Confirm command: git checkout master && git merge visual-acceptance-dev")
     else:
         print("\nAcceptance NOT PASSED, please check report and handle manually")
-        print(f"Report path: {result['report_path']}")
+        if "report_path" in result:
+            print(f"Report path: {result['report_path']}")
+        else:
+            print(f"Error: {result.get('error', 'Unknown error')}")
 
     return result
 

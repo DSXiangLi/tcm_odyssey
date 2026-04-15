@@ -241,27 +241,36 @@ class VisualAcceptanceRunner:
         # Start dev server first
         print("Starting dev server...")
         dev_server = subprocess.Popen(
-            ["npm", "run", "dev"],
+            "npm run dev",
             cwd=self.project_root,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE
+            shell=True,
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL
         )
 
         # Wait for server to be ready
         import time
+        import urllib.request
         max_wait = 30  # seconds
         start_time = time.time()
         server_ready = False
 
         while time.time() - start_time < max_wait:
             try:
-                import urllib.request
-                urllib.request.urlopen("http://localhost:5173", timeout=2)
-                server_ready = True
-                print("Dev server is ready")
-                break
+                # Try multiple ports: 3000, 3001, 3002, 5173
+                for port in [3000, 3001, 3002, 5173]:
+                    try:
+                        urllib.request.urlopen(f"http://localhost:{port}", timeout=2)
+                        server_ready = True
+                        print(f"Dev server is ready on port {port}")
+                        break
+                    except:
+                        pass
+                if server_ready:
+                    break
             except:
-                time.sleep(1)
+                pass
+            time.sleep(1)
 
         if not server_ready:
             print("Failed to start dev server")

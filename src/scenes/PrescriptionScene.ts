@@ -82,6 +82,7 @@ export class PrescriptionScene extends Phaser.Scene {
     }).setScrollFactor(0).setDepth(100);
 
     this.eventBus.emit(GameEvents.SCENE_READY, { sceneName: 'PrescriptionScene' });
+    (window as any).__SCENE_READY__ = true;
 
     this.exposeToGlobal();
   }

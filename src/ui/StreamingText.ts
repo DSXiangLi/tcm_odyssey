@@ -43,9 +43,15 @@ export class StreamingText extends Phaser.GameObjects.Text {
     this.displayIndex = 0;
     this.onComplete = onComplete;
 
+    // 开始流式输出
+    if (typeof window !== 'undefined') {
+      (window as any).__STREAMING__ = true;
+    }
+
     // 清除之前的timer
     if (this.timerEvent) {
       this.timerEvent.destroy();
+      this.timerEvent = null;
     }
 
     // 创建新的timer
@@ -69,6 +75,10 @@ export class StreamingText extends Phaser.GameObjects.Text {
         this.onComplete();
       }
       this.timerEvent = null;
+      // 流式输出完成
+      if (typeof window !== 'undefined') {
+        (window as any).__STREAMING__ = false;
+      }
     }
   }
 
@@ -79,6 +89,10 @@ export class StreamingText extends Phaser.GameObjects.Text {
     if (this.timerEvent) {
       this.timerEvent.destroy();
       this.timerEvent = null;
+      // 停止流式输出
+      if (typeof window !== 'undefined') {
+        (window as any).__STREAMING__ = false;
+      }
     }
     this.setText(this.targetText);
   }

@@ -96,6 +96,11 @@ export class InquiryUI extends Phaser.GameObjects.Container {
     // 暴露到全局供测试访问
     this.exposeToGlobal();
 
+    // 线索追踪UI可见
+    if (typeof window !== 'undefined') {
+      (window as any).__CLUE_TRACKER_VISIBLE__ = true;
+    }
+
     // 监听键盘输入
     this.setupKeyboardInput(scene);
   }
@@ -526,6 +531,7 @@ export class InquiryUI extends Phaser.GameObjects.Container {
     // 清理全局引用
     if (typeof window !== 'undefined') {
       (window as any).__INQUIRY_UI__ = null;
+      (window as any).__CLUE_TRACKER_VISIBLE__ = false;
     }
 
     super.destroy();

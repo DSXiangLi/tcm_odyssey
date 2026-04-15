@@ -601,6 +601,10 @@ export class SaveUI {
    * 显示存档界面
    */
   show(): void {
+    // 存档UI打开
+    if (typeof window !== 'undefined') {
+      (window as any).__SAVE_UI_OPEN__ = true;
+    }
     this.container.setVisible(true);
     this.loadSlots();
   }
@@ -609,6 +613,10 @@ export class SaveUI {
    * 隐藏存档界面
    */
   hide(): void {
+    // 存档UI关闭
+    if (typeof window !== 'undefined') {
+      (window as any).__SAVE_UI_OPEN__ = false;
+    }
     this.container.setVisible(false);
   }
 

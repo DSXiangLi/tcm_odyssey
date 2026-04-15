@@ -69,6 +69,7 @@ export class PlantingScene extends Phaser.Scene {
     }).setScrollFactor(0).setDepth(100);
 
     this.eventBus.emit(GameEvents.SCENE_READY, { sceneName: SCENES.PLANTING });
+    (window as any).__SCENE_READY__ = true;
 
     // 暴露到全局供测试访问
     this.exposeToGlobal();

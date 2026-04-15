@@ -614,6 +614,10 @@ export class ExperienceUI {
    * 显示UI
    */
   show(): void {
+    // 经验值UI显示
+    if (typeof window !== 'undefined') {
+      (window as any).__EXPERIENCE_UI_VISIBLE__ = true;
+    }
     this.container.setVisible(true);
     this.isVisible = true;
     this.updateFromManager();
@@ -623,6 +627,10 @@ export class ExperienceUI {
    * 隐藏UI
    */
   hide(): void {
+    // 经验值UI隐藏
+    if (typeof window !== 'undefined') {
+      (window as any).__EXPERIENCE_UI_VISIBLE__ = false;
+    }
     this.container.setVisible(false);
     this.isVisible = false;
 

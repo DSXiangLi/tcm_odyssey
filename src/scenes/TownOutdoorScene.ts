@@ -125,6 +125,8 @@ export class TownOutdoorScene extends Phaser.Scene {
     this.eventBus.emit(GameEvents.SCENE_READY, { sceneName: SCENES.TOWN_OUTDOOR });
 
     // Phase 1.5: 暴露地图配置到全局对象，供测试代码访问
+    // 游戏启动完成，进入主场景
+    (window as any).__GAME_READY__ = true;
     this.gameStateBridge.exposeMapConfig();
   }
 

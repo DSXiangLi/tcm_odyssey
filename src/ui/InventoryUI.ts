@@ -572,6 +572,10 @@ export class InventoryUI {
    * 显示背包
    */
   show(): void {
+    // 背包UI打开
+    if (typeof window !== 'undefined') {
+      (window as any).__INVENTORY_OPEN__ = true;
+    }
     this.container.setVisible(true);
     this.isVisible = true;
     this.updateContent();  // 刷新内容
@@ -581,6 +585,10 @@ export class InventoryUI {
    * 隐藏背包
    */
   hide(): void {
+    // 背包UI关闭
+    if (typeof window !== 'undefined') {
+      (window as any).__INVENTORY_OPEN__ = false;
+    }
     this.container.setVisible(false);
     this.isVisible = false;
 

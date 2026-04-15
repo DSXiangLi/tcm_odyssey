@@ -1145,28 +1145,50 @@ zhongyi_game_v3/
 
 **经验积累文档**: [视觉验收自动化经验记录](docs/testing/visual-acceptance-experience.md) ⭐新增
 
-### 待修复问题 ⚠️ 阻塞视觉验收执行
+### TypeScript编译修复 ✅ 已完成 (2026-04-15)
 
-**问题来源**: S11种植系统实现遗留的 TypeScript 编译错误
+**修复内容**:
+| 文件 | 修复类型 | 说明 |
+|-----|---------|------|
+| `src/ui/PlantingUI.ts` | API方法名匹配 | getAvailableWaters→getAllWaters, getAvailableFertilizers→getAllFertilizers, getPlotStates→getState().plots |
+| `src/ui/PlantingUI.ts` | 类型转换 | getAvailableSeeds()返回string[]，使用getSeedData()转换为SeedData[] |
+| `src/ui/PlantingUI.ts` | 类型转换 | getAvailablePlots()返回string[]，使用getPlotData()转换为PlotData[] |
+| `src/ui/PlantingUI.ts` | 未使用变量 | 删除_herbId声明，data→_data |
+| `src/systems/PlantingManager.ts` | undefined检查 | passThreshold使用?? 60默认值 |
+| `src/systems/PlantingManager.ts` | 未使用导入 | 删除未使用的import |
+| `src/systems/PlantingManager.ts` | 新增方法 | 添加cancelSelection()方法 |
+| `src/scenes/PlantingScene.ts` | Config属性 | growthSpeed→growthTickInterval, autoAddToInventory→autoAddHerb |
+| `src/scenes/GardenScene.ts` | 未使用变量 | 删除_plantingManager声明和PlantingManager导入 |
+| `src/data/experience-data.ts` | 未使用参数 | context→_context |
 
-**影响文件**:
-- `src/ui/PlantingUI.ts` (主要问题)
-- `src/systems/PlantingManager.ts`
-- `src/scenes/PlantingScene.ts`
-- `src/scenes/GardenScene.ts`
-- `src/data/experience-data.ts`
+**验证**: `npx tsc --noEmit` 通过，无编译错误
 
-**问题类型**:
-| 类型 | 数量 | 说明 |
+### 视觉验收执行状态 ⏳ 截图采集测试问题待调试
+
+**问题描述**: 截图采集测试运行时部分场景超时失败
+
+**问题详情**:
+| 场景 | 状态 | 错误 |
 |-----|------|------|
-| TS6133 | 24+ | 变量/导入声明未使用 |
-| TS2339 | 15+ | Property does not exist on type 'string' |
-| TS2551 | 3 | 方法名不匹配 (getAvailableWaters vs getAllWaters) |
-| TS2353 | 1 | 配置属性不存在 (growthSpeed) |
-| TS7006 | 6+ | 参数隐式any类型 |
-| TS2532 | 1 | Object possibly undefined |
+| SCENE-01 (百草镇室外) | ✅ | 基础加载成功 |
+| SCENE-02~04 (室内场景) | ❌ | `__SCENE_READY__` 条件检查超时 |
+| NPC对话场景 | ❌ | 页面关闭导致后续测试失败 |
+| 其他子游戏/系统UI | ❌ | 连续测试导致超时 |
 
-**修复状态**: ⏳ 待使用 systematic-debugging 修复
+**根因分析**:
+- `sceneIsActive` 属性不存在，需使用 Phaser 正确的 API (`active` 属性)
+- 测试超时设置可能不够（默认5000ms）
+- 浏览器/页面资源可能被过早关闭
+
+**脚本改进** (已完成):
+- 添加开发服务器自动启动
+- 多端口检测 (3000/3001/3002/5173)
+- KeyError: 'report_path' 错误处理
+
+**下一步**:
+- 调试 `__SCENE_READY__` 条件检查逻辑
+- 调整测试超时配置
+- 或简化截图配置，只采集核心场景
 
 ---
 

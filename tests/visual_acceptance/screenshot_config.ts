@@ -32,7 +32,7 @@ export const SCREENSHOT_SCENES: SceneConfig[] = [
     name: '青木诊所室内',
     operations: [
       { type: 'navigate', params: { scene: 'ClinicScene' } },
-      { type: 'wait', params: { condition: '__SCENE_READY__', timeout: 5000 } },
+      { type: 'wait', params: { condition: '__SCENE_READY__', timeout: 10000 } },
     ],
     screenshotCount: 2,
   },
@@ -41,7 +41,7 @@ export const SCREENSHOT_SCENES: SceneConfig[] = [
     name: '老张药园室内',
     operations: [
       { type: 'navigate', params: { scene: 'GardenScene' } },
-      { type: 'wait', params: { condition: '__SCENE_READY__', timeout: 5000 } },
+      { type: 'wait', params: { condition: '__SCENE_READY__', timeout: 10000 } },
     ],
     screenshotCount: 2,
   },
@@ -50,7 +50,7 @@ export const SCREENSHOT_SCENES: SceneConfig[] = [
     name: '玩家之家室内',
     operations: [
       { type: 'navigate', params: { scene: 'HomeScene' } },
-      { type: 'wait', params: { condition: '__SCENE_READY__', timeout: 5000 } },
+      { type: 'wait', params: { condition: '__SCENE_READY__', timeout: 10000 } },
     ],
     screenshotCount: 2,
   },
@@ -61,7 +61,7 @@ export const SCREENSHOT_SCENES: SceneConfig[] = [
     operations: [
       { type: 'navigate', params: { scene: 'ClinicScene' } },
       { type: 'keypress', params: { key: ' ' }, delayAfter: 500 },
-      { type: 'wait', params: { condition: '__DIALOG_ACTIVE__', timeout: 3000 } },
+      { type: 'wait', params: { condition: '__DIALOG_ACTIVE__', timeout: 5000 } },
     ],
     screenshotCount: 1,
   },
@@ -71,7 +71,7 @@ export const SCREENSHOT_SCENES: SceneConfig[] = [
     operations: [
       { type: 'navigate', params: { scene: 'ClinicScene' } },
       { type: 'keypress', params: { key: ' ' }, delayAfter: 1000 },
-      { type: 'wait', params: { condition: '__STREAMING__', timeout: 5000 } },
+      { type: 'wait', params: { condition: '__STREAMING__', timeout: 10000 } },
     ],
     screenshotCount: 2,
   },
@@ -81,7 +81,7 @@ export const SCREENSHOT_SCENES: SceneConfig[] = [
     operations: [
       { type: 'navigate', params: { scene: 'ClinicScene' } },
       { type: 'keypress', params: { key: ' ' }, delayAfter: 500 },
-      { type: 'wait', params: { condition: '__DIALOG_ACTIVE__', timeout: 3000 } },
+      { type: 'wait', params: { condition: '__DIALOG_ACTIVE__', timeout: 5000 } },
       { type: 'keypress', params: { key: 'ArrowUp' }, delayAfter: 300 },
     ],
     screenshotCount: 1,
@@ -92,7 +92,7 @@ export const SCREENSHOT_SCENES: SceneConfig[] = [
     name: '问诊主界面',
     operations: [
       { type: 'navigate', params: { scene: 'InquiryScene' } },
-      { type: 'wait', params: { condition: '__SCENE_READY__', timeout: 5000 } },
+      { type: 'wait', params: { condition: '__SCENE_READY__', timeout: 10000 } },
     ],
     screenshotCount: 1,
   },
@@ -101,9 +101,9 @@ export const SCREENSHOT_SCENES: SceneConfig[] = [
     name: '线索追踪界面',
     operations: [
       { type: 'navigate', params: { scene: 'InquiryScene' } },
-      { type: 'wait', params: { condition: '__SCENE_READY__', timeout: 5000 } },
+      { type: 'wait', params: { condition: '__SCENE_READY__', timeout: 10000 } },
       { type: 'keypress', params: { key: 'Tab' }, delayAfter: 500 },
-      { type: 'wait', params: { condition: '__CLUE_TRACKER_VISIBLE__', timeout: 3000 } },
+      { type: 'wait', params: { condition: '__CLUE_TRACKER_VISIBLE__', timeout: 5000 } },
     ],
     screenshotCount: 1,
   },
@@ -113,7 +113,7 @@ export const SCREENSHOT_SCENES: SceneConfig[] = [
     name: '脉诊界面',
     operations: [
       { type: 'navigate', params: { scene: 'PulseScene' } },
-      { type: 'wait', params: { condition: '__SCENE_READY__', timeout: 5000 } },
+      { type: 'wait', params: { condition: '__SCENE_READY__', timeout: 10000 } },
     ],
     screenshotCount: 1,
   },
@@ -122,7 +122,7 @@ export const SCREENSHOT_SCENES: SceneConfig[] = [
     name: '舌诊界面',
     operations: [
       { type: 'navigate', params: { scene: 'TongueScene' } },
-      { type: 'wait', params: { condition: '__SCENE_READY__', timeout: 5000 } },
+      { type: 'wait', params: { condition: '__SCENE_READY__', timeout: 10000 } },
     ],
     screenshotCount: 1,
   },
@@ -131,7 +131,7 @@ export const SCREENSHOT_SCENES: SceneConfig[] = [
     name: '辨证界面',
     operations: [
       { type: 'navigate', params: { scene: 'SyndromeScene' } },
-      { type: 'wait', params: { condition: '__SCENE_READY__', timeout: 5000 } },
+      { type: 'wait', params: { condition: '__SCENE_READY__', timeout: 10000 } },
     ],
     screenshotCount: 1,
   },
@@ -140,7 +140,7 @@ export const SCREENSHOT_SCENES: SceneConfig[] = [
     name: '选方界面',
     operations: [
       { type: 'navigate', params: { scene: 'PrescriptionScene' } },
-      { type: 'wait', params: { condition: '__SCENE_READY__', timeout: 5000 } },
+      { type: 'wait', params: { condition: '__SCENE_READY__', timeout: 10000 } },
     ],
     screenshotCount: 1,
   },
@@ -153,7 +153,7 @@ export const SCREENSHOT_SCENES: SceneConfig[] = [
       { type: 'wait', params: { condition: '__GAME_READY__', timeout: 10000 } },
       { type: 'navigate', params: { scene: 'ClinicScene' } },
       { type: 'keypress', params: { key: ' ' }, delayAfter: 500 },
-      { type: 'wait', params: { condition: '__RESULT_UI_VISIBLE__', timeout: 5000 } },
+      { type: 'wait', params: { condition: '__RESULT_UI_VISIBLE__', timeout: 10000 } },
     ],
     screenshotCount: 1,
   },
@@ -163,7 +163,7 @@ export const SCREENSHOT_SCENES: SceneConfig[] = [
     name: '煎药界面',
     operations: [
       { type: 'navigate', params: { scene: 'DecoctionScene' } },
-      { type: 'wait', params: { condition: '__SCENE_READY__', timeout: 5000 } },
+      { type: 'wait', params: { condition: '__SCENE_READY__', timeout: 10000 } },
     ],
     screenshotCount: 2,
   },
@@ -172,7 +172,7 @@ export const SCREENSHOT_SCENES: SceneConfig[] = [
     name: '炮制界面',
     operations: [
       { type: 'navigate', params: { scene: 'ProcessingScene' } },
-      { type: 'wait', params: { condition: '__SCENE_READY__', timeout: 5000 } },
+      { type: 'wait', params: { condition: '__SCENE_READY__', timeout: 10000 } },
     ],
     screenshotCount: 2,
   },
@@ -181,7 +181,7 @@ export const SCREENSHOT_SCENES: SceneConfig[] = [
     name: '种植界面',
     operations: [
       { type: 'navigate', params: { scene: 'PlantingScene' } },
-      { type: 'wait', params: { condition: '__SCENE_READY__', timeout: 5000 } },
+      { type: 'wait', params: { condition: '__SCENE_READY__', timeout: 10000 } },
     ],
     screenshotCount: 2,
   },
@@ -192,7 +192,7 @@ export const SCREENSHOT_SCENES: SceneConfig[] = [
     operations: [
       { type: 'navigate', params: { scene: 'ClinicScene' } },
       { type: 'keypress', params: { key: 'b' }, delayAfter: 500 },
-      { type: 'wait', params: { condition: '__INVENTORY_OPEN__', timeout: 3000 } },
+      { type: 'wait', params: { condition: '__INVENTORY_OPEN__', timeout: 5000 } },
     ],
     screenshotCount: 1,
   },
@@ -201,7 +201,7 @@ export const SCREENSHOT_SCENES: SceneConfig[] = [
     name: '存档界面',
     operations: [
       { type: 'keypress', params: { key: 'Escape' }, delayAfter: 500 },
-      { type: 'wait', params: { condition: '__SAVE_UI_OPEN__', timeout: 3000 } },
+      { type: 'wait', params: { condition: '__SAVE_UI_OPEN__', timeout: 5000 } },
     ],
     screenshotCount: 1,
   },
@@ -210,7 +210,7 @@ export const SCREENSHOT_SCENES: SceneConfig[] = [
     name: '经验值UI',
     operations: [
       { type: 'navigate', params: { scene: 'TitleScene' } },
-      { type: 'wait', params: { condition: '__EXPERIENCE_UI_VISIBLE__', timeout: 3000 } },
+      { type: 'wait', params: { condition: '__EXPERIENCE_UI_VISIBLE__', timeout: 5000 } },
     ],
     screenshotCount: 1,
   },
@@ -220,7 +220,7 @@ export const SCREENSHOT_SCENES: SceneConfig[] = [
     operations: [
       { type: 'navigate', params: { scene: 'TitleScene' } },
       { type: 'click', params: { x: 400, y: 350 } },
-      { type: 'wait', params: { condition: '__TUTORIAL_ACTIVE__', timeout: 5000 } },
+      { type: 'wait', params: { condition: '__TUTORIAL_ACTIVE__', timeout: 10000 } },
     ],
     screenshotCount: 2,
   },

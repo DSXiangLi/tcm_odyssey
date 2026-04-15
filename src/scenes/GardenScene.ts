@@ -106,6 +106,7 @@ export class GardenScene extends Phaser.Scene {
     }).setScrollFactor(0);
 
     this.eventBus.emit(GameEvents.SCENE_READY, { sceneName: SCENES.GARDEN });
+    (window as any).__SCENE_READY__ = true;
   }
 
   /**

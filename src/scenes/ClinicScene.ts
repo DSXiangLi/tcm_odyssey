@@ -175,6 +175,7 @@ export class ClinicScene extends Phaser.Scene {
     this.createNPC();
 
     this.eventBus.emit(GameEvents.SCENE_READY, { sceneName: SCENES.CLINIC });
+    (window as any).__SCENE_READY__ = true;
   }
 
   /**

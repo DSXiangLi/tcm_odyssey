@@ -547,6 +547,10 @@ export class TutorialUI {
    * 显示UI
    */
   show(): void {
+    // 新手引导UI激活
+    if (typeof window !== 'undefined') {
+      (window as any).__TUTORIAL_ACTIVE__ = true;
+    }
     if (this.type === 'central' && this.container) {
       this.container.setVisible(true);
     } else if (this.type === 'scene_tip' && this.tipContainer) {
@@ -559,6 +563,10 @@ export class TutorialUI {
    * 隐藏UI
    */
   hide(): void {
+    // 新手引导UI关闭
+    if (typeof window !== 'undefined') {
+      (window as any).__TUTORIAL_ACTIVE__ = false;
+    }
     if (this.type === 'central' && this.container) {
       this.container.setVisible(false);
     } else if (this.type === 'scene_tip' && this.tipContainer) {

@@ -73,6 +73,11 @@ export class ResultUI extends Phaser.GameObjects.Container {
 
     // 暴露到全局
     this.exposeToGlobal();
+
+    // 结果UI可见
+    if (typeof window !== 'undefined') {
+      (window as any).__RESULT_UI_VISIBLE__ = true;
+    }
   }
 
   /**
@@ -392,6 +397,7 @@ export class ResultUI extends Phaser.GameObjects.Container {
 
     if (typeof window !== 'undefined') {
       (window as any).__RESULT_UI__ = null;
+      (window as any).__RESULT_UI_VISIBLE__ = false;
     }
 
     super.destroy();

@@ -52,6 +52,7 @@ export class HomeScene extends Phaser.Scene {
     this.setupInput();
 
     this.eventBus.emit(GameEvents.SCENE_READY, { sceneName: SCENES.HOME });
+    (window as any).__SCENE_READY__ = true;
   }
 
   private createRoom(): void {

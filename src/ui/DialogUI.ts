@@ -82,6 +82,8 @@ export class DialogUI extends Phaser.GameObjects.Container {
 
     // 暴露到全局供测试访问
     this.exposeToGlobal();
+    // 对话UI激活
+    (window as any).__DIALOG_ACTIVE__ = true;
   }
 
   /**
@@ -188,6 +190,7 @@ export class DialogUI extends Phaser.GameObjects.Container {
     // 清理全局引用
     if (typeof window !== 'undefined') {
       (window as any).__DIALOG_UI__ = null;
+      (window as any).__DIALOG_ACTIVE__ = false;
     }
     super.destroy();
   }

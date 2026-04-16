@@ -34,6 +34,7 @@ import {
   HERBS_DATA
 } from '../data/inventory-data';
 import prescriptionsData from '../data/prescriptions.json';
+import { UI_COLORS, UI_COLOR_STRINGS } from '../data/ui-color-theme';
 
 /**
  * UI配置
@@ -147,7 +148,7 @@ export class DecoctionUI {
     // 标题
     this.titleText = this.scene.add.text(this.width / 2, 50, '选择方剂', {
       fontSize: '24px',
-      color: '#ffffff'
+      color: UI_COLOR_STRINGS.TEXT_PRIMARY
     }).setOrigin(0.5);
     this.container.add(this.titleText);
 
@@ -166,17 +167,17 @@ export class DecoctionUI {
       // 方剂按钮
       const button = this.scene.add.text(this.width / 2, y, prescription.name, {
         fontSize: '20px',
-        color: '#4CAF50',
-        backgroundColor: '#333333',
+        color: UI_COLOR_STRINGS.BUTTON_SUCCESS,
+        backgroundColor: UI_COLOR_STRINGS.PANEL_PRIMARY,
         padding: { x: 20, y: 10 }
       }).setOrigin(0.5).setInteractive();
 
       button.on('pointerover', () => {
-        button.setColor('#66BB6A');
+        button.setColor(UI_COLOR_STRINGS.BUTTON_PRIMARY_HOVER);
       });
 
       button.on('pointerout', () => {
-        button.setColor('#4CAF50');
+        button.setColor(UI_COLOR_STRINGS.BUTTON_SUCCESS);
       });
 
       button.on('pointerdown', () => {
@@ -187,7 +188,7 @@ export class DecoctionUI {
       const infoText = this.scene.add.text(this.width / 2, y + 30,
         `${prescription.syndrome} - ${prescription.effect}`, {
           fontSize: '14px',
-          color: '#aaaaaa'
+          color: UI_COLOR_STRINGS.TEXT_SECONDARY
         }).setOrigin(0.5);
 
       this.contentContainer?.add([button, infoText]);
@@ -197,7 +198,7 @@ export class DecoctionUI {
     this.phaseText = this.scene.add.text(this.width / 2, this.height - 50,
       '阶段: 选择方剂', {
         fontSize: '16px',
-        color: '#ff9800'
+        color: UI_COLOR_STRINGS.STATUS_WARNING
       }).setOrigin(0.5);
     this.container.add(this.phaseText);
   }
@@ -244,7 +245,7 @@ export class DecoctionUI {
     // 提示文字
     const hintText = this.scene.add.text(this.width / 2, 80,
       `需要药材: ${requiredHerbs.map(id => getHerbById(id)?.name || id).join(', ')}`,
-      { fontSize: '14px', color: '#aaaaaa' }
+      { fontSize: '14px', color: UI_COLOR_STRINGS.TEXT_SECONDARY }
     ).setOrigin(0.5);
     this.contentContainer.add(hintText);
 
@@ -266,8 +267,8 @@ export class DecoctionUI {
       // 药材按钮
       const button = this.scene.add.text(x, y, herb.name, {
         fontSize: '16px',
-        color: isSelected ? '#4CAF50' : (isRequired ? '#ff9800' : '#ffffff'),
-        backgroundColor: isSelected ? '#2E7D32' : '#333333',
+        color: isSelected ? UI_COLOR_STRINGS.BUTTON_SUCCESS : (isRequired ? UI_COLOR_STRINGS.STATUS_WARNING : UI_COLOR_STRINGS.TEXT_PRIMARY),
+        backgroundColor: isSelected ? '#2E7D32' : UI_COLOR_STRINGS.PANEL_PRIMARY,
         padding: { x: 10, y: 5 }
       }).setOrigin(0.5).setInteractive();
 
@@ -286,7 +287,7 @@ export class DecoctionUI {
     const confirmButton = this.scene.add.text(this.width / 2, this.height - 100,
       '确认选择', {
         fontSize: '20px',
-        color: '#4CAF50',
+        color: UI_COLOR_STRINGS.BUTTON_SUCCESS,
         backgroundColor: '#1B5E20',
         padding: { x: 30, y: 15 }
       }).setOrigin(0.5).setInteractive();
@@ -335,7 +336,7 @@ export class DecoctionUI {
     // 提示文字
     const hintText = this.scene.add.text(this.width / 2, 80,
       '将药材放置到正确的君臣佐使位置',
-      { fontSize: '14px', color: '#aaaaaa' }
+      { fontSize: '14px', color: UI_COLOR_STRINGS.TEXT_SECONDARY }
     ).setOrigin(0.5);
     this.contentContainer.add(hintText);
 
@@ -350,7 +351,7 @@ export class DecoctionUI {
       // 角色标签
       const roleLabel = this.scene.add.text(100, y, `${role}:`, {
         fontSize: '18px',
-        color: '#ffffff'
+        color: UI_COLOR_STRINGS.TEXT_PRIMARY
       }).setOrigin(0.5);
 
       // 槽位容器
@@ -359,7 +360,7 @@ export class DecoctionUI {
       // 占位文字
       const placeholder = this.scene.add.text(0, 0, '空', {
         fontSize: '16px',
-        color: '#666666'
+        color: UI_COLOR_STRINGS.TEXT_DISABLED
       }).setOrigin(0, 0.5);
 
       slotContainer.add(placeholder);
@@ -379,7 +380,7 @@ export class DecoctionUI {
       // 药材名称
       const herbLabel = this.scene.add.text(100, y, herb?.name || herbId, {
         fontSize: '16px',
-        color: '#ffffff'
+        color: UI_COLOR_STRINGS.TEXT_PRIMARY
       }).setOrigin(0, 0.5);
 
       // 角色选择按钮
@@ -387,8 +388,8 @@ export class DecoctionUI {
         const x = 250 + roleIndex * 80;
         const btn = this.scene.add.text(x, y, role, {
           fontSize: '14px',
-          color: '#4CAF50',
-          backgroundColor: '#333333',
+          color: UI_COLOR_STRINGS.BUTTON_SUCCESS,
+          backgroundColor: UI_COLOR_STRINGS.PANEL_PRIMARY,
           padding: { x: 8, y: 4 }
         }).setOrigin(0.5).setInteractive();
 
@@ -407,7 +408,7 @@ export class DecoctionUI {
     const confirmButton = this.scene.add.text(this.width / 2, this.height - 100,
       '确认配伍', {
         fontSize: '20px',
-        color: '#4CAF50',
+        color: UI_COLOR_STRINGS.BUTTON_SUCCESS,
         backgroundColor: '#1B5E20',
         padding: { x: 30, y: 15 }
       }).setOrigin(0.5).setInteractive();
@@ -446,13 +447,13 @@ export class DecoctionUI {
         const herb = getHerbById(placedHerb);
         const herbText = this.scene.add.text(0, 0, herb?.name || placedHerb, {
           fontSize: '16px',
-          color: '#4CAF50'
+          color: UI_COLOR_STRINGS.BUTTON_SUCCESS
         }).setOrigin(0, 0.5);
         slotContainer.add(herbText);
       } else {
         const placeholder = this.scene.add.text(0, 0, '空', {
           fontSize: '16px',
-          color: '#666666'
+          color: UI_COLOR_STRINGS.TEXT_DISABLED
         }).setOrigin(0, 0.5);
         slotContainer.add(placeholder);
       }
@@ -475,7 +476,7 @@ export class DecoctionUI {
     // 提示文字
     const hintText = this.scene.add.text(this.width / 2, 80,
       '设置每种药材的煎煮顺序',
-      { fontSize: '14px', color: '#aaaaaa' }
+      { fontSize: '14px', color: UI_COLOR_STRINGS.TEXT_SECONDARY }
     ).setOrigin(0.5);
     this.contentContainer.add(hintText);
 
@@ -493,7 +494,7 @@ export class DecoctionUI {
       // 药材名称
       const herbLabel = this.scene.add.text(100, y, herb?.name || herbId, {
         fontSize: '16px',
-        color: '#ffffff'
+        color: UI_COLOR_STRINGS.TEXT_PRIMARY
       }).setOrigin(0, 0.5);
 
       // 顺序按钮
@@ -504,8 +505,8 @@ export class DecoctionUI {
 
         const btn = this.scene.add.text(x, y, orderConfig?.name || order, {
           fontSize: '14px',
-          color: isSelected ? '#4CAF50' : '#ffffff',
-          backgroundColor: isSelected ? '#2E7D32' : '#333333',
+          color: isSelected ? UI_COLOR_STRINGS.BUTTON_SUCCESS : UI_COLOR_STRINGS.TEXT_PRIMARY,
+          backgroundColor: isSelected ? '#2E7D32' : UI_COLOR_STRINGS.PANEL_PRIMARY,
           padding: { x: 10, y: 5 }
         }).setOrigin(0.5).setInteractive();
 
@@ -524,7 +525,7 @@ export class DecoctionUI {
     const confirmButton = this.scene.add.text(this.width / 2, this.height - 100,
       '确认顺序', {
         fontSize: '20px',
-        color: '#4CAF50',
+        color: UI_COLOR_STRINGS.BUTTON_SUCCESS,
         backgroundColor: '#1B5E20',
         padding: { x: 30, y: 15 }
       }).setOrigin(0.5).setInteractive();
@@ -555,7 +556,7 @@ export class DecoctionUI {
     // 提示文字
     const hintText = this.scene.add.text(this.width / 2, 80,
       '选择合适的煎药火候',
-      { fontSize: '14px', color: '#aaaaaa' }
+      { fontSize: '14px', color: UI_COLOR_STRINGS.TEXT_SECONDARY }
     ).setOrigin(0.5);
     this.contentContainer.add(hintText);
 
@@ -572,8 +573,8 @@ export class DecoctionUI {
       // 火候按钮
       const button = this.scene.add.text(this.width / 2, y, fireConfig?.name || fire, {
         fontSize: '24px',
-        color: isSelected ? '#ff5722' : '#ffffff',
-        backgroundColor: isSelected ? '#bf360c' : '#333333',
+        color: isSelected ? '#ff5722' : UI_COLOR_STRINGS.TEXT_PRIMARY,
+        backgroundColor: isSelected ? '#bf360c' : UI_COLOR_STRINGS.PANEL_PRIMARY,
         padding: { x: 40, y: 20 }
       }).setOrigin(0.5).setInteractive();
 
@@ -585,7 +586,7 @@ export class DecoctionUI {
       // 描述文字
       const descText = this.scene.add.text(this.width / 2, y + 40,
         fireConfig?.description || '',
-        { fontSize: '14px', color: '#aaaaaa' }
+        { fontSize: '14px', color: UI_COLOR_STRINGS.TEXT_SECONDARY }
       ).setOrigin(0.5);
 
       this.contentContainer?.add([button, descText]);
@@ -595,7 +596,7 @@ export class DecoctionUI {
     const params = getDecoctionParams(this.selectedPrescriptionId || '');
     const timeText = this.scene.add.text(this.width / 2, 350,
       `建议煎煮时间: ${params?.total_time || 0}秒`,
-      { fontSize: '16px', color: '#ff9800' }
+      { fontSize: '16px', color: UI_COLOR_STRINGS.STATUS_WARNING }
     ).setOrigin(0.5);
     this.contentContainer.add(timeText);
 
@@ -603,7 +604,7 @@ export class DecoctionUI {
     const startButton = this.scene.add.text(this.width / 2, this.height - 100,
       '开始煎药', {
         fontSize: '20px',
-        color: '#4CAF50',
+        color: UI_COLOR_STRINGS.BUTTON_SUCCESS,
         backgroundColor: '#1B5E20',
         padding: { x: 30, y: 15 }
       }).setOrigin(0.5).setInteractive();
@@ -633,12 +634,12 @@ export class DecoctionUI {
 
     // 进度条背景
     const progressBg = this.scene.add.rectangle(
-      this.width / 2, 200, 400, 30, 0x333333
+      this.width / 2, 200, 400, 30, UI_COLORS.PANEL_LIGHT
     ).setOrigin(0.5);
 
     // 进度条填充
     const progressFill = this.scene.add.rectangle(
-      this.width / 2 - 200, 200, 0, 26, 0x4CAF50
+      this.width / 2 - 200, 200, 0, 26, UI_COLORS.BUTTON_SUCCESS
     ).setOrigin(0, 0.5);
     progressFill.setName('progressFill');
 
@@ -647,7 +648,7 @@ export class DecoctionUI {
     // 时间文字
     const timeText = this.scene.add.text(this.width / 2, 250, '0 / 0 秒', {
       fontSize: '20px',
-      color: '#ffffff'
+      color: UI_COLOR_STRINGS.TEXT_PRIMARY
     }).setOrigin(0.5);
     timeText.setName('timeText');
     this.contentContainer?.add(timeText);
@@ -664,7 +665,7 @@ export class DecoctionUI {
     const completeButton = this.scene.add.text(this.width / 2, this.height - 100,
       '完成煎药', {
         fontSize: '20px',
-        color: '#ff9800',
+        color: UI_COLOR_STRINGS.STATUS_WARNING,
         backgroundColor: '#e65100',
         padding: { x: 30, y: 15 }
       }).setOrigin(0.5).setInteractive();
@@ -714,7 +715,7 @@ export class DecoctionUI {
     // 总分显示
     const scoreText = this.scene.add.text(this.width / 2, 100,
       `总分: ${result.total_score}`,
-      { fontSize: '32px', color: result.passed ? '#4CAF50' : '#f44336' }
+      { fontSize: '32px', color: result.passed ? UI_COLOR_STRINGS.BUTTON_SUCCESS : '#f44336' }
     ).setOrigin(0.5);
     this.contentContainer?.add(scoreText);
 
@@ -731,7 +732,7 @@ export class DecoctionUI {
 
     dimensions.forEach((dim, index) => {
       const y = dimensionY + index * dimensionSpacing;
-      const color = dim.score >= dim.weight * 0.8 ? '#4CAF50' : '#f44336';
+      const color = dim.score >= dim.weight * 0.8 ? UI_COLOR_STRINGS.BUTTON_SUCCESS : '#f44336';
 
       const dimText = this.scene.add.text(this.width / 2, y,
         `${dim.name}: ${dim.score}/${dim.weight}`,
@@ -743,7 +744,7 @@ export class DecoctionUI {
     // 反馈文字
     const feedbackText = this.scene.add.text(this.width / 2, 350,
       result.feedback,
-      { fontSize: '16px', color: '#aaaaaa' }
+      { fontSize: '16px', color: UI_COLOR_STRINGS.TEXT_SECONDARY }
     ).setOrigin(0.5);
     this.contentContainer?.add(feedbackText);
 
@@ -763,8 +764,8 @@ export class DecoctionUI {
     const backButton = this.scene.add.text(this.width / 2, this.height - 80,
       '返回', {
         fontSize: '20px',
-        color: '#ffffff',
-        backgroundColor: '#333333',
+        color: UI_COLOR_STRINGS.TEXT_PRIMARY,
+        backgroundColor: UI_COLOR_STRINGS.PANEL_PRIMARY,
         padding: { x: 30, y: 15 }
       }).setOrigin(0.5).setInteractive();
 

@@ -13,6 +13,7 @@
 import Phaser from 'phaser';
 import { ClueTracker, ClueState } from '../systems/ClueTracker';
 import { SSEClient } from '../utils/sseClient';
+import { UI_COLORS, UI_COLOR_STRINGS } from '../data/ui-color-theme';
 
 export interface InquiryUIConfig {
   patientName: string;
@@ -67,7 +68,7 @@ export class InquiryUI extends Phaser.GameObjects.Container {
     this.sseClient = new SSEClient();
 
     // 创建主背景
-    this.background = scene.add.rectangle(0, 0, 780, 480, 0x2a2a2a, 0.95);
+    this.background = scene.add.rectangle(0, 0, 780, 480, UI_COLORS.PANEL_PRIMARY, 0.95);
     this.background.setOrigin(0.5);
     this.add(this.background);
 
@@ -118,7 +119,7 @@ export class InquiryUI extends Phaser.GameObjects.Container {
     // 病人姓名
     this.patientNameText = scene.add.text(-250, -200, this.config.patientName, {
       fontSize: '24px',
-      color: '#ffffff',
+      color: UI_COLOR_STRINGS.TEXT_PRIMARY,
       fontStyle: 'bold'
     });
     this.add(this.patientNameText);
@@ -126,7 +127,7 @@ export class InquiryUI extends Phaser.GameObjects.Container {
     // 病人信息（职业、年龄）
     this.patientInfoText = scene.add.text(-250, -170, `${this.config.patientOccupation}，${this.config.patientAge}岁`, {
       fontSize: '16px',
-      color: '#aaaaaa'
+      color: UI_COLOR_STRINGS.TEXT_SECONDARY
     });
     this.add(this.patientInfoText);
   }
@@ -136,14 +137,14 @@ export class InquiryUI extends Phaser.GameObjects.Container {
    */
   private createDialogueArea(scene: Phaser.Scene): void {
     // 对话背景
-    const dialogueBg = scene.add.rectangle(-150, -80, 500, 180, 0x1a1a1a, 0.9);
+    const dialogueBg = scene.add.rectangle(-150, -80, 500, 180, UI_COLORS.PANEL_SECONDARY, 0.9);
     dialogueBg.setOrigin(0.5);
     this.add(dialogueBg);
 
     // 对话文本
     this.dialogueText = scene.add.text(-380, -160, '', {
       fontSize: '16px',
-      color: '#ffffff',
+      color: UI_COLOR_STRINGS.TEXT_PRIMARY,
       wordWrap: { width: 480 },
       lineSpacing: 8
     });
@@ -155,15 +156,15 @@ export class InquiryUI extends Phaser.GameObjects.Container {
    */
   private createInputArea(scene: Phaser.Scene): void {
     // 输入框背景
-    this.inputBox = scene.add.rectangle(-150, 80, 500, 50, 0x3a3a3a, 0.9);
+    this.inputBox = scene.add.rectangle(-150, 80, 500, 50, UI_COLORS.PANEL_LIGHT, 0.9);
     this.inputBox.setOrigin(0.5);
-    this.inputBox.setStrokeStyle(2, 0x5a5a5a);
+    this.inputBox.setStrokeStyle(2, UI_COLORS.BORDER_LIGHT);
     this.add(this.inputBox);
 
     // 输入文本
     this.inputText = scene.add.text(-380, 60, '', {
       fontSize: '16px',
-      color: '#ffffff',
+      color: UI_COLOR_STRINGS.TEXT_PRIMARY,
       wordWrap: { width: 480 }
     });
     this.add(this.inputText);
@@ -171,15 +172,15 @@ export class InquiryUI extends Phaser.GameObjects.Container {
     // 输入提示
     this.inputHint = scene.add.text(-380, 60, '输入追问问题...', {
       fontSize: '16px',
-      color: '#888888'
+      color: UI_COLOR_STRINGS.TEXT_DISABLED
     });
     this.add(this.inputHint);
 
     // 发送按钮
     this.sendButton = scene.add.text(120, 65, '[发送]', {
       fontSize: '18px',
-      color: '#00aaff',
-      backgroundColor: '#1a1a1a',
+      color: UI_COLOR_STRINGS.ACCENT_SKY,
+      backgroundColor: UI_COLOR_STRINGS.PANEL_SECONDARY,
       padding: { x: 8, y: 4 }
     });
     this.sendButton.setInteractive({ useHandCursor: true });
@@ -209,7 +210,7 @@ export class InquiryUI extends Phaser.GameObjects.Container {
         {
           fontSize: '14px',
           color: '#88aaff',
-          backgroundColor: '#2a2a2a',
+          backgroundColor: UI_COLOR_STRINGS.PANEL_PRIMARY,
           padding: { x: 4, y: 2 }
         }
       );
@@ -230,7 +231,7 @@ export class InquiryUI extends Phaser.GameObjects.Container {
     // 标题
     const titleText = scene.add.text(0, -80, '收集进度', {
       fontSize: '18px',
-      color: '#ffffff',
+      color: UI_COLOR_STRINGS.TEXT_PRIMARY,
       fontStyle: 'bold'
     });
     titleText.setOrigin(0.5);
@@ -239,7 +240,7 @@ export class InquiryUI extends Phaser.GameObjects.Container {
     // 必须线索区域
     const requiredLabel = scene.add.text(-80, -50, '必须线索:', {
       fontSize: '14px',
-      color: '#ffaa00'
+      color: UI_COLOR_STRINGS.STATUS_WARNING
     });
     this.clueTrackerContainer.add(requiredLabel);
 
@@ -248,11 +249,11 @@ export class InquiryUI extends Phaser.GameObjects.Container {
     for (const clueState of requiredClues) {
       const checkbox = scene.add.text(-80, requiredY, clueState.collected ? '☑' : '☐', {
         fontSize: '14px',
-        color: clueState.collected ? '#00ff00' : '#888888'
+        color: clueState.collected ? UI_COLOR_STRINGS.STATUS_SUCCESS : UI_COLOR_STRINGS.TEXT_DISABLED
       });
       const label = scene.add.text(-60, requiredY, clueState.clueId, {
         fontSize: '14px',
-        color: clueState.collected ? '#ffffff' : '#aaaaaa'
+        color: clueState.collected ? UI_COLOR_STRINGS.TEXT_PRIMARY : UI_COLOR_STRINGS.TEXT_SECONDARY
       });
       this.clueTrackerContainer.add(checkbox);
       this.clueTrackerContainer.add(label);
@@ -263,7 +264,7 @@ export class InquiryUI extends Phaser.GameObjects.Container {
     // 辅助线索区域
     const auxiliaryLabel = scene.add.text(-80, requiredY + 10, '辅助线索:', {
       fontSize: '14px',
-      color: '#aaaaaa'
+      color: UI_COLOR_STRINGS.TEXT_SECONDARY
     });
     this.clueTrackerContainer.add(auxiliaryLabel);
 
@@ -272,11 +273,11 @@ export class InquiryUI extends Phaser.GameObjects.Container {
     for (const clueState of auxiliaryClues) {
       const checkbox = scene.add.text(-80, auxiliaryY, clueState.collected ? '☑' : '☐', {
         fontSize: '14px',
-        color: clueState.collected ? '#00aaff' : '#888888'
+        color: clueState.collected ? UI_COLOR_STRINGS.ACCENT_SKY : UI_COLOR_STRINGS.TEXT_DISABLED
       });
       const label = scene.add.text(-60, auxiliaryY, clueState.clueId, {
         fontSize: '14px',
-        color: clueState.collected ? '#ffffff' : '#aaaaaa'
+        color: clueState.collected ? UI_COLOR_STRINGS.TEXT_PRIMARY : UI_COLOR_STRINGS.TEXT_SECONDARY
       });
       this.clueTrackerContainer.add(checkbox);
       this.clueTrackerContainer.add(label);
@@ -302,8 +303,8 @@ export class InquiryUI extends Phaser.GameObjects.Container {
     // 完成问诊按钮
     this.completeButton = scene.add.text(300, 210, '[完成问诊，进入切脉]', {
       fontSize: '16px',
-      color: '#00ff00',
-      backgroundColor: '#2a2a2a',
+      color: UI_COLOR_STRINGS.STATUS_SUCCESS,
+      backgroundColor: UI_COLOR_STRINGS.PANEL_PRIMARY,
       padding: { x: 8, y: 4 }
     });
     this.completeButton.setInteractive({ useHandCursor: true });
@@ -417,16 +418,16 @@ export class InquiryUI extends Phaser.GameObjects.Container {
       const requiredElement = this.requiredClueElements.get(state.clueId);
       if (requiredElement) {
         requiredElement.checkbox.setText(state.collected ? '☑' : '☐');
-        requiredElement.checkbox.setColor(state.collected ? '#00ff00' : '#888888');
-        requiredElement.label.setColor(state.collected ? '#ffffff' : '#aaaaaa');
+        requiredElement.checkbox.setColor(state.collected ? UI_COLOR_STRINGS.STATUS_SUCCESS : UI_COLOR_STRINGS.TEXT_DISABLED);
+        requiredElement.label.setColor(state.collected ? UI_COLOR_STRINGS.TEXT_PRIMARY : UI_COLOR_STRINGS.TEXT_SECONDARY);
       }
 
       // 更新辅助线索
       const auxiliaryElement = this.auxiliaryClueElements.get(state.clueId);
       if (auxiliaryElement) {
         auxiliaryElement.checkbox.setText(state.collected ? '☑' : '☐');
-        auxiliaryElement.checkbox.setColor(state.collected ? '#00aaff' : '#888888');
-        auxiliaryElement.label.setColor(state.collected ? '#ffffff' : '#aaaaaa');
+        auxiliaryElement.checkbox.setColor(state.collected ? UI_COLOR_STRINGS.ACCENT_SKY : UI_COLOR_STRINGS.TEXT_DISABLED);
+        auxiliaryElement.label.setColor(state.collected ? UI_COLOR_STRINGS.TEXT_PRIMARY : UI_COLOR_STRINGS.TEXT_SECONDARY);
       }
     }
 
@@ -444,7 +445,7 @@ export class InquiryUI extends Phaser.GameObjects.Container {
 
     // 更新按钮颜色/状态
     if (isComplete) {
-      this.completeButton.setColor('#00ff00');
+      this.completeButton.setColor(UI_COLOR_STRINGS.STATUS_SUCCESS);
       this.completeButton.setText('[完成问诊，进入切脉]');
     }
   }
@@ -456,7 +457,7 @@ export class InquiryUI extends Phaser.GameObjects.Container {
     // 简化版本：直接显示按钮
     this.completeButton.setVisible(true);
     this.completeButton.setText('必须线索已收集完成！点击进入切脉');
-    this.completeButton.setColor('#00ff00');
+    this.completeButton.setColor(UI_COLOR_STRINGS.STATUS_SUCCESS);
   }
 
   /**

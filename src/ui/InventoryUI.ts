@@ -21,6 +21,7 @@ import {
   HerbBag,
   InventoryTypeConfig
 } from '../data/inventory-data';
+import { UI_COLORS, UI_COLOR_STRINGS } from '../data/ui-color-theme';
 
 // 背包UI配置
 export interface InventoryUIConfig {
@@ -98,23 +99,23 @@ export class InventoryUI {
 
   // 样式配置
   private readonly styles = {
-    background: { fillColor: 0x1a1a2e, alpha: 0.95 },
-    title: { fontSize: '20px', color: '#ffffff', fontStyle: 'bold' },
-    tab: { fontSize: '14px', color: '#aaaaaa', padding: { x: 10, y: 5 } },
-    tabSelected: { color: '#ffffff', backgroundColor: '#4a7c59' },
+    background: { fillColor: UI_COLORS.PANEL_PRIMARY, alpha: 0.95 },
+    title: { fontSize: '20px', color: UI_COLOR_STRINGS.TEXT_PRIMARY, fontStyle: 'bold' },
+    tab: { fontSize: '14px', color: UI_COLOR_STRINGS.TEXT_SECONDARY, padding: { x: 10, y: 5 } },
+    tabSelected: { color: UI_COLOR_STRINGS.TEXT_PRIMARY, backgroundColor: UI_COLOR_STRINGS.BUTTON_SUCCESS },
     tabHover: { backgroundColor: '#3d5c49' },
-    bag: { fontSize: '12px', color: '#888888', padding: { x: 8, y: 4 } },
-    bagSelected: { color: '#ffffff', backgroundColor: '#3a5a3a' },
+    bag: { fontSize: '12px', color: UI_COLOR_STRINGS.TEXT_DISABLED, padding: { x: 8, y: 4 } },
+    bagSelected: { color: UI_COLOR_STRINGS.TEXT_PRIMARY, backgroundColor: UI_COLOR_STRINGS.BUTTON_SUCCESS },
     itemSlot: {
       width: 60,
       height: 60,
-      fillColor: 0x2d2d44,
-      borderColor: 0x4a4a6a,
+      fillColor: UI_COLORS.PANEL_DARK,
+      borderColor: UI_COLORS.BORDER_PRIMARY,
       borderWidth: 2
     },
-    itemSlotSelected: { borderColor: 0x7cb342, borderWidth: 3 },
-    itemText: { fontSize: '10px', color: '#ffffff' },
-    quantityText: { fontSize: '12px', color: '#ffcc00', fontStyle: 'bold' },
+    itemSlotSelected: { borderColor: UI_COLORS.BUTTON_SUCCESS, borderWidth: 3 },
+    itemText: { fontSize: '10px', color: UI_COLOR_STRINGS.TEXT_PRIMARY },
+    quantityText: { fontSize: '12px', color: UI_COLOR_STRINGS.STATUS_WARNING, fontStyle: 'bold' },
     closeButton: { fontSize: '16px', color: '#ff6b6b' }
   };
 
@@ -211,7 +212,7 @@ export class InventoryUI {
         this.styles.tab
       );
       button.setInteractive({ useHandCursor: true });
-      button.setBackgroundColor('#2d2d44');
+      button.setBackgroundColor(UI_COLOR_STRINGS.PANEL_DARK);
 
       button.on('pointerdown', () => this.selectTab(typeConfig.id as InventoryTabType));
       button.on('pointerover', () => {
@@ -222,7 +223,7 @@ export class InventoryUI {
       button.on('pointerout', () => {
         const tab = this.tabButtons.find(t => t.type === typeConfig.id);
         if (!tab?.isSelected) {
-          button.setBackgroundColor('#2d2d44');
+          button.setBackgroundColor(UI_COLOR_STRINGS.PANEL_DARK);
         }
       });
 
@@ -253,7 +254,7 @@ export class InventoryUI {
         this.styles.bag
       );
       button.setInteractive({ useHandCursor: true });
-      button.setBackgroundColor('#2d2d44');
+      button.setBackgroundColor(UI_COLOR_STRINGS.PANEL_DARK);
 
       button.on('pointerdown', () => this.selectBag(bag.id));
       button.on('pointerover', () => {
@@ -264,7 +265,7 @@ export class InventoryUI {
       button.on('pointerout', () => {
         const bagUI = this.bagButtons.find(b => b.bagId === bag.id);
         if (!bagUI?.isSelected) {
-          button.setBackgroundColor('#2d2d44');
+          button.setBackgroundColor(UI_COLOR_STRINGS.PANEL_DARK);
         }
       });
 
@@ -290,7 +291,7 @@ export class InventoryUI {
         tab.button.setBackgroundColor(this.styles.tabSelected.backgroundColor);
       } else {
         tab.button.setColor(this.styles.tab.color);
-        tab.button.setBackgroundColor('#2d2d44');
+        tab.button.setBackgroundColor(UI_COLOR_STRINGS.PANEL_DARK);
       }
     });
 
@@ -319,7 +320,7 @@ export class InventoryUI {
         bag.button.setBackgroundColor(this.styles.bagSelected.backgroundColor);
       } else {
         bag.button.setColor(this.styles.bag.color);
-        bag.button.setBackgroundColor('#2d2d44');
+        bag.button.setBackgroundColor(UI_COLOR_STRINGS.PANEL_DARK);
       }
     });
 
@@ -528,7 +529,7 @@ export class InventoryUI {
     // 交互
     bg.setInteractive({ useHandCursor: true });
     bg.on('pointerdown', () => this.selectItem(itemId));
-    bg.on('pointerover', () => bg.setFillStyle(0x3d3d5c));
+    bg.on('pointerover', () => bg.setFillStyle(UI_COLORS.PANEL_LIGHT));
     bg.on('pointerout', () => bg.setFillStyle(this.styles.itemSlot.fillColor));
 
     this.contentContainer.add(slotContainer);

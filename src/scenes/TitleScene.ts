@@ -146,6 +146,9 @@ export class TitleScene extends Phaser.Scene {
 
     // 暴露存档状态到全局（供测试访问）
     this.exposeSaveStatus();
+
+    // 标记场景已准备好（供测试等待）
+    (window as any).__SCENE_READY__ = true;
   }
 
   /**

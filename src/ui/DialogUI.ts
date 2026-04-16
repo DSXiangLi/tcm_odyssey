@@ -8,6 +8,7 @@
 
 import Phaser from 'phaser';
 import { SSEClient } from '../utils/sseClient';
+import { UI_COLORS, UI_COLOR_STRINGS } from '../data/ui-color-theme';
 
 export interface DialogUIConfig {
   npcId: string;
@@ -34,7 +35,7 @@ export class DialogUI extends Phaser.GameObjects.Container {
     this.sseClient = new SSEClient();
 
     // 创建背景
-    this.background = scene.add.rectangle(0, 0, 600, 200, 0x333333, 0.9);
+    this.background = scene.add.rectangle(0, 0, 600, 200, UI_COLORS.PANEL_PRIMARY, 0.9);
     this.background.setOrigin(0.5);
     this.add(this.background);
 
@@ -52,7 +53,7 @@ export class DialogUI extends Phaser.GameObjects.Container {
     // 创建名字
     this.nameText = scene.add.text(-100, -80, config.npcName, {
       fontSize: '20px',
-      color: '#ffffff',
+      color: UI_COLOR_STRINGS.TEXT_PRIMARY,
       fontStyle: 'bold'
     });
     this.add(this.nameText);
@@ -60,7 +61,7 @@ export class DialogUI extends Phaser.GameObjects.Container {
     // 创建内容文本
     this.contentText = scene.add.text(-100, -50, '', {
       fontSize: '16px',
-      color: '#ffffff',
+      color: UI_COLOR_STRINGS.TEXT_PRIMARY,
       wordWrap: { width: 400 }
     });
     this.add(this.contentText);
@@ -68,7 +69,7 @@ export class DialogUI extends Phaser.GameObjects.Container {
     // 创建停止按钮
     this.stopButton = scene.add.text(250, 80, '[停止生成]', {
       fontSize: '14px',
-      color: '#ff6600'
+      color: UI_COLOR_STRINGS.STATUS_WARNING
     });
     this.stopButton.setInteractive({ useHandCursor: true });
     this.stopButton.on('pointerdown', () => this.stopGeneration());

@@ -144,20 +144,7 @@ export const SCREENSHOT_SCENES: SceneConfig[] = [
     ],
     screenshotCount: 1,
   },
-  {
-    id: 'DIAG-05',
-    name: '评分结果界面',
-    operations: [
-      { type: 'navigate', params: { scene: 'TitleScene' } },
-      { type: 'click', params: { x: 400, y: 350 } },
-      { type: 'wait', params: { condition: '__GAME_READY__', timeout: 10000 } },
-      { type: 'navigate', params: { scene: 'ClinicScene' } },
-      { type: 'keypress', params: { key: ' ' }, delayAfter: 500 },
-      { type: 'wait', params: { condition: '__RESULT_UI_VISIBLE__', timeout: 10000 } },
-    ],
-    screenshotCount: 1,
-  },
-  // 子游戏 (6张)
+    // 子游戏 (6张)
   {
     id: 'SUBGAME-01',
     name: '煎药界面',
@@ -185,7 +172,7 @@ export const SCREENSHOT_SCENES: SceneConfig[] = [
     ],
     screenshotCount: 2,
   },
-  // 系统UI (5张)
+  // 系统UI (4张)
   {
     id: 'SYSTEM-01',
     name: '背包界面',
@@ -200,17 +187,10 @@ export const SCREENSHOT_SCENES: SceneConfig[] = [
     id: 'SYSTEM-02',
     name: '存档界面',
     operations: [
-      { type: 'keypress', params: { key: 'Escape' }, delayAfter: 500 },
-      { type: 'wait', params: { condition: '__SAVE_UI_OPEN__', timeout: 5000 } },
-    ],
-    screenshotCount: 1,
-  },
-  {
-    id: 'SYSTEM-03',
-    name: '经验值UI',
-    operations: [
       { type: 'navigate', params: { scene: 'TitleScene' } },
-      { type: 'wait', params: { condition: '__EXPERIENCE_UI_VISIBLE__', timeout: 5000 } },
+      { type: 'wait', params: { condition: '__SCENE_READY__', timeout: 10000 } },
+      { type: 'click', params: { x: 400, y: 380 } }, // 存档管理按钮位置 (无存档时)
+      { type: 'wait', params: { condition: '__SAVE_UI_OPEN__', timeout: 5000 } },
     ],
     screenshotCount: 1,
   },

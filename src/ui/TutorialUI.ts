@@ -23,6 +23,7 @@ import {
   TUTORIAL_STEPS,
   SKIP_TUTORIAL_CONFIG
 } from '../data/tutorial-data';
+import { UI_COLORS, UI_COLOR_STRINGS } from '../data/ui-color-theme';
 
 /**
  * TutorialUI配置
@@ -78,20 +79,20 @@ export class TutorialUI {
   private tutorialSkippedListener: (data: EventData) => void;
   private sceneTipShownListener: (data: EventData) => void;
 
-  // 样式配置
+  // 样式配置（使用场景PNG提取的配色主题）
   private readonly styles = {
-    background: { fillColor: 0x1a1a2e, alpha: 0.95 },
-    title: { fontSize: '28px', color: '#ffffff', fontStyle: 'bold' },
-    stepTitle: { fontSize: '20px', color: '#ffffff', fontStyle: 'bold' },
-    stepContent: { fontSize: '16px', color: '#cccccc' },
-    keyHint: { fontSize: '18px', color: '#ffcc00' },
-    progress: { fontSize: '14px', color: '#888888' },
-    progressBar: { fillColor: 0x4a7c59, alpha: 1 },
-    progressBg: { fillColor: 0x333333, alpha: 1 },
-    skipButton: { fontSize: '16px', color: '#ff6b6b' },
-    nextButton: { fontSize: '18px', color: '#ffffff', backgroundColor: '#4a7c59' },
-    tipBackground: { fillColor: 0x2d2d44, alpha: 0.9 },
-    tipText: { fontSize: '16px', color: '#ffffff' }
+    background: { fillColor: UI_COLORS.PANEL_PRIMARY, alpha: 0.95 },
+    title: { fontSize: '28px', color: UI_COLOR_STRINGS.TEXT_PRIMARY, fontStyle: 'bold' },
+    stepTitle: { fontSize: '20px', color: UI_COLOR_STRINGS.TEXT_PRIMARY, fontStyle: 'bold' },
+    stepContent: { fontSize: '16px', color: UI_COLOR_STRINGS.TEXT_SECONDARY },
+    keyHint: { fontSize: '18px', color: UI_COLOR_STRINGS.TEXT_HIGHLIGHT },
+    progress: { fontSize: '14px', color: UI_COLOR_STRINGS.TEXT_DISABLED },
+    progressBar: { fillColor: UI_COLORS.BUTTON_SUCCESS, alpha: 1 },
+    progressBg: { fillColor: UI_COLORS.PANEL_PRIMARY, alpha: 1 },
+    skipButton: { fontSize: '16px', color: '#ff6b6b' },  // 红色跳过按钮保持警示色
+    nextButton: { fontSize: '18px', color: UI_COLOR_STRINGS.TEXT_PRIMARY, backgroundColor: UI_COLOR_STRINGS.BUTTON_SUCCESS },
+    tipBackground: { fillColor: UI_COLORS.PANEL_PRIMARY, alpha: 0.9 },
+    tipText: { fontSize: '16px', color: UI_COLOR_STRINGS.TEXT_PRIMARY }
   };
 
   constructor(config: TutorialUIConfig) {
@@ -201,8 +202,8 @@ export class TutorialUI {
       padding: { x: 15, y: 8 }
     }).setOrigin(1, 0.5);
     this.nextButton.setInteractive({ useHandCursor: true });
-    this.nextButton.on('pointerover', () => this.nextButton.setStyle({ backgroundColor: '#5a8c69' }));
-    this.nextButton.on('pointerout', () => this.nextButton.setStyle({ backgroundColor: '#4a7c59' }));
+    this.nextButton.on('pointerover', () => this.nextButton.setStyle({ backgroundColor: UI_COLOR_STRINGS.BUTTON_PRIMARY_HOVER }));
+    this.nextButton.on('pointerout', () => this.nextButton.setStyle({ backgroundColor: UI_COLOR_STRINGS.BUTTON_SUCCESS }));
     this.nextButton.on('pointerdown', () => this.handleNextClick());
     this.container.add(this.nextButton);
 
@@ -232,7 +233,7 @@ export class TutorialUI {
     // 提示气泡背景（带箭头效果）
     this.tipBackground = this.scene.add.rectangle(0, 0, width, height, this.styles.tipBackground.fillColor, this.styles.tipBackground.alpha);
     this.tipBackground.setOrigin(0.5);
-    this.tipBackground.setStrokeStyle(2, 0x555555);
+    this.tipBackground.setStrokeStyle(2, UI_COLORS.BORDER_PRIMARY);
     this.tipContainer.add(this.tipBackground);
 
     // 提示文字
@@ -283,7 +284,7 @@ export class TutorialUI {
       // 所有步骤完成
       const completeText = this.scene.add.text(0, 0, '引导完成！\n点击继续进入游戏', {
         fontSize: '20px',
-        color: '#00ff00',
+        color: UI_COLOR_STRINGS.STATUS_SUCCESS,
         align: 'center'
       }).setOrigin(0.5);
       this.stepContainer.add(completeText);
@@ -311,9 +312,9 @@ export class TutorialUI {
 
     // 按键提示（如果有）
     if (stepConfig.key_hint) {
-      const keyHintBox = this.scene.add.rectangle(0, 50, 200, 40, 0x333344, 1);
+      const keyHintBox = this.scene.add.rectangle(0, 50, 200, 40, UI_COLORS.PANEL_LIGHT, 1);
       keyHintBox.setOrigin(0.5);
-      keyHintBox.setStrokeStyle(2, 0x555555);
+      keyHintBox.setStrokeStyle(2, UI_COLORS.BORDER_PRIMARY);
       this.stepContainer.add(keyHintBox);
 
       const keyHintText = this.scene.add.text(0, 50, stepConfig.key_hint, this.styles.keyHint).setOrigin(0.5);
@@ -324,7 +325,7 @@ export class TutorialUI {
     if (stepConfig.icon) {
       const iconPlaceholder = this.scene.add.text(-180, -50, `[${stepConfig.icon}]`, {
         fontSize: '14px',
-        color: '#666666'
+        color: UI_COLOR_STRINGS.TEXT_DISABLED
       }).setOrigin(0.5);
       this.stepContainer.add(iconPlaceholder);
     }
@@ -389,13 +390,13 @@ export class TutorialUI {
     this.container.add(dialogContainer);
 
     // 弹窗背景
-    const dialogBg = this.scene.add.rectangle(0, 0, dialogWidth, dialogHeight, 0x2d2d44, 0.95);
+    const dialogBg = this.scene.add.rectangle(0, 0, dialogWidth, dialogHeight, UI_COLORS.PANEL_PRIMARY, 0.95);
     dialogContainer.add(dialogBg);
 
     // 确认文字
     const confirmText = this.scene.add.text(0, -40, SKIP_TUTORIAL_CONFIG.confirm_text, {
       fontSize: '16px',
-      color: '#ffffff',
+      color: UI_COLOR_STRINGS.TEXT_PRIMARY,
       wordWrap: { width: dialogWidth - 40 },
       align: 'center'
     }).setOrigin(0.5);
@@ -404,8 +405,8 @@ export class TutorialUI {
     // 确认跳过按钮
     const confirmSkipBtn = this.scene.add.text(-80, 50, '确认跳过', {
       fontSize: '16px',
-      color: '#ffffff',
-      backgroundColor: '#c75050',
+      color: UI_COLOR_STRINGS.TEXT_PRIMARY,
+      backgroundColor: '#c75050',  // 红色警示按钮保持原色
       padding: { x: 15, y: 8 }
     }).setOrigin(0.5);
     confirmSkipBtn.setInteractive({ useHandCursor: true });
@@ -421,8 +422,8 @@ export class TutorialUI {
     // 继续引导按钮
     const continueBtn = this.scene.add.text(80, 50, '继续引导', {
       fontSize: '16px',
-      color: '#ffffff',
-      backgroundColor: '#4a7c59',
+      color: UI_COLOR_STRINGS.TEXT_PRIMARY,
+      backgroundColor: UI_COLOR_STRINGS.BUTTON_SUCCESS,
       padding: { x: 15, y: 8 }
     }).setOrigin(0.5);
     continueBtn.setInteractive({ useHandCursor: true });

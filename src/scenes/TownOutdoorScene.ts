@@ -128,6 +128,9 @@ export class TownOutdoorScene extends Phaser.Scene {
     // 游戏启动完成，进入主场景
     (window as any).__GAME_READY__ = true;
     this.gameStateBridge.exposeMapConfig();
+
+    // 标记场景已准备好（供测试等待）
+    (window as any).__SCENE_READY__ = true;
   }
 
   /**

@@ -29,6 +29,7 @@ import {
   type ProcessingMethodCategory
 } from '../data/processing-data';
 import { getHerbById } from '../data/inventory-data';
+import { UI_COLORS, UI_COLOR_STRINGS } from '../data/ui-color-theme';
 
 /**
  * UI配置
@@ -148,8 +149,8 @@ export class ProcessingUI {
   ): Phaser.GameObjects.Text {
     const defaultStyle = {
       fontSize: '18px',
-      color: '#4CAF50',
-      backgroundColor: '#333333',
+      color: UI_COLOR_STRINGS.BUTTON_SUCCESS,
+      backgroundColor: UI_COLOR_STRINGS.PANEL_PRIMARY,
       padding: { x: 15, y: 8 }
     };
 
@@ -158,11 +159,11 @@ export class ProcessingUI {
       .setInteractive();
 
     button.on('pointerover', () => {
-      button.setColor('#66BB6A');
+      button.setColor(UI_COLOR_STRINGS.BUTTON_PRIMARY_HOVER);
     });
 
     button.on('pointerout', () => {
-      button.setColor(style?.color || '#4CAF50');
+      button.setColor(style?.color || UI_COLOR_STRINGS.BUTTON_SUCCESS);
     });
 
     button.on('pointerdown', callback);
@@ -181,7 +182,7 @@ export class ProcessingUI {
   ): Phaser.GameObjects.Text {
     const defaultStyle = {
       fontSize: '16px',
-      color: '#ffffff'
+      color: UI_COLOR_STRINGS.TEXT_PRIMARY
     };
 
     return this.scene.add.text(x, y, text, style || defaultStyle).setOrigin(0.5);
@@ -196,7 +197,7 @@ export class ProcessingUI {
     // 标题
     this.titleText = this.createText(this.width / 2, 50, '选择炮制药材', {
       fontSize: '24px',
-      color: '#ffffff'
+      color: UI_COLOR_STRINGS.TEXT_PRIMARY
     });
     this.container.add(this.titleText);
 
@@ -217,7 +218,7 @@ export class ProcessingUI {
       // 提示文字
       const hintText = this.createText(this.width / 2, 100, '请选择要炮制的药材', {
         fontSize: '16px',
-        color: '#aaaaaa'
+        color: UI_COLOR_STRINGS.TEXT_SECONDARY
       });
       this.contentContainer!.add(hintText);
 
@@ -240,7 +241,7 @@ export class ProcessingUI {
           const methodConfig = getProcessingMethodConfig(params.default_method);
           const methodHint = this.createText(this.width / 2, y + 25,
             `推荐方法: ${methodConfig?.name || params.default_method}`,
-            { fontSize: '14px', color: '#ff9800' }
+            { fontSize: '14px', color: UI_COLOR_STRINGS.STATUS_WARNING }
           );
           this.contentContainer!.add(methodHint);
         }
@@ -257,8 +258,8 @@ export class ProcessingUI {
       this.scene.scene.start('ClinicScene');
     }, {
       fontSize: '18px',
-      color: '#ffffff',
-      backgroundColor: '#555555',
+      color: UI_COLOR_STRINGS.TEXT_PRIMARY,
+      backgroundColor: UI_COLOR_STRINGS.PANEL_DARK,
       padding: { x: 20, y: 10 }
     });
     this.contentContainer!.add(backButton);
@@ -266,7 +267,7 @@ export class ProcessingUI {
     // 阶段指示
     this.phaseText = this.createText(this.width / 2, this.height - 50, '阶段: 选择药材', {
       fontSize: '16px',
-      color: '#ff9800'
+      color: UI_COLOR_STRINGS.STATUS_WARNING
     });
     this.container.add(this.phaseText);
   }
@@ -292,7 +293,7 @@ export class ProcessingUI {
     // 提示文字
     const hintText = this.createText(this.width / 2, 100, '选择合适的炮制方法', {
       fontSize: '16px',
-      color: '#aaaaaa'
+      color: UI_COLOR_STRINGS.TEXT_SECONDARY
     });
     this.contentContainer!.add(hintText);
 
@@ -315,7 +316,7 @@ export class ProcessingUI {
       // 分类标题
       const categoryTitle = this.createText(100, y, categoryNames[category], {
         fontSize: '18px',
-        color: '#ff9800'
+        color: UI_COLOR_STRINGS.STATUS_WARNING
       }).setOrigin(0, 0.5);
       this.contentContainer!.add(categoryTitle);
 
@@ -332,8 +333,8 @@ export class ProcessingUI {
           this.manager.selectMethod(method.id);
         }, {
           fontSize: '14px',
-          color: isSelected ? '#4CAF50' : (isRecommended ? '#ff9800' : '#ffffff'),
-          backgroundColor: isSelected ? '#2E7D32' : '#333333',
+          color: isSelected ? UI_COLOR_STRINGS.BUTTON_SUCCESS : (isRecommended ? UI_COLOR_STRINGS.STATUS_WARNING : UI_COLOR_STRINGS.TEXT_PRIMARY),
+          backgroundColor: isSelected ? '#2E7D32' : UI_COLOR_STRINGS.PANEL_PRIMARY,
           padding: { x: 10, y: 5 }
         });
 
@@ -350,7 +351,7 @@ export class ProcessingUI {
       }
     }, {
       fontSize: '20px',
-      color: '#4CAF50',
+      color: UI_COLOR_STRINGS.BUTTON_SUCCESS,
       backgroundColor: '#1B5E20',
       padding: { x: 30, y: 15 }
     });
@@ -381,7 +382,7 @@ export class ProcessingUI {
     // 提示文字
     const hintText = this.createText(this.width / 2, 100, '选择炮制辅料', {
       fontSize: '16px',
-      color: '#aaaaaa'
+      color: UI_COLOR_STRINGS.TEXT_SECONDARY
     });
     this.contentContainer!.add(hintText);
 
@@ -401,8 +402,8 @@ export class ProcessingUI {
         this.manager.selectAdjuvant(adjuvantId);
       }, {
         fontSize: '18px',
-        color: isSelected ? '#4CAF50' : (isRecommended ? '#ff9800' : '#ffffff'),
-        backgroundColor: isSelected ? '#2E7D32' : '#333333',
+        color: isSelected ? UI_COLOR_STRINGS.BUTTON_SUCCESS : (isRecommended ? UI_COLOR_STRINGS.STATUS_WARNING : UI_COLOR_STRINGS.TEXT_PRIMARY),
+        backgroundColor: isSelected ? '#2E7D32' : UI_COLOR_STRINGS.PANEL_PRIMARY,
         padding: { x: 20, y: 10 }
       });
 
@@ -410,7 +411,7 @@ export class ProcessingUI {
       if (adjuvantConfig) {
         const effectText = this.createText(this.width / 2, y + 25, adjuvantConfig.effect, {
           fontSize: '14px',
-          color: '#aaaaaa'
+          color: UI_COLOR_STRINGS.TEXT_SECONDARY
         });
         this.contentContainer!.add(effectText);
       }
@@ -443,14 +444,14 @@ export class ProcessingUI {
     // 当前选择摘要
     const summaryText = this.createText(this.width / 2, 100,
       `药材: ${herb?.name || ''} | 方法: ${methodConfig?.name || ''}`,
-      { fontSize: '18px', color: '#4CAF50' }
+      { fontSize: '18px', color: UI_COLOR_STRINGS.BUTTON_SUCCESS }
     );
     this.contentContainer!.add(summaryText);
 
     // 预处理说明（简化）
     const hintText = this.createText(this.width / 2, 150,
       '预处理步骤已自动完成（一期简化）',
-      { fontSize: '16px', color: '#aaaaaa' }
+      { fontSize: '16px', color: UI_COLOR_STRINGS.TEXT_SECONDARY }
     );
     this.contentContainer!.add(hintText);
 
@@ -489,12 +490,12 @@ export class ProcessingUI {
 
     // 进度条背景
     const progressBg = this.scene.add.rectangle(
-      this.width / 2, 200, 400, 30, 0x333333
+      this.width / 2, 200, 400, 30, UI_COLORS.PANEL_LIGHT
     ).setOrigin(0.5);
 
     // 进度条填充
     this.progressFill = this.scene.add.rectangle(
-      this.width / 2 - 200, 200, 0, 26, 0x4CAF50
+      this.width / 2 - 200, 200, 0, 26, UI_COLORS.BUTTON_SUCCESS
     ).setOrigin(0, 0.5);
     this.progressFill.setName('progressFill');
 
@@ -503,7 +504,7 @@ export class ProcessingUI {
     // 时间文字
     this.timeText = this.createText(this.width / 2, 250, '0 / 0 秒', {
       fontSize: '20px',
-      color: '#ffffff'
+      color: UI_COLOR_STRINGS.TEXT_PRIMARY
     });
     this.timeText.setName('timeText');
     this.contentContainer!.add(this.timeText);
@@ -527,7 +528,7 @@ export class ProcessingUI {
       }
     }, {
       fontSize: '20px',
-      color: '#ff9800',
+      color: UI_COLOR_STRINGS.STATUS_WARNING,
       backgroundColor: '#e65100',
       padding: { x: 30, y: 15 }
     });
@@ -571,7 +572,7 @@ export class ProcessingUI {
     // 总分显示
     const scoreText = this.createText(this.width / 2, 100,
       `总分: ${result.total_score}`,
-      { fontSize: '32px', color: result.passed ? '#4CAF50' : '#f44336' }
+      { fontSize: '32px', color: result.passed ? UI_COLOR_STRINGS.BUTTON_SUCCESS : '#f44336' }
     );
     this.contentContainer!.add(scoreText);
 
@@ -587,7 +588,7 @@ export class ProcessingUI {
 
     dimensions.forEach((dim, index) => {
       const y = dimensionY + index * dimensionSpacing;
-      const color = dim.score >= dim.weight * 0.8 ? '#4CAF50' : '#f44336';
+      const color = dim.score >= dim.weight * 0.8 ? UI_COLOR_STRINGS.BUTTON_SUCCESS : '#f44336';
 
       const dimText = this.createText(this.width / 2, y,
         `${dim.name}: ${dim.score}/${dim.weight}`,
@@ -599,7 +600,7 @@ export class ProcessingUI {
     // 反馈文字
     const feedbackText = this.createText(this.width / 2, 350,
       result.feedback,
-      { fontSize: '16px', color: '#aaaaaa' }
+      { fontSize: '16px', color: UI_COLOR_STRINGS.TEXT_SECONDARY }
     );
     this.contentContainer!.add(feedbackText);
 
@@ -611,8 +612,8 @@ export class ProcessingUI {
       this.scene.scene.start('ClinicScene');
     }, {
       fontSize: '20px',
-      color: '#ffffff',
-      backgroundColor: '#333333',
+      color: UI_COLOR_STRINGS.TEXT_PRIMARY,
+      backgroundColor: UI_COLOR_STRINGS.PANEL_PRIMARY,
       padding: { x: 30, y: 15 }
     });
     this.contentContainer!.add(backButton);

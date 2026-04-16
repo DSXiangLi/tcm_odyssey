@@ -26,6 +26,7 @@ import {
   type PlantingPhase,
   type PlotState
 } from '../data/planting-data';
+import { UI_COLORS, UI_COLOR_STRINGS } from '../data/ui-color-theme';
 
 /**
  * UI配置
@@ -184,7 +185,7 @@ export class PlantingUI {
         title,
         {
           fontSize: '24px',
-          color: '#4a9',
+          color: UI_COLOR_STRINGS.BUTTON_SUCCESS,
           fontStyle: 'bold'
         }
       ).setOrigin(0.5);
@@ -205,7 +206,7 @@ export class PlantingUI {
         `阶段: ${phase}`,
         {
           fontSize: '16px',
-          color: '#888'
+          color: UI_COLOR_STRINGS.TEXT_DISABLED
         }
       ).setOrigin(0.5);
       this.container.add(this.phaseText);
@@ -230,7 +231,7 @@ export class PlantingUI {
       this.width / 2,
       20,
       '从背包中选择要种植的种子',
-      { fontSize: '14px', color: '#666' }
+      { fontSize: '14px', color: UI_COLOR_STRINGS.TEXT_DISABLED }
     ).setOrigin(0.5);
     this.contentContainer!.add(hintText);
 
@@ -247,7 +248,7 @@ export class PlantingUI {
         y,
         300,
         40,
-        0x3a5a3a
+        UI_COLORS.BUTTON_PRIMARY
       ).setInteractive({ useHandCursor: true });
 
       // 种子名称
@@ -255,7 +256,7 @@ export class PlantingUI {
         this.width / 2 - 120,
         y - 10,
         seed.name,
-        { fontSize: '16px', color: '#fff' }
+        { fontSize: '16px', color: UI_COLOR_STRINGS.TEXT_PRIMARY }
       );
 
       // 归经信息
@@ -263,7 +264,7 @@ export class PlantingUI {
         this.width / 2 + 80,
         y - 10,
         `归${seed.meridian}经`,
-        { fontSize: '12px', color: '#aaa' }
+        { fontSize: '12px', color: UI_COLOR_STRINGS.TEXT_SECONDARY }
       );
 
       // 需求信息
@@ -271,7 +272,7 @@ export class PlantingUI {
         this.width / 2 - 120,
         y + 10,
         `需: ${seed.required_water}水 + ${seed.required_fertilizer}肥`,
-        { fontSize: '12px', color: '#888' }
+        { fontSize: '12px', color: UI_COLOR_STRINGS.TEXT_DISABLED }
       );
 
       this.contentContainer!.add([bg, nameText, meridianText, reqText]);
@@ -283,10 +284,10 @@ export class PlantingUI {
 
       // 悬停效果
       bg.on('pointerover', () => {
-        bg.setFillStyle(0x4a7a4a);
+        bg.setFillStyle(UI_COLORS.BUTTON_PRIMARY_HOVER);
       });
       bg.on('pointerout', () => {
-        bg.setFillStyle(0x3a5a3a);
+        bg.setFillStyle(UI_COLORS.BUTTON_PRIMARY);
       });
     });
 
@@ -315,7 +316,7 @@ export class PlantingUI {
         this.width / 2,
         20,
         `种子: ${selectedSeed.name} (归${selectedSeed.meridian}经)`,
-        { fontSize: '14px', color: '#4a9' }
+        { fontSize: '14px', color: UI_COLOR_STRINGS.BUTTON_SUCCESS }
       ).setOrigin(0.5);
       this.contentContainer!.add(seedInfo);
     }
@@ -329,7 +330,7 @@ export class PlantingUI {
 
       // 判断地块是否匹配
       const isMatch = selectedSeed && (plot.meridian === selectedSeed.meridian || plot.meridian === 'general');
-      const bgColor = isMatch ? 0x4a7a4a : 0x3a5a3a;
+      const bgColor = isMatch ? UI_COLORS.BUTTON_SUCCESS : UI_COLORS.BUTTON_PRIMARY;
 
       // 地块按钮背景
       const bg = this.scene.add.rectangle(
@@ -345,7 +346,7 @@ export class PlantingUI {
         this.width / 2 - 120,
         y,
         plot.name,
-        { fontSize: '16px', color: '#fff' }
+        { fontSize: '16px', color: UI_COLOR_STRINGS.TEXT_PRIMARY }
       );
 
       // 归经信息
@@ -353,7 +354,7 @@ export class PlantingUI {
         this.width / 2 + 80,
         y,
         plot.meridian === 'general' ? '通用' : `归${plot.meridian}经`,
-        { fontSize: '12px', color: '#aaa' }
+        { fontSize: '12px', color: UI_COLOR_STRINGS.TEXT_SECONDARY }
       );
 
       // 匹配提示
@@ -362,7 +363,7 @@ export class PlantingUI {
           this.width / 2 + 50,
           y + 10,
           '✓ 匹配',
-          { fontSize: '12px', color: '#4a9' }
+          { fontSize: '12px', color: UI_COLOR_STRINGS.BUTTON_SUCCESS }
         );
         this.contentContainer!.add(matchText);
       }
@@ -375,7 +376,7 @@ export class PlantingUI {
       });
 
       bg.on('pointerover', () => {
-        bg.setFillStyle(isMatch ? 0x5a9a5a : 0x4a7a4a);
+        bg.setFillStyle(isMatch ? UI_COLORS.BUTTON_PRIMARY_HOVER : UI_COLORS.BUTTON_PRIMARY_HOVER);
       });
       bg.on('pointerout', () => {
         bg.setFillStyle(bgColor);
@@ -401,7 +402,7 @@ export class PlantingUI {
         this.width / 2,
         20,
         `需求: ${selectedSeed.required_water}性水源`,
-        { fontSize: '14px', color: '#4a9' }
+        { fontSize: '14px', color: UI_COLOR_STRINGS.BUTTON_SUCCESS }
       ).setOrigin(0.5);
       this.contentContainer!.add(seedInfo);
     }
@@ -415,7 +416,7 @@ export class PlantingUI {
 
       // 判断水源是否匹配
       const isMatch = selectedSeed && (water.qi_type === selectedSeed.required_water || water.qi_type === 'neutral');
-      const bgColor = isMatch ? 0x4a7a4a : 0x3a5a3a;
+      const bgColor = isMatch ? UI_COLORS.BUTTON_SUCCESS : UI_COLORS.BUTTON_PRIMARY;
 
       // 水源按钮
       const bg = this.scene.add.rectangle(
@@ -430,14 +431,14 @@ export class PlantingUI {
         this.width / 2 - 120,
         y,
         water.name,
-        { fontSize: '14px', color: '#fff' }
+        { fontSize: '14px', color: UI_COLOR_STRINGS.TEXT_PRIMARY }
       );
 
       const qiText = this.scene.add.text(
         this.width / 2 + 80,
         y,
         water.qi_type,
-        { fontSize: '12px', color: '#aaa' }
+        { fontSize: '12px', color: UI_COLOR_STRINGS.TEXT_SECONDARY }
       );
 
       this.contentContainer!.add([bg, nameText, qiText]);
@@ -446,7 +447,7 @@ export class PlantingUI {
         this.manager.selectWater(water.id);
       });
 
-      bg.on('pointerover', () => bg.setFillStyle(isMatch ? 0x5a9a5a : 0x4a7a4a));
+      bg.on('pointerover', () => bg.setFillStyle(UI_COLORS.BUTTON_PRIMARY_HOVER));
       bg.on('pointerout', () => bg.setFillStyle(bgColor));
     });
   }
@@ -469,7 +470,7 @@ export class PlantingUI {
         this.width / 2,
         20,
         `需求: ${selectedSeed.required_fertilizer}味肥料`,
-        { fontSize: '14px', color: '#4a9' }
+        { fontSize: '14px', color: UI_COLOR_STRINGS.BUTTON_SUCCESS }
       ).setOrigin(0.5);
       this.contentContainer!.add(seedInfo);
     }
@@ -483,7 +484,7 @@ export class PlantingUI {
 
       // 判断肥料是否匹配
       const isMatch = selectedSeed && fertilizer.flavor_type === selectedSeed.required_fertilizer;
-      const bgColor = isMatch ? 0x4a7a4a : 0x3a5a3a;
+      const bgColor = isMatch ? UI_COLORS.BUTTON_SUCCESS : UI_COLORS.BUTTON_PRIMARY;
 
       // 肥料按钮
       const bg = this.scene.add.rectangle(
@@ -498,14 +499,14 @@ export class PlantingUI {
         this.width / 2 - 120,
         y,
         fertilizer.name,
-        { fontSize: '14px', color: '#fff' }
+        { fontSize: '14px', color: UI_COLOR_STRINGS.TEXT_PRIMARY }
       );
 
       const flavorText = this.scene.add.text(
         this.width / 2 + 80,
         y,
         fertilizer.flavor_type,
-        { fontSize: '12px', color: '#aaa' }
+        { fontSize: '12px', color: UI_COLOR_STRINGS.TEXT_SECONDARY }
       );
 
       this.contentContainer!.add([bg, nameText, flavorText]);
@@ -514,7 +515,7 @@ export class PlantingUI {
         this.manager.selectFertilizer(fertilizer.id);
       });
 
-      bg.on('pointerover', () => bg.setFillStyle(isMatch ? 0x5a9a5a : 0x4a7a4a));
+      bg.on('pointerover', () => bg.setFillStyle(UI_COLORS.BUTTON_PRIMARY_HOVER));
       bg.on('pointerout', () => bg.setFillStyle(bgColor));
     });
 
@@ -538,7 +539,7 @@ export class PlantingUI {
       this.width / 2,
       this.height / 2,
       '种子已播种！',
-      { fontSize: '20px', color: '#4a9' }
+      { fontSize: '20px', color: UI_COLOR_STRINGS.BUTTON_SUCCESS }
     ).setOrigin(0.5);
     this.contentContainer!.add(resultText);
   }
@@ -568,7 +569,7 @@ export class PlantingUI {
         y,
         280,
         50,
-        0x2a4a2a
+        UI_COLORS.PANEL_SECONDARY
       );
 
       // 药材名称
@@ -576,7 +577,7 @@ export class PlantingUI {
         this.width / 2 - 120,
         y - 15,
         seed?.name || '未知',
-        { fontSize: '14px', color: '#fff' }
+        { fontSize: '14px', color: UI_COLOR_STRINGS.TEXT_PRIMARY }
       );
 
       // 生长进度条背景
@@ -585,7 +586,7 @@ export class PlantingUI {
         y + 10,
         200,
         10,
-        0x333
+        UI_COLORS.PANEL_DARK
       );
 
       // 生长进度条填充
@@ -594,7 +595,7 @@ export class PlantingUI {
         y + 10,
         plot.growth_progress * 2,
         10,
-        plot.is_ready ? 0x4a9 : 0x6a8
+        plot.is_ready ? UI_COLORS.BUTTON_SUCCESS : UI_COLORS.BUTTON_PRIMARY
       ).setOrigin(0, 0.5);
 
       // 阶段文字
@@ -603,7 +604,7 @@ export class PlantingUI {
         this.width / 2 + 60,
         y - 15,
         stageConfig?.name || '',
-        { fontSize: '12px', color: '#888' }
+        { fontSize: '12px', color: UI_COLOR_STRINGS.TEXT_DISABLED }
       );
 
       // 收获按钮
@@ -613,7 +614,7 @@ export class PlantingUI {
           y,
           60,
           30,
-          0x4a9
+          UI_COLORS.BUTTON_SUCCESS
         ).setInteractive({ useHandCursor: true });
         harvestBtn.on('pointerdown', () => {
           this.manager.harvest(plot.plot_id);
@@ -623,7 +624,7 @@ export class PlantingUI {
           this.width / 2 + 100,
           y,
           '收获',
-          { fontSize: '12px', color: '#fff' }
+          { fontSize: '12px', color: UI_COLOR_STRINGS.TEXT_PRIMARY }
         ).setOrigin(0.5);
         this.contentContainer!.add([harvestBtn, harvestText]);
       }
@@ -661,7 +662,7 @@ export class PlantingUI {
       this.width / 2,
       this.height / 2 - 20,
       `${readyPlots.length} 个地块可以收获`,
-      { fontSize: '16px', color: '#4a9' }
+      { fontSize: '16px', color: UI_COLOR_STRINGS.BUTTON_SUCCESS }
     ).setOrigin(0.5);
     this.contentContainer!.add(infoText);
   }
@@ -682,7 +683,7 @@ export class PlantingUI {
       this.width / 2,
       30,
       question,
-      { fontSize: '16px', color: '#fff' }
+      { fontSize: '16px', color: UI_COLOR_STRINGS.TEXT_PRIMARY }
     ).setOrigin(0.5);
     this.contentContainer!.add(questionText);
 
@@ -698,14 +699,14 @@ export class PlantingUI {
         y,
         200,
         35,
-        0x3a5a3a
+        UI_COLORS.BUTTON_PRIMARY
       ).setInteractive({ useHandCursor: true });
 
       const optText = this.scene.add.text(
         this.width / 2,
         y,
         option,
-        { fontSize: '14px', color: '#fff' }
+        { fontSize: '14px', color: UI_COLOR_STRINGS.TEXT_PRIMARY }
       ).setOrigin(0.5);
 
       this.contentContainer!.add([bg, optText]);
@@ -714,8 +715,8 @@ export class PlantingUI {
         this.manager.submitQuiz(option);
       });
 
-      bg.on('pointerover', () => bg.setFillStyle(0x4a7a4a));
-      bg.on('pointerout', () => bg.setFillStyle(0x3a5a3a));
+      bg.on('pointerover', () => bg.setFillStyle(UI_COLORS.BUTTON_PRIMARY_HOVER));
+      bg.on('pointerout', () => bg.setFillStyle(UI_COLORS.BUTTON_PRIMARY));
     });
   }
 
@@ -732,7 +733,7 @@ export class PlantingUI {
       this.width / 2,
       this.height / 2,
       `获得: ${herbName}`,
-      { fontSize: '20px', color: '#4a9' }
+      { fontSize: '20px', color: UI_COLOR_STRINGS.BUTTON_SUCCESS }
     ).setOrigin(0.5);
     this.contentContainer!.add(resultText);
 
@@ -753,14 +754,14 @@ export class PlantingUI {
       btnY,
       120,
       40,
-      0x4a9
+      UI_COLORS.BUTTON_SUCCESS
     ).setInteractive({ useHandCursor: true });
 
     const btnText = this.scene.add.text(
       this.width / 2,
       btnY,
       '开始种植',
-      { fontSize: '16px', color: '#fff' }
+      { fontSize: '16px', color: UI_COLOR_STRINGS.TEXT_PRIMARY }
     ).setOrigin(0.5);
 
     this.contentContainer!.add([btn, btnText]);
@@ -781,14 +782,14 @@ export class PlantingUI {
       btnY,
       80,
       30,
-      0x555
+      UI_COLORS.BUTTON_SECONDARY
     ).setInteractive({ useHandCursor: true });
 
     const btnText = this.scene.add.text(
       this.width / 2 - 80,
       btnY,
       '取消',
-      { fontSize: '14px', color: '#fff' }
+      { fontSize: '14px', color: UI_COLOR_STRINGS.TEXT_PRIMARY }
     ).setOrigin(0.5);
 
     this.contentContainer!.add([btn, btnText]);
@@ -811,14 +812,14 @@ export class PlantingUI {
       btnY,
       100,
       35,
-      0x555
+      UI_COLORS.BUTTON_SECONDARY
     ).setInteractive({ useHandCursor: true });
 
     const btnText = this.scene.add.text(
       this.width / 2,
       btnY,
       '返回药园',
-      { fontSize: '14px', color: '#fff' }
+      { fontSize: '14px', color: UI_COLOR_STRINGS.TEXT_PRIMARY }
     ).setOrigin(0.5);
 
     this.contentContainer!.add([btn, btnText]);

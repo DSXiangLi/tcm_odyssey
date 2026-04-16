@@ -612,7 +612,160 @@ git commit -m "feat: update medium-priority UI components colors to match scene 
 
 ---
 
-## Task 8: 低优先级UI组件配色调整
+## Task 8: 文字溢出问题修复
+
+**Files:**
+- Modify: `src/ui/DialogUI.ts`
+- Modify: `src/ui/TutorialUI.ts`
+- Modify: `src/ui/CasesListUI.ts`
+- Modify: `src/ui/CaseDetailUI.ts`
+- Modify: `src/ui/DecoctionUI.ts`
+- Modify: `src/ui/ProcessingUI.ts`
+- Modify: `src/ui/PlantingUI.ts`
+- Modify: `src/ui/TitleScene.ts`
+
+**问题描述**:
+用户观察到"很多文本框和文字直接是不匹配的，例如文字延伸到框的外边了"
+
+**常见溢出原因**:
+1. 动态文本未设置`wordWrap`
+2. 文本宽度超出容器边界
+3. 固定宽度太小不足以容纳内容
+4. 长文本内容（如药材名称、病案描述）未做截断处理
+
+- [ ] **Step 1: DialogUI文字溢出检查和修复**
+
+检查 `src/ui/DialogUI.ts`：
+
+```typescript
+// 第61-66行：确保contentText有正确的wordWrap宽度
+// 背景600x200，文本区域应该适配
+
+// 检查并修复：
+// 1. nameText位置和宽度是否溢出背景
+// 2. contentText wordWrap宽度是否与背景匹配
+// 3. stopButton位置是否在背景范围内
+
+// 修复示例：
+this.contentText = scene.add.text(-100, -50, '', {
+  fontSize: '16px',
+  color: UI_COLOR_STRINGS.TEXT_PRIMARY,
+  wordWrap: { width: 450 }  // 确保不超出背景宽度600-两侧边距
+});
+```
+
+- [ ] **Step 2: TitleScene文字溢出检查和修复**
+
+检查 `src/scenes/TitleScene.ts`：
+
+```typescript
+// 第133-142行：操作提示和版本信息
+// 检查文字是否超出屏幕边界
+
+// 确保文字宽度不超过GAME_WIDTH(800)
+this.add.text(GAME_WIDTH / 2, GAME_HEIGHT - 60, '方向键/WASD移动 | 空格交互 | B背包', {
+  fontSize: '14px',
+  color: UI_COLOR_STRINGS.TEXT_SECONDARY
+}).setOrigin(0.5);  // 确保居中不溢出
+```
+
+- [ ] **Step 3: CasesListUI文字溢出检查和修复**
+
+检查 `src/ui/CasesListUI.ts`：
+
+```typescript
+// 病案列表项可能文字过长
+// 检查病案标题、病人姓名是否溢出列表框
+
+// 修复：为长文本添加wordWrap或截断
+const caseTitle = scene.add.text(x, y, caseData.title, {
+  fontSize: '14px',
+  color: UI_COLOR_STRINGS.TEXT_PRIMARY,
+  wordWrap: { width: 280 }  // 列表项宽度
+});
+```
+
+- [ ] **Step 4: CaseDetailUI文字溢出检查和修复**
+
+检查 `src/ui/CaseDetailUI.ts`：
+
+```typescript
+// 病案详情内容可能很长（症状描述、诊断结果等）
+// 检查各区域文本宽度
+
+// 修复示例：
+const symptomText = scene.add.text(x, y, caseData.symptoms, {
+  fontSize: '14px',
+  color: UI_COLOR_STRINGS.TEXT_PRIMARY,
+  wordWrap: { width: 700 }  // 详情面板宽度800-边距
+});
+```
+
+- [ ] **Step 5: DecoctionUI文字溢出检查和修复**
+
+检查 `src/ui/DecoctionUI.ts`：
+
+```typescript
+// 第245-248行：药材提示文字可能过长
+// HERBS_DATA.forEach循环中的药材名称
+
+// 修复：
+const hintText = this.scene.add.text(this.width / 2, 80,
+  `需要药材: ${requiredHerbs.map(...).join(', ')}`,
+  {
+    fontSize: '14px',
+    color: UI_COLOR_STRINGS.TEXT_SECONDARY,
+    wordWrap: { width: this.width - 40 }  // 不超出面板宽度
+  }
+).setOrigin(0.5);
+```
+
+- [ ] **Step 6: ProcessingUI文字溢出检查和修复**
+
+检查 `src/ui/ProcessingUI.ts`：
+
+```typescript
+// 炮制方法和药材名称可能溢出
+// 添加wordWrap设置
+```
+
+- [ ] **Step 7: PlantingUI文字溢出检查和修复**
+
+检查 `src/ui/PlantingUI.ts`：
+
+```typescript
+// 种子名称、水源描述等可能溢出
+// 添加wordWrap设置
+```
+
+- [ ] **Step 8: TutorialUI文字溢出检查和修复**
+
+检查 `src/ui/TutorialUI.ts`：
+
+```typescript
+// 第239-242行已设置wordWrap，确认宽度正确
+// 检查步骤显示内容的宽度
+
+// createCentralTutorialUI中的步骤内容
+// 确保宽度适配500x350的面板
+```
+
+- [ ] **Step 9: 编译验证**
+
+```bash
+npx tsc --noEmit
+```
+
+- [ ] **Step 10: 提交文字溢出修复**
+
+```bash
+git add src/ui/DialogUI.ts src/ui/TutorialUI.ts src/ui/CasesListUI.ts src/ui/CaseDetailUI.ts src/ui/DecoctionUI.ts src/ui/ProcessingUI.ts src/ui/PlantingUI.ts src/scenes/TitleScene.ts
+git commit -m "fix: resolve text overflow issues in UI components"
+```
+
+---
+
+## Task 9: 低优先级UI组件配色调整
 
 **Files:**
 - Modify: `src/ui/ExperienceUI.ts`
@@ -663,7 +816,7 @@ git commit -m "feat: update low-priority UI components colors to match scene PNG
 
 ---
 
-## Task 9: 调整验收维度配置
+## Task 10: 调整验收维度配置
 
 **Files:**
 - Modify: `scripts/visual_acceptance/config.py`
@@ -745,7 +898,7 @@ git commit -m "feat: update visual acceptance dimensions to focus on UI color ha
 
 ---
 
-## Task 10: 重新截图采集和评估验证
+## Task 11: 重新截图采集和评估验证
 
 **Files:**
 - Run: Playwright测试
@@ -795,7 +948,7 @@ git commit -m "test: run visual acceptance evaluation after UI color harmony upd
 
 ---
 
-## Task 11: 更新文档
+## Task 12: 更新文档
 
 **Files:**
 - Modify: `CLAUDE.md`

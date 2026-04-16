@@ -6,6 +6,7 @@ import { EventBus } from '../systems/EventBus';
 import { GameStateBridge } from '../utils/GameStateBridge';
 import { TutorialManager } from '../systems/TutorialManager';
 import { TutorialUI, createCentralTutorialUI } from '../ui/TutorialUI';
+import { UI_COLORS, UI_COLOR_STRINGS } from '../data/ui-color-theme';
 
 export class TitleScene extends Phaser.Scene {
   private saveManager: SaveManager;
@@ -37,8 +38,8 @@ export class TitleScene extends Phaser.Scene {
     this.hasSave = this.saveManager.hasAnySave();
     this.latestSave = this.saveManager.getLatestSave();
 
-    // 背景
-    this.add.rectangle(GAME_WIDTH / 2, GAME_HEIGHT / 2, GAME_WIDTH, GAME_HEIGHT, 0x2d5a27);
+    // 背景：使用场景灰蓝系（更协调）
+    this.add.rectangle(GAME_WIDTH / 2, GAME_HEIGHT / 2, GAME_WIDTH, GAME_HEIGHT, UI_COLORS.PANEL_PRIMARY);
 
     // 标题
     this.add.text(GAME_WIDTH / 2, GAME_HEIGHT / 3, '药灵山谷', {
@@ -53,20 +54,20 @@ export class TitleScene extends Phaser.Scene {
       color: '#aaaaaa'
     }).setOrigin(0.5);
 
-    // 开始按钮
+    // 主按钮
     const startButton = this.add.text(GAME_WIDTH / 2, GAME_HEIGHT / 2 + 20, '开始游戏', {
       fontSize: '24px',
-      color: '#ffffff',
-      backgroundColor: '#4a7c59',
+      color: UI_COLOR_STRINGS.TEXT_PRIMARY,
+      backgroundColor: UI_COLOR_STRINGS.BUTTON_PRIMARY,
       padding: { x: 20, y: 10 }
     }).setOrigin(0.5).setInteractive();
 
     startButton.on('pointerover', () => {
-      startButton.setStyle({ backgroundColor: '#5a8c69' });
+      startButton.setStyle({ backgroundColor: UI_COLOR_STRINGS.BUTTON_PRIMARY_HOVER });
     });
 
     startButton.on('pointerout', () => {
-      startButton.setStyle({ backgroundColor: '#4a7c59' });
+      startButton.setStyle({ backgroundColor: UI_COLOR_STRINGS.BUTTON_PRIMARY });
     });
 
     startButton.on('pointerdown', () => {
@@ -82,17 +83,17 @@ export class TitleScene extends Phaser.Scene {
     if (this.hasSave) {
       const continueButton = this.add.text(GAME_WIDTH / 2, GAME_HEIGHT / 2 + 80, '继续游戏', {
         fontSize: '24px',
-        color: '#ffffff',
-        backgroundColor: '#6a8c49',
+        color: UI_COLOR_STRINGS.TEXT_PRIMARY,
+        backgroundColor: UI_COLOR_STRINGS.BUTTON_SUCCESS,
         padding: { x: 20, y: 10 }
       }).setOrigin(0.5).setInteractive();
 
       continueButton.on('pointerover', () => {
-        continueButton.setStyle({ backgroundColor: '#7a9c59' });
+        continueButton.setStyle({ backgroundColor: UI_COLOR_STRINGS.BUTTON_PRIMARY_HOVER });
       });
 
       continueButton.on('pointerout', () => {
-        continueButton.setStyle({ backgroundColor: '#6a8c49' });
+        continueButton.setStyle({ backgroundColor: UI_COLOR_STRINGS.BUTTON_SUCCESS });
       });
 
       continueButton.on('pointerdown', () => {
@@ -112,17 +113,17 @@ export class TitleScene extends Phaser.Scene {
     // 存档管理按钮
     const saveManageButton = this.add.text(GAME_WIDTH / 2, GAME_HEIGHT / 2 + (this.hasSave ? 160 : 80), '存档管理', {
       fontSize: '18px',
-      color: '#ffffff',
-      backgroundColor: '#555555',
+      color: UI_COLOR_STRINGS.TEXT_PRIMARY,
+      backgroundColor: UI_COLOR_STRINGS.BUTTON_SECONDARY,
       padding: { x: 15, y: 8 }
     }).setOrigin(0.5).setInteractive();
 
     saveManageButton.on('pointerover', () => {
-      saveManageButton.setStyle({ backgroundColor: '#666666' });
+      saveManageButton.setStyle({ backgroundColor: UI_COLOR_STRINGS.BUTTON_SECONDARY_HOVER });
     });
 
     saveManageButton.on('pointerout', () => {
-      saveManageButton.setStyle({ backgroundColor: '#555555' });
+      saveManageButton.setStyle({ backgroundColor: UI_COLOR_STRINGS.BUTTON_SECONDARY });
     });
 
     saveManageButton.on('pointerdown', () => {
@@ -160,7 +161,7 @@ export class TitleScene extends Phaser.Scene {
     promptContainer.setDepth(100);
 
     // 背景
-    const bg = this.add.rectangle(0, 0, 400, 200, 0x1a1a2e, 0.95);
+    const bg = this.add.rectangle(0, 0, 400, 200, UI_COLORS.PANEL_PRIMARY, 0.95);
     promptContainer.add(bg);
 
     // 提示文本
@@ -183,8 +184,8 @@ export class TitleScene extends Phaser.Scene {
     // 加载按钮
     const loadBtn = this.add.text(-80, 50, '加载存档', {
       fontSize: '16px',
-      color: '#ffffff',
-      backgroundColor: '#4a7c59',
+      color: UI_COLOR_STRINGS.TEXT_PRIMARY,
+      backgroundColor: UI_COLOR_STRINGS.BUTTON_PRIMARY,
       padding: { x: 15, y: 8 }
     }).setOrigin(0.5).setInteractive();
     loadBtn.on('pointerdown', () => {
@@ -196,8 +197,8 @@ export class TitleScene extends Phaser.Scene {
     // 新游戏按钮
     const newBtn = this.add.text(80, 50, '新游戏', {
       fontSize: '16px',
-      color: '#ffffff',
-      backgroundColor: '#555555',
+      color: UI_COLOR_STRINGS.TEXT_PRIMARY,
+      backgroundColor: UI_COLOR_STRINGS.BUTTON_SECONDARY,
       padding: { x: 15, y: 8 }
     }).setOrigin(0.5).setInteractive();
     newBtn.on('pointerdown', () => {

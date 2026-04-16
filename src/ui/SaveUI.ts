@@ -15,6 +15,7 @@
 import Phaser from 'phaser';
 import { SaveManager, SaveSlotInfo } from '../systems/SaveManager';
 import { EventBus, EventData } from '../systems/EventBus';
+import { UI_COLORS, UI_COLOR_STRINGS } from '../data/ui-color-theme';
 
 // 存档UI配置
 export interface SaveUIConfig {
@@ -68,18 +69,18 @@ export class SaveUI {
   private saveSuccessListener: (data: EventData) => void;
   private saveAutoListener: (data: EventData) => void;
 
-  // 样式配置
-  private readonly styles = {
-    background: { fillColor: 0x1a1a2e, alpha: 0.95 },
-    title: { fontSize: '24px', color: '#ffffff', fontStyle: 'bold' },
-    slotEmpty: { fillColor: 0x2d2d44, alpha: 1 },
-    slotExists: { fillColor: 0x3d3d5c, alpha: 1 },
-    slotSelected: { fillColor: 0x4a7c59, alpha: 1 },
-    slotText: { fontSize: '14px', color: '#ffffff' },
-    slotInfoText: { fontSize: '12px', color: '#aaaaaa' },
-    button: { fontSize: '16px', color: '#ffffff', backgroundColor: '#4a7c59' },
-    buttonHover: { backgroundColor: '#5a8c69' },
-    buttonDisabled: { backgroundColor: '#555555', color: '#888888' },
+  // 样式配置（基于场景PNG配色）
+  private readonly SaveUI_COLORS = {
+    background: { fillColor: UI_COLORS.PANEL_PRIMARY, alpha: 0.95 },
+    title: { fontSize: '24px', color: UI_COLOR_STRINGS.TEXT_PRIMARY, fontStyle: 'bold' },
+    slotEmpty: { fillColor: UI_COLORS.PANEL_LIGHT, alpha: 1 },
+    slotExists: { fillColor: UI_COLORS.PANEL_PRIMARY, alpha: 1 },
+    slotSelected: { fillColor: UI_COLORS.BUTTON_PRIMARY, alpha: 1 },
+    slotText: { fontSize: '14px', color: UI_COLOR_STRINGS.TEXT_PRIMARY },
+    slotInfoText: { fontSize: '12px', color: UI_COLOR_STRINGS.TEXT_SECONDARY },
+    button: { fontSize: '16px', color: UI_COLOR_STRINGS.TEXT_PRIMARY, backgroundColor: UI_COLOR_STRINGS.BUTTON_PRIMARY },
+    buttonHover: { backgroundColor: UI_COLOR_STRINGS.BUTTON_PRIMARY_HOVER },
+    buttonDisabled: { backgroundColor: '#555555', color: UI_COLOR_STRINGS.TEXT_DISABLED },
     closeButton: { fontSize: '14px', color: '#ff6b6b' }
   };
 
@@ -123,8 +124,8 @@ export class SaveUI {
       this.height / 2,
       this.width,
       this.height,
-      this.styles.background.fillColor,
-      this.styles.background.alpha
+      this.SaveUI_COLORS.background.fillColor,
+      this.SaveUI_COLORS.background.alpha
     );
     this.container.add(this.background);
 
@@ -134,7 +135,7 @@ export class SaveUI {
       this.width / 2,
       30,
       titleText,
-      this.styles.title
+      this.SaveUI_COLORS.title
     ).setOrigin(0.5);
     this.container.add(this.titleText);
 
@@ -147,7 +148,7 @@ export class SaveUI {
       this.width - 20,
       30,
       '',
-      { fontSize: '12px', color: '#888888' }
+      { fontSize: '12px', color: UI_COLOR_STRINGS.TEXT_DISABLED }
     ).setOrigin(1, 0.5);
     this.container.add(this.autoSaveIndicator);
     this.updateAutoSaveIndicator();
@@ -157,7 +158,7 @@ export class SaveUI {
       this.width - 20,
       this.height - 20,
       '关闭 [ESC]',
-      this.styles.closeButton
+      this.SaveUI_COLORS.closeButton
     ).setOrigin(1);
     this.closeButton.setInteractive({ useHandCursor: true });
     this.closeButton.on('pointerover', () => {
@@ -179,17 +180,17 @@ export class SaveUI {
         '快速存档 [当前槽位]',
         {
           fontSize: '18px',
-          color: '#ffffff',
-          backgroundColor: '#4a7c59',
+          color: UI_COLOR_STRINGS.TEXT_PRIMARY,
+          backgroundColor: UI_COLOR_STRINGS.BUTTON_PRIMARY,
           padding: { x: 15, y: 8 }
         }
       ).setOrigin(0.5);
       quickSaveButton.setInteractive({ useHandCursor: true });
       quickSaveButton.on('pointerover', () => {
-        quickSaveButton.setStyle({ backgroundColor: '#5a8c69' });
+        quickSaveButton.setStyle({ backgroundColor: UI_COLOR_STRINGS.BUTTON_PRIMARY_HOVER });
       });
       quickSaveButton.on('pointerout', () => {
-        quickSaveButton.setStyle({ backgroundColor: '#4a7c59' });
+        quickSaveButton.setStyle({ backgroundColor: UI_COLOR_STRINGS.BUTTON_PRIMARY });
       });
       quickSaveButton.on('pointerdown', () => {
         this.performSave(this.selectedSlot);
@@ -219,8 +220,8 @@ export class SaveUI {
 
       // 槽位背景
       const bgColor = slot.exists
-        ? (slot.slot_id === this.selectedSlot ? this.styles.slotSelected.fillColor : this.styles.slotExists.fillColor)
-        : this.styles.slotEmpty.fillColor;
+        ? (slot.slot_id === this.selectedSlot ? this.SaveUI_COLORS.slotSelected.fillColor : this.SaveUI_COLORS.slotExists.fillColor)
+        : this.SaveUI_COLORS.slotEmpty.fillColor;
 
       const slotBackground = this.scene.add.rectangle(
         slotWidth / 2,
@@ -237,7 +238,7 @@ export class SaveUI {
         15,
         15,
         `存档槽位 ${slot.slot_id}`,
-        this.styles.slotText
+        this.SaveUI_COLORS.slotText
       );
       slotContainer.add(slotTitle);
 
@@ -249,7 +250,7 @@ export class SaveUI {
           15,
           40,
           `保存时间: ${savedTime}`,
-          this.styles.slotInfoText
+          this.SaveUI_COLORS.slotInfoText
         );
         slotContainer.add(timeText);
 
@@ -258,7 +259,7 @@ export class SaveUI {
           15,
           60,
           `经验: ${slot.player_experience} | 完成病案: ${slot.completed_cases}`,
-          this.styles.slotInfoText
+          this.SaveUI_COLORS.slotInfoText
         );
         slotContainer.add(progressText);
 
@@ -267,7 +268,7 @@ export class SaveUI {
           15,
           80,
           `当前位置: ${this.formatSceneName(slot.current_scene)}`,
-          this.styles.slotInfoText
+          this.SaveUI_COLORS.slotInfoText
         );
         slotContainer.add(sceneText);
       } else {
@@ -276,7 +277,7 @@ export class SaveUI {
           15,
           50,
           '— 空槽位 —',
-          { fontSize: '16px', color: '#666666' }
+          { fontSize: '16px', color: UI_COLOR_STRINGS.TEXT_DISABLED }
         );
         slotContainer.add(emptyText);
       }
@@ -294,14 +295,14 @@ export class SaveUI {
           '存档',
           {
             fontSize: '14px',
-            color: '#ffffff',
-            backgroundColor: '#4a7c59',
+            color: UI_COLOR_STRINGS.TEXT_PRIMARY,
+            backgroundColor: UI_COLOR_STRINGS.BUTTON_PRIMARY,
             padding: { x: 10, y: 5 }
           }
         ).setOrigin(0.5);
         saveBtn.setInteractive({ useHandCursor: true });
-        saveBtn.on('pointerover', () => saveBtn.setStyle({ backgroundColor: '#5a8c69' }));
-        saveBtn.on('pointerout', () => saveBtn.setStyle({ backgroundColor: '#4a7c59' }));
+        saveBtn.on('pointerover', () => saveBtn.setStyle({ backgroundColor: UI_COLOR_STRINGS.BUTTON_PRIMARY_HOVER }));
+        saveBtn.on('pointerout', () => saveBtn.setStyle({ backgroundColor: UI_COLOR_STRINGS.BUTTON_PRIMARY }));
         saveBtn.on('pointerdown', () => this.performSave(slot.slot_id));
         slotContainer.add(saveBtn);
       }
@@ -314,14 +315,14 @@ export class SaveUI {
           '加载',
           {
             fontSize: '14px',
-            color: '#ffffff',
-            backgroundColor: '#4a7c59',
+            color: UI_COLOR_STRINGS.TEXT_PRIMARY,
+            backgroundColor: UI_COLOR_STRINGS.BUTTON_PRIMARY,
             padding: { x: 10, y: 5 }
           }
         ).setOrigin(0.5);
         loadBtn.setInteractive({ useHandCursor: true });
-        loadBtn.on('pointerover', () => loadBtn.setStyle({ backgroundColor: '#5a8c69' }));
-        loadBtn.on('pointerout', () => loadBtn.setStyle({ backgroundColor: '#4a7c59' }));
+        loadBtn.on('pointerover', () => loadBtn.setStyle({ backgroundColor: UI_COLOR_STRINGS.BUTTON_PRIMARY_HOVER }));
+        loadBtn.on('pointerout', () => loadBtn.setStyle({ backgroundColor: UI_COLOR_STRINGS.BUTTON_PRIMARY }));
         loadBtn.on('pointerdown', () => this.performLoad(slot.slot_id));
         slotContainer.add(loadBtn);
       }
@@ -377,8 +378,8 @@ export class SaveUI {
       const background = slotUI.container.getAt(0) as Phaser.GameObjects.Rectangle;
       if (background) {
         const bgColor = slotUI.info.exists
-          ? (isSelected ? this.styles.slotSelected.fillColor : this.styles.slotExists.fillColor)
-          : this.styles.slotEmpty.fillColor;
+          ? (isSelected ? this.SaveUI_COLORS.slotSelected.fillColor : this.SaveUI_COLORS.slotExists.fillColor)
+          : this.SaveUI_COLORS.slotEmpty.fillColor;
         background.setFillStyle(bgColor);
       }
     }
@@ -393,12 +394,12 @@ export class SaveUI {
     console.log(`[SaveUI] Saving to slot ${slotId}...`);
 
     // 显示存档进行中状态
-    this.showStatusMessage('正在存档...', '#888888');
+    this.showStatusMessage('正在存档...', UI_COLOR_STRINGS.TEXT_DISABLED);
 
     const success = await this.saveManager.save(slotId);
 
     if (success) {
-      this.showStatusMessage('存档成功!', '#4a9c59');
+      this.showStatusMessage('存档成功!', UI_COLOR_STRINGS.STATUS_SUCCESS);
       this.loadSlots();  // 刷新槽位列表
     } else {
       this.showStatusMessage('存档失败!', '#c75050');
@@ -412,12 +413,12 @@ export class SaveUI {
     console.log(`[SaveUI] Loading from slot ${slotId}...`);
 
     // 显示加载进行中状态
-    this.showStatusMessage('正在加载...', '#888888');
+    this.showStatusMessage('正在加载...', UI_COLOR_STRINGS.TEXT_DISABLED);
 
     const saveData = await this.saveManager.load(slotId);
 
     if (saveData) {
-      this.showStatusMessage('加载成功!', '#4a9c59');
+      this.showStatusMessage('加载成功!', UI_COLOR_STRINGS.STATUS_SUCCESS);
 
       // 等待一小段时间后关闭UI并切换场景
       this.scene.time.delayedCall(500, () => {
@@ -442,7 +443,7 @@ export class SaveUI {
         const success = await this.saveManager.deleteSave(slotId);
 
         if (success) {
-          this.showStatusMessage('删除成功!', '#4a9c59');
+          this.showStatusMessage('删除成功!', UI_COLOR_STRINGS.STATUS_SUCCESS);
           this.loadSlots();  // 刷新槽位列表
         } else {
           this.showStatusMessage('删除失败!', '#c75050');
@@ -472,20 +473,20 @@ export class SaveUI {
     this.container.add(dialogContainer);
 
     // 背景
-    const dialogBg = this.scene.add.rectangle(0, 0, 300, 150, 0x2d2d44, 0.95);
+    const dialogBg = this.scene.add.rectangle(0, 0, 300, 150, UI_COLORS.PANEL_PRIMARY, 0.95);
     dialogContainer.add(dialogBg);
 
     // 消息
     const msgText = this.scene.add.text(0, -30, message, {
       fontSize: '16px',
-      color: '#ffffff'
+      color: UI_COLOR_STRINGS.TEXT_PRIMARY
     }).setOrigin(0.5);
     dialogContainer.add(msgText);
 
-    // 确认按钮
+    // 确认按钮（删除操作，使用红色警示）
     const confirmBtn = this.scene.add.text(-60, 40, '确认', {
       fontSize: '14px',
-      color: '#ffffff',
+      color: UI_COLOR_STRINGS.TEXT_PRIMARY,
       backgroundColor: '#c75050',
       padding: { x: 15, y: 8 }
     }).setOrigin(0.5);
@@ -496,8 +497,8 @@ export class SaveUI {
     // 取消按钮
     const cancelBtn = this.scene.add.text(60, 40, '取消', {
       fontSize: '14px',
-      color: '#ffffff',
-      backgroundColor: '#555555',
+      color: UI_COLOR_STRINGS.TEXT_PRIMARY,
+      backgroundColor: UI_COLOR_STRINGS.BUTTON_SECONDARY,
       padding: { x: 15, y: 8 }
     }).setOrigin(0.5);
     cancelBtn.setInteractive({ useHandCursor: true });

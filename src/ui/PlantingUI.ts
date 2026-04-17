@@ -316,7 +316,11 @@ export class PlantingUI {
         this.width / 2,
         20,
         `种子: ${selectedSeed.name} (归${selectedSeed.meridian}经)`,
-        { fontSize: '14px', color: UI_COLOR_STRINGS.BUTTON_SUCCESS }
+        {
+          fontSize: '14px',
+          color: UI_COLOR_STRINGS.BUTTON_SUCCESS,
+          wordWrap: { width: this.width - 40 }
+        }
       ).setOrigin(0.5);
       this.contentContainer!.add(seedInfo);
     }
@@ -402,7 +406,11 @@ export class PlantingUI {
         this.width / 2,
         20,
         `需求: ${selectedSeed.required_water}性水源`,
-        { fontSize: '14px', color: UI_COLOR_STRINGS.BUTTON_SUCCESS }
+        {
+          fontSize: '14px',
+          color: UI_COLOR_STRINGS.BUTTON_SUCCESS,
+          wordWrap: { width: this.width - 40 }
+        }
       ).setOrigin(0.5);
       this.contentContainer!.add(seedInfo);
     }
@@ -470,7 +478,11 @@ export class PlantingUI {
         this.width / 2,
         20,
         `需求: ${selectedSeed.required_fertilizer}味肥料`,
-        { fontSize: '14px', color: UI_COLOR_STRINGS.BUTTON_SUCCESS }
+        {
+          fontSize: '14px',
+          color: UI_COLOR_STRINGS.BUTTON_SUCCESS,
+          wordWrap: { width: this.width - 40 }
+        }
       ).setOrigin(0.5);
       this.contentContainer!.add(seedInfo);
     }
@@ -683,7 +695,11 @@ export class PlantingUI {
       this.width / 2,
       30,
       question,
-      { fontSize: '16px', color: UI_COLOR_STRINGS.TEXT_PRIMARY }
+      {
+        fontSize: '16px',
+        color: UI_COLOR_STRINGS.TEXT_PRIMARY,
+        wordWrap: { width: this.width - 60 }
+      }
     ).setOrigin(0.5);
     this.contentContainer!.add(questionText);
 

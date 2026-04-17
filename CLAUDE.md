@@ -1026,6 +1026,18 @@ zhongyi_game_v3/
 
 **实现计划**: [UI配色协调优化实施计划](docs/superpowers/plans/2026-04-16-ui-color-harmony-implementation.md)
 
+**后续修复** (2026-04-17):
+- 修复荧光绿色残留12处（#00ff00 → BUTTON_PRIMARY/BUTTON_SUCCESS）
+- 降低透明度至0.85（17个UI组件）
+- 调整布局尺寸留边距（720x480代替全屏）
+
+**修复提交记录**:
+| 任务 | 提交 | 描述 |
+|-----|------|------|
+| Task 1 | 07a7fdb | ClinicScene荧光绿修复 |
+| Task 2-6 | 12b4a6c等 | 诊断UI荧光绿+透明度+布局 |
+| Task 7-11 | 多提交 | 透明度和布局调整 |
+
 
 ## 相关文档
 

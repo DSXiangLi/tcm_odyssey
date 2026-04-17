@@ -90,7 +90,7 @@ export class ExperienceUI {
 
   // 样式配置
   private readonly styles = {
-    background: { fillColor: 0x1a1a2e, alpha: 0.95 },
+    background: { fillColor: UI_COLORS.PANEL_PRIMARY, alpha: 0.85 },
     progressBar: {
       bgColor: UI_COLORS.PANEL_LIGHT,
       fillColor: UI_COLORS.BUTTON_PRIMARY,

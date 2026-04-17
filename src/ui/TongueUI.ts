@@ -45,7 +45,7 @@ export class TongueUI extends Phaser.GameObjects.Container {
     this.config = config;
 
     // 创建主背景
-    this.background = scene.add.rectangle(0, 0, 780, 560, UI_COLORS.PANEL_PRIMARY, 0.95);
+    this.background = scene.add.rectangle(0, 0, 720, 480, UI_COLORS.PANEL_PRIMARY, 0.85);
     this.background.setOrigin(0.5);
     this.add(this.background);
 
@@ -99,7 +99,7 @@ export class TongueUI extends Phaser.GameObjects.Container {
    */
   private createTongueImageArea(scene: Phaser.Scene): void {
     // 图片占位区域
-    this.tongueImagePlaceholder = scene.add.rectangle(0, -150, 300, 150, UI_COLORS.PANEL_LIGHT, 0.9);
+    this.tongueImagePlaceholder = scene.add.rectangle(0, -150, 280, 140, UI_COLORS.PANEL_LIGHT, 0.9);
     this.tongueImagePlaceholder.setOrigin(0.5);
     this.add(this.tongueImagePlaceholder);
 
@@ -390,7 +390,7 @@ export class TongueUI extends Phaser.GameObjects.Container {
       }
     }
     selectedOption.setText(selectedOption.text.replace('○', '●'));
-    selectedOption.setColor('#00ff00');
+    selectedOption.setColor(UI_COLOR_STRINGS.BUTTON_PRIMARY);
   }
 
   /**
@@ -432,7 +432,7 @@ export class TongueUI extends Phaser.GameObjects.Container {
   showResult(correctCount: number, totalCount: number): void {
     const isAllCorrect = correctCount === totalCount;
     const resultText = isAllCorrect ? `舌象判断全部正确! (${correctCount}/${totalCount})` : `舌象判断部分正确 (${correctCount}/${totalCount})`;
-    const resultColor = isAllCorrect ? '#00ff00' : '#ffaa00';
+    const resultColor = isAllCorrect ? UI_COLOR_STRINGS.BUTTON_SUCCESS : '#ffaa00';
 
     const result = this.scene.add.text(0, 270, resultText, {
       fontSize: '16px',

@@ -50,7 +50,7 @@ export class SyndromeUI extends Phaser.GameObjects.Container {
     this.config = config;
 
     // 创建主背景
-    this.background = scene.add.rectangle(0, 0, 780, 560, UI_COLORS.PANEL_PRIMARY, 0.95);
+    this.background = scene.add.rectangle(0, 0, 720, 480, UI_COLORS.PANEL_PRIMARY, 0.85);
     this.background.setOrigin(0.5);
     this.add(this.background);
 
@@ -104,7 +104,7 @@ export class SyndromeUI extends Phaser.GameObjects.Container {
     this.add(this.summaryContainer);
 
     // 汇总背景
-    const summaryBg = scene.add.rectangle(0, 0, 600, 100, UI_COLORS.PANEL_SECONDARY, 0.9);
+    const summaryBg = scene.add.rectangle(0, 0, 560, 100, UI_COLORS.PANEL_SECONDARY, 0.9);
     summaryBg.setOrigin(0.5);
     this.summaryContainer.add(summaryBg);
 
@@ -204,7 +204,7 @@ export class SyndromeUI extends Phaser.GameObjects.Container {
     this.add(label);
 
     // 论述框背景
-    this.reasoningBox = scene.add.rectangle(0, 130, 700, 120, UI_COLORS.PANEL_LIGHT, 0.9);
+    this.reasoningBox = scene.add.rectangle(0, 130, 660, 120, UI_COLORS.PANEL_LIGHT, 0.9);
     this.reasoningBox.setOrigin(0.5);
     this.reasoningBox.setStrokeStyle(2, UI_COLORS.BORDER_LIGHT);
     this.add(this.reasoningBox);
@@ -296,7 +296,7 @@ export class SyndromeUI extends Phaser.GameObjects.Container {
 
     // 更新选中
     option.setText(option.text.replace('○', '●'));
-    option.setColor('#00ff00');
+    option.setColor(UI_COLOR_STRINGS.BUTTON_PRIMARY);
 
     this.exposeToGlobal();
   }
@@ -337,7 +337,7 @@ export class SyndromeUI extends Phaser.GameObjects.Container {
     const resultText = isCorrect
       ? `证型判断正确! 论述评分: ${reasoningScore}分`
       : `证型判断有误。论述评分: ${reasoningScore}分`;
-    const resultColor = isCorrect ? '#00ff00' : '#ffaa00';
+    const resultColor = isCorrect ? UI_COLOR_STRINGS.BUTTON_SUCCESS : '#ffaa00';
 
     const result = this.scene.add.text(0, 260, resultText, {
       fontSize: '16px',

@@ -93,7 +93,7 @@ export class NPCFeedbackUI extends Phaser.GameObjects.Container {
     // 点评标题
     const titleText = scene.add.text(0, -170, '诊治点评', {
       fontSize: '24px',
-      color: '#ffaa00',
+      color: '#c0c080',  // SOFT_YELLOW
       fontStyle: 'bold'
     });
     titleText.setOrigin(0.5);

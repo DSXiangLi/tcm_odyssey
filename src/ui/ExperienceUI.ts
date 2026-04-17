@@ -101,7 +101,7 @@ export class ExperienceUI {
     text: {
       title: { fontSize: '18px', color: '#ffffff', fontStyle: 'bold' },
       progress: { fontSize: '14px', color: '#ffffff' },
-      total: { fontSize: '12px', color: '#aaaaaa' },
+      total: { fontSize: '12px', color: '#b0a090' },  // TEXT_SECONDARY
       gain: { fontSize: '24px', color: '#4a9c59', fontStyle: 'bold' },
       notification: { fontSize: '16px', color: '#ffffff' }
     },

@@ -70,7 +70,7 @@ export class CaseDetailUI extends Phaser.GameObjects.Container {
     // 创建关闭按钮
     this.closeButton = scene.add.text(350, -270, '[关闭]', {
       fontSize: '16px',
-      color: '#ff6600'
+      color: '#c09060'  // SOFT_ORANGE
     });
     this.closeButton.setOrigin(0.5);
     this.closeButton.setInteractive({ useHandCursor: true });
@@ -118,7 +118,7 @@ export class CaseDetailUI extends Phaser.GameObjects.Container {
       `${definition.syndrome.type} (${definition.syndrome.category})`,
       {
         fontSize: '20px',
-        color: '#4caf50',
+        color: '#90c070',  // SOFT_GREEN
         fontStyle: 'bold'
       }
     );
@@ -173,7 +173,7 @@ export class CaseDetailUI extends Phaser.GameObjects.Container {
       definition.clues.required.join('、'),
       {
         fontSize: '14px',
-        color: '#4caf50',
+        color: '#90c070',  // SOFT_GREEN
         wordWrap: { width: 350 }
       }
     );
@@ -184,7 +184,7 @@ export class CaseDetailUI extends Phaser.GameObjects.Container {
       definition.clues.auxiliary.join('、'),
       {
         fontSize: '14px',
-        color: '#aaaaaa',
+        color: '#b0a090',  // TEXT_SECONDARY
         wordWrap: { width: 350 }
       }
     );
@@ -197,7 +197,7 @@ export class CaseDetailUI extends Phaser.GameObjects.Container {
       `${definition.pulse.position}${definition.pulse.tension}脉\n"${definition.pulse.description}"`,
       {
         fontSize: '14px',
-        color: '#ffc107',
+        color: '#c0c080',  // SOFT_YELLOW
         wordWrap: { width: 350 }
       }
     );
@@ -208,7 +208,7 @@ export class CaseDetailUI extends Phaser.GameObjects.Container {
       `舌${definition.tongue.body_color}，苔${definition.tongue.coating}\n舌形${definition.tongue.shape}，${definition.tongue.moisture}`,
       {
         fontSize: '14px',
-        color: '#ffc107',
+        color: '#c0c080',  // SOFT_YELLOW
         wordWrap: { width: 350 }
       }
     );
@@ -221,7 +221,7 @@ export class CaseDetailUI extends Phaser.GameObjects.Container {
       definition.teaching_notes.key_points.join('\n'),
       {
         fontSize: '12px',
-        color: '#aaaaaa',
+        color: '#b0a090',  // TEXT_SECONDARY
         wordWrap: { width: 700 }
       }
     );
@@ -234,7 +234,7 @@ export class CaseDetailUI extends Phaser.GameObjects.Container {
       definition.teaching_notes.common_mistakes.join('\n'),
       {
         fontSize: '12px',
-        color: '#f44336',
+        color: '#c07070',  // SOFT_RED
         wordWrap: { width: 700 }
       }
     );
@@ -303,7 +303,7 @@ export class CaseDetailUI extends Phaser.GameObjects.Container {
       `总分: ${history.score.total}`,
       {
         fontSize: '20px',
-        color: '#4caf50',
+        color: '#90c070',  // SOFT_GREEN
         fontStyle: 'bold'
       }
     );
@@ -347,7 +347,7 @@ export class CaseDetailUI extends Phaser.GameObjects.Container {
       `必须线索: ${history.clues_collected.required.join('、')}`,
       {
         fontSize: '12px',
-        color: '#4caf50',
+        color: '#90c070',  // SOFT_GREEN
         wordWrap: { width: 350 }
       }
     );
@@ -407,8 +407,8 @@ export class CaseDetailUI extends Phaser.GameObjects.Container {
         // 已完成：只有返回按钮
         const backButton = this.scene.add.text(0, buttonY, '[返回列表]', {
           fontSize: '16px',
-          color: '#4caf50',
-          backgroundColor: '#222222',
+          color: '#90c070',  // SOFT_GREEN
+          backgroundColor: '#404040',  // BUTTON_DISABLED
           padding: { x: 16, y: 8 }
         });
         backButton.setOrigin(0.5);
@@ -424,8 +424,8 @@ export class CaseDetailUI extends Phaser.GameObjects.Container {
         // 进行中：继续诊治按钮
         const continueButton = this.scene.add.text(0, buttonY, '[继续诊治]', {
           fontSize: '18px',
-          color: '#ffc107',
-          backgroundColor: '#222222',
+          color: '#c0c080',  // SOFT_YELLOW
+          backgroundColor: '#404040',  // BUTTON_DISABLED
           padding: { x: 20, y: 10 }
         });
         continueButton.setOrigin(0.5);
@@ -443,8 +443,8 @@ export class CaseDetailUI extends Phaser.GameObjects.Container {
         // 已解锁：开始诊治按钮
         const startButton = this.scene.add.text(0, buttonY, '[开始诊治]', {
           fontSize: '18px',
-          color: '#4caf50',
-          backgroundColor: '#222222',
+          color: '#90c070',  // SOFT_GREEN
+          backgroundColor: '#404040',  // BUTTON_DISABLED
           padding: { x: 20, y: 10 }
         });
         startButton.setOrigin(0.5);
@@ -465,7 +465,7 @@ export class CaseDetailUI extends Phaser.GameObjects.Container {
           `病案未解锁\n${unlockCondition}`,
           {
             fontSize: '16px',
-            color: '#9e9e9e',
+            color: '#b0a090',  // TEXT_SECONDARY
             align: 'center'
           }
         );
@@ -493,10 +493,10 @@ export class CaseDetailUI extends Phaser.GameObjects.Container {
    */
   private getStatusColor(): string {
     switch (this.caseState.status) {
-      case 'completed': return '#4caf50';
-      case 'in_progress': return '#ffc107';
-      case 'unlocked': return '#4caf50';
-      case 'locked': return '#9e9e9e';
+      case 'completed': return '#90c070';  // SOFT_GREEN
+      case 'in_progress': return '#c0c080';  // SOFT_YELLOW
+      case 'unlocked': return '#90c070';  // SOFT_GREEN
+      case 'locked': return '#b0a090';  // TEXT_SECONDARY
       default: return '#ffffff';
     }
   }
@@ -518,9 +518,9 @@ export class CaseDetailUI extends Phaser.GameObjects.Container {
    */
   private getDifficultyColor(difficulty: 'easy' | 'normal' | 'hard'): string {
     switch (difficulty) {
-      case 'easy': return '#4caf50';
-      case 'normal': return '#ffc107';
-      case 'hard': return '#f44336';
+      case 'easy': return '#90c070';  // SOFT_GREEN
+      case 'normal': return '#c0c080';  // SOFT_YELLOW
+      case 'hard': return '#c07070';  // SOFT_RED
       default: return '#ffffff';
     }
   }

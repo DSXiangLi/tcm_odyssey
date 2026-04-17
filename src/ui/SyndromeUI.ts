@@ -89,7 +89,7 @@ export class SyndromeUI extends Phaser.GameObjects.Container {
   private createTitle(scene: Phaser.Scene): void {
     this.titleText = scene.add.text(0, -250, '辨证论述', {
       fontSize: '24px',
-      color: '#8B4513',
+      color: '#a08060',  // SOFT_BROWN
       fontStyle: 'bold'
     });
     this.titleText.setOrigin(0.5);
@@ -135,14 +135,14 @@ export class SyndromeUI extends Phaser.GameObjects.Container {
     // 脉诊结果
     const pulseResult = scene.add.text(-280, 20, `脉诊: ${this.config.infoSummary.pulseResult}`, {
       fontSize: '14px',
-      color: '#00ffaa'
+      color: '#90c070'  // SOFT_GREEN
     });
     this.summaryContainer.add(pulseResult);
 
     // 舌诊结果
     const tongueResult = scene.add.text(-280, 40, `舌诊: ${this.config.infoSummary.tongueResult}`, {
       fontSize: '14px',
-      color: '#00ffaa'
+      color: '#90c070'  // SOFT_GREEN
     });
     this.summaryContainer.add(tongueResult);
   }
@@ -154,7 +154,7 @@ export class SyndromeUI extends Phaser.GameObjects.Container {
     // 标签
     const label = scene.add.text(-350, -60, '选择证型:', {
       fontSize: '18px',
-      color: '#ffaa00'
+      color: '#c0c080'  // SOFT_YELLOW
     });
     this.add(label);
 
@@ -178,7 +178,7 @@ export class SyndromeUI extends Phaser.GameObjects.Container {
 
       option.on('pointerover', () => {
         if (this.selectedSyndrome !== syndrome) {
-          option.setColor('#88aaff');
+          option.setColor('#70a0c0');  // SOFT_BLUE
         }
       });
       option.on('pointerout', () => {
@@ -199,7 +199,7 @@ export class SyndromeUI extends Phaser.GameObjects.Container {
     // 标签
     const label = scene.add.text(-350, 80, '你的论述:', {
       fontSize: '18px',
-      color: '#ffaa00'
+      color: '#c0c080'  // SOFT_YELLOW
     });
     this.add(label);
 
@@ -244,10 +244,10 @@ export class SyndromeUI extends Phaser.GameObjects.Container {
     });
 
     this.confirmButton.on('pointerover', () => {
-      this.confirmButton.setColor('#00ffaa');
+      this.confirmButton.setColor('#90c070');  // SOFT_GREEN
     });
     this.confirmButton.on('pointerout', () => {
-      this.confirmButton.setColor('#00aaff');
+      this.confirmButton.setColor('#70a0c0');  // SOFT_BLUE
     });
 
     this.add(this.confirmButton);
@@ -320,7 +320,7 @@ export class SyndromeUI extends Phaser.GameObjects.Container {
   private showWarning(message: string): void {
     const warning = this.scene.add.text(0, 220, message, {
       fontSize: '14px',
-      color: '#ff6600'
+      color: '#c09060'  // SOFT_ORANGE
     });
     warning.setOrigin(0.5);
     this.add(warning);
@@ -337,7 +337,7 @@ export class SyndromeUI extends Phaser.GameObjects.Container {
     const resultText = isCorrect
       ? `证型判断正确! 论述评分: ${reasoningScore}分`
       : `证型判断有误。论述评分: ${reasoningScore}分`;
-    const resultColor = isCorrect ? UI_COLOR_STRINGS.BUTTON_SUCCESS : '#ffaa00';
+    const resultColor = isCorrect ? UI_COLOR_STRINGS.BUTTON_SUCCESS : '#c0c080';  // SOFT_YELLOW
 
     const result = this.scene.add.text(0, 260, resultText, {
       fontSize: '16px',

@@ -209,7 +209,7 @@ export class InquiryUI extends Phaser.GameObjects.Container {
         `[${question}]`,
         {
           fontSize: '14px',
-          color: '#88aaff',
+          color: '#70a0c0',  // SOFT_BLUE
           backgroundColor: UI_COLOR_STRINGS.PANEL_PRIMARY,
           padding: { x: 4, y: 2 }
         }
@@ -293,7 +293,7 @@ export class InquiryUI extends Phaser.GameObjects.Container {
     // 停止生成按钮
     this.stopButton = scene.add.text(-380, 210, '[停止生成]', {
       fontSize: '14px',
-      color: '#ff6600'
+      color: '#c09060'  // SOFT_ORANGE
     });
     this.stopButton.setInteractive({ useHandCursor: true });
     this.stopButton.on('pointerdown', () => this.handleStop());
@@ -467,7 +467,7 @@ export class InquiryUI extends Phaser.GameObjects.Container {
     const missing = this.config.clueTracker.getMissingRequiredClues();
     this.completeButton.setVisible(true);
     this.completeButton.setText(`缺少线索: ${missing.join(', ')}`);
-    this.completeButton.setColor('#ff6600');
+    this.completeButton.setColor('#c09060');  // SOFT_ORANGE
     this.completeButton.disableInteractive();
 
     // 3秒后恢复

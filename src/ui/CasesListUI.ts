@@ -63,7 +63,7 @@ export class CasesListUI extends Phaser.GameObjects.Container {
     // 创建关闭按钮
     this.closeButton = scene.add.text(300, -220, '[关闭]', {
       fontSize: '16px',
-      color: '#ff6600'
+      color: '#c09060'  // SOFT_ORANGE
     });
     this.closeButton.setOrigin(0.5);
     this.closeButton.setInteractive({ useHandCursor: true });
@@ -92,7 +92,7 @@ export class CasesListUI extends Phaser.GameObjects.Container {
       `总计: ${stats.total} | 完成: ${stats.completed} | 平均分: ${stats.average_score}`,
       {
         fontSize: '14px',
-        color: '#aaaaaa'
+        color: '#b0a090'  // TEXT_SECONDARY
       }
     );
     statsText.setOrigin(0.5);
@@ -133,7 +133,7 @@ export class CasesListUI extends Phaser.GameObjects.Container {
         `[滚动查看更多]`,
         {
           fontSize: '12px',
-          color: '#888888'
+          color: '#b0a090'  // TEXT_SECONDARY (次级灰)
         }
       );
       scrollHint.setOrigin(0.5);
@@ -269,9 +269,9 @@ export class CasesListUI extends Phaser.GameObjects.Container {
    */
   private getDifficultyColor(difficulty: 'easy' | 'normal' | 'hard'): string {
     switch (difficulty) {
-      case 'easy': return '#4caf50';
-      case 'normal': return '#ffc107';
-      case 'hard': return '#f44336';
+      case 'easy': return '#90c070';  // SOFT_GREEN
+      case 'normal': return '#c0c080';  // SOFT_YELLOW
+      case 'hard': return '#c07070';  // SOFT_RED
       default: return '#ffffff';
     }
   }
@@ -287,22 +287,22 @@ export class CasesListUI extends Phaser.GameObjects.Container {
     switch (caseState.status) {
       case 'completed':
         buttonText = `${caseState.history?.score.total || 0}分 [详情]`;
-        buttonColor = '#4caf50';
+        buttonColor = '#90c070';  // SOFT_GREEN
         isInteractive = true;
         break;
       case 'in_progress':
         buttonText = '[继续诊治]';
-        buttonColor = '#ffc107';
+        buttonColor = '#c0c080';  // SOFT_YELLOW
         isInteractive = true;
         break;
       case 'unlocked':
         buttonText = '[开始诊治]';
-        buttonColor = '#4caf50';
+        buttonColor = '#90c070';  // SOFT_GREEN
         isInteractive = true;
         break;
       case 'locked':
         buttonText = '[查看解锁条件]';
-        buttonColor = '#9e9e9e';
+        buttonColor = '#a08060';  // SOFT_BROWN
         isInteractive = true;
         break;
       default:
@@ -314,7 +314,7 @@ export class CasesListUI extends Phaser.GameObjects.Container {
     const button = this.scene.add.text(x, y, buttonText, {
       fontSize: '14px',
       color: buttonColor,
-      backgroundColor: '#222222',
+      backgroundColor: '#404040',  // BUTTON_DISABLED
       padding: { x: 8, y: 4 }
     });
     button.setOrigin(0.5);

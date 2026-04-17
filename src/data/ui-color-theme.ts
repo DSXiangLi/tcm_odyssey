@@ -63,6 +63,26 @@ export const UI_COLORS = {
   /** 草地绿 */
   ACCENT_GRASS: 0x80a040,
 
+  // === 新柔和田园色系 (Round 3 视觉优化) ===
+  /** 柔和绿色 - 高亮/选中状态 */
+  GREEN_SOFT: 0x4a7c59,
+  /** 绿系辅色 - 柔和过渡 */
+  GREEN_AUXILIARY: 0x6b8e4e,
+  /** 灰蓝温暖版 - 柔和背景 */
+  BLUE_WARM: 0x5c6b7a,
+  /** 土黄系 - 背景装饰 */
+  YELLOW_EARTH: 0xc4a35a,
+  /** 暖米黄 - 次要文字 */
+  YELLOW_WARM: 0xf5e6d3,
+  /** 棕系温暖版 - 柔和木质感 */
+  BROWN_MAIN: 0x8b6f47,
+  /** 棕系暗色 - 深度层次 */
+  BROWN_DARK: 0x6b5b3d,
+
+  // === 文字色 ===
+  /** 次要文字 - 暖米黄色 */
+  TEXT_SECONDARY: 0xf5e6d3,
+
 } as const;
 
 /**
@@ -79,12 +99,20 @@ export const UI_COLOR_STRINGS = {
   BUTTON_SECONDARY_HOVER: '#704030',
   BUTTON_SUCCESS: '#60a040',
   TEXT_PRIMARY: '#ffffff',
-  TEXT_SECONDARY: '#c0a080',
+  TEXT_SECONDARY: '#f5e6d3',  // 更新为暖米黄色
   TEXT_HIGHLIGHT: '#80a040',
   TEXT_DISABLED: '#808080',
   STATUS_SUCCESS: '#60a040',
   STATUS_WARNING: '#e0c040',
   ACCENT_SKY: '#40a0c0',
+  // 新柔和田园色系 (Round 3 视觉优化)
+  GREEN_SOFT: '#4a7c59',
+  GREEN_AUXILIARY: '#6b8e4e',
+  BLUE_WARM: '#5c6b7a',
+  YELLOW_EARTH: '#c4a35a',
+  YELLOW_WARM: '#f5e6d3',
+  BROWN_MAIN: '#8b6f47',
+  BROWN_DARK: '#6b5b3d',
 } as const;
 
 /**

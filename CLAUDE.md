@@ -993,6 +993,39 @@ zhongyi_game_v3/
 
 **详细修复记录**: [docs/testing/phase2-test-fixes-record.md](docs/testing/phase2-test-fixes-record.md)
 
+### UI配色协调优化执行状态 ✅ 已完成 (2026-04-17)
+
+**优化内容**:
+- 创建配色常量文件 ui-color-theme.ts（从场景PNG提取）
+- TitleScene配色调整
+- 18个UI组件配色统一
+- 验收维度调整（聚焦UI配色协调度）
+
+**配色来源**:
+| 艅系 | 颜色值 | 来源场景 |
+|-----|-------|---------|
+| 暗绿系 | #80a040 | 外景/药园 |
+| 暗蓝系 | #4080a0 | 外景天空 |
+| 灰蓝系 | #408080 | 诊所 |
+| 暗棕系 | #604020 | 外景/药园/诊所 |
+| 土黄系 | #402020 | 诊所/药园 |
+
+**提交记录**:
+| 任务 | 提交 | 描述 |
+|-----|------|------|
+| Task 1 | c1714b6 | 配色常量文件 |
+| Task 2 | c1ecc4b | TitleScene配色 |
+| Task 3 | 6e16bcf | DialogUI配色 |
+| Task 4 | 6cbbc58 | TutorialUI配色 |
+| Task 5 | b313796 | SaveUI配色 |
+| Task 6 | 52cc9d5 | 高优先级UI组件 |
+| Task 7 | 501d838 | 中优先级UI组件 |
+| Task 8 | 2bb4c5d | 文字溢出修复 |
+| Task 9 | d62ae3b | 低优先级UI组件 |
+| Task 10 | 32b32c7 | 验收维度调整 |
+
+**实现计划**: [UI配色协调优化实施计划](docs/superpowers/plans/2026-04-16-ui-color-harmony-implementation.md)
+
 
 ## 相关文档
 

@@ -99,7 +99,7 @@ export class InventoryUI {
 
   // 样式配置
   private readonly styles = {
-    background: { fillColor: UI_COLORS.PANEL_PRIMARY, alpha: 0.95 },
+    background: { fillColor: UI_COLORS.PANEL_PRIMARY, alpha: 0.85 },
     title: { fontSize: '20px', color: UI_COLOR_STRINGS.TEXT_PRIMARY, fontStyle: 'bold' },
     tab: { fontSize: '14px', color: UI_COLOR_STRINGS.TEXT_SECONDARY, padding: { x: 10, y: 5 } },
     tabSelected: { color: UI_COLOR_STRINGS.TEXT_PRIMARY, backgroundColor: UI_COLOR_STRINGS.BUTTON_SUCCESS },

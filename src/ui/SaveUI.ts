@@ -71,7 +71,7 @@ export class SaveUI {
 
   // 样式配置（基于场景PNG配色）
   private readonly SaveUI_COLORS = {
-    background: { fillColor: UI_COLORS.PANEL_PRIMARY, alpha: 0.95 },
+    background: { fillColor: UI_COLORS.PANEL_PRIMARY, alpha: 0.85 },
     title: { fontSize: '24px', color: UI_COLOR_STRINGS.TEXT_PRIMARY, fontStyle: 'bold' },
     slotEmpty: { fillColor: UI_COLORS.PANEL_LIGHT, alpha: 1 },
     slotExists: { fillColor: UI_COLORS.PANEL_PRIMARY, alpha: 1 },
@@ -473,7 +473,7 @@ export class SaveUI {
     this.container.add(dialogContainer);
 
     // 背景
-    const dialogBg = this.scene.add.rectangle(0, 0, 300, 150, UI_COLORS.PANEL_PRIMARY, 0.95);
+    const dialogBg = this.scene.add.rectangle(0, 0, 300, 150, UI_COLORS.PANEL_PRIMARY, 0.85);
     dialogContainer.add(dialogBg);
 
     // 消息

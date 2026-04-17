@@ -40,7 +40,7 @@ export class PulseUI extends Phaser.GameObjects.Container {
     this.config = config;
 
     // 创建主背景
-    this.background = scene.add.rectangle(0, 0, 780, 480, UI_COLORS.PANEL_PRIMARY, 0.95);
+    this.background = scene.add.rectangle(0, 0, 720, 420, UI_COLORS.PANEL_PRIMARY, 0.85);
     this.background.setOrigin(0.5);
     this.add(this.background);
 
@@ -88,7 +88,7 @@ export class PulseUI extends Phaser.GameObjects.Container {
    */
   private createDescriptionArea(scene: Phaser.Scene): void {
     // 描述背景
-    const descBg = scene.add.rectangle(0, -100, 600, 120, UI_COLORS.PANEL_SECONDARY, 0.9);
+    const descBg = scene.add.rectangle(0, -100, 560, 120, UI_COLORS.PANEL_SECONDARY, 0.9);
     descBg.setOrigin(0.5);
     this.add(descBg);
 
@@ -259,7 +259,7 @@ export class PulseUI extends Phaser.GameObjects.Container {
 
     // 更新当前选中
     option.setText(option.text.replace('○', '●'));
-    option.setColor('#00ff00');
+    option.setColor(UI_COLOR_STRINGS.BUTTON_PRIMARY);
 
     this.exposeToGlobal();
   }
@@ -282,7 +282,7 @@ export class PulseUI extends Phaser.GameObjects.Container {
 
     // 更新当前选中
     option.setText(option.text.replace('○', '●'));
-    option.setColor('#00ff00');
+    option.setColor(UI_COLOR_STRINGS.BUTTON_PRIMARY);
 
     this.exposeToGlobal();
   }
@@ -322,7 +322,7 @@ export class PulseUI extends Phaser.GameObjects.Container {
    */
   showResult(isCorrect: boolean): void {
     const resultText = isCorrect ? '脉象判断正确!' : '脉象判断有误';
-    const resultColor = isCorrect ? '#00ff00' : '#ff6600';
+    const resultColor = isCorrect ? UI_COLOR_STRINGS.BUTTON_SUCCESS : '#ff6600';
 
     const result = this.scene.add.text(0, 220, resultText, {
       fontSize: '18px',

@@ -12,6 +12,7 @@
  */
 
 import Phaser from 'phaser';
+import { UI_COLORS, UI_COLOR_STRINGS } from '../data/ui-color-theme';
 import { CaseManager, CaseState, CaseStatus } from '../systems/CaseManager';
 
 export interface CasesListUIConfig {
@@ -40,7 +41,7 @@ export class CasesListUI extends Phaser.GameObjects.Container {
     this.caseManager = config.caseManager;
 
     // 创建背景
-    this.background = scene.add.rectangle(0, 0, 700, 500, 0x333333, 0.95);
+    this.background = scene.add.rectangle(0, 0, 700, 500, UI_COLORS.PANEL_PRIMARY, 0.95);
     this.background.setOrigin(0.5);
     this.add(this.background);
 
@@ -194,7 +195,8 @@ export class CasesListUI extends Phaser.GameObjects.Container {
     const syndromeText = this.scene.add.text(-220, 5, caseName, {
       fontSize: '16px',
       color: '#ffffff',
-      fontStyle: 'bold'
+      fontStyle: 'bold',
+      wordWrap: { width: 430 }  // Item width 650 - offset 220 = 430 max
     });
     item.add(syndromeText);
 
@@ -238,15 +240,15 @@ export class CasesListUI extends Phaser.GameObjects.Container {
   private getStatusDisplay(status: CaseStatus): { icon: string; bgColor: number; textColor: string } {
     switch (status) {
       case 'completed':
-        return { icon: '☑', bgColor: 0x2a4a2a, textColor: '#4caf50' };
+        return { icon: '☑', bgColor: UI_COLORS.STATUS_SUCCESS, textColor: UI_COLOR_STRINGS.STATUS_SUCCESS };
       case 'in_progress':
-        return { icon: '●', bgColor: 0x4a4a2a, textColor: '#ffc107' };
+        return { icon: '●', bgColor: UI_COLORS.STATUS_WARNING, textColor: UI_COLOR_STRINGS.STATUS_WARNING };
       case 'unlocked':
-        return { icon: '○', bgColor: 0x3a3a3a, textColor: '#4caf50' };
+        return { icon: '○', bgColor: UI_COLORS.PANEL_LIGHT, textColor: UI_COLOR_STRINGS.STATUS_SUCCESS };
       case 'locked':
-        return { icon: '☐', bgColor: 0x2a2a2a, textColor: '#9e9e9e' };
+        return { icon: '☐', bgColor: UI_COLORS.PANEL_DARK, textColor: UI_COLOR_STRINGS.TEXT_DISABLED };
       default:
-        return { icon: '?', bgColor: 0x333333, textColor: '#ffffff' };
+        return { icon: '?', bgColor: UI_COLORS.PANEL_PRIMARY, textColor: UI_COLOR_STRINGS.TEXT_PRIMARY };
     }
   }
 
@@ -364,13 +366,13 @@ export class CasesListUI extends Phaser.GameObjects.Container {
     const unlockCondition = this.caseManager.getUnlockCondition(caseId);
 
     // 创建弹出提示
-    const popupBg = this.scene.add.rectangle(0, 0, 400, 100, 0x444444, 0.95);
+    const popupBg = this.scene.add.rectangle(0, 0, 400, 100, UI_COLORS.PANEL_LIGHT, 0.95);
     popupBg.setOrigin(0.5);
     this.add(popupBg);
 
     const title = this.scene.add.text(0, -30, '解锁条件', {
       fontSize: '18px',
-      color: '#ffffff',
+      color: UI_COLOR_STRINGS.TEXT_PRIMARY,
       fontStyle: 'bold'
     });
     title.setOrigin(0.5);
@@ -378,7 +380,7 @@ export class CasesListUI extends Phaser.GameObjects.Container {
 
     const condition = this.scene.add.text(0, 10, unlockCondition, {
       fontSize: '14px',
-      color: '#aaaaaa',
+      color: UI_COLOR_STRINGS.TEXT_SECONDARY,
       wordWrap: { width: 350 }
     });
     condition.setOrigin(0.5);
@@ -386,7 +388,7 @@ export class CasesListUI extends Phaser.GameObjects.Container {
 
     const closeBtn = this.scene.add.text(0, 40, '[知道了]', {
       fontSize: '12px',
-      color: '#ff6600'
+      color: UI_COLOR_STRINGS.ACCENT_SKY
     });
     closeBtn.setOrigin(0.5);
     closeBtn.setInteractive({ useHandCursor: true });

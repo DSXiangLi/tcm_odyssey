@@ -409,10 +409,11 @@ export class ProcessingUI {
 
       // 辅料功效
       if (adjuvantConfig) {
-        const effectText = this.createText(this.width / 2, y + 25, adjuvantConfig.effect, {
+        const effectText = this.scene.add.text(this.width / 2, y + 25, adjuvantConfig.effect, {
           fontSize: '14px',
-          color: UI_COLOR_STRINGS.TEXT_SECONDARY
-        });
+          color: UI_COLOR_STRINGS.TEXT_SECONDARY,
+          wordWrap: { width: this.width - 80 }
+        }).setOrigin(0.5);
         this.contentContainer!.add(effectText);
       }
 
@@ -598,10 +599,14 @@ export class ProcessingUI {
     });
 
     // 反馈文字
-    const feedbackText = this.createText(this.width / 2, 350,
+    const feedbackText = this.scene.add.text(this.width / 2, 350,
       result.feedback,
-      { fontSize: '16px', color: UI_COLOR_STRINGS.TEXT_SECONDARY }
-    );
+      {
+        fontSize: '16px',
+        color: UI_COLOR_STRINGS.TEXT_SECONDARY,
+        wordWrap: { width: this.width - 60 }
+      }
+    ).setOrigin(0.5);
     this.contentContainer!.add(feedbackText);
 
     // 返回按钮

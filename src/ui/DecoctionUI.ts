@@ -245,7 +245,11 @@ export class DecoctionUI {
     // 提示文字
     const hintText = this.scene.add.text(this.width / 2, 80,
       `需要药材: ${requiredHerbs.map(id => getHerbById(id)?.name || id).join(', ')}`,
-      { fontSize: '14px', color: UI_COLOR_STRINGS.TEXT_SECONDARY }
+      {
+        fontSize: '14px',
+        color: UI_COLOR_STRINGS.TEXT_SECONDARY,
+        wordWrap: { width: this.width - 40 }  // Fit within panel width with margins
+      }
     ).setOrigin(0.5);
     this.contentContainer.add(hintText);
 
@@ -336,7 +340,11 @@ export class DecoctionUI {
     // 提示文字
     const hintText = this.scene.add.text(this.width / 2, 80,
       '将药材放置到正确的君臣佐使位置',
-      { fontSize: '14px', color: UI_COLOR_STRINGS.TEXT_SECONDARY }
+      {
+        fontSize: '14px',
+        color: UI_COLOR_STRINGS.TEXT_SECONDARY,
+        wordWrap: { width: this.width - 40 }
+      }
     ).setOrigin(0.5);
     this.contentContainer.add(hintText);
 
@@ -476,7 +484,11 @@ export class DecoctionUI {
     // 提示文字
     const hintText = this.scene.add.text(this.width / 2, 80,
       '设置每种药材的煎煮顺序',
-      { fontSize: '14px', color: UI_COLOR_STRINGS.TEXT_SECONDARY }
+      {
+        fontSize: '14px',
+        color: UI_COLOR_STRINGS.TEXT_SECONDARY,
+        wordWrap: { width: this.width - 40 }
+      }
     ).setOrigin(0.5);
     this.contentContainer.add(hintText);
 
@@ -556,7 +568,11 @@ export class DecoctionUI {
     // 提示文字
     const hintText = this.scene.add.text(this.width / 2, 80,
       '选择合适的煎药火候',
-      { fontSize: '14px', color: UI_COLOR_STRINGS.TEXT_SECONDARY }
+      {
+        fontSize: '14px',
+        color: UI_COLOR_STRINGS.TEXT_SECONDARY,
+        wordWrap: { width: this.width - 40 }
+      }
     ).setOrigin(0.5);
     this.contentContainer.add(hintText);
 
@@ -586,7 +602,11 @@ export class DecoctionUI {
       // 描述文字
       const descText = this.scene.add.text(this.width / 2, y + 40,
         fireConfig?.description || '',
-        { fontSize: '14px', color: UI_COLOR_STRINGS.TEXT_SECONDARY }
+        {
+          fontSize: '14px',
+          color: UI_COLOR_STRINGS.TEXT_SECONDARY,
+          wordWrap: { width: this.width - 80 }
+        }
       ).setOrigin(0.5);
 
       this.contentContainer?.add([button, descText]);
@@ -744,7 +764,11 @@ export class DecoctionUI {
     // 反馈文字
     const feedbackText = this.scene.add.text(this.width / 2, 350,
       result.feedback,
-      { fontSize: '16px', color: UI_COLOR_STRINGS.TEXT_SECONDARY }
+      {
+        fontSize: '16px',
+        color: UI_COLOR_STRINGS.TEXT_SECONDARY,
+        wordWrap: { width: this.width - 60 }
+      }
     ).setOrigin(0.5);
     this.contentContainer?.add(feedbackText);
 

@@ -35,7 +35,7 @@ export class DialogUI extends Phaser.GameObjects.Container {
     this.sseClient = new SSEClient();
 
     // 创建背景
-    this.background = scene.add.rectangle(0, 0, 600, 200, UI_COLORS.PANEL_PRIMARY, 0.9);
+    this.background = scene.add.rectangle(0, 0, 600, 200, UI_COLORS.PANEL_PRIMARY, 0.85);
     this.background.setOrigin(0.5);
     this.add(this.background);
 

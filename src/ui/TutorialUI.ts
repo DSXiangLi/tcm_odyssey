@@ -81,7 +81,7 @@ export class TutorialUI {
 
   // 样式配置（使用场景PNG提取的配色主题）
   private readonly styles = {
-    background: { fillColor: UI_COLORS.PANEL_PRIMARY, alpha: 0.95 },
+    background: { fillColor: UI_COLORS.PANEL_PRIMARY, alpha: 0.85 },
     title: { fontSize: '28px', color: UI_COLOR_STRINGS.TEXT_PRIMARY, fontStyle: 'bold' },
     stepTitle: { fontSize: '20px', color: UI_COLOR_STRINGS.TEXT_PRIMARY, fontStyle: 'bold' },
     stepContent: { fontSize: '16px', color: UI_COLOR_STRINGS.TEXT_SECONDARY },
@@ -91,7 +91,7 @@ export class TutorialUI {
     progressBg: { fillColor: UI_COLORS.PANEL_PRIMARY, alpha: 1 },
     skipButton: { fontSize: '16px', color: '#ff6b6b' },  // 红色跳过按钮保持警示色
     nextButton: { fontSize: '18px', color: UI_COLOR_STRINGS.TEXT_PRIMARY, backgroundColor: UI_COLOR_STRINGS.BUTTON_SUCCESS },
-    tipBackground: { fillColor: UI_COLORS.PANEL_PRIMARY, alpha: 0.9 },
+    tipBackground: { fillColor: UI_COLORS.PANEL_PRIMARY, alpha: 0.85 },
     tipText: { fontSize: '16px', color: UI_COLOR_STRINGS.TEXT_PRIMARY }
   };
 
@@ -390,7 +390,7 @@ export class TutorialUI {
     this.container.add(dialogContainer);
 
     // 弹窗背景
-    const dialogBg = this.scene.add.rectangle(0, 0, dialogWidth, dialogHeight, UI_COLORS.PANEL_PRIMARY, 0.95);
+    const dialogBg = this.scene.add.rectangle(0, 0, dialogWidth, dialogHeight, UI_COLORS.PANEL_PRIMARY, 0.85);
     dialogContainer.add(dialogBg);
 
     // 确认文字

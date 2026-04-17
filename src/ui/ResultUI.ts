@@ -42,8 +42,8 @@ export class ResultUI extends Phaser.GameObjects.Container {
     super(scene, x, y);
     this.config = config;
 
-    // 创建主背景
-    this.background = scene.add.rectangle(0, 0, 780, 600, UI_COLORS.PANEL_PRIMARY, 0.95);
+    // 创建主背景 (调整尺寸和透明度)
+    this.background = scene.add.rectangle(0, 0, 720, 480, UI_COLORS.PANEL_PRIMARY, 0.85);
     this.background.setOrigin(0.5);
     this.add(this.background);
 
@@ -98,8 +98,8 @@ export class ResultUI extends Phaser.GameObjects.Container {
    * 创建总分区域
    */
   private createTotalScoreArea(scene: Phaser.Scene): void {
-    // 总分背景
-    const totalBg = scene.add.rectangle(0, -230, 200, 80, UI_COLORS.PANEL_SECONDARY, 0.9);
+    // 总分背景 (调整尺寸)
+    const totalBg = scene.add.rectangle(0, -230, 180, 70, UI_COLORS.PANEL_SECONDARY, 0.9);
     totalBg.setOrigin(0.5);
     this.add(totalBg);
 
@@ -206,20 +206,20 @@ export class ResultUI extends Phaser.GameObjects.Container {
     });
     this.add(this.weaknessText);
 
-    // 优势标题
+    // 优势标题 (使用柔和绿色)
     const strengthLabel = scene.add.text(100, 100, '优势环节:', {
       fontSize: '16px',
-      color: '#00ff00'
+      color: UI_COLOR_STRINGS.BUTTON_SUCCESS
     });
     this.add(strengthLabel);
 
-    // 优势内容
+    // 优势内容 (使用柔和绿色)
     const strengthContent = this.config.score.strengths.length > 0
       ? this.config.score.strengths.join('、')
       : '继续努力';
     this.strengthText = scene.add.text(100, 125, strengthContent, {
       fontSize: '14px',
-      color: '#00ff00',
+      color: UI_COLOR_STRINGS.BUTTON_SUCCESS,
       wordWrap: { width: 350 }
     });
     this.add(this.strengthText);
@@ -232,13 +232,13 @@ export class ResultUI extends Phaser.GameObjects.Container {
     this.npcFeedbackContainer = scene.add.container(0, 180);
     this.add(this.npcFeedbackContainer);
 
-    // NPC点评背景
-    const feedbackBg = scene.add.rectangle(0, 0, 700, 100, UI_COLORS.PANEL_SECONDARY, 0.9);
+    // NPC点评背景 (调整尺寸)
+    const feedbackBg = scene.add.rectangle(0, 0, 660, 90, UI_COLORS.PANEL_SECONDARY, 0.9);
     feedbackBg.setOrigin(0.5);
     this.npcFeedbackContainer.add(feedbackBg);
 
-    // NPC头像占位
-    const avatarPlaceholder = scene.add.rectangle(-320, 0, 60, 60, UI_COLORS.BORDER_PRIMARY, 0.9);
+    // NPC头像占位 (调整尺寸)
+    const avatarPlaceholder = scene.add.rectangle(-320, 0, 50, 50, UI_COLORS.BORDER_PRIMARY, 0.9);
     avatarPlaceholder.setOrigin(0.5);
     this.npcFeedbackContainer.add(avatarPlaceholder);
 
@@ -342,10 +342,10 @@ export class ResultUI extends Phaser.GameObjects.Container {
   }
 
   /**
-   * 获取评分颜色
+   * 获取评分颜色 (使用柔和绿色替代荧光绿)
    */
   private getScoreColor(percentage: number): string {
-    if (percentage >= 80) return '#00ff00';
+    if (percentage >= 80) return UI_COLOR_STRINGS.BUTTON_SUCCESS;
     if (percentage >= 60) return '#ffaa00';
     return '#ff6600';
   }

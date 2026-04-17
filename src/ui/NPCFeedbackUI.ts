@@ -45,7 +45,7 @@ export class NPCFeedbackUI extends Phaser.GameObjects.Container {
     this.sseClient = new SSEClient();
 
     // 创建主背景
-    this.background = scene.add.rectangle(0, 0, 780, 400, UI_COLORS.PANEL_PRIMARY, 0.95);
+    this.background = scene.add.rectangle(0, 0, 640, 360, UI_COLORS.PANEL_PRIMARY, 0.85);
     this.background.setOrigin(0.5);
     this.add(this.background);
 
@@ -77,7 +77,7 @@ export class NPCFeedbackUI extends Phaser.GameObjects.Container {
    */
   private createNPCAvatarArea(scene: Phaser.Scene): void {
     // NPC头像占位
-    this.npcAvatar = scene.add.rectangle(-300, -150, 100, 100, UI_COLORS.BORDER_PRIMARY, 0.9);
+    this.npcAvatar = scene.add.rectangle(-300, -150, 80, 80, UI_COLORS.BORDER_PRIMARY, 0.9);
     this.npcAvatar.setOrigin(0.5);
     this.add(this.npcAvatar);
 
@@ -105,7 +105,7 @@ export class NPCFeedbackUI extends Phaser.GameObjects.Container {
    */
   private createFeedbackArea(scene: Phaser.Scene): void {
     // 点评内容背景
-    const contentBg = scene.add.rectangle(0, -50, 700, 200, UI_COLORS.PANEL_SECONDARY, 0.9);
+    const contentBg = scene.add.rectangle(0, -50, 600, 180, UI_COLORS.PANEL_SECONDARY, 0.9);
     contentBg.setOrigin(0.5);
     this.add(contentBg);
 

@@ -48,7 +48,7 @@ export class CaseDetailUI extends Phaser.GameObjects.Container {
     }
 
     // 创建背景
-    this.background = scene.add.rectangle(0, 0, 800, 600, UI_COLORS.PANEL_PRIMARY, 0.95);
+    this.background = scene.add.rectangle(0, 0, 720, 480, UI_COLORS.PANEL_PRIMARY, 0.85);
     this.background.setOrigin(0.5);
     this.add(this.background);
 
@@ -270,7 +270,7 @@ export class CaseDetailUI extends Phaser.GameObjects.Container {
    */
   private createHistorySection(history: CaseHistoryRecord): void {
     // 创建分隔线
-    const divider = this.scene.add.rectangle(0, 100, 700, 2, UI_COLORS.DIVIDER);
+    const divider = this.scene.add.rectangle(0, 100, 660, 2, UI_COLORS.DIVIDER);
     this.add(divider);
 
     // 标题

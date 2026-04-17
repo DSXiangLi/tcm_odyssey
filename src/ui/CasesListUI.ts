@@ -41,7 +41,7 @@ export class CasesListUI extends Phaser.GameObjects.Container {
     this.caseManager = config.caseManager;
 
     // 创建背景
-    this.background = scene.add.rectangle(0, 0, 700, 500, UI_COLORS.PANEL_PRIMARY, 0.95);
+    this.background = scene.add.rectangle(0, 0, 640, 420, UI_COLORS.PANEL_PRIMARY, 0.85);
     this.background.setOrigin(0.5);
     this.add(this.background);
 
@@ -172,7 +172,7 @@ export class CasesListUI extends Phaser.GameObjects.Container {
     const statusInfo = this.getStatusDisplay(caseState.status);
 
     // 创建背景条
-    const itemBg = this.scene.add.rectangle(0, 0, 650, 60, statusInfo.bgColor, 0.8);
+    const itemBg = this.scene.add.rectangle(0, 0, 600, 60, statusInfo.bgColor, 0.85);
     itemBg.setOrigin(0.5);
     item.add(itemBg);
 
@@ -366,7 +366,7 @@ export class CasesListUI extends Phaser.GameObjects.Container {
     const unlockCondition = this.caseManager.getUnlockCondition(caseId);
 
     // 创建弹出提示
-    const popupBg = this.scene.add.rectangle(0, 0, 400, 100, UI_COLORS.PANEL_LIGHT, 0.95);
+    const popupBg = this.scene.add.rectangle(0, 0, 400, 100, UI_COLORS.PANEL_LIGHT, 0.85);
     popupBg.setOrigin(0.5);
     this.add(popupBg);
 

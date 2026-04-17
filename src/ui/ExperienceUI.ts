@@ -14,6 +14,7 @@
 import Phaser from 'phaser';
 import { ExperienceManager, ExperienceEvent } from '../systems/ExperienceManager';
 import { EventBus, EventData } from '../systems/EventBus';
+import { UI_COLORS } from '../data/ui-color-theme';
 import {
   EXPERIENCE_TYPES,
   EXPERIENCE_PARAMS,
@@ -91,8 +92,8 @@ export class ExperienceUI {
   private readonly styles = {
     background: { fillColor: 0x1a1a2e, alpha: 0.95 },
     progressBar: {
-      bgColor: 0x2d2d44,
-      fillColor: 0x4a7c59,
+      bgColor: UI_COLORS.PANEL_LIGHT,
+      fillColor: UI_COLORS.BUTTON_PRIMARY,
       width: 300,
       height: 20,
       borderRadius: 5
@@ -271,7 +272,7 @@ export class ExperienceUI {
         yOffset + barHeight / 2 + 6,
         barWidth - 60,
         barHeight,
-        0x2d2d44
+        UI_COLORS.PANEL_LIGHT
       );
       this.typeBreakdownContainer.add(typeBarBg);
 

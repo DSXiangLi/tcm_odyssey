@@ -79,6 +79,17 @@ export class ProcessingUI {
     this.container = this.scene.add.container(0, 0);
     this.container.setDepth(100);
 
+    // 创建半透明背景
+    const background = this.scene.add.rectangle(
+      this.width / 2,
+      this.height / 2,
+      this.width,
+      this.height,
+      UI_COLORS.PANEL_PRIMARY,
+      0.85
+    );
+    this.container.add(background);
+
     // 监听事件
     this.setupEventListeners();
 

@@ -11,6 +11,7 @@
  */
 
 import Phaser from 'phaser';
+import { UI_COLORS, UI_COLOR_STRINGS } from '../data/ui-color-theme';
 import { DiagnosisScore } from '../systems/ScoringSystem';
 
 export interface ResultUIConfig {
@@ -42,7 +43,7 @@ export class ResultUI extends Phaser.GameObjects.Container {
     this.config = config;
 
     // 创建主背景
-    this.background = scene.add.rectangle(0, 0, 780, 600, 0x2a2a2a, 0.95);
+    this.background = scene.add.rectangle(0, 0, 780, 600, UI_COLORS.PANEL_PRIMARY, 0.95);
     this.background.setOrigin(0.5);
     this.add(this.background);
 
@@ -98,14 +99,14 @@ export class ResultUI extends Phaser.GameObjects.Container {
    */
   private createTotalScoreArea(scene: Phaser.Scene): void {
     // 总分背景
-    const totalBg = scene.add.rectangle(0, -230, 200, 80, 0x1a1a1a, 0.9);
+    const totalBg = scene.add.rectangle(0, -230, 200, 80, UI_COLORS.PANEL_SECONDARY, 0.9);
     totalBg.setOrigin(0.5);
     this.add(totalBg);
 
     // 总分标题
     const totalLabel = scene.add.text(0, -260, '总分', {
       fontSize: '16px',
-      color: '#888888'
+      color: UI_COLOR_STRINGS.TEXT_DISABLED
     });
     totalLabel.setOrigin(0.5);
     this.add(totalLabel);
@@ -156,13 +157,13 @@ export class ResultUI extends Phaser.GameObjects.Container {
       // 环节名称
       const label = scene.add.text(x, y, stage.name, {
         fontSize: '14px',
-        color: '#ffffff'
+        color: UI_COLOR_STRINGS.TEXT_PRIMARY
       });
       this.add(label);
       this.scoreLabels.push(label);
 
       // 评分条背景
-      const barBg = scene.add.rectangle(x + 60, y + 10, barWidth, barHeight, 0x3a3a3a, 0.9);
+      const barBg = scene.add.rectangle(x + 60, y + 10, barWidth, barHeight, UI_COLORS.PANEL_LIGHT, 0.9);
       barBg.setOrigin(0, 0);
       this.add(barBg);
 
@@ -232,19 +233,19 @@ export class ResultUI extends Phaser.GameObjects.Container {
     this.add(this.npcFeedbackContainer);
 
     // NPC点评背景
-    const feedbackBg = scene.add.rectangle(0, 0, 700, 100, 0x1a1a1a, 0.9);
+    const feedbackBg = scene.add.rectangle(0, 0, 700, 100, UI_COLORS.PANEL_SECONDARY, 0.9);
     feedbackBg.setOrigin(0.5);
     this.npcFeedbackContainer.add(feedbackBg);
 
     // NPC头像占位
-    const avatarPlaceholder = scene.add.rectangle(-320, 0, 60, 60, 0x8B4513, 0.9);
+    const avatarPlaceholder = scene.add.rectangle(-320, 0, 60, 60, UI_COLORS.BORDER_PRIMARY, 0.9);
     avatarPlaceholder.setOrigin(0.5);
     this.npcFeedbackContainer.add(avatarPlaceholder);
 
     // NPC名称
     const npcName = scene.add.text(-320, -40, '青木先生', {
       fontSize: '14px',
-      color: '#ffffff'
+      color: UI_COLOR_STRINGS.TEXT_PRIMARY
     });
     npcName.setOrigin(0.5);
     this.npcFeedbackContainer.add(npcName);
@@ -253,7 +254,7 @@ export class ResultUI extends Phaser.GameObjects.Container {
     const feedbackText = this.generateNPCFeedback();
     const feedbackContent = scene.add.text(-270, -30, feedbackText, {
       fontSize: '14px',
-      color: '#ffffff',
+      color: UI_COLOR_STRINGS.TEXT_PRIMARY,
       wordWrap: { width: 550 },
       lineSpacing: 6
     });
@@ -296,8 +297,8 @@ export class ResultUI extends Phaser.GameObjects.Container {
     // 返回诊所按钮
     this.returnButton = scene.add.text(-100, 260, '[返回诊所]', {
       fontSize: '18px',
-      color: '#00aaff',
-      backgroundColor: '#1a1a1a',
+      color: UI_COLOR_STRINGS.ACCENT_SKY,
+      backgroundColor: UI_COLOR_STRINGS.PANEL_SECONDARY,
       padding: { x: 10, y: 5 }
     });
     this.returnButton.setOrigin(0.5);
@@ -319,8 +320,8 @@ export class ResultUI extends Phaser.GameObjects.Container {
     // 查看病案历史按钮
     this.historyButton = scene.add.text(100, 260, '[查看病案记录]', {
       fontSize: '18px',
-      color: '#00aaff',
-      backgroundColor: '#1a1a1a',
+      color: UI_COLOR_STRINGS.ACCENT_SKY,
+      backgroundColor: UI_COLOR_STRINGS.PANEL_SECONDARY,
       padding: { x: 10, y: 5 }
     });
     this.historyButton.setOrigin(0.5);

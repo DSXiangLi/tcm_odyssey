@@ -12,6 +12,7 @@
  */
 
 import Phaser from 'phaser';
+import { UI_COLORS, UI_COLOR_STRINGS } from '../data/ui-color-theme';
 import { CaseManager, CaseState, CaseHistoryRecord } from '../systems/CaseManager';
 
 export interface CaseDetailUIConfig {
@@ -47,14 +48,14 @@ export class CaseDetailUI extends Phaser.GameObjects.Container {
     }
 
     // 创建背景
-    this.background = scene.add.rectangle(0, 0, 800, 600, 0x333333, 0.95);
+    this.background = scene.add.rectangle(0, 0, 800, 600, UI_COLORS.PANEL_PRIMARY, 0.95);
     this.background.setOrigin(0.5);
     this.add(this.background);
 
     // 创建标题
     this.titleText = scene.add.text(0, -270, '病案详情', {
       fontSize: '24px',
-      color: '#ffffff',
+      color: UI_COLOR_STRINGS.TEXT_PRIMARY,
       fontStyle: 'bold'
     });
     this.titleText.setOrigin(0.5);
@@ -98,7 +99,7 @@ export class CaseDetailUI extends Phaser.GameObjects.Container {
     // 病案ID
     const idText = this.scene.add.text(-350, -240, `ID: ${this.caseId}`, {
       fontSize: '14px',
-      color: '#aaaaaa'
+      color: UI_COLOR_STRINGS.TEXT_SECONDARY
     });
     this.add(idText);
 
@@ -106,7 +107,7 @@ export class CaseDetailUI extends Phaser.GameObjects.Container {
     const statusText = this.scene.add.text(350, -240, this.getStatusText(), {
       fontSize: '14px',
       color: this.getStatusColor(),
-      backgroundColor: '#222222',
+      backgroundColor: UI_COLOR_STRINGS.PANEL_DARK,
       padding: { x: 6, y: 2 }
     });
     statusText.setOrigin(1, 0);
@@ -129,7 +130,7 @@ export class CaseDetailUI extends Phaser.GameObjects.Container {
       `方剂: ${definition.prescription.name}`,
       {
         fontSize: '16px',
-        color: '#ffffff'
+        color: UI_COLOR_STRINGS.TEXT_PRIMARY
       }
     );
     prescriptionText.setOrigin(0.5);
@@ -159,7 +160,7 @@ export class CaseDetailUI extends Phaser.GameObjects.Container {
       definition.chief_complaint_template,
       {
         fontSize: '14px',
-        color: '#ffffff',
+        color: UI_COLOR_STRINGS.TEXT_PRIMARY,
         wordWrap: { width: 350 }
       }
     );
@@ -252,13 +253,13 @@ export class CaseDetailUI extends Phaser.GameObjects.Container {
    * 创建小节标题
    */
   private createSectionTitle(title: string, x: number, y: number): void {
-    const titleBg = this.scene.add.rectangle(x, y, 760, 25, 0x444444, 0.8);
+    const titleBg = this.scene.add.rectangle(x, y, 760, 25, UI_COLORS.PANEL_LIGHT, 0.8);
     titleBg.setOrigin(0, 0);
     this.add(titleBg);
 
     const titleText = this.scene.add.text(x + 10, y + 5, title, {
       fontSize: '14px',
-      color: '#ffffff',
+      color: UI_COLOR_STRINGS.TEXT_PRIMARY,
       fontStyle: 'bold'
     });
     this.add(titleText);
@@ -269,13 +270,13 @@ export class CaseDetailUI extends Phaser.GameObjects.Container {
    */
   private createHistorySection(history: CaseHistoryRecord): void {
     // 创建分隔线
-    const divider = this.scene.add.rectangle(0, 100, 700, 2, 0x666666);
+    const divider = this.scene.add.rectangle(0, 100, 700, 2, UI_COLORS.DIVIDER);
     this.add(divider);
 
     // 标题
     const historyTitle = this.scene.add.text(0, 130, '诊治记录', {
       fontSize: '18px',
-      color: '#ffffff',
+      color: UI_COLOR_STRINGS.TEXT_PRIMARY,
       fontStyle: 'bold'
     });
     historyTitle.setOrigin(0.5);
@@ -320,7 +321,7 @@ export class CaseDetailUI extends Phaser.GameObjects.Container {
     const details = scores.map(s => `${s.name}: ${s.value}`).join(' | ');
     const scoreDetails = this.scene.add.text(100, scoreY, details, {
       fontSize: '12px',
-      color: '#aaaaaa'
+      color: UI_COLOR_STRINGS.TEXT_SECONDARY
     });
     this.add(scoreDetails);
 
@@ -329,7 +330,7 @@ export class CaseDetailUI extends Phaser.GameObjects.Container {
       `完成时间: ${new Date(history.completed_at).toLocaleString()}`,
       {
         fontSize: '12px',
-        color: '#888888'
+        color: UI_COLOR_STRINGS.TEXT_DISABLED
       }
     );
     this.add(timeText);
@@ -357,7 +358,7 @@ export class CaseDetailUI extends Phaser.GameObjects.Container {
       `辅助线索: ${history.clues_collected.auxiliary.join('、')}`,
       {
         fontSize: '12px',
-        color: '#aaaaaa',
+        color: UI_COLOR_STRINGS.TEXT_SECONDARY,
         wordWrap: { width: 350 }
       }
     );
@@ -388,7 +389,7 @@ export class CaseDetailUI extends Phaser.GameObjects.Container {
       history.npc_feedback,
       {
         fontSize: '12px',
-        color: '#ffc107',
+        color: UI_COLOR_STRINGS.TEXT_HIGHLIGHT,
         wordWrap: { width: 350 }
       }
     );

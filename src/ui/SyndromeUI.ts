@@ -11,6 +11,7 @@
  */
 
 import Phaser from 'phaser';
+import { UI_COLORS, UI_COLOR_STRINGS } from '../data/ui-color-theme';
 import { ClueState } from '../systems/ClueTracker';
 
 export interface InfoSummaryData {
@@ -49,7 +50,7 @@ export class SyndromeUI extends Phaser.GameObjects.Container {
     this.config = config;
 
     // 创建主背景
-    this.background = scene.add.rectangle(0, 0, 780, 560, 0x2a2a2a, 0.95);
+    this.background = scene.add.rectangle(0, 0, 780, 560, UI_COLORS.PANEL_PRIMARY, 0.95);
     this.background.setOrigin(0.5);
     this.add(this.background);
 
@@ -103,14 +104,14 @@ export class SyndromeUI extends Phaser.GameObjects.Container {
     this.add(this.summaryContainer);
 
     // 汇总背景
-    const summaryBg = scene.add.rectangle(0, 0, 600, 100, 0x1a1a1a, 0.9);
+    const summaryBg = scene.add.rectangle(0, 0, 600, 100, UI_COLORS.PANEL_SECONDARY, 0.9);
     summaryBg.setOrigin(0.5);
     this.summaryContainer.add(summaryBg);
 
     // 标题
     const summaryTitle = scene.add.text(0, -40, '已收集信息汇总', {
       fontSize: '14px',
-      color: '#888888'
+      color: UI_COLOR_STRINGS.TEXT_DISABLED
     });
     summaryTitle.setOrigin(0.5);
     this.summaryContainer.add(summaryTitle);
@@ -118,7 +119,7 @@ export class SyndromeUI extends Phaser.GameObjects.Container {
     // 主诉
     const chiefComplaint = scene.add.text(-280, -20, `主诉: ${this.config.infoSummary.chiefComplaint}`, {
       fontSize: '14px',
-      color: '#ffffff',
+      color: UI_COLOR_STRINGS.TEXT_PRIMARY,
       wordWrap: { width: 560 }
     });
     this.summaryContainer.add(chiefComplaint);
@@ -126,7 +127,7 @@ export class SyndromeUI extends Phaser.GameObjects.Container {
     // 问诊摘要
     const inquirySummary = scene.add.text(-280, 0, `问诊: ${this.config.infoSummary.inquirySummary}`, {
       fontSize: '14px',
-      color: '#ffffff',
+      color: UI_COLOR_STRINGS.TEXT_PRIMARY,
       wordWrap: { width: 560 }
     });
     this.summaryContainer.add(inquirySummary);
@@ -165,8 +166,8 @@ export class SyndromeUI extends Phaser.GameObjects.Container {
 
       const option = scene.add.text(optionX, optionY, `○ ${syndrome}`, {
         fontSize: '18px',
-        color: '#ffffff',
-        backgroundColor: '#3a3a3a',
+        color: UI_COLOR_STRINGS.TEXT_PRIMARY,
+        backgroundColor: UI_COLOR_STRINGS.PANEL_LIGHT,
         padding: { x: 8, y: 4 }
       });
       option.setInteractive({ useHandCursor: true });
@@ -203,15 +204,15 @@ export class SyndromeUI extends Phaser.GameObjects.Container {
     this.add(label);
 
     // 论述框背景
-    this.reasoningBox = scene.add.rectangle(0, 130, 700, 120, 0x3a3a3a, 0.9);
+    this.reasoningBox = scene.add.rectangle(0, 130, 700, 120, UI_COLORS.PANEL_LIGHT, 0.9);
     this.reasoningBox.setOrigin(0.5);
-    this.reasoningBox.setStrokeStyle(2, 0x5a5a5a);
+    this.reasoningBox.setStrokeStyle(2, UI_COLORS.BORDER_LIGHT);
     this.add(this.reasoningBox);
 
     // 论述文本
     this.reasoningText = scene.add.text(-340, 80, '', {
       fontSize: '16px',
-      color: '#ffffff',
+      color: UI_COLOR_STRINGS.TEXT_PRIMARY,
       wordWrap: { width: 680 },
       lineSpacing: 6
     });
@@ -220,7 +221,7 @@ export class SyndromeUI extends Phaser.GameObjects.Container {
     // 输入提示
     this.reasoningHint = scene.add.text(-340, 80, '输入你的辨证推理过程...', {
       fontSize: '16px',
-      color: '#888888'
+      color: UI_COLOR_STRINGS.TEXT_DISABLED
     });
     this.add(this.reasoningHint);
   }
@@ -231,8 +232,8 @@ export class SyndromeUI extends Phaser.GameObjects.Container {
   private createConfirmButton(scene: Phaser.Scene): void {
     this.confirmButton = scene.add.text(0, 240, '[提交回答]', {
       fontSize: '18px',
-      color: '#00aaff',
-      backgroundColor: '#1a1a1a',
+      color: UI_COLOR_STRINGS.ACCENT_SKY,
+      backgroundColor: UI_COLOR_STRINGS.PANEL_SECONDARY,
       padding: { x: 12, y: 6 }
     });
     this.confirmButton.setOrigin(0.5);

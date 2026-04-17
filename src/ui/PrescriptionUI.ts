@@ -39,7 +39,7 @@ export class PrescriptionUI extends Phaser.GameObjects.Container {
     this.config = config;
 
     // 创建主背景
-    this.background = scene.add.rectangle(0, 0, 780, 560, UI_COLORS.PANEL_PRIMARY, 0.95);
+    this.background = scene.add.rectangle(0, 0, 720, 480, UI_COLORS.PANEL_PRIMARY, 0.85);
     this.background.setOrigin(0.5);
     this.add(this.background);
 
@@ -143,7 +143,7 @@ export class PrescriptionUI extends Phaser.GameObjects.Container {
    */
   private createDetailArea(scene: Phaser.Scene): void {
     // 详情背景
-    this.detailBox = scene.add.rectangle(0, 60, 700, 200, UI_COLORS.PANEL_SECONDARY, 0.9);
+    this.detailBox = scene.add.rectangle(0, 60, 660, 180, UI_COLORS.PANEL_SECONDARY, 0.9);
     this.detailBox.setOrigin(0.5);
     this.add(this.detailBox);
 
@@ -230,7 +230,7 @@ export class PrescriptionUI extends Phaser.GameObjects.Container {
 
     // 更新选中
     option.setText(option.text.replace('○', '●'));
-    option.setColor('#00ff00');
+    option.setColor(UI_COLOR_STRINGS.BUTTON_PRIMARY);
 
     // 更新详情
     this.updateDetail();
@@ -316,7 +316,7 @@ ${composition}
    */
   showResult(isCorrect: boolean): void {
     const resultText = isCorrect ? '方剂选择正确!' : '方剂选择有误';
-    const resultColor = isCorrect ? '#00ff00' : '#ff6600';
+    const resultColor = isCorrect ? UI_COLOR_STRINGS.BUTTON_SUCCESS : '#ff6600';
 
     const result = this.scene.add.text(0, 250, resultText, {
       fontSize: '16px',

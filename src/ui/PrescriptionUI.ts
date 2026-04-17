@@ -11,6 +11,7 @@
  */
 
 import Phaser from 'phaser';
+import { UI_COLORS, UI_COLOR_STRINGS } from '../data/ui-color-theme';
 import prescriptionsData from '../data/prescriptions.json';
 
 export interface PrescriptionUIConfig {
@@ -38,7 +39,7 @@ export class PrescriptionUI extends Phaser.GameObjects.Container {
     this.config = config;
 
     // 创建主背景
-    this.background = scene.add.rectangle(0, 0, 780, 560, 0x2a2a2a, 0.95);
+    this.background = scene.add.rectangle(0, 0, 780, 560, UI_COLORS.PANEL_PRIMARY, 0.95);
     this.background.setOrigin(0.5);
     this.add(this.background);
 
@@ -103,8 +104,8 @@ export class PrescriptionUI extends Phaser.GameObjects.Container {
 
       const option = scene.add.text(optionX, optionY, `○ ${prescription.name}`, {
         fontSize: '20px',
-        color: '#ffffff',
-        backgroundColor: '#3a3a3a',
+        color: UI_COLOR_STRINGS.TEXT_PRIMARY,
+        backgroundColor: UI_COLOR_STRINGS.PANEL_LIGHT,
         padding: { x: 10, y: 5 }
       });
       option.setInteractive({ useHandCursor: true });
@@ -131,7 +132,7 @@ export class PrescriptionUI extends Phaser.GameObjects.Container {
       const compositionText = prescription.composition.map(c => c.herb).join('、');
       const briefInfo = scene.add.text(150, optionY, `组成: ${compositionText}`, {
         fontSize: '14px',
-        color: '#888888'
+        color: UI_COLOR_STRINGS.TEXT_DISABLED
       });
       this.add(briefInfo);
     }
@@ -142,14 +143,14 @@ export class PrescriptionUI extends Phaser.GameObjects.Container {
    */
   private createDetailArea(scene: Phaser.Scene): void {
     // 详情背景
-    this.detailBox = scene.add.rectangle(0, 60, 700, 200, 0x1a1a1a, 0.9);
+    this.detailBox = scene.add.rectangle(0, 60, 700, 200, UI_COLORS.PANEL_SECONDARY, 0.9);
     this.detailBox.setOrigin(0.5);
     this.add(this.detailBox);
 
     // 详情标题
     const detailTitle = scene.add.text(0, -30, '方剂详情', {
       fontSize: '16px',
-      color: '#888888'
+      color: UI_COLOR_STRINGS.TEXT_DISABLED
     });
     detailTitle.setOrigin(0.5);
     this.add(detailTitle);
@@ -157,7 +158,7 @@ export class PrescriptionUI extends Phaser.GameObjects.Container {
     // 详情文本
     this.detailText = scene.add.text(-340, -10, '请先选择方剂查看详情', {
       fontSize: '14px',
-      color: '#ffffff',
+      color: UI_COLOR_STRINGS.TEXT_PRIMARY,
       wordWrap: { width: 680 },
       lineSpacing: 6
     });
@@ -170,8 +171,8 @@ export class PrescriptionUI extends Phaser.GameObjects.Container {
   private createAdjustmentButton(scene: Phaser.Scene): void {
     this.adjustmentButton = scene.add.text(0, 170, '[方剂加减] 🔒 未解锁', {
       fontSize: '16px',
-      color: '#888888',
-      backgroundColor: '#2a2a2a',
+      color: UI_COLOR_STRINGS.TEXT_DISABLED,
+      backgroundColor: UI_COLOR_STRINGS.PANEL_PRIMARY,
       padding: { x: 10, y: 5 }
     });
     this.adjustmentButton.setOrigin(0.5);
@@ -190,8 +191,8 @@ export class PrescriptionUI extends Phaser.GameObjects.Container {
   private createConfirmButton(scene: Phaser.Scene): void {
     this.confirmButton = scene.add.text(0, 220, '[确认选择]', {
       fontSize: '18px',
-      color: '#00aaff',
-      backgroundColor: '#1a1a1a',
+      color: UI_COLOR_STRINGS.ACCENT_SKY,
+      backgroundColor: UI_COLOR_STRINGS.PANEL_SECONDARY,
       padding: { x: 12, y: 6 }
     });
     this.confirmButton.setOrigin(0.5);

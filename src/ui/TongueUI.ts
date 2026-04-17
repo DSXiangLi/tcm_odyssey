@@ -10,6 +10,7 @@
  */
 
 import Phaser from 'phaser';
+import { UI_COLORS, UI_COLOR_STRINGS } from '../data/ui-color-theme';
 import tongueDescriptions from '../data/tongue_descriptions.json';
 
 export interface TongueUIConfig {
@@ -44,7 +45,7 @@ export class TongueUI extends Phaser.GameObjects.Container {
     this.config = config;
 
     // 创建主背景
-    this.background = scene.add.rectangle(0, 0, 780, 560, 0x2a2a2a, 0.95);
+    this.background = scene.add.rectangle(0, 0, 780, 560, UI_COLORS.PANEL_PRIMARY, 0.95);
     this.background.setOrigin(0.5);
     this.add(this.background);
 
@@ -98,7 +99,7 @@ export class TongueUI extends Phaser.GameObjects.Container {
    */
   private createTongueImageArea(scene: Phaser.Scene): void {
     // 图片占位区域
-    this.tongueImagePlaceholder = scene.add.rectangle(0, -150, 300, 150, 0x3a3a3a, 0.9);
+    this.tongueImagePlaceholder = scene.add.rectangle(0, -150, 300, 150, UI_COLORS.PANEL_LIGHT, 0.9);
     this.tongueImagePlaceholder.setOrigin(0.5);
     this.add(this.tongueImagePlaceholder);
 
@@ -106,7 +107,7 @@ export class TongueUI extends Phaser.GameObjects.Container {
     const tongueText = this.getTongueDescription();
     this.tongueImageText = scene.add.text(0, -150, tongueText, {
       fontSize: '16px',
-      color: '#ffffff',
+      color: UI_COLOR_STRINGS.TEXT_PRIMARY,
       wordWrap: { width: 280 },
       lineSpacing: 6,
       align: 'center'
@@ -144,8 +145,8 @@ export class TongueUI extends Phaser.GameObjects.Container {
 
       const option = scene.add.text(optionX, optionY, `○${color.name}`, {
         fontSize: '14px',
-        color: '#ffffff',
-        backgroundColor: '#3a3a3a',
+        color: UI_COLOR_STRINGS.TEXT_PRIMARY,
+        backgroundColor: UI_COLOR_STRINGS.PANEL_LIGHT,
         padding: { x: 4, y: 2 }
       });
       option.setInteractive({ useHandCursor: true });
@@ -192,8 +193,8 @@ export class TongueUI extends Phaser.GameObjects.Container {
 
       const option = scene.add.text(optionX, optionY, `○${coating.name}`, {
         fontSize: '14px',
-        color: '#ffffff',
-        backgroundColor: '#3a3a3a',
+        color: UI_COLOR_STRINGS.TEXT_PRIMARY,
+        backgroundColor: UI_COLOR_STRINGS.PANEL_LIGHT,
         padding: { x: 4, y: 2 }
       });
       option.setInteractive({ useHandCursor: true });
@@ -240,8 +241,8 @@ export class TongueUI extends Phaser.GameObjects.Container {
 
       const option = scene.add.text(optionX, optionY, `○${shape.name}`, {
         fontSize: '14px',
-        color: '#ffffff',
-        backgroundColor: '#3a3a3a',
+        color: UI_COLOR_STRINGS.TEXT_PRIMARY,
+        backgroundColor: UI_COLOR_STRINGS.PANEL_LIGHT,
         padding: { x: 4, y: 2 }
       });
       option.setInteractive({ useHandCursor: true });
@@ -288,8 +289,8 @@ export class TongueUI extends Phaser.GameObjects.Container {
 
       const option = scene.add.text(optionX, optionY, `○${moisture.name}`, {
         fontSize: '14px',
-        color: '#ffffff',
-        backgroundColor: '#3a3a3a',
+        color: UI_COLOR_STRINGS.TEXT_PRIMARY,
+        backgroundColor: UI_COLOR_STRINGS.PANEL_LIGHT,
         padding: { x: 4, y: 2 }
       });
       option.setInteractive({ useHandCursor: true });
@@ -320,8 +321,8 @@ export class TongueUI extends Phaser.GameObjects.Container {
   private createConfirmButton(scene: Phaser.Scene): void {
     this.confirmButton = scene.add.text(0, 250, '[确认观察结果]', {
       fontSize: '18px',
-      color: '#00aaff',
-      backgroundColor: '#1a1a1a',
+      color: UI_COLOR_STRINGS.ACCENT_SKY,
+      backgroundColor: UI_COLOR_STRINGS.PANEL_SECONDARY,
       padding: { x: 12, y: 6 }
     });
     this.confirmButton.setOrigin(0.5);

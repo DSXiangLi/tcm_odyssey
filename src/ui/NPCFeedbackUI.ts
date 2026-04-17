@@ -10,6 +10,7 @@
  */
 
 import Phaser from 'phaser';
+import { UI_COLORS, UI_COLOR_STRINGS } from '../data/ui-color-theme';
 import { SSEClient } from '../utils/sseClient';
 import { DiagnosisScore } from '../systems/ScoringSystem';
 
@@ -44,7 +45,7 @@ export class NPCFeedbackUI extends Phaser.GameObjects.Container {
     this.sseClient = new SSEClient();
 
     // 创建主背景
-    this.background = scene.add.rectangle(0, 0, 780, 400, 0x2a2a2a, 0.95);
+    this.background = scene.add.rectangle(0, 0, 780, 400, UI_COLORS.PANEL_PRIMARY, 0.95);
     this.background.setOrigin(0.5);
     this.add(this.background);
 
@@ -76,14 +77,14 @@ export class NPCFeedbackUI extends Phaser.GameObjects.Container {
    */
   private createNPCAvatarArea(scene: Phaser.Scene): void {
     // NPC头像占位
-    this.npcAvatar = scene.add.rectangle(-300, -150, 100, 100, 0x8B4513, 0.9);
+    this.npcAvatar = scene.add.rectangle(-300, -150, 100, 100, UI_COLORS.BORDER_PRIMARY, 0.9);
     this.npcAvatar.setOrigin(0.5);
     this.add(this.npcAvatar);
 
     // NPC名称
     this.npcNameText = scene.add.text(-300, -90, this.config.npcName, {
       fontSize: '20px',
-      color: '#ffffff',
+      color: UI_COLOR_STRINGS.TEXT_PRIMARY,
       fontStyle: 'bold'
     });
     this.npcNameText.setOrigin(0.5);
@@ -104,14 +105,14 @@ export class NPCFeedbackUI extends Phaser.GameObjects.Container {
    */
   private createFeedbackArea(scene: Phaser.Scene): void {
     // 点评内容背景
-    const contentBg = scene.add.rectangle(0, -50, 700, 200, 0x1a1a1a, 0.9);
+    const contentBg = scene.add.rectangle(0, -50, 700, 200, UI_COLORS.PANEL_SECONDARY, 0.9);
     contentBg.setOrigin(0.5);
     this.add(contentBg);
 
     // 点评文本
     this.feedbackText = scene.add.text(-340, -130, '', {
       fontSize: '16px',
-      color: '#ffffff',
+      color: UI_COLOR_STRINGS.TEXT_PRIMARY,
       wordWrap: { width: 680 },
       lineSpacing: 8
     });
@@ -120,7 +121,7 @@ export class NPCFeedbackUI extends Phaser.GameObjects.Container {
     // 光标效果
     this.cursorText = scene.add.text(340, -130, '|', {
       fontSize: '16px',
-      color: '#00ff00'
+      color: UI_COLOR_STRINGS.STATUS_SUCCESS
     });
     this.cursorText.setVisible(false);
     this.add(this.cursorText);
@@ -133,8 +134,8 @@ export class NPCFeedbackUI extends Phaser.GameObjects.Container {
     // 停止生成按钮
     this.stopButton = scene.add.text(-100, 140, '[停止生成]', {
       fontSize: '16px',
-      color: '#ff6600',
-      backgroundColor: '#1a1a1a',
+      color: UI_COLOR_STRINGS.STATUS_WARNING,
+      backgroundColor: UI_COLOR_STRINGS.PANEL_SECONDARY,
       padding: { x: 8, y: 4 }
     });
     this.stopButton.setOrigin(0.5);
@@ -150,8 +151,8 @@ export class NPCFeedbackUI extends Phaser.GameObjects.Container {
     // 完成按钮
     this.completeButton = scene.add.text(100, 140, '[完成点评]', {
       fontSize: '16px',
-      color: '#00aaff',
-      backgroundColor: '#1a1a1a',
+      color: UI_COLOR_STRINGS.ACCENT_SKY,
+      backgroundColor: UI_COLOR_STRINGS.PANEL_SECONDARY,
       padding: { x: 8, y: 4 }
     });
     this.completeButton.setOrigin(0.5);

@@ -10,6 +10,7 @@
  */
 
 import Phaser from 'phaser';
+import { UI_COLORS, UI_COLOR_STRINGS } from '../data/ui-color-theme';
 import pulseDescriptions from '../data/pulse_descriptions.json';
 
 export interface PulseUIConfig {
@@ -39,7 +40,7 @@ export class PulseUI extends Phaser.GameObjects.Container {
     this.config = config;
 
     // 创建主背景
-    this.background = scene.add.rectangle(0, 0, 780, 480, 0x2a2a2a, 0.95);
+    this.background = scene.add.rectangle(0, 0, 780, 480, UI_COLORS.PANEL_PRIMARY, 0.95);
     this.background.setOrigin(0.5);
     this.add(this.background);
 
@@ -87,7 +88,7 @@ export class PulseUI extends Phaser.GameObjects.Container {
    */
   private createDescriptionArea(scene: Phaser.Scene): void {
     // 描述背景
-    const descBg = scene.add.rectangle(0, -100, 600, 120, 0x1a1a1a, 0.9);
+    const descBg = scene.add.rectangle(0, -100, 600, 120, UI_COLORS.PANEL_SECONDARY, 0.9);
     descBg.setOrigin(0.5);
     this.add(descBg);
 
@@ -105,7 +106,7 @@ export class PulseUI extends Phaser.GameObjects.Container {
     // 来源标注
     this.sourceText = scene.add.text(0, -60, '—— 摘自《脉经》', {
       fontSize: '14px',
-      color: '#888888'
+      color: UI_COLOR_STRINGS.TEXT_DISABLED
     });
     this.sourceText.setOrigin(0.5);
     this.add(this.sourceText);
@@ -133,8 +134,8 @@ export class PulseUI extends Phaser.GameObjects.Container {
 
       const option = scene.add.text(optionX, optionY, `○ ${position.name}`, {
         fontSize: '20px',
-        color: '#ffffff',
-        backgroundColor: '#3a3a3a',
+        color: UI_COLOR_STRINGS.TEXT_PRIMARY,
+        backgroundColor: UI_COLOR_STRINGS.PANEL_LIGHT,
         padding: { x: 10, y: 5 }
       });
       option.setInteractive({ useHandCursor: true });
@@ -183,8 +184,8 @@ export class PulseUI extends Phaser.GameObjects.Container {
 
       const option = scene.add.text(optionX, optionY, `○ ${tension.name}`, {
         fontSize: '20px',
-        color: '#ffffff',
-        backgroundColor: '#3a3a3a',
+        color: UI_COLOR_STRINGS.TEXT_PRIMARY,
+        backgroundColor: UI_COLOR_STRINGS.PANEL_LIGHT,
         padding: { x: 10, y: 5 }
       });
       option.setInteractive({ useHandCursor: true });
@@ -217,8 +218,8 @@ export class PulseUI extends Phaser.GameObjects.Container {
   private createConfirmButton(scene: Phaser.Scene): void {
     this.confirmButton = scene.add.text(0, 200, '[确认判断]', {
       fontSize: '20px',
-      color: '#00aaff',
-      backgroundColor: '#1a1a1a',
+      color: UI_COLOR_STRINGS.ACCENT_SKY,
+      backgroundColor: UI_COLOR_STRINGS.PANEL_SECONDARY,
       padding: { x: 15, y: 8 }
     });
     this.confirmButton.setOrigin(0.5);

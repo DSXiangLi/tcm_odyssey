@@ -68,7 +68,7 @@ export class InquiryUI extends Phaser.GameObjects.Container {
     this.sseClient = new SSEClient();
 
     // 创建主背景
-    this.background = scene.add.rectangle(0, 0, 780, 480, UI_COLORS.PANEL_PRIMARY, 0.95);
+    this.background = scene.add.rectangle(0, 0, 640, 420, UI_COLORS.PANEL_PRIMARY, 0.85);
     this.background.setOrigin(0.5);
     this.add(this.background);
 
@@ -137,7 +137,7 @@ export class InquiryUI extends Phaser.GameObjects.Container {
    */
   private createDialogueArea(scene: Phaser.Scene): void {
     // 对话背景
-    const dialogueBg = scene.add.rectangle(-150, -80, 500, 180, UI_COLORS.PANEL_SECONDARY, 0.9);
+    const dialogueBg = scene.add.rectangle(-150, -80, 460, 180, UI_COLORS.PANEL_SECONDARY, 0.9);
     dialogueBg.setOrigin(0.5);
     this.add(dialogueBg);
 
@@ -156,7 +156,7 @@ export class InquiryUI extends Phaser.GameObjects.Container {
    */
   private createInputArea(scene: Phaser.Scene): void {
     // 输入框背景
-    this.inputBox = scene.add.rectangle(-150, 80, 500, 50, UI_COLORS.PANEL_LIGHT, 0.9);
+    this.inputBox = scene.add.rectangle(-150, 80, 460, 50, UI_COLORS.PANEL_LIGHT, 0.9);
     this.inputBox.setOrigin(0.5);
     this.inputBox.setStrokeStyle(2, UI_COLORS.BORDER_LIGHT);
     this.add(this.inputBox);

@@ -87,7 +87,7 @@ export class ResultUI extends Phaser.GameObjects.Container {
   private createTitle(scene: Phaser.Scene): void {
     this.titleText = scene.add.text(0, -280, `诊治完成 - ${this.config.caseName}`, {
       fontSize: '24px',
-      color: '#8B4513',
+      color: '#a08060',  // SOFT_BROWN
       fontStyle: 'bold'
     });
     this.titleText.setOrigin(0.5);
@@ -191,7 +191,7 @@ export class ResultUI extends Phaser.GameObjects.Container {
     // 薄弱点标题
     const weaknessLabel = scene.add.text(-300, 100, '薄弱环节:', {
       fontSize: '16px',
-      color: '#ff6600'
+      color: '#c09060'  // SOFT_ORANGE
     });
     this.add(weaknessLabel);
 
@@ -201,7 +201,7 @@ export class ResultUI extends Phaser.GameObjects.Container {
       : '无明显薄弱环节';
     this.weaknessText = scene.add.text(-300, 125, weaknessContent, {
       fontSize: '14px',
-      color: '#ff6600',
+      color: '#c09060',  // SOFT_ORANGE
       wordWrap: { width: 350 }
     });
     this.add(this.weaknessText);
@@ -309,10 +309,10 @@ export class ResultUI extends Phaser.GameObjects.Container {
     });
 
     this.returnButton.on('pointerover', () => {
-      this.returnButton.setColor('#00ffaa');
+      this.returnButton.setColor('#90c070');  // SOFT_GREEN
     });
     this.returnButton.on('pointerout', () => {
-      this.returnButton.setColor('#00aaff');
+      this.returnButton.setColor('#70a0c0');  // SOFT_BLUE
     });
 
     this.add(this.returnButton);
@@ -332,10 +332,10 @@ export class ResultUI extends Phaser.GameObjects.Container {
     });
 
     this.historyButton.on('pointerover', () => {
-      this.historyButton.setColor('#00ffaa');
+      this.historyButton.setColor('#90c070');  // SOFT_GREEN
     });
     this.historyButton.on('pointerout', () => {
-      this.historyButton.setColor('#00aaff');
+      this.historyButton.setColor('#70a0c0');  // SOFT_BLUE
     });
 
     this.add(this.historyButton);
@@ -346,8 +346,8 @@ export class ResultUI extends Phaser.GameObjects.Container {
    */
   private getScoreColor(percentage: number): string {
     if (percentage >= 80) return UI_COLOR_STRINGS.BUTTON_SUCCESS;
-    if (percentage >= 60) return '#ffaa00';
-    return '#ff6600';
+    if (percentage >= 60) return '#c0c080';  // SOFT_YELLOW
+    return '#c09060';  // SOFT_ORANGE
   }
 
   /**

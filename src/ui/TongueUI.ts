@@ -87,7 +87,7 @@ export class TongueUI extends Phaser.GameObjects.Container {
   private createTitle(scene: Phaser.Scene): void {
     this.titleText = scene.add.text(0, -250, '舌诊 - 观察舌象', {
       fontSize: '24px',
-      color: '#8B4513',
+      color: '#a08060',  // SOFT_BROWN
       fontStyle: 'bold'
     });
     this.titleText.setOrigin(0.5);
@@ -130,7 +130,7 @@ export class TongueUI extends Phaser.GameObjects.Container {
     // 标签
     const label = scene.add.text(-350, -40, '舌体颜色:', {
       fontSize: '16px',
-      color: '#ffaa00'
+      color: '#c0c080'  // SOFT_YELLOW
     });
     this.add(label);
 
@@ -157,7 +157,7 @@ export class TongueUI extends Phaser.GameObjects.Container {
 
       option.on('pointerover', () => {
         if (this.selectedBodyColor !== color.id) {
-          option.setColor('#88aaff');
+          option.setColor('#70a0c0');  // SOFT_BLUE
         }
       });
       option.on('pointerout', () => {
@@ -178,7 +178,7 @@ export class TongueUI extends Phaser.GameObjects.Container {
     // 标签
     const label = scene.add.text(-350, 40, '舌苔:', {
       fontSize: '16px',
-      color: '#ffaa00'
+      color: '#c0c080'  // SOFT_YELLOW
     });
     this.add(label);
 
@@ -205,7 +205,7 @@ export class TongueUI extends Phaser.GameObjects.Container {
 
       option.on('pointerover', () => {
         if (this.selectedCoating !== coating.id) {
-          option.setColor('#88aaff');
+          option.setColor('#70a0c0');  // SOFT_BLUE
         }
       });
       option.on('pointerout', () => {
@@ -226,7 +226,7 @@ export class TongueUI extends Phaser.GameObjects.Container {
     // 标签
     const label = scene.add.text(-350, 120, '舌形:', {
       fontSize: '16px',
-      color: '#ffaa00'
+      color: '#c0c080'  // SOFT_YELLOW
     });
     this.add(label);
 
@@ -253,7 +253,7 @@ export class TongueUI extends Phaser.GameObjects.Container {
 
       option.on('pointerover', () => {
         if (this.selectedShape !== shape.id) {
-          option.setColor('#88aaff');
+          option.setColor('#70a0c0');  // SOFT_BLUE
         }
       });
       option.on('pointerout', () => {
@@ -274,7 +274,7 @@ export class TongueUI extends Phaser.GameObjects.Container {
     // 标签
     const label = scene.add.text(-350, 200, '润燥:', {
       fontSize: '16px',
-      color: '#ffaa00'
+      color: '#c0c080'  // SOFT_YELLOW
     });
     this.add(label);
 
@@ -301,7 +301,7 @@ export class TongueUI extends Phaser.GameObjects.Container {
 
       option.on('pointerover', () => {
         if (this.selectedMoisture !== moisture.id) {
-          option.setColor('#88aaff');
+          option.setColor('#70a0c0');  // SOFT_BLUE
         }
       });
       option.on('pointerout', () => {
@@ -333,10 +333,10 @@ export class TongueUI extends Phaser.GameObjects.Container {
     });
 
     this.confirmButton.on('pointerover', () => {
-      this.confirmButton.setColor('#00ffaa');
+      this.confirmButton.setColor('#90c070');  // SOFT_GREEN
     });
     this.confirmButton.on('pointerout', () => {
-      this.confirmButton.setColor('#00aaff');
+      this.confirmButton.setColor('#70a0c0');  // SOFT_BLUE
     });
 
     this.add(this.confirmButton);
@@ -416,7 +416,7 @@ export class TongueUI extends Phaser.GameObjects.Container {
 
     const warning = this.scene.add.text(0, 230, `请先选择: ${missing.join(', ')}`, {
       fontSize: '14px',
-      color: '#ff6600'
+      color: '#c09060'  // SOFT_ORANGE
     });
     warning.setOrigin(0.5);
     this.add(warning);
@@ -432,7 +432,7 @@ export class TongueUI extends Phaser.GameObjects.Container {
   showResult(correctCount: number, totalCount: number): void {
     const isAllCorrect = correctCount === totalCount;
     const resultText = isAllCorrect ? `舌象判断全部正确! (${correctCount}/${totalCount})` : `舌象判断部分正确 (${correctCount}/${totalCount})`;
-    const resultColor = isAllCorrect ? UI_COLOR_STRINGS.BUTTON_SUCCESS : '#ffaa00';
+    const resultColor = isAllCorrect ? UI_COLOR_STRINGS.BUTTON_SUCCESS : '#c0c080';  // SOFT_YELLOW
 
     const result = this.scene.add.text(0, 270, resultText, {
       fontSize: '16px',

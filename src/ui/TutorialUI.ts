@@ -89,7 +89,7 @@ export class TutorialUI {
     progress: { fontSize: '14px', color: UI_COLOR_STRINGS.TEXT_DISABLED },
     progressBar: { fillColor: UI_COLORS.BUTTON_SUCCESS, alpha: 1 },
     progressBg: { fillColor: UI_COLORS.PANEL_PRIMARY, alpha: 1 },
-    skipButton: { fontSize: '16px', color: '#ff6b6b' },  // 红色跳过按钮保持警示色
+    skipButton: { fontSize: '16px', color: '#c07070' },  // SOFT_RED 警示色
     nextButton: { fontSize: '18px', color: UI_COLOR_STRINGS.TEXT_PRIMARY, backgroundColor: UI_COLOR_STRINGS.BUTTON_SUCCESS },
     tipBackground: { fillColor: UI_COLORS.PANEL_PRIMARY, alpha: 0.85 },
     tipText: { fontSize: '16px', color: UI_COLOR_STRINGS.TEXT_PRIMARY }
@@ -191,8 +191,8 @@ export class TutorialUI {
     // 跳过按钮
     this.skipButton = this.scene.add.text(-width / 2 + 30, height / 2 - 30, SKIP_TUTORIAL_CONFIG.skip_text, this.styles.skipButton).setOrigin(0, 0.5);
     this.skipButton.setInteractive({ useHandCursor: true });
-    this.skipButton.on('pointerover', () => this.skipButton.setStyle({ color: '#ff8b8b' }));
-    this.skipButton.on('pointerout', () => this.skipButton.setStyle({ color: '#ff6b6b' }));
+    this.skipButton.on('pointerover', () => this.skipButton.setStyle({ color: '#d08080' }));  // SOFT_RED_HOVER
+    this.skipButton.on('pointerout', () => this.skipButton.setStyle({ color: '#c07070' }));  // SOFT_RED
     this.skipButton.on('pointerdown', () => this.handleSkipClick());
     this.container.add(this.skipButton);
 
@@ -406,7 +406,7 @@ export class TutorialUI {
     const confirmSkipBtn = this.scene.add.text(-80, 50, '确认跳过', {
       fontSize: '16px',
       color: UI_COLOR_STRINGS.TEXT_PRIMARY,
-      backgroundColor: '#c75050',  // 红色警示按钮保持原色
+      backgroundColor: '#c07070',  // SOFT_RED 警示按钮
       padding: { x: 15, y: 8 }
     }).setOrigin(0.5);
     confirmSkipBtn.setInteractive({ useHandCursor: true });

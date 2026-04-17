@@ -1059,6 +1059,39 @@ zhongyi_game_v3/
 
 **下一步建议**: 增加自然色调饱和度、改进UI与背景的过渡效果、针对低分场景进行专项修复
 
+### 第三轮视觉优化执行状态 ⏳ 进行中 (2026-04-17)
+
+**优化目标**: 扩展柔和田园配色系统，提升配色协调度
+
+**已完成内容**:
+| 任务 | 状态 | 详情 |
+|-----|------|------|
+| Task 1 | ✅ | 扩展颜色常量定义（7个柔和色系+TEXT_SECONDARY更新） |
+| Task 2 | ✅ | 验证TEXT_SECONDARY自动传播到11个UI文件（30处引用） |
+| Task 3 | ✅ | 截图采集（25/28成功，89%覆盖率） |
+| Task 4 | ⏳ | AI评估验证（评估脚本运行时间较长，待后续执行） |
+
+**新增柔和色系**:
+| 艅系 | 颜色值 | 用途 |
+|-----|-------|------|
+| SOFT_GREEN | #90c070 | 柔和绿色（按钮、强调） |
+| SOFT_BLUE | #70a0c0 | 柔和蓝色（信息、链接） |
+| SOFT_ORANGE | #c09060 | 柔和橙色（警告、提示） |
+| SOFT_PURPLE | #a080c0 | 柔和紫色（特殊标记） |
+| SOFT_YELLOW | #c0c080 | 柔和黄色（成就、亮点） |
+| SOFT_RED | #c07070 | 柔和红色（错误、危险） |
+| SOFT_BROWN | #a08060 | 柔和棕色（背景、边框） |
+| TEXT_SECONDARY | #b0a090 | 次级文字（说明、标签） |
+
+**验证结果**:
+- TEXT_SECONDARY引用数: 30处（11个UI文件）
+- 无硬编码旧颜色(#c0a080)残留
+- TypeScript编译无错误
+
+**设计文档**: [第三轮视觉优化设计](docs/superpowers/specs/2026-04-17-round3-visual-optimization-spec.md)
+
+**实现计划**: [第三轮视觉优化实施计划](docs/superpowers/plans/2026-04-17-round3-visual-optimization.md)
+
 
 ## 相关文档
 
@@ -1066,6 +1099,7 @@ zhongyi_game_v3/
 - [完整游戏设计文档](docs/superpowers/specs/2026-04-05-game-design-v3.0.md)
 - [视觉设计规范 v1.0](docs/superpowers/specs/2026-04-05-visual-design-v1.0.md)
 - [Phase2 视觉验收自动化系统设计](docs/superpowers/specs/2026-04-15-phase2-visual-acceptance-design.md)
+- [第三轮视觉优化设计](docs/superpowers/specs/2026-04-17-round3-visual-optimization-spec.md) ⭐新增
 - [Phase 1验收标准](docs/superpowers/specs/2026-04-05-phase1-acceptance-criteria.md)
 - [Phase 1 AI端到端测试设计](docs/superpowers/specs/2026-04-05-phase1-ai-e2e-test-design.md)
 - [Phase 1.5 AI端到端视觉验收计划](docs/superpowers/specs/2026-04-06-phase1-5-ai-e2e-acceptance-plan.md)
@@ -1079,7 +1113,8 @@ zhongyi_game_v3/
 - [Phase 1.5 视觉实现计划](docs/superpowers/plans/2026-04-05-phase1.5-visual-implementation.md)
 - [Phase 2 实现计划（13步拆分）](docs/superpowers/plans/2026-04-12-phase2-implementation-plan.md) ⭐新增
 - [Phase2 视觉验收自动化系统实现计划](docs/superpowers/plans/2026-04-15-phase2-visual-acceptance-implementation.md) ⭐新增
+- [第三轮视觉优化实施计划](docs/superpowers/plans/2026-04-17-round3-visual-optimization.md) ⭐新增
 
 ---
 
-*本文档由 Claude Code 维护，更新于 2026-04-16*
+*本文档由 Claude Code 维护，更新于 2026-04-17*

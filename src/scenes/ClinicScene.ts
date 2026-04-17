@@ -22,6 +22,7 @@
 import Phaser from 'phaser';
 import { SCENES, TILE_SIZE } from '../data/constants';
 import { CLINIC_SCALED_CONFIG } from '../data/clinic-scaled-walkable-config';
+import { UI_COLOR_STRINGS } from '../data/ui-color-theme';
 import { Player } from '../entities/Player';
 import { EventBus, GameEvents } from '../systems/EventBus';
 import { GameStateBridge } from '../utils/GameStateBridge';
@@ -437,7 +438,7 @@ export class ClinicScene extends Phaser.Scene {
   private createInquiryButton(): void {
     this.inquiryButton = this.add.text(10, 70, '[按 I 开始问诊]', {
       fontSize: '14px',
-      color: '#00ff00',
+      color: UI_COLOR_STRINGS.BUTTON_SUCCESS,  // #60a040 场景提取绿
       backgroundColor: '#333333aa',
       padding: { x: 8, y: 4 }
     });

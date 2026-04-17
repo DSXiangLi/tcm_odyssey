@@ -14,6 +14,7 @@ import { SCENES, TILE_SIZE } from '../data/constants';
 import { GameStateBridge } from '../utils/GameStateBridge';
 import { PlantingManager } from '../systems/PlantingManager';
 import { ExperienceManager } from '../systems/ExperienceManager';
+import { UI_COLORS } from '../data/ui-color-theme';
 
 // 玩家sprite配置 - user2素材（正确配置）
 // 源图896x1195，布局4行×3列，每帧298x298
@@ -78,7 +79,7 @@ export class BootScene extends Phaser.Scene {
 
     this.load.on('progress', (value: number) => {
       this.progressBar.clear();
-      this.progressBar.fillStyle(0x4a7c59, 1);
+      this.progressBar.fillStyle(UI_COLORS.BUTTON_PRIMARY, 1);
       this.progressBar.fillRect(
         width / 4,
         height / 2,
@@ -183,30 +184,30 @@ export class BootScene extends Phaser.Scene {
 
     // 草地纹理（室内场景可能需要）
     const grassGraphics = this.add.graphics();
-    grassGraphics.fillStyle(0x4a7c59);
+    grassGraphics.fillStyle(UI_COLORS.ACCENT_GRASS);
     grassGraphics.fillRect(0, 0, TILE_SIZE, TILE_SIZE);
     grassGraphics.generateTexture('grass', TILE_SIZE, TILE_SIZE);
     grassGraphics.destroy();
 
     // 路径纹理（室内场景可能需要）
     const pathGraphics = this.add.graphics();
-    pathGraphics.fillStyle(0xc9b896);
+    pathGraphics.fillStyle(UI_COLORS.BORDER_LIGHT);
     pathGraphics.fillRect(0, 0, TILE_SIZE, TILE_SIZE);
     pathGraphics.generateTexture('path', TILE_SIZE, TILE_SIZE);
     pathGraphics.destroy();
 
     // 墙壁纹理（室内场景）
     const wallGraphics = this.add.graphics();
-    wallGraphics.fillStyle(0x8b4513);
+    wallGraphics.fillStyle(UI_COLORS.BORDER_PRIMARY);
     wallGraphics.fillRect(0, 0, TILE_SIZE, TILE_SIZE);
     wallGraphics.generateTexture('wall', TILE_SIZE, TILE_SIZE);
     wallGraphics.destroy();
 
     // 门纹理（室内场景）
     const doorGraphics = this.add.graphics();
-    doorGraphics.fillStyle(0x654321);
+    doorGraphics.fillStyle(UI_COLORS.PANEL_SECONDARY);
     doorGraphics.fillRect(0, 0, TILE_SIZE, TILE_SIZE);
-    doorGraphics.fillStyle(0x4a3728);
+    doorGraphics.fillStyle(UI_COLORS.BORDER_PRIMARY);
     doorGraphics.fillRect(4, 4, TILE_SIZE - 8, TILE_SIZE - 8);
     doorGraphics.generateTexture('door', TILE_SIZE, TILE_SIZE);
     doorGraphics.destroy();

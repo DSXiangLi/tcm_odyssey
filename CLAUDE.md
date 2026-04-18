@@ -1092,6 +1092,47 @@ zhongyi_game_v3/
 
 **实现计划**: [第三轮视觉优化实施计划](docs/superpowers/plans/2026-04-17-round3-visual-optimization.md)
 
+### Phase 2 小游戏退出按钮修复 ⏳ 进行中 (2026-04-18)
+
+**触发原因**: 用户验收体验发现小游戏无法退出的问题
+
+**问题清单**:
+| 问题ID | 系统 | 问题描述 | 优先级 | 状态 |
+|--------|------|---------|--------|------|
+| BUG-P2-02 | 煎药 | UI尺寸固定720x480导致点击失效 | P0 | ✅ 已修复 |
+| BUG-P2-01 | 煎药 | 6个阶段缺少退出按钮 | P0 | ✅ 已修复 |
+| BUG-P2-03 | 炅制 | 4个阶段缺少退出按钮 | P1 | ⏳ 待修复 |
+| BUG-P2-04 | 种植 | 4个阶段缺少退出按钮 | P1 | ⏳ 待修复 |
+| BUG-P2-05 | 问诊 | 缺少退出按钮 | P1 | ⏳ 待修复 |
+| BUG-P2-06 | 诊治流程 | 4场景缺少退出按钮 | P2 | ⏳ 待修复 |
+
+**已完成修复**:
+| 任务 | 提交 | 描述 |
+|-----|------|------|
+| Task 1 | a6664dd | UI尺寸使用相机尺寸 (DecoctionScene, ProcessingScene, PlantingScene) |
+| Task 2 | e3626c2 | 煎药UI添加退出按钮 (6个阶段) |
+
+**待修复任务**:
+| 任务 | 涉及文件 | 状态 |
+|-----|---------|------|
+| Task 3 | ProcessingUI.ts | ⏳ 待执行 |
+| Task 4 | PlantingUI.ts | ⏳ 待执行 |
+| Task 5 | InquiryUI.ts, InquiryScene.ts | ⏳ 待执行 |
+| Task 6 | PulseUI.ts | ⏳ 待执行 |
+| Task 7 | TongueUI.ts | ⏳ 待执行 |
+| Task 8 | SyndromeUI.ts | ⏳ 待执行 |
+| Task 9 | PrescriptionUI.ts | ⏳ 待执行 |
+| Task 10 | E2E测试验证 | ⏳ 待执行 |
+
+**退出按钮设计规范**:
+- 位置: 右上角 `(width - 60, 30)` 或 `(340, -250)`
+- 样式: `[退出]` 文字, PANEL_DARK背景色
+- 退出处理: `manager.reset()` → `destroy()` → `scene.stop()` → `scene.start('ClinicScene')`
+
+**实现计划**: [Phase 2 小游戏退出按钮修复计划](docs/superpowers/plans/2026-04-18-phase2-minigame-exit-button-fix.md)
+
+---
+
 ### 第四轮视觉优化：现代弹窗设计方案 ⏳ 待实施 (2026-04-18)
 
 **触发原因**: 用户验收体验发现多个UI问题
@@ -1173,6 +1214,7 @@ TEXT_BRIGHT: 0xf0e0d0         // 高亮文字 (对比度 7.5:1)
 - [Phase 2 实现计划（13步拆分）](docs/superpowers/plans/2026-04-12-phase2-implementation-plan.md) ⭐新增
 - [Phase2 视觉验收自动化系统实现计划](docs/superpowers/plans/2026-04-15-phase2-visual-acceptance-implementation.md) ⭐新增
 - [第三轮视觉优化实施计划](docs/superpowers/plans/2026-04-17-round3-visual-optimization.md) ⭐新增
+- [Phase 2 小游戏退出按钮修复计划](docs/superpowers/plans/2026-04-18-phase2-minigame-exit-button-fix.md) ⭐新增
 
 ---
 

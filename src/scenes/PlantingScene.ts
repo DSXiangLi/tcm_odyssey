@@ -121,8 +121,8 @@ export class PlantingScene extends Phaser.Scene {
   private createPlantingUI(): void {
     this.plantingUI = new PlantingUI({
       scene: this,
-      width: 720,
-      height: 480
+      width: this.cameras.main.width,
+      height: this.cameras.main.height
     });
   }
 

@@ -122,20 +122,23 @@ export class SaveUI {
   /**
    * 绘制3D立体边框（方案5）
    * 外层边框 + 顶部高光 + 底部阴影
+   *
+   * @param alpha 背景透明度，默认0.85（让背景略微可见但面板清晰）
    */
   private draw3DBorder(
     graphics: Phaser.GameObjects.Graphics,
     x: number,
     y: number,
     width: number,
-    height: number
+    height: number,
+    alpha: number = 0.85
   ): void {
     // 1. 外层边框（亮绿色）
     graphics.lineStyle(4, this.SaveUI_COLORS.outerBorder);
     graphics.strokeRect(x - 4, y - 4, width + 8, height + 8);
 
-    // 2. 主背景（深绿色）
-    graphics.fillStyle(this.SaveUI_COLORS.panelBg, 1);
+    // 2. 主背景（深绿色，可调透明度）
+    graphics.fillStyle(this.SaveUI_COLORS.panelBg, alpha);
     graphics.fillRect(x, y, width, height);
 
     // 3. 顶部/左侧高光边框（亮绿）
@@ -153,6 +156,40 @@ export class SaveUI {
     graphics.lineTo(x + width, y + height);
     graphics.lineTo(x, y + height);
     graphics.strokePath();
+  }
+
+  /**
+   * 绘制顶层确认弹窗边框（方案C）
+   * 强边框顶层 - 完全不透明 + 金棕边框 + 外发光
+   *
+   * 设计特征:
+   * - 强阴影（8px偏移，alpha 0.6）
+   * - 外发光（2px金棕，alpha 0.4）
+   * - 主背景完全不透明（alpha 1.0）
+   * - 强边框（4px金棕色）
+   */
+  private drawTopLevelConfirmBorder(
+    graphics: Phaser.GameObjects.Graphics,
+    x: number,
+    y: number,
+    width: number,
+    height: number
+  ): void {
+    // 1. 强阴影（8px偏移，alpha 0.6）
+    graphics.fillStyle(0x000000, 0.6);
+    graphics.fillRect(x + 8, y + 16, width, height);
+
+    // 2. 外发光（2px金棕，alpha 0.4）- 在弹窗外围
+    graphics.lineStyle(2, UI_COLORS.BORDER_GLOW, 0.4);
+    graphics.strokeRect(x - 2, y - 2, width + 4, height + 4);
+
+    // 3. 主背景（完全不透明！灰蓝色）
+    graphics.fillStyle(UI_COLORS.PANEL_PRIMARY, 1.0);
+    graphics.fillRect(x, y, width, height);
+
+    // 4. 强边框（4px金棕色）- 与主面板绿色边框不同！
+    graphics.lineStyle(4, UI_COLORS.BORDER_GLOW, 1);
+    graphics.strokeRect(x, y, width, height);
   }
 
   /**
@@ -550,9 +587,9 @@ export class SaveUI {
     dialogContainer.setDepth(1100);
     this.container.add(dialogContainer);
 
-    // 背景 - 使用Graphics绘制3D立体边框（方案5）
+    // 背景 - 使用顶层确认弹窗边框（方案C：金棕边框+完全不透明+外发光）
     const dialogGraphics = this.scene.add.graphics();
-    this.draw3DBorder(dialogGraphics, 0, 0, dialogWidth, dialogHeight);
+    this.drawTopLevelConfirmBorder(dialogGraphics, 0, 0, dialogWidth, dialogHeight);
     dialogContainer.add(dialogGraphics);
 
     // 消息 - 使用TEXT_BRIGHT

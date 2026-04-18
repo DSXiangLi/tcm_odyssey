@@ -69,6 +69,10 @@ export class SyndromeUI extends Phaser.GameObjects.Container {
     // 创建确认按钮
     this.createConfirmButton(scene);
 
+    // 创建退出按钮
+    const exitButton = this.createExitButton();
+    this.add(exitButton);
+
     // 设置键盘输入
     this.setupKeyboardInput(scene);
 
@@ -251,6 +255,46 @@ export class SyndromeUI extends Phaser.GameObjects.Container {
     });
 
     this.add(this.confirmButton);
+  }
+
+  /**
+   * 创建退出按钮
+   */
+  private createExitButton(): Phaser.GameObjects.Text {
+    const exitButton = this.scene.add.text(
+      340,  // 右上角（考虑UI宽度720）
+      -250,  // 与标题同高度
+      '[退出诊断]',
+      {
+        fontSize: '16px',
+        color: UI_COLOR_STRINGS.TEXT_PRIMARY,
+        backgroundColor: UI_COLOR_STRINGS.PANEL_DARK,
+        padding: { x: 10, y: 5 }
+      }
+    ).setOrigin(0.5).setInteractive({ useHandCursor: true });
+
+    exitButton.on('pointerover', () => {
+      exitButton.setColor(UI_COLOR_STRINGS.BUTTON_PRIMARY_HOVER);
+    });
+
+    exitButton.on('pointerout', () => {
+      exitButton.setColor(UI_COLOR_STRINGS.TEXT_PRIMARY);
+    });
+
+    exitButton.on('pointerdown', () => {
+      this.handleExit();
+    });
+
+    return exitButton;
+  }
+
+  /**
+   * 处理退出
+   */
+  private handleExit(): void {
+    this.destroy();
+    this.scene.scene.stop('SyndromeScene');
+    this.scene.scene.start('ClinicScene');
   }
 
   /**

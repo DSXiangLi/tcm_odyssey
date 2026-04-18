@@ -1101,7 +1101,7 @@ zhongyi_game_v3/
 |--------|------|---------|--------|------|
 | BUG-P2-02 | 煎药 | UI尺寸固定720x480导致点击失效 | P0 | ✅ 已修复 |
 | BUG-P2-01 | 煎药 | 6个阶段缺少退出按钮 | P0 | ✅ 已修复 |
-| BUG-P2-03 | 炅制 | 4个阶段缺少退出按钮 | P1 | ⏳ 待修复 |
+| BUG-P2-03 | 炅制 | 4个阶段缺少退出按钮 | P1 | ✅ 已修复 |
 | BUG-P2-04 | 种植 | 4个阶段缺少退出按钮 | P1 | ⏳ 待修复 |
 | BUG-P2-05 | 问诊 | 缺少退出按钮 | P1 | ⏳ 待修复 |
 | BUG-P2-06 | 诊治流程 | 4场景缺少退出按钮 | P2 | ⏳ 待修复 |
@@ -1111,11 +1111,12 @@ zhongyi_game_v3/
 |-----|------|------|
 | Task 1 | a6664dd | UI尺寸使用相机尺寸 (DecoctionScene, ProcessingScene, PlantingScene) |
 | Task 2 | e3626c2 | 煎药UI添加退出按钮 (6个阶段) |
+| Task 3 | d05068c | 炅制UI添加退出按钮 (4个阶段) - Round 4视觉优化 |
 
 **待修复任务**:
 | 任务 | 涉及文件 | 状态 |
 |-----|---------|------|
-| Task 3 | ProcessingUI.ts | ⏳ 待执行 |
+| Task 3 | ProcessingUI.ts | ✅ 已完成 (Round 4) |
 | Task 4 | PlantingUI.ts | ⏳ 待执行 |
 | Task 5 | InquiryUI.ts, InquiryScene.ts | ⏳ 待执行 |
 | Task 6 | PulseUI.ts | ⏳ 待执行 |

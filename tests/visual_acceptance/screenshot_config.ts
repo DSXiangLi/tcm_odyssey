@@ -21,7 +21,7 @@ export const SCREENSHOT_SCENES: SceneConfig[] = [
     name: '百草镇室外探索',
     operations: [
       { type: 'navigate', params: { scene: 'TitleScene' } },
-      { type: 'click', params: { x: 400, y: 350 } },
+      { type: 'click', params: { x: 400, y: 300 } },  // 开始游戏按钮 (3D按钮中心位置)
       { type: 'wait', params: { condition: '__GAME_READY__', timeout: 10000 } },
     ],
     screenshotCount: 3,
@@ -86,24 +86,13 @@ export const SCREENSHOT_SCENES: SceneConfig[] = [
     ],
     screenshotCount: 1,
   },
-  // 问诊流程 (2张)
+  // 问诊流程 (1张) - 线索追踪界面需要Tab切换，暂不采集
   {
     id: 'INQUIRY-01',
     name: '问诊主界面',
     operations: [
       { type: 'navigate', params: { scene: 'InquiryScene' } },
       { type: 'wait', params: { condition: '__SCENE_READY__', timeout: 10000 } },
-    ],
-    screenshotCount: 1,
-  },
-  {
-    id: 'INQUIRY-02',
-    name: '线索追踪界面',
-    operations: [
-      { type: 'navigate', params: { scene: 'InquiryScene' } },
-      { type: 'wait', params: { condition: '__SCENE_READY__', timeout: 10000 } },
-      { type: 'keypress', params: { key: 'Tab' }, delayAfter: 500 },
-      { type: 'wait', params: { condition: '__CLUE_TRACKER_VISIBLE__', timeout: 5000 } },
     ],
     screenshotCount: 1,
   },
@@ -189,7 +178,7 @@ export const SCREENSHOT_SCENES: SceneConfig[] = [
     operations: [
       { type: 'navigate', params: { scene: 'TitleScene' } },
       { type: 'wait', params: { condition: '__SCENE_READY__', timeout: 10000 } },
-      { type: 'click', params: { x: 400, y: 380 } }, // 存档管理按钮位置 (无存档时)
+      { type: 'click', params: { x: 400, y: 360 } }, // 存档管理按钮位置 (3D按钮中心)
       { type: 'wait', params: { condition: '__SAVE_UI_OPEN__', timeout: 5000 } },
     ],
     screenshotCount: 1,
@@ -199,7 +188,7 @@ export const SCREENSHOT_SCENES: SceneConfig[] = [
     name: '新手引导',
     operations: [
       { type: 'navigate', params: { scene: 'TitleScene' } },
-      { type: 'click', params: { x: 400, y: 350 } },
+      { type: 'click', params: { x: 400, y: 300 } },  // 开始游戏按钮 (3D按钮中心)
       { type: 'wait', params: { condition: '__TUTORIAL_ACTIVE__', timeout: 10000 } },
     ],
     screenshotCount: 2,

@@ -26,12 +26,13 @@ import {
 import { UI_COLORS, UI_COLOR_STRINGS } from '../data/ui-color-theme';
 
 /**
- * 创建渐变玻璃背景Graphics对象（方案3）
+ * 创建渐变玻璃背景Graphics对象（方案A）
  *
  * 设计特征:
- * - 背景渐变: 灰蓝(0x408080, 0.3) → 土黄(0x402020, 0.4)
- * - 顶部光带: 金棕(0xc0a080, 0.2) → 透明
- * - 边框: 2px 金棕(0xc0a080, 0.5)
+ * - 背景: 完全不透明(alpha=1.0)，灰蓝色渐变
+ * - 边框: 3px 金棕(0xc0a080)，与底层场景区分
+ * - 顶部光带: 金棕渐变装饰
+ * - 外阴影: 8px黑色阴影增强立体感
  *
  * @param scene Phaser场景
  * @param x 绘制起点X（左上角）
@@ -49,28 +50,31 @@ function createGradientGlassBackground(
 ): Phaser.GameObjects.Graphics {
   const graphics = scene.add.graphics();
 
-  // 1. 渐变背景（灰蓝到土黄，从左到右）
-  // fillGradientStyle: topLeft, topRight, bottomLeft, bottomRight
+  // 1. 外阴影（增强立体感，8px偏移）
+  graphics.fillStyle(0x000000, 0.5);
+  graphics.fillRect(x + 4, y + 8, width, height);
+
+  // 2. 渐变背景（灰蓝到土黄，完全不透明）- 关键修改：alpha从0.3-0.4改为1.0
   graphics.fillGradientStyle(
-    UI_COLORS.PANEL_GLASS_LIGHT, 0.3,  // 左上: 灰蓝
-    UI_COLORS.PANEL_GLASS_DARK, 0.4,   // 右上: 土黄
-    UI_COLORS.PANEL_GLASS_LIGHT, 0.3,  // 左下: 灰蓝
-    UI_COLORS.PANEL_GLASS_DARK, 0.4    // 右下: 土黄
+    UI_COLORS.PANEL_GLASS_LIGHT, 1.0,  // 左上: 灰蓝，完全不透明
+    UI_COLORS.PANEL_GLASS_DARK, 1.0,   // 右上: 土黄，完全不透明
+    UI_COLORS.PANEL_GLASS_LIGHT, 1.0,  // 左下: 灰蓝，完全不透明
+    UI_COLORS.PANEL_GLASS_DARK, 1.0    // 右下: 土黄，完全不透明
   );
   graphics.fillRect(x, y, width, height);
 
-  // 2. 顶部光带（金棕到透明，从上到下，高度40px）
+  // 3. 顶部光带（金棕到透明，从上到下，高度40px）
   const lightBandHeight = Math.min(40, height * 0.12);
   graphics.fillGradientStyle(
-    UI_COLORS.BORDER_GLOW, 0.2,    // 左上: 金棕
-    UI_COLORS.BORDER_GLOW, 0.2,    // 右上: 金棕
+    UI_COLORS.BORDER_GLOW, 0.25,   // 左上: 金棕
+    UI_COLORS.BORDER_GLOW, 0.25,   // 右上: 金棕
     0x000000, 0,                   // 左下: 透明
     0x000000, 0                    // 右下: 透明
   );
   graphics.fillRect(x, y, width, lightBandHeight);
 
-  // 3. 金棕边框（2px）
-  graphics.lineStyle(2, UI_COLORS.BORDER_GLOW, 0.5);
+  // 4. 金棕边框（3px，更醒目）
+  graphics.lineStyle(3, UI_COLORS.BORDER_GLOW, 1.0);
   graphics.strokeRect(x, y, width, height);
 
   return graphics;

@@ -67,14 +67,23 @@ export class CaseDetailUI extends Phaser.GameObjects.Container {
     // 创建内容区域
     this.createContent();
 
-    // 创建关闭按钮
+    // 创建关闭按钮 - 添加padding扩大点击区域
     this.closeButton = scene.add.text(350, -270, '[关闭]', {
       fontSize: '16px',
-      color: '#c09060'  // SOFT_ORANGE
+      color: '#c09060',  // SOFT_ORANGE
+      backgroundColor: UI_COLOR_STRINGS.PANEL_DARK,
+      padding: { x: 10, y: 5 }
     });
     this.closeButton.setOrigin(0.5);
     this.closeButton.setInteractive({ useHandCursor: true });
+    this.closeButton.on('pointerover', () => {
+      this.closeButton.setColor(UI_COLOR_STRINGS.BUTTON_PRIMARY_HOVER);
+    });
+    this.closeButton.on('pointerout', () => {
+      this.closeButton.setColor('#c09060');
+    });
     this.closeButton.on('pointerdown', () => {
+      console.log('[CaseDetailUI] Close button clicked');
       if (config.onClose) config.onClose();
       this.destroy();
     });

@@ -184,6 +184,47 @@ export class PlantingUI {
   }
 
   /**
+   * 创建退出按钮（右上角）
+   */
+  private createExitButton(): Phaser.GameObjects.Text {
+    const exitButton = this.scene.add.text(
+      this.width - 60,
+      30,
+      '[退出]',
+      {
+        fontSize: '16px',
+        color: UI_COLOR_STRINGS.TEXT_PRIMARY,
+        backgroundColor: UI_COLOR_STRINGS.PANEL_DARK,
+        padding: { x: 10, y: 5 }
+      }
+    ).setOrigin(0.5).setInteractive({ useHandCursor: true });
+
+    exitButton.on('pointerover', () => {
+      exitButton.setColor(UI_COLOR_STRINGS.BUTTON_PRIMARY_HOVER);
+    });
+
+    exitButton.on('pointerout', () => {
+      exitButton.setColor(UI_COLOR_STRINGS.TEXT_PRIMARY);
+    });
+
+    exitButton.on('pointerdown', () => {
+      this.handleExit();
+    });
+
+    return exitButton;
+  }
+
+  /**
+   * 处理退出（返回药园）
+   */
+  private handleExit(): void {
+    this.manager.cancelSelection();
+    this.destroy();
+    this.scene.scene.stop('PlantingScene');
+    this.scene.scene.resume('GardenScene');
+  }
+
+  /**
    * 显示标题
    */
   private updateTitle(title: string): void {
@@ -313,6 +354,10 @@ export class PlantingUI {
     this.updateTitle('选择地块');
     this.updatePhaseIndicator('地块选择');
     this.clearContent();
+
+    // 退出按钮
+    const exitButton = this.createExitButton();
+    this.contentContainer?.add(exitButton);
 
     const availablePlotIds = this.manager.getAvailablePlots();
     const availablePlots = availablePlotIds
@@ -469,6 +514,10 @@ export class PlantingUI {
       bg.on('pointerover', () => bg.setFillStyle(UI_COLORS.BUTTON_PRIMARY_HOVER));
       bg.on('pointerout', () => bg.setFillStyle(bgColor));
     });
+
+    // 退出按钮
+    const exitButton = this.createExitButton();
+    this.contentContainer?.add(exitButton);
   }
 
   /**
@@ -542,6 +591,10 @@ export class PlantingUI {
       bg.on('pointerout', () => bg.setFillStyle(bgColor));
     });
 
+    // 退出按钮
+    const exitButton = this.createExitButton();
+    this.contentContainer?.add(exitButton);
+
     // 添加种植按钮
     this.addPlantButton();
   }
@@ -565,6 +618,10 @@ export class PlantingUI {
       { fontSize: '20px', color: UI_COLOR_STRINGS.BUTTON_SUCCESS }
     ).setOrigin(0.5);
     this.contentContainer!.add(resultText);
+
+    // 退出按钮
+    const exitButton = this.createExitButton();
+    this.contentContainer?.add(exitButton);
   }
 
   /**

@@ -65,6 +65,10 @@ export class PrescriptionUI extends Phaser.GameObjects.Container {
     // 添加到场景
     scene.add.existing(this);
 
+    // 创建退出按钮
+    const exitButton = this.createExitButton();
+    this.add(exitButton);
+
     // 暴露到全局
     this.exposeToGlobal();
   }
@@ -210,6 +214,46 @@ export class PrescriptionUI extends Phaser.GameObjects.Container {
     });
 
     this.add(this.confirmButton);
+  }
+
+  /**
+   * 创建退出按钮
+   */
+  private createExitButton(): Phaser.GameObjects.Text {
+    const exitButton = this.scene.add.text(
+      340,  // 右上角（考虑UI宽度720）
+      -250,  // 与标题同高度
+      '[退出诊断]',
+      {
+        fontSize: '16px',
+        color: UI_COLOR_STRINGS.TEXT_PRIMARY,
+        backgroundColor: UI_COLOR_STRINGS.PANEL_DARK,
+        padding: { x: 10, y: 5 }
+      }
+    ).setOrigin(0.5).setInteractive({ useHandCursor: true });
+
+    exitButton.on('pointerover', () => {
+      exitButton.setColor(UI_COLOR_STRINGS.BUTTON_PRIMARY_HOVER);
+    });
+
+    exitButton.on('pointerout', () => {
+      exitButton.setColor(UI_COLOR_STRINGS.TEXT_PRIMARY);
+    });
+
+    exitButton.on('pointerdown', () => {
+      this.handleExit();
+    });
+
+    return exitButton;
+  }
+
+  /**
+   * 处理退出
+   */
+  private handleExit(): void {
+    this.destroy();
+    this.scene.scene.stop('PrescriptionScene');
+    this.scene.scene.start('ClinicScene');
   }
 
   /**

@@ -331,7 +331,9 @@ git commit -m "fix: add exit button to all decoction phases"
 
 ---
 
-## Task 3: 为炮制UI添加退出按钮 (BUG-P2-03)
+## Task 3: 为炮制UI添加退出按钮 (BUG-P2-03) ✅ 已完成
+
+> **Completed in:** Round 4 visual optimization commit `d05068c`
 
 **Files:**
 - Modify: `src/ui/ProcessingUI.ts`
@@ -342,9 +344,9 @@ git commit -m "fix: add exit button to all decoction phases"
 3. `showPreprocess()` - 预处理
 4. `showProcessingProgress()` - 炮制进度
 
-- [ ] **Step 1: 在ProcessingUI类中添加退出按钮创建方法**
+- [x] **Step 1: 在ProcessingUI类中添加退出按钮创建方法**
 
-在 `ProcessingUI.ts` 类中添加私有方法（约第98行后）:
+已在 `ProcessingUI.ts` 类中添加私有方法（第140-169行）:
 
 ```typescript
 /**
@@ -389,19 +391,9 @@ private handleExit(): void {
 }
 ```
 
-- [ ] **Step 2: 在showMethodSelection中添加退出按钮**
+- [x] **Step 2: 在showMethodSelection中添加退出按钮**
 
-在 `showMethodSelection()` 方法中（约第372行后）:
-
-```typescript
-// 退出按钮
-const exitButton = this.createExitButton();
-this.contentContainer?.add(exitButton);
-```
-
-- [ ] **Step 3: 在showAdjuvantSelection中添加退出按钮**
-
-在 `showAdjuvantSelection()` 方法中（约第435行后）:
+已在 `showMethodSelection()` 方法中（第412-414行）:
 
 ```typescript
 // 退出按钮
@@ -409,19 +401,9 @@ const exitButton = this.createExitButton();
 this.contentContainer?.add(exitButton);
 ```
 
-- [ ] **Step 4: 在showPreprocess中添加退出按钮**
+- [x] **Step 3: 在showAdjuvantSelection中添加退出按钮**
 
-在 `showPreprocess()` 方法中（约第483行后）:
-
-```typescript
-// 退出按钮
-const exitButton = this.createExitButton();
-this.contentContainer?.add(exitButton);
-```
-
-- [ ] **Step 5: 在showProcessingProgress中添加退出按钮**
-
-在 `showProcessingProgress()` 方法中（约第550行后）:
+已在 `showAdjuvantSelection()` 方法中（第479-481行）:
 
 ```typescript
 // 退出按钮
@@ -429,17 +411,33 @@ const exitButton = this.createExitButton();
 this.contentContainer?.add(exitButton);
 ```
 
-- [ ] **Step 6: 编译验证**
+- [x] **Step 4: 在showPreprocess中添加退出按钮**
 
-Run: `npx tsc --noEmit`
-Expected: 无编译错误
+已在 `showPreprocess()` 方法中（第531-533行）:
 
-- [ ] **Step 7: Commit**
-
-```bash
-git add src/ui/ProcessingUI.ts
-git commit -m "fix: add exit button to intermediate processing phases"
+```typescript
+// 退出按钮
+const exitButton = this.createExitButton();
+this.contentContainer?.add(exitButton);
 ```
+
+- [x] **Step 5: 在showProcessingProgress中添加退出按钮**
+
+已在 `showProcessingProgress()` 方法中（第602-604行）:
+
+```typescript
+// 退出按钮
+const exitButton = this.createExitButton();
+this.contentContainer?.add(exitButton);
+```
+
+- [x] **Step 6: 编译验证**
+
+✅ TypeScript编译无错误
+
+- [x] **Step 7: Commit**
+
+已在Round 4 visual optimization中提交 (`d05068c`)
 
 ---
 

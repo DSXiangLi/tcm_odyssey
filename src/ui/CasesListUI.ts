@@ -40,13 +40,13 @@ export class CasesListUI extends Phaser.GameObjects.Container {
     this.config = config;
     this.caseManager = config.caseManager;
 
-    // 创建背景
-    this.background = scene.add.rectangle(0, 0, 640, 420, UI_COLORS.PANEL_PRIMARY, 0.85);
+    // 创建背景 - 扩展高度以覆盖关闭按钮
+    this.background = scene.add.rectangle(0, -10, 640, 450, UI_COLORS.PANEL_PRIMARY, 0.85);
     this.background.setOrigin(0.5);
     this.add(this.background);
 
     // 创建标题
-    this.titleText = scene.add.text(0, -220, '病案记录', {
+    this.titleText = scene.add.text(0, -235, '病案记录', {
       fontSize: '24px',
       color: '#ffffff',
       fontStyle: 'bold'
@@ -61,7 +61,7 @@ export class CasesListUI extends Phaser.GameObjects.Container {
     this.createCaseList();
 
     // 创建关闭按钮
-    this.closeButton = scene.add.text(300, -220, '[关闭]', {
+    this.closeButton = scene.add.text(300, -235, '[关闭]', {
       fontSize: '16px',
       color: '#c09060'  // SOFT_ORANGE
     });
@@ -88,7 +88,7 @@ export class CasesListUI extends Phaser.GameObjects.Container {
    */
   private createStatisticsText(): void {
     const stats = this.caseManager.getStatistics();
-    const statsText = this.scene.add.text(0, -180,
+    const statsText = this.scene.add.text(0, -195,
       `总计: ${stats.total} | 完成: ${stats.completed} | 平均分: ${stats.average_score}`,
       {
         fontSize: '14px',
@@ -117,7 +117,7 @@ export class CasesListUI extends Phaser.GameObjects.Container {
     // 创建每个病案项
     for (let i = 0; i < sortedCases.length; i++) {
       const caseState = sortedCases[i];
-      const itemY = -120 + i * 70;
+      const itemY = -135 + i * 70;
 
       // 只显示可见范围内的项目
       if (i >= this.scrollOffset && i < this.scrollOffset + this.maxVisibleItems) {
@@ -129,7 +129,7 @@ export class CasesListUI extends Phaser.GameObjects.Container {
 
     // 创建滚动提示（如果项目过多）
     if (cases.length > this.maxVisibleItems) {
-      const scrollHint = this.scene.add.text(0, 230,
+      const scrollHint = this.scene.add.text(0, 215,
         `[滚动查看更多]`,
         {
           fontSize: '12px',

@@ -138,6 +138,47 @@ export class ProcessingUI {
   }
 
   /**
+   * 创建退出按钮（右上角）
+   */
+  private createExitButton(): Phaser.GameObjects.Text {
+    const exitButton = this.scene.add.text(
+      this.width - 60,
+      30,
+      '[退出]',
+      {
+        fontSize: '16px',
+        color: UI_COLOR_STRINGS.TEXT_PRIMARY,
+        backgroundColor: UI_COLOR_STRINGS.PANEL_DARK,
+        padding: { x: 10, y: 5 }
+      }
+    ).setOrigin(0.5).setInteractive({ useHandCursor: true });
+
+    exitButton.on('pointerover', () => {
+      exitButton.setColor(UI_COLOR_STRINGS.BUTTON_PRIMARY_HOVER);
+    });
+
+    exitButton.on('pointerout', () => {
+      exitButton.setColor(UI_COLOR_STRINGS.TEXT_PRIMARY);
+    });
+
+    exitButton.on('pointerdown', () => {
+      this.handleExit();
+    });
+
+    return exitButton;
+  }
+
+  /**
+   * 处理退出
+   */
+  private handleExit(): void {
+    this.manager.reset();
+    this.destroy();
+    this.scene.scene.stop('ProcessingScene');
+    this.scene.scene.start('ClinicScene');
+  }
+
+  /**
    * 清除内容容器
    */
   private clearContent(): void {
@@ -368,6 +409,10 @@ export class ProcessingUI {
     });
     this.contentContainer!.add(confirmButton);
 
+    // 退出按钮
+    const exitButton = this.createExitButton();
+    this.contentContainer!.add(exitButton);
+
     // 阶段指示
     this.phaseText?.setText('阶段: 选择方法');
   }
@@ -431,6 +476,10 @@ export class ProcessingUI {
       this.contentContainer!.add(button);
     });
 
+    // 退出按钮
+    const exitButton = this.createExitButton();
+    this.contentContainer!.add(exitButton);
+
     // 阶段指示
     this.phaseText?.setText('阶段: 选择辅料');
   }
@@ -478,6 +527,10 @@ export class ProcessingUI {
       padding: { x: 30, y: 15 }
     });
     this.contentContainer!.add(startButton);
+
+    // 退出按钮
+    const exitButton = this.createExitButton();
+    this.contentContainer!.add(exitButton);
 
     // 阶段指示
     this.phaseText?.setText('阶段: 预处理');
@@ -545,6 +598,10 @@ export class ProcessingUI {
       padding: { x: 30, y: 15 }
     });
     this.contentContainer!.add(completeButton);
+
+    // 退出按钮
+    const exitButton = this.createExitButton();
+    this.contentContainer!.add(exitButton);
 
     // 阶段指示
     this.phaseText?.setText('阶段: 炮制进行中');

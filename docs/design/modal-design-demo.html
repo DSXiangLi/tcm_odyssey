@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>弹窗设计方案 Demo - 玻璃质感现代风格</title>
+  <style>
+    /* ===== 基础设置 ===== */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif;
+      min-height: 100vh;
+      /* 模拟游戏场景背景 */
+      background: linear-gradient(135deg, #2d4a3e 0%, #1a2e26 50%, #0d1f17 100%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 40px;
+      gap: 40px;
+    }
+
+    /* ===== 设计方案说明 ===== */
+    .design-spec {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 12px;
+      padding: 20px;
+      max-width: 900px;
+      color: #d4c4b4;
+      font-size: 14px;
+      line-height: 1.6;
+    }
+
+    .design-spec h2 {
+      color: #f0e0d0;
+      margin-bottom: 15px;
+      font-size: 18px;
+    }
+
+    .design-spec table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 10px 0;
+    }
+
+    .design-spec th, .design-spec td {
+      padding: 8px 12px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .design-spec th {
+      background: rgba(90, 192, 112, 0.2);
+      color: #90c070;
+    }
+
+    /* ===== 弹窗样式定义 ===== */
+
+    /* 方案1: 透明玻璃质感（Glassmorphism） */
+    .modal-glass {
+      width: 400px;
+      background: rgba(64, 128, 128, 0.25); /* 半透明灰蓝 */
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid rgba(192, 160, 128, 0.4); /* 半透明金棕边框 */
+      border-radius: 16px;
+      box-shadow:
+        0 8px 32px rgba(0, 0, 0, 0.3),
+        inset 0 1px 0 rgba(255, 255, 255, 0.1), /* 顶部高光 */
+        inset 0 -1px 0 rgba(0, 0, 0, 0.1); /* 底部阴影 */
+      padding: 24px;
+      position: relative;
+    }
+
+    /* 方案2: 深色玻璃质感（更适合暗色背景） */
+    .modal-dark-glass {
+      width: 400px;
+      background: rgba(40, 32, 32, 0.6); /* 半透明深棕 */
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 2px solid rgba(192, 160, 128, 0.5);
+      border-radius: 12px;
+      box-shadow:
+        0 4px 24px rgba(0, 0, 0, 0.4),
+        0 0 0 1px rgba(192, 160, 128, 0.2), /* 外发光 */
+        inset 0 2px 4px rgba(192, 160, 128, 0.1); /* 内发光 */
+      padding: 24px;
+    }
+
+    /* 方案3: 渐变玻璃质感 */
+    .modal-gradient-glass {
+      width: 400px;
+      background: linear-gradient(
+        135deg,
+        rgba(64, 128, 128, 0.3) 0%,
+        rgba(64, 32, 32, 0.4) 100%
+      );
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid rgba(192, 160, 128, 0.5);
+      border-radius: 20px;
+      box-shadow:
+        0 8px 32px rgba(0, 0, 0, 0.3),
+        inset 0 1px 2px rgba(255, 255, 255, 0.1);
+      padding: 24px;
+      overflow: hidden;
+    }
+
+    /* 方案3装饰：顶部渐变光带 */
+    .modal-gradient-glass::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 40px;
+      background: linear-gradient(
+        180deg,
+        rgba(192, 160, 128, 0.2) 0%,
+        transparent 100%
+      );
+      border-radius: 20px 20px 0 0;
+    }
+
+    /* ===== 弹窗内容样式 ===== */
+    .modal-title {
+      font-size: 20px;
+      font-weight: bold;
+      color: #f0e0d0;
+      margin-bottom: 16px;
+      text-align: center;
+      letter-spacing: 1px;
+    }
+
+    .modal-content {
+      font-size: 14px;
+      color: #d4c4b4;
+      line-height: 1.8;
+      margin-bottom: 20px;
+      text-align: center;
+    }
+
+    .modal-hint {
+      font-size: 12px;
+      color: #90c070;
+      margin-top: 12px;
+      text-align: center;
+    }
+
+    /* ===== 按钮样式 ===== */
+    .btn {
+      padding: 12px 24px;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      border: none;
+      margin: 8px;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #90c070 0%, #7ab060 100%);
+      color: #1a2e26;
+      box-shadow: 0 4px 12px rgba(144, 192, 112, 0.3);
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 16px rgba(144, 192, 112, 0.4);
+    }
+
+    .btn-secondary {
+      background: rgba(160, 128, 96, 0.3);
+      color: #e5d5c5;
+      border: 1px solid rgba(192, 160, 128, 0.4);
+    }
+
+    .btn-secondary:hover {
+      background: rgba(160, 128, 96, 0.5);
+      border-color: rgba(192, 160, 128, 0.6);
+    }
+
+    .btn-danger {
+      background: rgba(192, 112, 112, 0.3);
+      color: #c07070;
+      border: 1px solid rgba(192, 112, 112, 0.4);
+    }
+
+    .btn-danger:hover {
+      background: rgba(192, 112, 112, 0.5);
+    }
+
+    .btn-group {
+      display: flex;
+      justify-content: center;
+      gap: 12px;
+      margin-top: 16px;
+    }
+
+    /* ===== 进度条样式 ===== */
+    .progress-container {
+      width: 100%;
+      height: 24px;
+      background: rgba(0, 0, 0, 0.3);
+      border-radius: 12px;
+      border: 1px solid rgba(192, 160, 128, 0.3);
+      margin: 16px 0;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #90c070 0%, #a0d080 100%);
+      border-radius: 12px;
+      transition: width 0.3s ease;
+    }
+
+    .progress-text {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      color: #f0e0d0;
+      font-size: 12px;
+      font-weight: 500;
+    }
+
+    /* ===== 标签样式 ===== */
+    .tag {
+      display: inline-block;
+      padding: 4px 12px;
+      border-radius: 6px;
+      font-size: 12px;
+      margin: 4px;
+    }
+
+    .tag-success {
+      background: rgba(144, 192, 112, 0.2);
+      color: #90c070;
+      border: 1px solid rgba(144, 192, 112, 0.3);
+    }
+
+    .tag-warning {
+      background: rgba(192, 144, 96, 0.2);
+      color: #c09060;
+      border: 1px solid rgba(192, 144, 96, 0.3);
+    }
+
+    .tag-error {
+      background: rgba(192, 112, 112, 0.2);
+      color: #c07070;
+      border: 1px solid rgba(192, 112, 112, 0.3);
+    }
+
+    /* ===== 输入框样式 ===== */
+    .input-field {
+      width: 100%;
+      padding: 12px 16px;
+      background: rgba(0, 0, 0, 0.2);
+      border: 1px solid rgba(192, 160, 128, 0.3);
+      border-radius: 8px;
+      color: #e5d5c5;
+      font-size: 14px;
+      margin: 8px 0;
+    }
+
+    .input-field:focus {
+      outline: none;
+      border-color: rgba(144, 192, 112, 0.5);
+      box-shadow: 0 0 8px rgba(144, 192, 112, 0.2);
+    }
+
+    /* ===== 场景提示气泡 ===== */
+    .scene-tip {
+      width: 320px;
+      background: rgba(64, 128, 128, 0.35);
+      backdrop-filter: blur(8px);
+      border: 1px solid rgba(192, 160, 128, 0.4);
+      border-radius: 12px;
+      padding: 16px;
+      position: relative;
+    }
+
+    .scene-tip::after {
+      content: '';
+      position: absolute;
+      bottom: -8px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 16px;
+      height: 16px;
+      background: rgba(64, 128, 128, 0.35);
+      border-right: 1px solid rgba(192, 160, 128, 0.4);
+      border-bottom: 1px solid rgba(192, 160, 128, 0.4);
+      transform: translateX(-50%) rotate(45deg);
+    }
+
+    /* ===== Demo展示区域 ===== */
+    .demo-section {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 30px;
+      justify-content: center;
+      max-width: 1200px;
+    }
+
+    .demo-card {
+      text-align: center;
+    }
+
+    .demo-card h3 {
+      color: #90c070;
+      margin-bottom: 12px;
+      font-size: 16px;
+    }
+
+    /* ===== 颜色展示 ===== */
+    .color-palette {
+      display: flex;
+      gap: 8px;
+      margin-top: 16px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
+    .color-item {
+      width: 48px;
+      height: 48px;
+      border-radius: 8px;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 10px;
+      color: #fff;
+      text-shadow: 0 1px 2px rgba(0,0,0,0.5);
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ===== 设计方案说明 ===== -->
+  <div class="design-spec">
+    <h2>🎨 弹窗设计方案说明</h2>
+
+    <h4>核心设计理念</h4>
+    <p>采用<strong>Glassmorphism（玻璃态）</strong>现代设计风格，融合中医田园配色基调，实现<strong>半透明+模糊背景+微妙边框</strong>的视觉效果。</p>
+
+    <h4>配色方案</h4>
+    <table>
+      <tr><th>类别</th><th>颜色名</th><th>Hex值</th><th>用途</th></tr>
+      <tr><td>背景半透明</td><td>PANEL_GLASS</td><td>rgba(64,128,128,0.25)</td><td>弹窗主背景</td></tr>
+      <tr><td>背景深色</td><td>PANEL_DARK_GLASS</td><td>rgba(40,32,32,0.6)</td><td>强调弹窗</td></tr>
+      <tr><td>边框高亮</td><td>BORDER_GLOW</td><td>rgba(192,160,128,0.5)</td><td>弹窗边框</td></tr>
+      <tr><td>文字主色</td><td>TEXT_BRIGHT</td><td>#f0e0d0</td><td>标题文字</td></tr>
+      <tr><td>文字次级</td><td>TEXT_TIP</td><td>#d4c4b4</td><td>内容文字</td></tr>
+      <tr><td>文字温暖</td><td>TEXT_WARM</td><td>#e5d5c5</td><td>提示文字</td></tr>
+      <tr><td>按钮主色</td><td>BTN_PRIMARY</td><td>#90c070</td><td>主要按钮</td></tr>
+      <tr><td>按钮次级</td><td>BTN_SECONDARY</td><td>rgba(160,128,96,0.3)</td><td>次要按钮</td></tr>
+    </table>
+
+    <h4>关键设计元素</h4>
+    <table>
+      <tr><th>元素</th><th>参数</th><th>效果</th></tr>
+      <tr><td>背景透明度</td><td>0.25-0.35</td><td>透视背景，玻璃质感</td></tr>
+      <tr><td>模糊滤镜</td><td>blur(12px)</td><td>柔化背景内容</td></tr>
+      <tr><td>边框</td><td>1-2px rgba金棕</td><td>视觉分隔</td></tr>
+      <tr><td>圆角</td><td>12-20px</td><td>现代柔和感</td></tr>
+      <tr><td>阴影</td><td>多层复合阴影</td><td>深度层次感</td></tr>
+      <tr><td>顶部高光</td><td>inset 0 1px rgba(255,255,255,0.1)</td><td>玻璃光泽</td></tr>
+    </table>
+
+    <h4>颜色展示</h4>
+    <div class="color-palette">
+      <div class="color-item" style="background: rgba(64,128,128,0.25);">玻璃蓝</div>
+      <div class="color-item" style="background: rgba(40,32,32,0.6);">玻璃棕</div>
+      <div class="color-item" style="background: rgba(192,160,128,0.5);">边框金</div>
+      <div class="color-item" style="background: #f0e0d0; color: #1a2e26;">标题文字</div>
+      <div class="color-item" style="background: #d4c4b4; color: #1a2e26;">内容文字</div>
+      <div class="color-item" style="background: #90c070; color: #1a2e26;">按钮主色</div>
+      <div class="color-item" style="background: #c07070; color: #fff;">警示色</div>
+      <div class="color-item" style="background: linear-gradient(135deg, #90c070, #7ab060);">按钮渐变</div>
+    </div>
+  </div>
+
+  <!-- ===== Demo展示区域 ===== -->
+  <div class="demo-section">
+
+    <!-- 方案1: 透明玻璃质感 -->
+    <div class="demo-card">
+      <h3>方案1: 透明玻璃质感</h3>
+      <div class="modal-glass">
+        <div class="modal-title">存档选择</div>
+        <div class="modal-content">请选择存档槽位继续游戏</div>
+        <div class="input-field" placeholder="存档名称">存档1 - 2026-04-18</div>
+        <div class="btn-group">
+          <button class="btn btn-primary">继续游戏</button>
+          <button class="btn btn-secondary">取消</button>
+        </div>
+        <div class="modal-hint">按ESC键返回标题画面</div>
+      </div>
+    </div>
+
+    <!-- 方案2: 深色玻璃质感 -->
+    <div class="demo-card">
+      <h3>方案2: 深色玻璃质感</h3>
+      <div class="modal-dark-glass">
+        <div class="modal-title">确认跳过引导</div>
+        <div class="modal-content">跳过后将无法再次查看新手引导<br>确定要跳过吗？</div>
+        <div class="btn-group">
+          <button class="btn btn-primary">继续引导</button>
+          <button class="btn btn-danger">确认跳过</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 方案3: 渐变玻璃质感 -->
+    <div class="demo-card">
+      <h3>方案3: 渐变玻璃质感</h3>
+      <div class="modal-gradient-glass">
+        <div class="modal-title">新手引导</div>
+        <div class="modal-content">
+          欢迎来到药灵山谷！<br>
+          使用方向键或WASD移动角色
+        </div>
+        <div class="progress-container">
+          <div class="progress-fill" style="width: 33%;"></div>
+          <span class="progress-text">步骤 1/3</span>
+        </div>
+        <div class="btn-group">
+          <button class="btn btn-secondary">跳过引导</button>
+          <button class="btn btn-primary">下一步</button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ===== 场景提示气泡 Demo ===== -->
+  <div class="demo-section">
+    <div class="demo-card">
+      <h3>场景提示气泡</h3>
+      <div class="scene-tip">
+        <div class="modal-content" style="font-size: 13px;">
+          这是百草镇，你可以在这里<br>
+          探索药王谷、与NPC对话、完成任务
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== 状态标签 Demo ===== -->
+  <div class="demo-section">
+    <div class="demo-card">
+      <h3>状态标签</h3>
+      <div class="modal-glass" style="width: auto; padding: 16px;">
+        <span class="tag tag-success">已完成</span>
+        <span class="tag tag-warning">进行中</span>
+        <span class="tag tag-error">已锁定</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== Phaser Canvas兼容说明 ===== -->
+  <div class="design-spec">
+    <h2>⚠️ Phaser Canvas 渲染限制说明</h2>
+    <p>由于Phaser使用Canvas渲染，<strong>无法直接使用CSS backdrop-filter</strong>实现模糊效果。</p>
+    <h4>替代方案</h4>
+    <table>
+      <tr><th>CSS效果</th><th>Phaser替代</th><th>实现难度</th></tr>
+      <tr><td>backdrop-filter blur</td><td>截图+模糊预处理 或 简化透明渐变</td><td>中等/简单</td></tr>
+      <tr><td>rgba背景</td><td>fillStyle alpha参数</td><td>简单</td></tr>
+      <tr><td>复合阴影</td><td>多层Graphics绘制</td><td>简单</td></tr>
+      <tr><td>渐变背景</td><td>Graphics填充渐变</td><td>简单</td></tr>
+      <tr><td>边框发光</td><td>setStrokeStyle + 外层描边</td><td>简单</td></tr>
+    </table>
+    <h4>推荐简化方案</h4>
+    <p>对于Phaser游戏，建议采用<strong>简化玻璃质感</strong>：半透明背景 + 微妙边框 + 顶部高光模拟，放弃模糊滤镜以保持性能。</p>
+  </div>
+
+</body>
+</html>

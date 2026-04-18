@@ -26,6 +26,116 @@ import {
 import { UI_COLORS, UI_COLOR_STRINGS } from '../data/ui-color-theme';
 
 /**
+ * 创建渐变玻璃背景Graphics对象（方案3）
+ *
+ * 设计特征:
+ * - 背景渐变: 灰蓝(0x408080, 0.3) → 土黄(0x402020, 0.4)
+ * - 顶部光带: 金棕(0xc0a080, 0.2) → 透明
+ * - 边框: 2px 金棕(0xc0a080, 0.5)
+ *
+ * @param scene Phaser场景
+ * @param x 绘制起点X（左上角）
+ * @param y 绘制起点Y（左上角）
+ * @param width 宽度
+ * @param height 高度
+ * @returns Graphics对象
+ */
+function createGradientGlassBackground(
+  scene: Phaser.Scene,
+  x: number,
+  y: number,
+  width: number,
+  height: number
+): Phaser.GameObjects.Graphics {
+  const graphics = scene.add.graphics();
+
+  // 1. 渐变背景（灰蓝到土黄，从左到右）
+  // fillGradientStyle: topLeft, topRight, bottomLeft, bottomRight
+  graphics.fillGradientStyle(
+    UI_COLORS.PANEL_GLASS_LIGHT, 0.3,  // 左上: 灰蓝
+    UI_COLORS.PANEL_GLASS_DARK, 0.4,   // 右上: 土黄
+    UI_COLORS.PANEL_GLASS_LIGHT, 0.3,  // 左下: 灰蓝
+    UI_COLORS.PANEL_GLASS_DARK, 0.4    // 右下: 土黄
+  );
+  graphics.fillRect(x, y, width, height);
+
+  // 2. 顶部光带（金棕到透明，从上到下，高度40px）
+  const lightBandHeight = Math.min(40, height * 0.12);
+  graphics.fillGradientStyle(
+    UI_COLORS.BORDER_GLOW, 0.2,    // 左上: 金棕
+    UI_COLORS.BORDER_GLOW, 0.2,    // 右上: 金棕
+    0x000000, 0,                   // 左下: 透明
+    0x000000, 0                    // 右下: 透明
+  );
+  graphics.fillRect(x, y, width, lightBandHeight);
+
+  // 3. 金棕边框（2px）
+  graphics.lineStyle(2, UI_COLORS.BORDER_GLOW, 0.5);
+  graphics.strokeRect(x, y, width, height);
+
+  return graphics;
+}
+
+/**
+ * 创建悬浮卡片背景Graphics对象（方案6）
+ *
+ * 设计特征:
+ * - 底部悬浮阴影: 黑色(0x000000, 0.5) 8px高度
+ * - 边缘阴影: 黑色(0x000000, 0.3) 4px偏移
+ * - 主背景渐变: 灰蓝(0x406050) → 暗绿(0x304030)
+ * - 顶部光带: 金棕(0xc0a080, 0.3) 2px
+ * - 顶部高光: 白色(0xffffff, 0.1) 1px
+ * - 边框: 2px 金棕(0xc0a080, 0.5)
+ *
+ * @param scene Phaser场景
+ * @param x 绘制起点X（左上角）
+ * @param y 绘制起点Y（左上角）
+ * @param width 宽度
+ * @param height 高度
+ * @returns Graphics对象
+ */
+function createFloatingCardBackground(
+  scene: Phaser.Scene,
+  x: number,
+  y: number,
+  width: number,
+  height: number
+): Phaser.GameObjects.Graphics {
+  const graphics = scene.add.graphics();
+
+  // 1. 底部悬浮阴影（模拟卡片悬浮感）
+  graphics.fillStyle(0x000000, 0.5);
+  graphics.fillRect(x + 4, y + height + 4, width, 8);
+
+  // 2. 边缘阴影（卡片四周的柔和阴影）
+  graphics.fillStyle(0x000000, 0.3);
+  graphics.fillRect(x + 4, y + 4, width, height);
+
+  // 3. 主背景渐变（灰蓝到暗绿，从上到下）
+  graphics.fillGradientStyle(
+    0x406050, 1,  // 左上: 灰蓝
+    0x406050, 1,  // 右上: 灰蓝
+    0x304030, 1,  // 左下: 暗绿
+    0x304030, 1   // 右下: 暗绿
+  );
+  graphics.fillRect(x, y, width, height);
+
+  // 4. 顶部光带（金棕色装饰，2px高度）
+  graphics.fillStyle(UI_COLORS.BORDER_GLOW, 0.3);
+  graphics.fillRect(x, y, width, 2);
+
+  // 5. 顶部微弱高光（1px白色高光）
+  graphics.fillStyle(0xffffff, 0.1);
+  graphics.fillRect(x, y, width, 1);
+
+  // 6. 金棕边框（2px）
+  graphics.lineStyle(2, UI_COLORS.BORDER_GLOW, 0.5);
+  graphics.strokeRect(x, y, width, height);
+
+  return graphics;
+}
+
+/**
  * TutorialUI配置
  */
 export interface TutorialUIConfig {
@@ -49,7 +159,7 @@ export class TutorialUI {
   private type: 'central' | 'scene_tip';
 
   // 集中引导UI元素
-  private background!: Phaser.GameObjects.Rectangle;
+  private background!: Phaser.GameObjects.Graphics;  // 渐变玻璃背景（方案3）
   private titleText!: Phaser.GameObjects.Text;
   private stepContainer!: Phaser.GameObjects.Container;
   private progressText!: Phaser.GameObjects.Text;
@@ -60,7 +170,7 @@ export class TutorialUI {
 
   // 场景提示UI元素
   private tipContainer!: Phaser.GameObjects.Container;
-  private tipBackground!: Phaser.GameObjects.Rectangle;
+  private tipBackground!: Phaser.GameObjects.Graphics;  // 方案6: 悬浮卡片背景（改为Graphics）
   private tipText!: Phaser.GameObjects.Text;
 
   // 当前状态
@@ -79,20 +189,28 @@ export class TutorialUI {
   private tutorialSkippedListener: (data: EventData) => void;
   private sceneTipShownListener: (data: EventData) => void;
 
-  // 样式配置（使用场景PNG提取的配色主题）
+  // 进度条样式常量
+  private readonly progressBarConfig = {
+    strokeWidth: 2,          // 边框宽度
+    internalPadding: 2,      // 内部间隙（边框到填充的距离）
+    fillHeight: 16,          // 填充高度
+    bgHeight: 20             // 背景高度
+  };
+
+  // 样式配置（使用场景PNG提取的配色主题 + 方案3渐变玻璃）
   private readonly styles = {
-    background: { fillColor: UI_COLORS.PANEL_PRIMARY, alpha: 0.85 },
-    title: { fontSize: '28px', color: UI_COLOR_STRINGS.TEXT_PRIMARY, fontStyle: 'bold' },
-    stepTitle: { fontSize: '20px', color: UI_COLOR_STRINGS.TEXT_PRIMARY, fontStyle: 'bold' },
-    stepContent: { fontSize: '16px', color: UI_COLOR_STRINGS.TEXT_SECONDARY },
+    // 背景使用Graphics绘制渐变，不再使用Rectangle
+    title: { fontSize: '28px', color: UI_COLOR_STRINGS.TEXT_BRIGHT, fontStyle: 'bold' },  // 高亮文字
+    stepTitle: { fontSize: '20px', color: UI_COLOR_STRINGS.TEXT_BRIGHT, fontStyle: 'bold' },  // 高亮文字
+    stepContent: { fontSize: '16px', color: UI_COLOR_STRINGS.TEXT_TIP },  // 提示文字
     keyHint: { fontSize: '18px', color: UI_COLOR_STRINGS.TEXT_HIGHLIGHT },
-    progress: { fontSize: '14px', color: UI_COLOR_STRINGS.TEXT_DISABLED },
+    progress: { fontSize: '14px', color: UI_COLOR_STRINGS.TEXT_TIP },  // 提示文字
     progressBar: { fillColor: UI_COLORS.BUTTON_SUCCESS, alpha: 1 },
-    progressBg: { fillColor: UI_COLORS.PANEL_PRIMARY, alpha: 1 },
+    progressBg: { fillColor: UI_COLORS.PANEL_INSET, alpha: 0.8, strokeColor: UI_COLORS.BORDER_PRIMARY, strokeAlpha: 0.8 },  // 内凹背景色 + 边框
     skipButton: { fontSize: '16px', color: '#c07070' },  // SOFT_RED 警示色
-    nextButton: { fontSize: '18px', color: UI_COLOR_STRINGS.TEXT_PRIMARY, backgroundColor: UI_COLOR_STRINGS.BUTTON_SUCCESS },
+    nextButton: { fontSize: '18px', color: UI_COLOR_STRINGS.TEXT_BRIGHT, backgroundColor: UI_COLOR_STRINGS.BUTTON_SUCCESS },  // 高亮文字
     tipBackground: { fillColor: UI_COLORS.PANEL_PRIMARY, alpha: 0.85 },
-    tipText: { fontSize: '16px', color: UI_COLOR_STRINGS.TEXT_PRIMARY }
+    tipText: { fontSize: '16px', color: UI_COLOR_STRINGS.TEXT_TIP }  // 提示文字
   };
 
   constructor(config: TutorialUIConfig) {
@@ -146,7 +264,7 @@ export class TutorialUI {
   }
 
   /**
-   * 创建集中引导UI
+   * 创建集中引导UI（方案3：渐变玻璃）
    */
   private createCentralTutorialUI(): void {
     const centerX = this.scene.cameras.main.width / 2;
@@ -159,12 +277,12 @@ export class TutorialUI {
     this.container.setDepth(1000);
     this.container.setScrollFactor(0);
 
-    // 背景
-    this.background = this.scene.add.rectangle(0, 0, width, height, this.styles.background.fillColor, this.styles.background.alpha);
-    this.background.setOrigin(0.5);
+    // 背景 - 使用渐变玻璃效果（方案3）
+    // Graphics绘制起点为左上角，容器中心为(0,0)，所以绘制起点为(-width/2, -height/2)
+    this.background = createGradientGlassBackground(this.scene, -width / 2, -height / 2, width, height);
     this.container.add(this.background);
 
-    // 标题
+    // 标题（使用TEXT_BRIGHT高亮文字）
     this.titleText = this.scene.add.text(0, -height / 2 + 30, '新手引导', this.styles.title).setOrigin(0.5);
     this.container.add(this.titleText);
 
@@ -172,18 +290,27 @@ export class TutorialUI {
     this.stepContainer = this.scene.add.container(0, 0);
     this.container.add(this.stepContainer);
 
-    // 进度条背景
-    this.progressBg = this.scene.add.rectangle(0, height / 2 - 80, width - 80, 20, this.styles.progressBg.fillColor, this.styles.progressBg.alpha);
+    // 进度条背景（使用内凹底色 + 边框）
+    const barWidth = width - 80;
+    const barHeight = this.progressBarConfig.bgHeight;
+    this.progressBg = this.scene.add.rectangle(0, height / 2 - 80, barWidth, barHeight, this.styles.progressBg.fillColor, this.styles.progressBg.alpha);
     this.progressBg.setOrigin(0.5);
+    // 添加边框（strokeStyle）
+    this.progressBg.setStrokeStyle(this.progressBarConfig.strokeWidth, this.styles.progressBg.strokeColor, this.styles.progressBg.strokeAlpha);
     this.container.add(this.progressBg);
 
-    // 进度条
-    const progressWidth = this.calculateProgressWidth(width - 80);
-    this.progressBar = this.scene.add.rectangle(-(width - 80) / 2 + progressWidth / 2, height / 2 - 80, progressWidth, 16, this.styles.progressBar.fillColor, this.styles.progressBar.alpha);
+    // 进度条填充（计算有效宽度，考虑边框和内部间隙）
+    const effectiveWidth = this.calculateEffectiveFillWidth(barWidth);
+    const fillWidth = this.calculateProgressWidth(effectiveWidth);
+    // 填充起始位置：背景左边缘 + 边框宽度 + 内部间隙
+    const fillStartX = -(barWidth / 2) + this.progressBarConfig.strokeWidth + this.progressBarConfig.internalPadding;
+    // 填充中心位置：起始位置 + 填充宽度的一半
+    const fillCenterX = fillStartX + fillWidth / 2;
+    this.progressBar = this.scene.add.rectangle(fillCenterX, height / 2 - 80, fillWidth, this.progressBarConfig.fillHeight, this.styles.progressBar.fillColor, this.styles.progressBar.alpha);
     this.progressBar.setOrigin(0.5);
     this.container.add(this.progressBar);
 
-    // 进度文字
+    // 进度文字（使用TEXT_TIP提示文字）
     const progressText = this.getProgressText();
     this.progressText = this.scene.add.text(0, height / 2 - 60, progressText, this.styles.progress).setOrigin(0.5);
     this.container.add(this.progressText);
@@ -212,7 +339,7 @@ export class TutorialUI {
   }
 
   /**
-   * 创建场景提示UI
+   * 创建场景提示UI（方案6：悬浮卡片）
    */
   private createSceneTipUI(): void {
     if (!this.sceneTipConfig) {
@@ -222,24 +349,32 @@ export class TutorialUI {
 
     const position = this.sceneTipConfig.position ?? { x: 400, y: 200 };
     const duration = this.sceneTipConfig.duration ?? 3000;
+
+    // 计算适合2行文字的尺寸
+    // 文字padding: 40 (左右各20)
+    // 行高: ~24px (16px字体 + 行间距)
+    // 2行 = 48px，加上上下padding各10 = 68px
     const width = 400;
-    const height = 80;
+    const height = 72;  // 适应最多2行文字 (2行高度48px + 上下padding24px)
+    const textPaddingH = 20;  // 左右padding
 
     // 创建容器
     this.tipContainer = this.scene.add.container(position.x, position.y);
     this.tipContainer.setDepth(900);
     this.tipContainer.setScrollFactor(0);
 
-    // 提示气泡背景（带箭头效果）
-    this.tipBackground = this.scene.add.rectangle(0, 0, width, height, this.styles.tipBackground.fillColor, this.styles.tipBackground.alpha);
-    this.tipBackground.setOrigin(0.5);
-    this.tipBackground.setStrokeStyle(2, UI_COLORS.BORDER_PRIMARY);
+    // 提示气泡背景 - 使用悬浮卡片效果（方案6）
+    // Graphics绘制起点为左上角，容器中心为(0,0)，所以绘制起点为(-width/2, -height/2)
+    this.tipBackground = createFloatingCardBackground(this.scene, -width / 2, -height / 2, width, height);
     this.tipContainer.add(this.tipBackground);
 
-    // 提示文字
+    // 提示文字（限制最多2行）
+    const textWidth = width - textPaddingH * 2;  // wordWrap宽度考虑padding
     this.tipText = this.scene.add.text(0, 0, this.sceneTipConfig.content, {
       ...this.styles.tipText,
-      wordWrap: { width: width - 40 }
+      wordWrap: { width: textWidth, useAdvancedWrap: true },
+      maxLines: 2,  // 防止垂直溢出
+      align: 'center'
     }).setOrigin(0.5);
     this.tipContainer.add(this.tipText);
 
@@ -250,11 +385,15 @@ export class TutorialUI {
       });
     }
 
-    // 点击关闭
-    this.tipBackground.setInteractive({ useHandCursor: true });
-    this.tipBackground.on('pointerdown', () => {
+    // 点击关闭（使用整个容器作为交互区域）
+    // 创建一个透明的交互区域覆盖整个卡片
+    const hitArea = this.scene.add.rectangle(0, 0, width, height, 0x000000, 0);
+    hitArea.setOrigin(0.5);
+    hitArea.setInteractive({ useHandCursor: true });
+    hitArea.on('pointerdown', () => {
       this.destroy();
     });
+    this.tipContainer.add(hitArea);
   }
 
   /**
@@ -332,15 +471,26 @@ export class TutorialUI {
   }
 
   /**
-   * 计算进度条宽度
+   * 计算有效填充宽度（考虑边框和内部间隙）
+   * 公式: barWidth - strokeWidth * 2 - internalPadding * 2
    */
-  private calculateProgressWidth(maxWidth: number): number {
+  private calculateEffectiveFillWidth(barWidth: number): number {
+    const strokePadding = this.progressBarConfig.strokeWidth * 2;  // 边框占用：每边strokeWidth像素
+    const internalPaddingTotal = this.progressBarConfig.internalPadding * 2;  // 内部间隙：每边internalPadding像素
+    return barWidth - strokePadding - internalPaddingTotal;
+  }
+
+  /**
+   * 计算进度条填充宽度
+   * @param effectiveWidth 有效填充宽度（已减去边框和内部间隙）
+   */
+  private calculateProgressWidth(effectiveWidth: number): number {
     const totalSteps = TUTORIAL_STEPS.length;
     const completedCount = this.completedSteps.length;
     const currentStepProgress = this.currentStep ? 0.5 : 1; // 当前步骤进行中算0.5进度
 
     const progress = (completedCount + currentStepProgress) / totalSteps;
-    return maxWidth * progress;
+    return Math.floor(effectiveWidth * progress);
   }
 
   /**
@@ -378,7 +528,7 @@ export class TutorialUI {
   }
 
   /**
-   * 显示跳过确认弹窗
+   * 显示跳过确认弹窗（方案3：渐变玻璃）
    */
   private showSkipConfirmDialog(): void {
     const dialogWidth = 350;
@@ -389,23 +539,23 @@ export class TutorialUI {
     dialogContainer.setDepth(1100);
     this.container.add(dialogContainer);
 
-    // 弹窗背景
-    const dialogBg = this.scene.add.rectangle(0, 0, dialogWidth, dialogHeight, UI_COLORS.PANEL_PRIMARY, 0.85);
+    // 弹窗背景 - 使用渐变玻璃效果（方案3）
+    const dialogBg = createGradientGlassBackground(this.scene, -dialogWidth / 2, -dialogHeight / 2, dialogWidth, dialogHeight);
     dialogContainer.add(dialogBg);
 
-    // 确认文字
+    // 确认文字（使用TEXT_TIP提示文字）
     const confirmText = this.scene.add.text(0, -40, SKIP_TUTORIAL_CONFIG.confirm_text, {
       fontSize: '16px',
-      color: UI_COLOR_STRINGS.TEXT_PRIMARY,
+      color: UI_COLOR_STRINGS.TEXT_TIP,  // 提示文字
       wordWrap: { width: dialogWidth - 40 },
       align: 'center'
     }).setOrigin(0.5);
     dialogContainer.add(confirmText);
 
-    // 确认跳过按钮
+    // 确认跳过按钮（使用TEXT_BRIGHT高亮文字）
     const confirmSkipBtn = this.scene.add.text(-80, 50, '确认跳过', {
       fontSize: '16px',
-      color: UI_COLOR_STRINGS.TEXT_PRIMARY,
+      color: UI_COLOR_STRINGS.TEXT_BRIGHT,  // 高亮文字
       backgroundColor: '#c07070',  // SOFT_RED 警示按钮
       padding: { x: 15, y: 8 }
     }).setOrigin(0.5);
@@ -419,10 +569,10 @@ export class TutorialUI {
     });
     dialogContainer.add(confirmSkipBtn);
 
-    // 继续引导按钮
+    // 继续引导按钮（使用TEXT_BRIGHT高亮文字）
     const continueBtn = this.scene.add.text(80, 50, '继续引导', {
       fontSize: '16px',
-      color: UI_COLOR_STRINGS.TEXT_PRIMARY,
+      color: UI_COLOR_STRINGS.TEXT_BRIGHT,  // 高亮文字
       backgroundColor: UI_COLOR_STRINGS.BUTTON_SUCCESS,
       padding: { x: 15, y: 8 }
     }).setOrigin(0.5);
@@ -469,9 +619,16 @@ export class TutorialUI {
   private updateProgress(): void {
     // 更新进度条
     const width = 500;
-    const progressWidth = this.calculateProgressWidth(width - 80);
-    this.progressBar.width = progressWidth;
-    this.progressBar.x = -(width - 80) / 2 + progressWidth / 2;
+    const barWidth = width - 80;
+    const effectiveWidth = this.calculateEffectiveFillWidth(barWidth);
+    const fillWidth = this.calculateProgressWidth(effectiveWidth);
+
+    // 更新填充宽度
+    this.progressBar.width = fillWidth;
+
+    // 更新填充位置：背景左边缘 + 边框宽度 + 内部间隙 + 填充宽度的一半
+    const fillStartX = -(barWidth / 2) + this.progressBarConfig.strokeWidth + this.progressBarConfig.internalPadding;
+    this.progressBar.x = fillStartX + fillWidth / 2;
 
     // 更新进度文字
     this.progressText.setText(this.getProgressText());

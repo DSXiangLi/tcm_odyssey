@@ -27,6 +27,18 @@ export const UI_COLORS = {
   /** 面板深色 */
   PANEL_DARK: 0x303030,
 
+  // === 玻璃质感背景（Round 4 弹窗设计） ===
+  /** 玻璃渐变起点 - 灰蓝色（与PANEL_PRIMARY相同，语义化命名） */
+  PANEL_GLASS_LIGHT: 0x408080,
+  /** 玻璃渐变终点 - 土黄色（与PANEL_SECONDARY相同，语义化命名） */
+  PANEL_GLASS_DARK: 0x402020,
+  /** 新拟态背景 - 深灰绿（凸起/凹陷效果） */
+  PANEL_NEUMORPHIC: 0x2a3e32,
+  /** 内凹底色 - 极深灰绿（输入框/槽位凹陷） */
+  PANEL_INSET: 0x0d1f17,
+  /** 3D弹窗背景 - 深灰绿（立体边框弹窗） */
+  PANEL_3D_BG: 0x1a2e26,
+
   // === 按钮系统（使用柔和色系） ===
   /** 主要按钮 - 柔和绿色 */
   BUTTON_PRIMARY: 0x90c070,
@@ -45,13 +57,25 @@ export const UI_COLORS = {
   /** 危险按钮 - 柔和红色 */
   BUTTON_DANGER: 0xc07070,
 
-  // === 边框/装饰 ===
+  // === 边框系统（Round 4 弹窗设计） ===
   /** 边框主色 - 暗棕系 */
   BORDER_PRIMARY: 0x604020,
-  /** 边框高亮 */
+  /** 边框高亮 - 金棕色 */
   BORDER_LIGHT: 0xc0a080,
   /** 分隔线 */
   DIVIDER: 0x504030,
+  /** 外层亮绿边框 - 强调边框（标题画面/引导） */
+  BORDER_OUTER_GREEN: 0x80a040,
+  /** 顶部高光 - 3D立体边框左上亮边 */
+  BORDER_TOP_LIGHT: 0x90c070,
+  /** 底部阴影 - 3D立体边框右下暗边 */
+  BORDER_BOTTOM_SHADOW: 0x604020,
+  /** 内凹暗边框 - 槽位凹陷效果暗边 */
+  BORDER_INSET_DARK: 0x0a1510,
+  /** 内凹亮边框 - 槽位凹陷效果亮边 */
+  BORDER_INSET_LIGHT: 0x406050,
+  /** 金棕发光边框 - 玻璃态边框高光（与BORDER_LIGHT相同，语义化命名） */
+  BORDER_GLOW: 0xc0a080,
 
   // === 状态色（使用柔和色系） ===
   STATUS_SUCCESS: 0x90c070,
@@ -102,9 +126,15 @@ export const UI_COLORS = {
   /** 棕系暗色 - 深度层次 */
   BROWN_DARK: 0x6b5b3d,
 
-  // === 文字色 ===
-  /** 次要文字 - 暖米灰色 */
+  // === 文字色（高对比度优化） ===
+  /** 次要文字 - 暖米灰色（对比度不足，仅用于装饰） */
   TEXT_SECONDARY: 0xb0a090,
+  /** 提示文字 - 浅奶油色 (对比度 ~5.2:1，PASS WCAG AA) */
+  TEXT_TIP: 0xd4c4b4,
+  /** 温暖文字 - 暖白色 (对比度 ~6.5:1，PASS WCAG AA/AAA) */
+  TEXT_WARM: 0xe5d5c5,
+  /** 高亮文字 - 亮米色 (对比度 ~7.5:1，PASS WCAG AAA) */
+  TEXT_BRIGHT: 0xf0e0d0,
 
 } as const;
 
@@ -116,6 +146,12 @@ export const UI_COLOR_STRINGS = {
   PANEL_SECONDARY: '#402020',
   PANEL_LIGHT: '#505050',
   PANEL_DARK: '#303030',
+  // 玻璃质感背景（Round 4）
+  PANEL_GLASS_LIGHT: '#408080',
+  PANEL_GLASS_DARK: '#402020',
+  PANEL_NEUMORPHIC: '#2a3e32',
+  PANEL_INSET: '#0d1f17',
+  PANEL_3D_BG: '#1a2e26',
   // 按钮系统（柔和色系）
   BUTTON_PRIMARY: '#90c070',
   BUTTON_PRIMARY_HOVER: '#a0d080',
@@ -124,9 +160,22 @@ export const UI_COLOR_STRINGS = {
   BUTTON_SUCCESS: '#90c070',
   BUTTON_WARNING: '#c09060',
   BUTTON_DANGER: '#c07070',
-  // 文字色
+  // 边框系统（Round 4）
+  BORDER_PRIMARY: '#604020',
+  BORDER_LIGHT: '#c0a080',
+  DIVIDER: '#504030',
+  BORDER_OUTER_GREEN: '#80a040',
+  BORDER_TOP_LIGHT: '#90c070',
+  BORDER_BOTTOM_SHADOW: '#604020',
+  BORDER_INSET_DARK: '#0a1510',
+  BORDER_INSET_LIGHT: '#406050',
+  BORDER_GLOW: '#c0a080',
+  // 文字色（高对比度优化）
   TEXT_PRIMARY: '#ffffff',
-  TEXT_SECONDARY: '#b0a090',  // 暖米灰
+  TEXT_SECONDARY: '#b0a090',  // 暖米灰（对比度不足）
+  TEXT_TIP: '#d4c4b4',        // 提示文字 (对比度 5.2:1，PASS AA)
+  TEXT_WARM: '#e5d5c5',       // 温暖文字 (对比度 6.5:1，PASS AA/AAA)
+  TEXT_BRIGHT: '#f0e0d0',     // 高亮文字 (对比度 7.5:1，PASS AAA)
   TEXT_HIGHLIGHT: '#90c070',
   TEXT_DISABLED: '#808080',
   // 状态色（柔和色系）

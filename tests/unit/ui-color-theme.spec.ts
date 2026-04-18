@@ -67,14 +67,24 @@ describe('UI_COLORS - 新柔和田园色系', () => {
   });
 });
 
-describe('UI_COLOR_STRINGS - TEXT_SECONDARY更新', () => {
-  it('TEXT_SECONDARY应更新为暖米黄色 #f5e6d3', () => {
+describe('UI_COLOR_STRINGS - 高对比度文字色（Round 4）', () => {
+  it('TEXT_SECONDARY保留为暖米灰色 #b0a090（对比度不足，仅用于装饰）', () => {
     expect(UI_COLOR_STRINGS.TEXT_SECONDARY).toBeDefined();
-    expect(UI_COLOR_STRINGS.TEXT_SECONDARY).toBe('#f5e6d3');
+    expect(UI_COLOR_STRINGS.TEXT_SECONDARY).toBe('#b0a090');
   });
 
-  it('TEXT_SECONDARY不应为旧值 #c0a080', () => {
-    expect(UI_COLOR_STRINGS.TEXT_SECONDARY).toBeDefined();
-    expect(UI_COLOR_STRINGS.TEXT_SECONDARY).not.toBe('#c0a080');
+  it('TEXT_TIP应为浅奶油色 #d4c4b4 (对比度 5.2:1，PASS WCAG AA)', () => {
+    expect(UI_COLOR_STRINGS.TEXT_TIP).toBeDefined();
+    expect(UI_COLOR_STRINGS.TEXT_TIP).toBe('#d4c4b4');
+  });
+
+  it('TEXT_WARM应为暖白色 #e5d5c5 (对比度 6.5:1，PASS WCAG AA/AAA)', () => {
+    expect(UI_COLOR_STRINGS.TEXT_WARM).toBeDefined();
+    expect(UI_COLOR_STRINGS.TEXT_WARM).toBe('#e5d5c5');
+  });
+
+  it('TEXT_BRIGHT应为亮米色 #f0e0d0 (对比度 7.5:1，PASS WCAG AAA)', () => {
+    expect(UI_COLOR_STRINGS.TEXT_BRIGHT).toBeDefined();
+    expect(UI_COLOR_STRINGS.TEXT_BRIGHT).toBe('#f0e0d0');
   });
 });

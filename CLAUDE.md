@@ -1092,6 +1092,63 @@ zhongyi_game_v3/
 
 **实现计划**: [第三轮视觉优化实施计划](docs/superpowers/plans/2026-04-17-round3-visual-optimization.md)
 
+### 第四轮视觉优化：现代弹窗设计方案 ⏳ 待实施 (2026-04-18)
+
+**触发原因**: 用户验收体验发现多个UI问题
+
+**用户反馈问题清单**:
+| 问题 | 位置 | 描述 |
+|-----|------|------|
+| 文字看不清 | TitleScene | "最近存档"、"方向键"等文字对比度不足 |
+| 弹窗无边框 | SaveUI | 存档选择弹窗没有边框，取消按钮看不清 |
+| 弹窗无边框 | TutorialUI | 新游戏确认弹窗、引导面板没有边框 |
+| 进度条不对齐 | TutorialUI | 进度条长度和边框没有对齐 |
+| 文字溢出 | TutorialUI | 场景提示文字超出边框 |
+
+**已确认的弹窗设计方案**:
+| 场景 | 方案 | 核心特征 |
+|-----|------|---------|
+| 标题画面/新手引导 | 方案3（渐变玻璃） | 渐变背景 + 顶部光带 + 金棕边框 |
+| 游戏内弹窗 | 方案5（3D立体边框） | 多层边框（亮左上+暗右下） |
+| 背包/选择界面 | 方案4（Neumorphism） | 凸起=选中，凹陷=未选中 |
+| 输入框/存档槽位 | 方案8（内凹槽位） | 暗顶左+亮底右边框 |
+| 成就/临时提示 | 方案6（悬浮卡片） | 底部阴影+悬浮感 |
+| 认/警告框 | 方案2（深色玻璃） | 高透明度+强边框分隔 |
+
+**设计风格**: Glassmorphism（玻璃态） + Neumorphism（新拟态） + 3D立体边框，融合中医田园配色
+
+**新增配色常量（待添加）**:
+```
+PANEL_GLASS_LIGHT: 0x408080   // 灰蓝（渐变起点）
+PANEL_GLASS_DARK: 0x402020    // 土黄（渐变终点）
+PANEL_NEUMORPHIC: 0x2a3e32    // 新拟态背景
+PANEL_INSET: 0x0d1f17         // 内凹底色
+BORDER_OUTER_GREEN: 0x80a040  // 外层亮绿边框
+BORDER_TOP_LIGHT: 0x90c070    // 顶部高光
+BORDER_BOTTOM_SHADOW: 0x604020// 底部阴影
+TEXT_TIP: 0xd4c4b4            // 提示文字 (对比度 5.2:1)
+TEXT_WARM: 0xe5d5c5           // 温暖文字 (对比度 6.5:1)
+TEXT_BRIGHT: 0xf0e0d0         // 高亮文字 (对比度 7.5:1)
+```
+
+**下一步任务列表**:
+| 优先级 | 任务 | 文件 | 状态 |
+|--------|------|------|------|
+| P0-1 | 添加新配色常量到ui-color-theme.ts | ui-color-theme.ts | 待执行 |
+| P0-2 | TitleScene文字对比度修复 | TitleScene.ts | 待执行 |
+| P0-3 | TutorialUI集中引导改方案3（渐变玻璃） | TutorialUI.ts | 待执行 |
+| P0-4 | SaveUI弹窗改方案5（3D立体）+ 方案8（槽位） | SaveUI.ts | 待执行 |
+| P1-1 | TutorialUI进度条对齐修复 | TutorialUI.ts | 待执行 |
+| P1-2 | TutorialUI场景提示改方案6（悬浮卡片） | TutorialUI.ts | 待执行 |
+| P1-3 | InventoryUI背包改方案4（新拟态） | InventoryUI.ts | 待执行 |
+
+**设计文档**:
+- [弹窗设计方案规范](docs/superpowers/specs/2026-04-18-modal-design-spec.md) ⭐最终确认版
+- [HTML Demo](docs/design/modal-design-demo-v2.html) ⭐可视化预览
+- [用户反馈问题记录](docs/testing/visual-issues-feedback-2026-04-18.md)
+
+**问题修复记录**: [docs/testing/phase2-test-fixes-record.md](docs/testing/phase2-test-fixes-record.md)
+
 
 ## 相关文档
 
@@ -1099,7 +1156,9 @@ zhongyi_game_v3/
 - [完整游戏设计文档](docs/superpowers/specs/2026-04-05-game-design-v3.0.md)
 - [视觉设计规范 v1.0](docs/superpowers/specs/2026-04-05-visual-design-v1.0.md)
 - [Phase2 视觉验收自动化系统设计](docs/superpowers/specs/2026-04-15-phase2-visual-acceptance-design.md)
-- [第三轮视觉优化设计](docs/superpowers/specs/2026-04-17-round3-visual-optimization-spec.md) ⭐新增
+- [第三轮视觉优化设计](docs/superpowers/specs/2026-04-17-round3-visual-optimization-spec.md)
+- [弹窗设计方案规范](docs/superpowers/specs/2026-04-18-modal-design-spec.md) ⭐第四轮最终确认版
+- [弹窗设计HTML Demo](docs/design/modal-design-demo-v2.html) ⭐可视化预览
 - [Phase 1验收标准](docs/superpowers/specs/2026-04-05-phase1-acceptance-criteria.md)
 - [Phase 1 AI端到端测试设计](docs/superpowers/specs/2026-04-05-phase1-ai-e2e-test-design.md)
 - [Phase 1.5 AI端到端视觉验收计划](docs/superpowers/specs/2026-04-06-phase1-5-ai-e2e-acceptance-plan.md)
@@ -1117,4 +1176,4 @@ zhongyi_game_v3/
 
 ---
 
-*本文档由 Claude Code 维护，更新于 2026-04-17*
+*本文档由 Claude Code 维护，更新于 2026-04-18*

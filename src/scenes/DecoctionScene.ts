@@ -137,8 +137,8 @@ export class DecoctionScene extends Phaser.Scene {
   private createDecoctionUI(): void {
     this.decoctionUI = new DecoctionUI({
       scene: this,
-      width: 720,
-      height: 480
+      width: this.cameras.main.width,
+      height: this.cameras.main.height
     });
   }
 

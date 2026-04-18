@@ -138,8 +138,8 @@ export class ProcessingScene extends Phaser.Scene {
   private createProcessingUI(): void {
     this.processingUI = new ProcessingUI({
       scene: this,
-      width: 720,
-      height: 480
+      width: this.cameras.main.width,
+      height: this.cameras.main.height
     });
   }
 

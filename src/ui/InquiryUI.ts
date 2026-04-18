@@ -8,6 +8,7 @@
  * - 必须线索完成确认提示
  *
  * Phase 2 S4 实现
+ * Round 4 视觉优化: 3D立体边框(方案B) + 内凹槽位(方案8)
  */
 
 import Phaser from 'phaser';
@@ -35,8 +36,9 @@ const COMMON_QUESTIONS = [
 ];
 
 export class InquiryUI extends Phaser.GameObjects.Container {
-  // 界面元素
-  private background!: Phaser.GameObjects.Rectangle;
+  // 界面元素 - 使用Graphics替代Rectangle（Round 4视觉优化）
+  private backgroundGraphics!: Phaser.GameObjects.Graphics;
+  private clueTrackerGraphics!: Phaser.GameObjects.Graphics;
   private patientAvatar!: Phaser.GameObjects.Image;
   private patientNameText!: Phaser.GameObjects.Text;
   private patientInfoText!: Phaser.GameObjects.Text;
@@ -62,15 +64,28 @@ export class InquiryUI extends Phaser.GameObjects.Container {
   private isGenerating: boolean = false;
   private sseClient: SSEClient;
 
+  // 样式配置（Round 4 3D边框设计）
+  private readonly InquiryUI_COLORS = {
+    // 方案B: 3D立体边框
+    outerBorder: UI_COLORS.BORDER_OUTER_GREEN,      // 亮绿边框 0x80a040
+    panelBg: UI_COLORS.PANEL_3D_BG,                 // 深绿背景 0x1a2e26
+    topLight: UI_COLORS.BORDER_TOP_LIGHT,           // 顶部高光 0x90c070
+    bottomShadow: UI_COLORS.BORDER_BOTTOM_SHADOW,   // 底部阴影 0x604020
+    // 方案8: 内凹槽位
+    insetBg: UI_COLORS.PANEL_INSET,                 // 内凹底色 0x0d1f17
+    insetDarkBorder: UI_COLORS.BORDER_INSET_DARK,   // 暗边框 0x0a1510
+    insetLightBorder: UI_COLORS.BORDER_INSET_LIGHT, // 亮边框 0x406050
+  };
+
   constructor(scene: Phaser.Scene, x: number, y: number, config: InquiryUIConfig) {
     super(scene, x, y);
     this.config = config;
     this.sseClient = new SSEClient();
 
-    // 创建主背景
-    this.background = scene.add.rectangle(0, 0, 640, 420, UI_COLORS.PANEL_PRIMARY, 0.85);
-    this.background.setOrigin(0.5);
-    this.add(this.background);
+    // 创建主背景 - 使用Graphics绘制3D立体边框（方案B）
+    this.backgroundGraphics = scene.add.graphics();
+    this.draw3DBorder(this.backgroundGraphics, -320, -210, 640, 420);
+    this.add(this.backgroundGraphics);
 
     // 创建病人信息区域
     this.createPatientInfoArea(scene);
@@ -108,6 +123,83 @@ export class InquiryUI extends Phaser.GameObjects.Container {
     // 创建退出按钮
     const exitButton = this.createExitButton();
     this.add(exitButton);
+  }
+
+  /**
+   * 绘制3D立体边框（方案B）
+   * 外层边框 + 顶部高光 + 底部阴影
+   *
+   * @param alpha 背景透明度，默认0.85（让背景略微可见但面板清晰）
+   */
+  private draw3DBorder(
+    graphics: Phaser.GameObjects.Graphics,
+    x: number,
+    y: number,
+    width: number,
+    height: number,
+    alpha: number = 0.85
+  ): void {
+    // 1. 外层边框（亮绿色）
+    graphics.lineStyle(4, this.InquiryUI_COLORS.outerBorder);
+    graphics.strokeRect(x - 4, y - 4, width + 8, height + 8);
+
+    // 2. 主背景（深绿色，可调透明度）
+    graphics.fillStyle(this.InquiryUI_COLORS.panelBg, alpha);
+    graphics.fillRect(x, y, width, height);
+
+    // 3. 顶部/左侧高光边框（亮绿）
+    graphics.lineStyle(2, this.InquiryUI_COLORS.topLight);
+    graphics.beginPath();
+    graphics.moveTo(x, y + height);
+    graphics.lineTo(x, y);
+    graphics.lineTo(x + width, y);
+    graphics.strokePath();
+
+    // 4. 底部/右侧阴影边框（暗棕）
+    graphics.lineStyle(2, this.InquiryUI_COLORS.bottomShadow);
+    graphics.beginPath();
+    graphics.moveTo(x + width, y);
+    graphics.lineTo(x + width, y + height);
+    graphics.lineTo(x, y + height);
+    graphics.strokePath();
+  }
+
+  /**
+   * 绘制内凹槽位（方案8）
+   * 深色底 + 暗顶左边框 + 亮底右边框
+   */
+  private drawInsetSlot(
+    graphics: Phaser.GameObjects.Graphics,
+    x: number,
+    y: number,
+    width: number,
+    height: number,
+    isSelected: boolean = false
+  ): void {
+    // 如果选中，背景稍亮（用于高亮状态）
+    const bgColor = isSelected
+      ? 0x203030
+      : this.InquiryUI_COLORS.insetBg;
+
+    // 1. 深色底背景
+    graphics.fillStyle(bgColor, 1);
+    graphics.fillRect(x, y, width, height);
+
+    // 2. 顶部/左侧暗边框（凹陷效果）
+    graphics.lineStyle(2, this.InquiryUI_COLORS.insetDarkBorder);
+    graphics.beginPath();
+    graphics.moveTo(x + width, y);
+    graphics.lineTo(x, y);
+    graphics.lineTo(x, y + height);
+    graphics.strokePath();
+
+    // 3. 底部/右侧亮边框（凸出效果）
+    graphics.lineStyle(2, this.InquiryUI_COLORS.insetLightBorder);
+    graphics.beginPath();
+    graphics.moveTo(x, y + height);
+    graphics.lineTo(x + width, y + height);
+    graphics.lineTo(x + width, y);
+    graphics.strokePath();
   }
 
   /**
@@ -268,14 +360,25 @@ export class InquiryUI extends Phaser.GameObjects.Container {
   }
 
   /**
-   * 创建线索追踪区域
+   * 创建线索追踪区域（使用内凹槽位方案8）
    */
   private createClueTrackerArea(scene: Phaser.Scene): void {
-    this.clueTrackerContainer = scene.add.container(280, -100);
+    // 线索追踪区域位置和尺寸
+    const trackerX = 280;
+    const trackerY = -100;
+    const trackerWidth = 180;
+    const trackerHeight = 320;
+
+    // 创建线索追踪Graphics背景（内凹槽位）
+    this.clueTrackerGraphics = scene.add.graphics();
+    this.drawInsetSlot(this.clueTrackerGraphics, trackerX - trackerWidth / 2, trackerY - trackerHeight / 2, trackerWidth, trackerHeight);
+    this.add(this.clueTrackerGraphics);
+
+    this.clueTrackerContainer = scene.add.container(trackerX, trackerY);
     this.add(this.clueTrackerContainer);
 
     // 标题
-    const titleText = scene.add.text(0, -80, '收集进度', {
+    const titleText = scene.add.text(0, -140, '收集进度', {
       fontSize: '18px',
       color: UI_COLOR_STRINGS.TEXT_PRIMARY,
       fontStyle: 'bold'
@@ -284,14 +387,14 @@ export class InquiryUI extends Phaser.GameObjects.Container {
     this.clueTrackerContainer.add(titleText);
 
     // 必须线索区域
-    const requiredLabel = scene.add.text(-80, -50, '必须线索:', {
+    const requiredLabel = scene.add.text(-80, -110, '必须线索:', {
       fontSize: '14px',
       color: UI_COLOR_STRINGS.STATUS_WARNING
     });
     this.clueTrackerContainer.add(requiredLabel);
 
     const requiredClues = this.config.clueTracker.getRequiredClueStates();
-    let requiredY = -30;
+    let requiredY = -90;
     for (const clueState of requiredClues) {
       const checkbox = scene.add.text(-80, requiredY, clueState.collected ? '☑' : '☐', {
         fontSize: '14px',

@@ -145,12 +145,11 @@ export class InquiryUI extends Phaser.GameObjects.Container {
    * 处理退出
    */
   private handleExit(): void {
-    // 通知场景退出
+    // 通知场景退出（场景负责清理，无需自行销毁）
     const inquiryScene = this.scene as any;
     if (inquiryScene.returnToClinic) {
       inquiryScene.returnToClinic();
     }
-    this.destroy();
   }
 
   /**

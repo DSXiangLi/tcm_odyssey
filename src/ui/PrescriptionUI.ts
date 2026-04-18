@@ -8,6 +8,7 @@
  * - 确认选择后进入评分环节
  *
  * Phase 2 S6d 实现
+ * Round 4 视觉优化: 3D立体边框(方案B)
  */
 
 import Phaser from 'phaser';
@@ -21,7 +22,7 @@ export interface PrescriptionUIConfig {
 
 export class PrescriptionUI extends Phaser.GameObjects.Container {
   // 界面元素
-  private background!: Phaser.GameObjects.Rectangle;
+  private backgroundGraphics!: Phaser.GameObjects.Graphics;  // 使用Graphics替代Rectangle
   private titleText!: Phaser.GameObjects.Text;
   private prescriptionOptions: Phaser.GameObjects.Text[] = [];
   private detailBox!: Phaser.GameObjects.Rectangle;
@@ -34,14 +35,22 @@ export class PrescriptionUI extends Phaser.GameObjects.Container {
   private selectedPrescription: string = '';
   private selectedPrescriptionData: any = null;
 
+  // 3D边框样式配置（方案B）
+  private readonly BORDER_COLORS = {
+    outerBorder: UI_COLORS.BORDER_OUTER_GREEN,      // 亮绿边框 0x80a040
+    panelBg: UI_COLORS.PANEL_3D_BG,                 // 深绿背景 0x1a2e26
+    topLight: UI_COLORS.BORDER_TOP_LIGHT,           // 顶部高光 0x90c070
+    bottomShadow: UI_COLORS.BORDER_BOTTOM_SHADOW,   // 底部阴影 0x604020
+  };
+
   constructor(scene: Phaser.Scene, x: number, y: number, config: PrescriptionUIConfig) {
     super(scene, x, y);
     this.config = config;
 
-    // 创建主背景
-    this.background = scene.add.rectangle(0, 0, 720, 480, UI_COLORS.PANEL_PRIMARY, 0.85);
-    this.background.setOrigin(0.5);
-    this.add(this.background);
+    // 创建主背景 - 使用Graphics绘制3D立体边框（方案B）
+    this.backgroundGraphics = scene.add.graphics();
+    this.draw3DBorder(this.backgroundGraphics, 0, 0, 720, 480);
+    this.add(this.backgroundGraphics);
 
     // 创建标题
     this.createTitle(scene);
@@ -245,6 +254,46 @@ export class PrescriptionUI extends Phaser.GameObjects.Container {
     });
 
     return exitButton;
+  }
+
+  /**
+   * 绘制3D立体边框（方案B）
+   * 外层边框 + 顶部高光 + 底部阴影
+   */
+  private draw3DBorder(
+    graphics: Phaser.GameObjects.Graphics,
+    x: number,
+    y: number,
+    width: number,
+    height: number
+  ): void {
+    // 调整坐标以适应Container中心定位（Container以中心为原点）
+    const adjustedX = x - width / 2;
+    const adjustedY = y - height / 2;
+
+    // 1. 外层边框（亮绿色，4px）
+    graphics.lineStyle(4, this.BORDER_COLORS.outerBorder);
+    graphics.strokeRect(adjustedX - 4, adjustedY - 4, width + 8, height + 8);
+
+    // 2. 主背景（深绿色，完全不透明）
+    graphics.fillStyle(this.BORDER_COLORS.panelBg, 1.0);
+    graphics.fillRect(adjustedX, adjustedY, width, height);
+
+    // 3. 顶部/左侧高光边框（亮绿，2px）
+    graphics.lineStyle(2, this.BORDER_COLORS.topLight);
+    graphics.beginPath();
+    graphics.moveTo(adjustedX, adjustedY + height);
+    graphics.lineTo(adjustedX, adjustedY);
+    graphics.lineTo(adjustedX + width, adjustedY);
+    graphics.strokePath();
+
+    // 4. 底部/右侧阴影边框（暗棕，2px）
+    graphics.lineStyle(2, this.BORDER_COLORS.bottomShadow);
+    graphics.beginPath();
+    graphics.moveTo(adjustedX + width, adjustedY);
+    graphics.lineTo(adjustedX + width, adjustedY + height);
+    graphics.lineTo(adjustedX, adjustedY + height);
+    graphics.strokePath();
   }
 
   /**

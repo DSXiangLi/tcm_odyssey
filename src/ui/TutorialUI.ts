@@ -136,6 +136,50 @@ function createFloatingCardBackground(
 }
 
 /**
+ * 创建顶层确认弹窗背景Graphics对象（方案C）
+ *
+ * 设计特征:
+ * - 背景: 完全不透明(alpha=1.0)，灰蓝色
+ * - 强边框: 4px 金棕色(#c0a080)
+ * - 外发光: 2px 金棕外发光(alpha 0.4)
+ * - 强阴影: 16px黑色阴影(alpha 0.6)
+ *
+ * @param scene Phaser场景
+ * @param x 绘制起点X（左上角）
+ * @param y 绘制起点Y（左上角）
+ * @param width 宽度
+ * @param height 高度
+ * @returns Graphics对象
+ */
+function createTopLevelConfirmBackground(
+  scene: Phaser.Scene,
+  x: number,
+  y: number,
+  width: number,
+  height: number
+): Phaser.GameObjects.Graphics {
+  const graphics = scene.add.graphics();
+
+  // 1. 强阴影（16px偏移，alpha 0.6）
+  graphics.fillStyle(0x000000, 0.6);
+  graphics.fillRect(x + 8, y + 16, width, height);
+
+  // 2. 外发光（2px金棕，alpha 0.4）- 在弹窗外围
+  graphics.lineStyle(2, UI_COLORS.BORDER_GLOW, 0.4);
+  graphics.strokeRect(x - 2, y - 2, width + 4, height + 4);
+
+  // 3. 主背景（完全不透明！灰蓝色）
+  graphics.fillStyle(UI_COLORS.PANEL_PRIMARY, 1.0);
+  graphics.fillRect(x, y, width, height);
+
+  // 4. 强边框（4px金棕色）
+  graphics.lineStyle(4, UI_COLORS.BORDER_GLOW, 1);
+  graphics.strokeRect(x, y, width, height);
+
+  return graphics;
+}
+
+/**
  * TutorialUI配置
  */
 export interface TutorialUIConfig {
@@ -528,26 +572,31 @@ export class TutorialUI {
   }
 
   /**
-   * 显示跳过确认弹窗（方案3：渐变玻璃）
+   * 显示跳过确认弹窗（方案C：强边框顶层弹窗）
+   * - 背景: 完全不透明(alpha=1.0)
+   * - 边框: 4px金棕色(与底层绿色边框不同)
+   * - 外发光: 2px金棕(alpha 0.4)
+   * - 阴影: 16px强阴影
    */
   private showSkipConfirmDialog(): void {
     const dialogWidth = 350;
     const dialogHeight = 180;
+    const textMaxWidth = dialogWidth - 60;  // 文字宽度约束公式
 
     // 创建弹窗容器
     const dialogContainer = this.scene.add.container(0, 0);
     dialogContainer.setDepth(1100);
     this.container.add(dialogContainer);
 
-    // 弹窗背景 - 使用渐变玻璃效果（方案3）
-    const dialogBg = createGradientGlassBackground(this.scene, -dialogWidth / 2, -dialogHeight / 2, dialogWidth, dialogHeight);
+    // 弹窗背景 - 使用顶层确认弹窗效果（方案C：完全不透明+强边框）
+    const dialogBg = createTopLevelConfirmBackground(this.scene, -dialogWidth / 2, -dialogHeight / 2, dialogWidth, dialogHeight);
     dialogContainer.add(dialogBg);
 
-    // 确认文字（使用TEXT_TIP提示文字）
+    // 确认文字（使用TEXT_BRIGHT高亮文字，宽度约束）
     const confirmText = this.scene.add.text(0, -40, SKIP_TUTORIAL_CONFIG.confirm_text, {
       fontSize: '16px',
-      color: UI_COLOR_STRINGS.TEXT_TIP,  // 提示文字
-      wordWrap: { width: dialogWidth - 40 },
+      color: UI_COLOR_STRINGS.TEXT_BRIGHT,  // 高亮文字（顶层弹窗使用更亮文字）
+      wordWrap: { width: textMaxWidth },
       align: 'center'
     }).setOrigin(0.5);
     dialogContainer.add(confirmText);

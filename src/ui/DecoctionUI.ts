@@ -140,6 +140,47 @@ export class DecoctionUI {
   }
 
   /**
+   * 创建退出按钮（右上角）
+   */
+  private createExitButton(): Phaser.GameObjects.Text {
+    const exitButton = this.scene.add.text(
+      this.width - 60,
+      30,
+      '[退出]',
+      {
+        fontSize: '16px',
+        color: UI_COLOR_STRINGS.TEXT_PRIMARY,
+        backgroundColor: UI_COLOR_STRINGS.PANEL_DARK,
+        padding: { x: 10, y: 5 }
+      }
+    ).setOrigin(0.5).setInteractive({ useHandCursor: true });
+
+    exitButton.on('pointerover', () => {
+      exitButton.setColor(UI_COLOR_STRINGS.BUTTON_PRIMARY_HOVER);
+    });
+
+    exitButton.on('pointerout', () => {
+      exitButton.setColor(UI_COLOR_STRINGS.TEXT_PRIMARY);
+    });
+
+    exitButton.on('pointerdown', () => {
+      this.handleExit();
+    });
+
+    return exitButton;
+  }
+
+  /**
+   * 处理退出
+   */
+  private handleExit(): void {
+    this.manager.reset();
+    this.destroy();
+    this.scene.scene.stop('DecoctionScene');
+    this.scene.scene.start('ClinicScene');
+  }
+
+  /**
    * 清除内容容器
    */
   private clearContent(): void {
@@ -166,6 +207,10 @@ export class DecoctionUI {
     // 内容容器
     this.contentContainer = this.scene.add.container(0, 0);
     this.container.add(this.contentContainer);
+
+    // 退出按钮
+    const exitButton = this.createExitButton();
+    this.container.add(exitButton);
 
     // 方剂列表
     const prescriptions = prescriptionsData.prescriptions;
@@ -240,6 +285,10 @@ export class DecoctionUI {
     // 内容容器
     this.contentContainer = this.scene.add.container(0, 0);
     this.container.add(this.contentContainer);
+
+    // 退出按钮
+    const exitButton = this.createExitButton();
+    this.contentContainer?.add(exitButton);
 
     // 方剂组成提示
     const requiredHerbs = prescription?.composition.map(c => {
@@ -347,6 +396,10 @@ export class DecoctionUI {
     // 内容容器
     this.contentContainer = this.scene.add.container(0, 0);
     this.container.add(this.contentContainer);
+
+    // 退出按钮
+    const exitButton = this.createExitButton();
+    this.contentContainer?.add(exitButton);
 
     // 提示文字
     const hintText = this.scene.add.text(this.width / 2, 80,
@@ -492,6 +545,10 @@ export class DecoctionUI {
     this.contentContainer = this.scene.add.container(0, 0);
     this.container.add(this.contentContainer);
 
+    // 退出按钮
+    const exitButton = this.createExitButton();
+    this.contentContainer?.add(exitButton);
+
     // 提示文字
     const hintText = this.scene.add.text(this.width / 2, 80,
       '设置每种药材的煎煮顺序',
@@ -575,6 +632,10 @@ export class DecoctionUI {
     // 内容容器
     this.contentContainer = this.scene.add.container(0, 0);
     this.container.add(this.contentContainer);
+
+    // 退出按钮
+    const exitButton = this.createExitButton();
+    this.contentContainer?.add(exitButton);
 
     // 提示文字
     const hintText = this.scene.add.text(this.width / 2, 80,
@@ -662,6 +723,10 @@ export class DecoctionUI {
     // 内容容器
     this.contentContainer = this.scene.add.container(0, 0);
     this.container.add(this.contentContainer);
+
+    // 退出按钮
+    const exitButton = this.createExitButton();
+    this.contentContainer?.add(exitButton);
 
     // 进度条背景
     const progressBg = this.scene.add.rectangle(

@@ -51,7 +51,7 @@ export class TitleScene extends Phaser.Scene {
     // 副标题
     this.add.text(GAME_WIDTH / 2, GAME_HEIGHT / 3 + 60, 'v3.0 - Phase 2 NPC Agent', {
       fontSize: '16px',
-      color: '#aaaaaa'
+      color: UI_COLOR_STRINGS.TEXT_TIP  // 高对比度提示文字
     }).setOrigin(0.5);
 
     // 主按钮
@@ -105,7 +105,7 @@ export class TitleScene extends Phaser.Scene {
         const savedTime = new Date(this.latestSave.saved_at!).toLocaleString('zh-CN');
         this.add.text(GAME_WIDTH / 2, GAME_HEIGHT / 2 + 130, `最近存档: ${savedTime}`, {
           fontSize: '12px',
-          color: '#888888'
+          color: UI_COLOR_STRINGS.TEXT_TIP  // 高对比度提示文字
         }).setOrigin(0.5);
       }
     }
@@ -133,13 +133,13 @@ export class TitleScene extends Phaser.Scene {
     // 操作提示
     this.add.text(GAME_WIDTH / 2, GAME_HEIGHT - 60, '方向键/WASD移动 | 空格交互 | B背包', {
       fontSize: '14px',
-      color: '#888888'
+      color: UI_COLOR_STRINGS.TEXT_WARM  // 高对比度操作提示
     }).setOrigin(0.5);
 
     // 版本信息
     this.add.text(GAME_WIDTH / 2, GAME_HEIGHT - 30, 'Phase 2 S7: 存档系统', {
       fontSize: '12px',
-      color: '#666666'
+      color: UI_COLOR_STRINGS.TEXT_TIP  // 高对比度版本信息
     }).setOrigin(0.5);
 
     // 淡入效果
@@ -176,7 +176,7 @@ export class TitleScene extends Phaser.Scene {
       const savedTime = new Date(this.latestSave.saved_at!).toLocaleString('zh-CN');
       const infoText = this.add.text(0, -20, `槽位 ${this.latestSave.slot_id} | ${savedTime}`, {
         fontSize: '14px',
-        color: '#aaaaaa'
+        color: UI_COLOR_STRINGS.TEXT_TIP  // 高对比度提示文字
       }).setOrigin(0.5);
       promptContainer.add(infoText);
     }
@@ -210,7 +210,7 @@ export class TitleScene extends Phaser.Scene {
     // 取消按钮
     const cancelBtn = this.add.text(0, 80, '取消', {
       fontSize: '14px',
-      color: '#888888'
+      color: UI_COLOR_STRINGS.TEXT_TIP  // 高对比度提示文字
     }).setOrigin(0.5).setInteractive();
     cancelBtn.on('pointerdown', () => {
       promptContainer.destroy();

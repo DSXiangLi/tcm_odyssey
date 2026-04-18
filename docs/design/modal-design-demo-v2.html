@@ -1,0 +1,699 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>弹窗设计方案 Demo V2 - 立体风格扩展</title>
+  <style>
+    /* ===== 基础设置 ===== */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif;
+      min-height: 100vh;
+      background: linear-gradient(135deg, #2d4a3e 0%, #1a2e26 50%, #0d1f17 100%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 40px;
+      gap: 40px;
+    }
+
+    /* ===== 设计方案说明 ===== */
+    .design-spec {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 12px;
+      padding: 20px;
+      max-width: 1100px;
+      color: #d4c4b4;
+      font-size: 14px;
+      line-height: 1.6;
+      width: 100%;
+    }
+
+    .design-spec h2 {
+      color: #f0e0d0;
+      margin-bottom: 15px;
+      font-size: 18px;
+    }
+
+    .design-spec h4 {
+      color: #90c070;
+      margin: 12px 0 8px;
+    }
+
+    .design-spec table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 10px 0;
+    }
+
+    .design-spec th, .design-spec td {
+      padding: 8px 12px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .design-spec th {
+      background: rgba(90, 192, 112, 0.2);
+      color: #90c070;
+    }
+
+    /* ===== Demo展示区域 ===== */
+    .demo-section {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 30px;
+      justify-content: center;
+      max-width: 1200px;
+    }
+
+    .demo-card {
+      text-align: center;
+    }
+
+    .demo-card h3 {
+      color: #90c070;
+      margin-bottom: 12px;
+      font-size: 16px;
+    }
+
+    .demo-card .usage {
+      color: #c0c080;
+      font-size: 12px;
+      margin-top: 8px;
+    }
+
+    /* ===== 弹窗内容样式 ===== */
+    .modal-title {
+      font-size: 20px;
+      font-weight: bold;
+      color: #f0e0d0;
+      margin-bottom: 16px;
+      text-align: center;
+      letter-spacing: 1px;
+    }
+
+    .modal-content {
+      font-size: 14px;
+      color: #d4c4b4;
+      line-height: 1.8;
+      margin-bottom: 20px;
+      text-align: center;
+    }
+
+    .modal-hint {
+      font-size: 12px;
+      color: #90c070;
+      margin-top: 12px;
+      text-align: center;
+    }
+
+    .btn-group {
+      display: flex;
+      justify-content: center;
+      gap: 12px;
+      margin-top: 16px;
+    }
+
+    /* ===== 方案3: 渐变玻璃（已确认） ===== */
+    .modal-gradient-glass {
+      width: 360px;
+      background: linear-gradient(135deg, rgba(64,128,128,0.3) 0%, rgba(64,32,32,0.4) 100%);
+      border: 1px solid rgba(192, 160, 128, 0.5);
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3), inset 0 1px 2px rgba(255,255,255,0.1);
+      padding: 24px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .modal-gradient-glass::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 40px;
+      background: linear-gradient(180deg, rgba(192,160,128,0.2) 0%, transparent 100%);
+    }
+
+    /* ===== 方案2: 深色玻璃 ===== */
+    .modal-dark-glass {
+      width: 360px;
+      background: rgba(40, 32, 32, 0.7);
+      border: 2px solid rgba(192, 160, 128, 0.6);
+      box-shadow: 0 4px 24px rgba(0,0,0,0.4), 0 0 0 1px rgba(192,160,128,0.2);
+      padding: 24px;
+    }
+
+    /* ===== 方案4: Neumorphism（新拟态）凸起效果 ===== */
+    .modal-neumorphic {
+      width: 360px;
+      background: #2a3e32;
+      border-radius: 0; /* Phaser矩形 */
+      box-shadow:
+        /* 外阴影（右下） */
+        8px 8px 16px rgba(0, 0, 0, 0.4),
+        /* 外高光（左上） */
+        -4px -4px 8px rgba(255, 255, 255, 0.05),
+        /* 内阴影（底部） */
+        inset 0 -2px 4px rgba(0, 0, 0, 0.3),
+        /* 内高光（顶部） */
+        inset 0 2px 4px rgba(255, 255, 255, 0.1);
+      padding: 24px;
+    }
+
+    /* ===== 方案5: 3D立体边框（像素游戏风格） ===== */
+    .modal-3d-border {
+      width: 360px;
+      background: #1a2e26;
+      padding: 24px;
+      position: relative;
+    }
+
+    /* 3D边框：多层不同颜色 */
+    .modal-3d-border::before {
+      content: '';
+      position: absolute;
+      top: -4px;
+      left: -4px;
+      right: -4px;
+      bottom: -4px;
+      border: 4px solid #80a040; /* 外层亮绿 */
+      z-index: -1;
+    }
+
+    .modal-3d-border::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      border-top: 2px solid #90c070;    /* 顶部高光 */
+      border-left: 2px solid #90c070;   /* 左侧高光 */
+      border-bottom: 2px solid #604020; /* 底部阴影 */
+      border-right: 2px solid #604020;  /* 右侧阴影 */
+      pointer-events: none;
+    }
+
+    /* ===== 方案6: 悬浮卡片 ===== */
+    .modal-floating-card {
+      width: 360px;
+      background: linear-gradient(135deg, #406050 0%, #304030 100%);
+      padding: 24px;
+      transform: translateY(-4px);
+      box-shadow:
+        /* 主悬浮阴影 */
+        0 12px 24px rgba(0, 0, 0, 0.5),
+        /* 边缘阴影 */
+        0 4px 8px rgba(0, 0, 0, 0.3),
+        /* 顶部微弱高光 */
+        inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    }
+
+    .modal-floating-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background: linear-gradient(90deg, transparent, rgba(192,160,128,0.5), transparent);
+    }
+
+    /* ===== 方案7: 像素复古风格 ===== */
+    .modal-pixel-retro {
+      width: 360px;
+      background: #2a3e32;
+      padding: 24px;
+      position: relative;
+    }
+
+    /* 双层像素边框 */
+    .modal-pixel-retro::before {
+      content: '';
+      position: absolute;
+      top: -2px;
+      left: -2px;
+      right: -2px;
+      bottom: -2px;
+      border: 2px solid #604020; /* 外层暗棕 */
+      background: transparent;
+      z-index: -1;
+    }
+
+    .modal-pixel-retro::after {
+      content: '';
+      position: absolute;
+      top: -4px;
+      left: -4px;
+      right: -4px;
+      bottom: -4px;
+      border: 2px solid #c0a080; /* 最外层金棕 */
+      background: transparent;
+      z-index: -2;
+    }
+
+    /* ===== 方案8: 内凹槽位（适合输入框、选择项） ===== */
+    .modal-inset {
+      width: 360px;
+      background: #1a2e26;
+      padding: 24px;
+    }
+
+    .inset-slot {
+      background: #0d1f17;
+      border-top: 2px solid #0a1510;
+      border-left: 2px solid #0a1510;
+      border-bottom: 2px solid #304030;
+      border-right: 2px solid #304030;
+      padding: 12px;
+      margin: 8px 0;
+      color: #d4c4b4;
+      font-size: 14px;
+    }
+
+    .inset-slot:focus {
+      outline: none;
+      border-color: #90c070;
+    }
+
+    /* ===== 按钮样式库 ===== */
+    .btn {
+      padding: 12px 24px;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      border: none;
+      margin: 8px;
+    }
+
+    /* 玻璃按钮 */
+    .btn-glass-primary {
+      background: linear-gradient(135deg, #90c070 0%, #7ab060 100%);
+      color: #1a2e26;
+      border: 1px solid rgba(160, 192, 112, 0.5);
+    }
+
+    .btn-glass-secondary {
+      background: rgba(160, 128, 96, 0.3);
+      color: #e5d5c5;
+      border: 1px solid rgba(192, 160, 128, 0.4);
+    }
+
+    /* 3D立体按钮 */
+    .btn-3d {
+      background: linear-gradient(180deg, #90c070 0%, #70a050 100%);
+      color: #1a2e26;
+      border-top: 2px solid #a0d080;
+      border-left: 2px solid #a0d080;
+      border-bottom: 2px solid #507040;
+      border-right: 2px solid #507040;
+    }
+
+    .btn-3d:hover {
+      transform: translateY(2px);
+      border-bottom-width: 1px;
+      border-right-width: 1px;
+    }
+
+    /* 新拟态按钮 */
+    .btn-neumorphic {
+      background: #2a3e32;
+      color: #d4c4b4;
+      box-shadow: 4px 4px 8px rgba(0,0,0,0.3), -2px -2px 4px rgba(255,255,255,0.05);
+    }
+
+    .btn-neumorphic:hover {
+      box-shadow: inset 2px 2px 4px rgba(0,0,0,0.3), inset -1px -1px 2px rgba(255,255,255,0.05);
+    }
+
+    /* 像素按钮 */
+    .btn-pixel {
+      background: #80a040;
+      color: #1a2e26;
+      border: 2px solid #604020;
+      position: relative;
+    }
+
+    .btn-pixel::before {
+      content: '';
+      position: absolute;
+      top: -2px;
+      left: -2px;
+      right: -2px;
+      bottom: -2px;
+      border: 2px solid #c0a080;
+      z-index: -1;
+    }
+
+    /* ===== 进度条样式 ===== */
+    .progress-glass {
+      height: 20px;
+      background: rgba(0, 0, 0, 0.3);
+      border: 1px solid rgba(192, 160, 128, 0.3);
+      margin: 16px 0;
+      position: relative;
+    }
+
+    .progress-glass-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #90c070 0%, #a0d080 100%);
+    }
+
+    .progress-text {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      color: #f0e0d0;
+      font-size: 12px;
+    }
+
+    .progress-3d {
+      height: 20px;
+      background: #1a2e26;
+      border-top: 2px solid #0d1f17;
+      border-left: 2px solid #0d1f17;
+      border-bottom: 2px solid #406050;
+      border-right: 2px solid #406050;
+      margin: 16px 0;
+      position: relative;
+    }
+
+    .progress-3d-fill {
+      height: 100%;
+      background: linear-gradient(180deg, #90c070 0%, #70a050 100%);
+      border-top: 1px solid #a0d080;
+    }
+
+    /* ===== 颜色展示 ===== */
+    .color-palette {
+      display: flex;
+      gap: 8px;
+      margin-top: 16px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
+    .color-item {
+      width: 50px;
+      height: 50px;
+      border: 1px solid rgba(255,255,255,0.2);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 10px;
+      color: #fff;
+      text-shadow: 0 1px 2px rgba(0,0,0,0.5);
+    }
+
+    /* ===== Phaser实现说明 ===== */
+    .phaser-code {
+      background: rgba(0,0,0,0.3);
+      border: 1px solid rgba(192,160,128,0.2);
+      padding: 12px;
+      margin: 8px 0;
+      font-family: monospace;
+      font-size: 12px;
+      color: #e5d5c5;
+      overflow-x: auto;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ===== 方案对比说明 ===== -->
+  <div class="design-spec">
+    <h2>🎨 现代UI设计方案对比 - 适合Phaser Canvas</h2>
+
+    <h4>方案总览</h4>
+    <table>
+      <tr><th>方案</th><th>风格</th><th>Phaser实现难度</th><th>适用场景</th><th>核心特征</th></tr>
+      <tr><td>方案3 ✅</td><td>渐变玻璃</td><td>简单</td><td>标题/重要弹窗</td><td>渐变背景+顶部光带+金棕边框</td></tr>
+      <tr><td>方案2</td><td>深色玻璃</td><td>简单</td><td>游戏内弹窗/确认框</td><td>高透明度+强边框分隔</td></tr>
+      <tr><td>方案4</td><td>Neumorphism新拟态</td><td>简单</td><td>按钮/选择项</td><td>凸起效果+柔和阴影</td></tr>
+      <tr><td>方案5</td><td>3D立体边框</td><td>简单</td><td>像素风格弹窗</td><td>多层边框(亮左上+暗右下)</td></tr>
+      <tr><td>方案6</td><td>悬浮卡片</td><td>简单</td><td>信息卡片/成就</td><td>底部阴影+悬浮感</td></tr>
+      <tr><td>方案7</td><td>像素复古</td><td>简单</td><td>复古游戏风格</td><td>双层外扩边框</td></tr>
+      <tr><td>方案8</td><td>内凹槽位</td><td>简单</td><td>输入框/槽位</td><td>凹陷效果(暗顶左+亮底右)</td></tr>
+    </table>
+
+    <h4>Phaser实现技术</h4>
+    <table>
+      <tr><th>视觉效果</th><th>Phaser实现方法</th><th>代码示例</th></tr>
+      <tr><td>渐变背景</td><td>fillGradientStyle</td><td>graphics.fillGradientStyle(0x408080, 0.3, 0x402020, 0.4, ...)</td></tr>
+      <tr><td>多层边框</td><td>多次strokeRect</td><td>graphics.lineStyle(4, 0x80a040); graphics.strokeRect(x-4, y-4, w+8, h+8)</td></tr>
+      <tr><td>凸起效果</td><td>外阴影+内高光</td><td>先绘制外阴影矩形，再绘制主背景，最后绘制顶部高光</td></tr>
+      <tr><td>内凹效果</td><td>暗上左边+亮下右边</td><td>分别绘制不同颜色的边框线</td></tr>
+      <tr><td>悬浮阴影</td><td>底部偏移矩形</td><td>graphics.fillStyle(0x000000, 0.5); graphics.fillRect(x, y+h+4, w, 8)</td></tr>
+    </table>
+
+    <h4>推荐组合方案</h4>
+    <p><strong>方案3（渐变玻璃）用于标题画面/新手引导</strong> - 炫酷入场效果</p>
+    <p><strong>方案5（3D立体边框）或方案7（像素复古）用于游戏内弹窗</strong> - 与像素风格契合，差异化设计</p>
+    <p><strong>方案8（内凹槽位）用于输入框/选择项</strong> - 清晰交互反馈</p>
+
+    <h4>配色色板</h4>
+    <div class="color-palette">
+      <div class="color-item" style="background: #90c070; color: #1a2e26;">亮绿边框</div>
+      <div class="color-item" style="background: #c0a080; color: #1a2e26;">金棕边框</div>
+      <div class="color-item" style="background: #604020;">暗棕阴影</div>
+      <div class="color-item" style="background: #2a3e32;">新拟态背景</div>
+      <div class="color-item" style="background: #1a2e26;">深绿背景</div>
+      <div class="color-item" style="background: #0d1f17;">内凹底色</div>
+      <div class="color-item" style="background: #f0e0d0; color: #1a2e26;">标题文字</div>
+      <div class="color-item" style="background: #d4c4b4; color: #1a2e26;">内容文字</div>
+    </div>
+  </div>
+
+  <!-- ===== Demo展示区域 ===== -->
+  <div class="demo-section">
+
+    <!-- 方案3: 渐变玻璃（已确认） -->
+    <div class="demo-card">
+      <h3>方案3: 渐变玻璃 ✅已确认</h3>
+      <div class="modal-gradient-glass">
+        <div class="modal-title">欢迎来到药灵山谷</div>
+        <div class="modal-content">使用方向键或WASD移动角色<br>空格键与NPC交互</div>
+        <div class="progress-glass">
+          <div class="progress-glass-fill" style="width: 33%;"></div>
+          <span class="progress-text">步骤 1/3</span>
+        </div>
+        <div class="btn-group">
+          <button class="btn btn-glass-secondary">跳过引导</button>
+          <button class="btn btn-glass-primary">下一步</button>
+        </div>
+      </div>
+      <div class="usage">推荐: 标题画面/新手引导/重要弹窗</div>
+    </div>
+
+    <!-- 方案2: 深色玻璃 -->
+    <div class="demo-card">
+      <h3>方案2: 深色玻璃质感</h3>
+      <div class="modal-dark-glass">
+        <div class="modal-title">确认操作</div>
+        <div class="modal-content">跳过后将无法再次查看<br>确定要跳过新手引导吗？</div>
+        <div class="btn-group">
+          <button class="btn btn-glass-primary">继续引导</button>
+          <button class="btn btn-glass-secondary" style="border-color: rgba(192,112,112,0.4); background: rgba(192,112,112,0.3); color: #c07070;">确认跳过</button>
+        </div>
+      </div>
+      <div class="usage">推荐: 游戏内确认弹窗/警告框</div>
+    </div>
+
+    <!-- 方案5: 3D立体边框 -->
+    <div class="demo-card">
+      <h3>方案5: 3D立体边框 ⭐像素风格</h3>
+      <div class="modal-3d-border">
+        <div class="modal-title">存档选择</div>
+        <div class="modal-content">选择存档槽位继续游戏</div>
+        <div class="progress-3d">
+          <div class="progress-3d-fill" style="width: 60%;"></div>
+          <span class="progress-text">存档1</span>
+        </div>
+        <div class="btn-group">
+          <button class="btn btn-3d">继续游戏</button>
+          <button class="btn btn-3d" style="background: linear-gradient(180deg, #a08060 0%, #806040 100%); border-top-color: #b09070; border-left-color: #b09070; border-bottom-color: #604020; border-right-color: #604020; color: #f0e0d0;">取消</button>
+        </div>
+      </div>
+      <div class="usage">推荐: 游戏内主要弹窗（与像素风格契合）</div>
+    </div>
+
+    <!-- 方案7: 像素复古 -->
+    <div class="demo-card">
+      <h3>方案7: 像素复古风格 ⭐复古游戏</h3>
+      <div class="modal-pixel-retro">
+        <div class="modal-title">诊断结果</div>
+        <div class="modal-content">诊断得分: 85分<br>正确辨证: 风寒感冒</div>
+        <div class="btn-group">
+          <button class="btn btn-pixel">查看详情</button>
+          <button class="btn btn-pixel" style="background: #a08060; color: #f0e0d0;">返回</button>
+        </div>
+      </div>
+      <div class="usage">推荐: 游戏内弹窗（复古像素风格）</div>
+    </div>
+
+  </div>
+
+  <!-- ===== 第二排Demo ===== -->
+  <div class="demo-section">
+
+    <!-- 方案4: Neumorphism -->
+    <div class="demo-card">
+      <h3>方案4: Neumorphism新拟态</h3>
+      <div class="modal-neumorphic">
+        <div class="modal-title">背包</div>
+        <div class="modal-content" style="font-size: 12px;">
+          <div style="display: flex; gap: 8px; justify-content: center;">
+            <div style="background: #1a2e26; padding: 16px; border-radius: 0; box-shadow: inset 2px 2px 4px rgba(0,0,0,0.3), inset -1px -1px 2px rgba(255,255,255,0.05);">药材</div>
+            <div style="background: #2a3e32; padding: 16px; border-radius: 0; box-shadow: 4px 4px 8px rgba(0,0,0,0.3), -2px -2px 4px rgba(255,255,255,0.05);">种子</div>
+            <div style="background: #1a2e26; padding: 16px; border-radius: 0; box-shadow: inset 2px 2px 4px rgba(0,0,0,0.3), inset -1px -1px 2px rgba(255,255,255,0.05);">工具</div>
+          </div>
+        </div>
+        <div class="btn-group">
+          <button class="btn btn-neumorphic">选择</button>
+          <button class="btn btn-neumorphic" style="background: #90c070; color: #1a2e26; box-shadow: 4px 4px 8px rgba(0,0,0,0.3), -2px -2px 4px rgba(255,255,255,0.05);">使用</button>
+        </div>
+      </div>
+      <div class="usage">推荐: 背包界面/选择项（凸起=选中，凹陷=未选中）</div>
+    </div>
+
+    <!-- 方案6: 悬浮卡片 -->
+    <div class="demo-card">
+      <h3>方案6: 悬浮卡片</h3>
+      <div class="modal-floating-card">
+        <div class="modal-title">成就解锁</div>
+        <div class="modal-content">恭喜完成第一个诊断！<br>获得: 初学者徽章</div>
+        <div class="btn-group">
+          <button class="btn btn-glass-primary">查看成就</button>
+          <button class="btn btn-glass-secondary">关闭</button>
+        </div>
+      </div>
+      <div class="usage">推荐: 成就提示/临时信息卡片</div>
+    </div>
+
+    <!-- 方案8: 内凹槽位 -->
+    <div class="demo-card">
+      <h3>方案8: 内凹槽位</h3>
+      <div class="modal-inset">
+        <div class="modal-title">存档命名</div>
+        <div class="inset-slot">新存档_2026-04-18</div>
+        <div style="background: #0d1f17; border-top: 2px solid #0a1510; border-left: 2px solid #0a1510; border-bottom: 2px solid #406050; border-right: 2px solid #406050; padding: 12px; margin: 8px 0;">
+          <span style="color: #90c070; font-size: 12px;">槽位1</span>
+          <span style="color: #d4c4b4; font-size: 12px; margin-left: 8px;">2026-04-17</span>
+        </div>
+        <div class="btn-group">
+          <button class="btn btn-3d">保存</button>
+          <button class="btn btn-3d" style="background: linear-gradient(180deg, #a08060 0%, #806040 100%); color: #f0e0d0;">取消</button>
+        </div>
+      </div>
+      <div class="usage">推荐: 输入框/存档槽位/选择项</div>
+    </div>
+
+  </div>
+
+  <!-- ===== 按钮样式对比 ===== -->
+  <div class="demo-section">
+    <div class="demo-card">
+      <h3>按钮样式对比</h3>
+      <div style="background: #1a2e26; padding: 20px; display: flex; gap: 16px; flex-wrap: wrap; justify-content: center;">
+        <button class="btn btn-glass-primary">玻璃按钮</button>
+        <button class="btn btn-3d">3D立体按钮</button>
+        <button class="btn btn-neumorphic">新拟态按钮</button>
+        <button class="btn btn-pixel">像素按钮</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== Phaser实现示例 ===== -->
+  <div class="design-spec">
+    <h2>🔧 Phaser Canvas 实现代码示例</h2>
+
+    <h4>方案5（3D立体边框）实现</h4>
+    <div class="phaser-code">
+const graphics = this.scene.add.graphics();<br>
+// 1. 外层边框（亮绿色）<br>
+graphics.lineStyle(4, 0x80a040);<br>
+graphics.strokeRect(x - 4, y - 4, width + 8, height + 8);<br>
+// 2. 主背景<br>
+graphics.fillStyle(0x1a2e26, 1);<br>
+graphics.fillRect(x, y, width, height);<br>
+// 3. 顶部高光边框<br>
+graphics.lineStyle(2, 0x90c070);<br>
+graphics.beginPath();<br>
+graphics.moveTo(x, y + height);<br>
+graphics.lineTo(x, y);<br>
+graphics.lineTo(x + width, y);<br>
+graphics.strokePath();<br>
+// 4. 底部阴影边框<br>
+graphics.lineStyle(2, 0x604020);<br>
+graphics.beginPath();<br>
+graphics.moveTo(x + width, y);<br>
+graphics.lineTo(x + width, y + height);<br>
+graphics.lineTo(x, y + height);<br>
+graphics.strokePath();
+    </div>
+
+    <h4>方案8（内凹槽位）实现</h4>
+    <div class="phaser-code">
+const graphics = this.scene.add.graphics();<br>
+// 1. 深色底背景<br>
+graphics.fillStyle(0x0d1f17, 1);<br>
+graphics.fillRect(x, y, width, height);<br>
+// 2. 顶部/左侧暗边框（凹陷效果）<br>
+graphics.lineStyle(2, 0x0a1510);<br>
+graphics.beginPath();<br>
+graphics.moveTo(x + width, y);<br>
+graphics.lineTo(x, y);<br>
+graphics.lineTo(x, y + height);<br>
+graphics.strokePath();<br>
+// 3. 底部/右侧亮边框（凸出效果）<br>
+graphics.lineStyle(2, 0x406050);<br>
+graphics.beginPath();<br>
+graphics.moveTo(x, y + height);<br>
+graphics.lineTo(x + width, y + height);<br>
+graphics.lineTo(x + width, y);<br>
+graphics.strokePath();
+    </div>
+
+    <h4>方案3（渐变玻璃）简化实现（无模糊）</h4>
+    <div class="phaser-code">
+const graphics = this.scene.add.graphics();<br>
+// 1. 渐变背景（灰蓝到土黄）<br>
+graphics.fillGradientStyle(0x408080, 0.3, 0x402020, 0.4, 0x408080, 0.3, 0x402020, 0.4);<br>
+graphics.fillRect(x, y, width, height);<br>
+// 2. 顶部光带<br>
+graphics.fillGradientStyle(0xc0a080, 0.2, 0x000000, 0, 0xc0a080, 0.2, 0x000000, 0);<br>
+graphics.fillRect(x, y, width, 40);<br>
+// 3. 金棕边框<br>
+graphics.lineStyle(2, 0xc0a080, 0.5);<br>
+graphics.strokeRect(x, y, width, height);
+    </div>
+  </div>
+
+  <!-- ===== 最终推荐 ===== -->
+  <div class="design-spec">
+    <h2>📌 最终推荐组合方案</h2>
+
+    <table>
+      <tr><th>场景</th><th>推荐方案</th><th>理由</th></tr>
+      <tr><td>标题画面/新手引导</td><td>方案3（渐变玻璃）</td><td>炫酷入场，现代感强</td></tr>
+      <tr><td>游戏内弹窗</td><td>方案5（3D立体）或方案7（像素复古）</td><td>与像素游戏风格契合，差异化设计</td></tr>
+      <tr><td>背包/选择界面</td><td>方案4（Neumorphism）</td><td>凸起=选中，凹陷=未选中，交互清晰</td></tr>
+      <tr><td>输入框/槽位</td><td>方案8（内凹槽位）</td><td>清晰的编辑区域分隔</td></tr>
+      <tr><td>成就/临时提示</td><td>方案6（悬浮卡片）</td><td>悬浮感，吸引注意力</td></tr>
+      <tr><td>确认/警告框</td><td>方案2（深色玻璃）</td><td>强分隔，警示感</td></tr>
+    </table>
+
+    <p style="color: #90c070; font-weight: bold;">请查看Demo后告诉我您对每种场景的方案选择！</p>
+  </div>
+
+</body>
+</html>

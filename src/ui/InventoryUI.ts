@@ -10,6 +10,7 @@
  * - 快捷键触发（B键）
  *
  * Phase 2 S8.3 实现
+ * Round 4 视觉优化: Neumorphism新拟态设计
  */
 
 import Phaser from 'phaser';
@@ -39,6 +40,7 @@ export type InventoryTabType = 'herbs' | 'seeds' | 'tools' | 'knowledge';
 // 物品格子UI状态
 interface ItemSlotUI {
   container: Phaser.GameObjects.Container;
+  graphics: Phaser.GameObjects.Graphics;
   icon?: Phaser.GameObjects.Text;  // 使用文字代替图标（暂时）
   quantityText?: Phaser.GameObjects.Text;
   itemId: string;
@@ -47,16 +49,29 @@ interface ItemSlotUI {
 
 // Tab按钮UI状态
 interface TabButtonUI {
-  button: Phaser.GameObjects.Text;
+  container: Phaser.GameObjects.Container;
+  graphics: Phaser.GameObjects.Graphics;
+  text: Phaser.GameObjects.Text;
   type: InventoryTabType;
   isSelected: boolean;
 }
 
 // 药袋按钮UI状态
 interface BagButtonUI {
-  button: Phaser.GameObjects.Text;
+  container: Phaser.GameObjects.Container;
+  graphics: Phaser.GameObjects.Graphics;
+  text: Phaser.GameObjects.Text;
   bagId: string;
   isSelected: boolean;
+}
+
+// Neumorphism效果参数
+interface NeumorphicConfig {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+  baseColor: number;
 }
 
 /**
@@ -68,7 +83,7 @@ export class InventoryUI {
   private eventBus: EventBus;
 
   private container!: Phaser.GameObjects.Container;
-  private background!: Phaser.GameObjects.Rectangle;
+  private backgroundGraphics!: Phaser.GameObjects.Graphics;
   private titleText!: Phaser.GameObjects.Text;
   private closeButton!: Phaser.GameObjects.Text;
 
@@ -97,23 +112,28 @@ export class InventoryUI {
   private onClose?: () => void;
   private isVisible: boolean = true;
 
+  // Neumorphism常量
+  private readonly NEUMORPHIC = {
+    BASE_COLOR: UI_COLORS.PANEL_NEUMORPHIC,
+    SHADOW_OFFSET: 4,
+    SHADOW_ALPHA: 0.3,
+    HIGHLIGHT_ALPHA: 0.05,
+    INSET_SHADOW_ALPHA: 0.2,
+    INSET_HIGHLIGHT_ALPHA: 0.05,
+    INSET_SHADOW_OFFSET: 2
+  };
+
   // 样式配置
   private readonly styles = {
-    background: { fillColor: UI_COLORS.PANEL_PRIMARY, alpha: 0.85 },
     title: { fontSize: '20px', color: UI_COLOR_STRINGS.TEXT_PRIMARY, fontStyle: 'bold' },
-    tab: { fontSize: '14px', color: UI_COLOR_STRINGS.TEXT_SECONDARY, padding: { x: 10, y: 5 } },
-    tabSelected: { color: UI_COLOR_STRINGS.TEXT_PRIMARY, backgroundColor: UI_COLOR_STRINGS.BUTTON_SUCCESS },
-    tabHover: { backgroundColor: '#3d5c49' },
-    bag: { fontSize: '12px', color: UI_COLOR_STRINGS.TEXT_DISABLED, padding: { x: 8, y: 4 } },
-    bagSelected: { color: UI_COLOR_STRINGS.TEXT_PRIMARY, backgroundColor: UI_COLOR_STRINGS.BUTTON_SUCCESS },
+    tab: { fontSize: '14px', color: UI_COLOR_STRINGS.TEXT_SECONDARY },
+    tabSelected: { color: UI_COLOR_STRINGS.TEXT_PRIMARY },
+    bag: { fontSize: '12px', color: UI_COLOR_STRINGS.TEXT_DISABLED },
+    bagSelected: { color: UI_COLOR_STRINGS.TEXT_PRIMARY },
     itemSlot: {
       width: 60,
-      height: 60,
-      fillColor: UI_COLORS.PANEL_DARK,
-      borderColor: UI_COLORS.BORDER_PRIMARY,
-      borderWidth: 2
+      height: 60
     },
-    itemSlotSelected: { borderColor: UI_COLORS.BUTTON_SUCCESS, borderWidth: 3 },
     itemText: { fontSize: '10px', color: UI_COLOR_STRINGS.TEXT_PRIMARY },
     quantityText: { fontSize: '12px', color: UI_COLOR_STRINGS.STATUS_WARNING, fontStyle: 'bold' },
     closeButton: { fontSize: '16px', color: '#ff6b6b' }
@@ -136,6 +156,88 @@ export class InventoryUI {
   }
 
   /**
+   * 绘制凸起效果（Raised Neumorphism）
+   * 用于选中状态的元素
+   */
+  private drawRaisedEffect(graphics: Phaser.GameObjects.Graphics, config: NeumorphicConfig): void {
+    const { x, y, width, height, baseColor } = config;
+    const { SHADOW_OFFSET, SHADOW_ALPHA, HIGHLIGHT_ALPHA } = this.NEUMORPHIC;
+
+    graphics.clear();
+
+    // 1. 外阴影（右下）
+    graphics.fillStyle(0x000000, SHADOW_ALPHA);
+    graphics.fillRect(x + SHADOW_OFFSET, y + SHADOW_OFFSET, width, height);
+
+    // 2. 主背景
+    graphics.fillStyle(baseColor, 1);
+    graphics.fillRect(x, y, width, height);
+
+    // 3. 外高光（左上）
+    graphics.fillStyle(0xffffff, HIGHLIGHT_ALPHA);
+    // 顶部高光
+    graphics.fillRect(x, y, width, 2);
+    // 左侧高光
+    graphics.fillRect(x, y, 2, height);
+
+    // 4. 内阴影（底部边缘，增加立体感）
+    graphics.fillStyle(0x000000, 0.1);
+    graphics.fillRect(x + 2, y + height - 2, width - 4, 2);
+    graphics.fillRect(x + width - 2, y + 2, 2, height - 4);
+  }
+
+  /**
+   * 绘制凹陷效果（Inset Neumorphism）
+   * 用于未选中状态的元素
+   */
+  private drawInsetEffect(graphics: Phaser.GameObjects.Graphics, config: NeumorphicConfig): void {
+    const { x, y, width, height, baseColor } = config;
+    const { INSET_SHADOW_OFFSET, INSET_SHADOW_ALPHA, INSET_HIGHLIGHT_ALPHA } = this.NEUMORPHIC;
+
+    graphics.clear();
+
+    // 1. 主背景（略微变暗）
+    graphics.fillStyle(baseColor, 1);
+    graphics.fillRect(x, y, width, height);
+
+    // 2. 内阴影（右下）
+    graphics.fillStyle(0x000000, INSET_SHADOW_ALPHA);
+    // 底部内阴影
+    graphics.fillRect(x + INSET_SHADOW_OFFSET, y + height - INSET_SHADOW_OFFSET, width - INSET_SHADOW_OFFSET * 2, INSET_SHADOW_OFFSET);
+    // 右侧内阴影
+    graphics.fillRect(x + width - INSET_SHADOW_OFFSET, y + INSET_SHADOW_OFFSET, INSET_SHADOW_OFFSET, height - INSET_SHADOW_OFFSET * 2);
+
+    // 3. 内高光（左上）
+    graphics.fillStyle(0xffffff, INSET_HIGHLIGHT_ALPHA);
+    // 顶部高光
+    graphics.fillRect(x, y, width - INSET_SHADOW_OFFSET, 1);
+    // 左侧高光
+    graphics.fillRect(x, y, 1, height - INSET_SHADOW_OFFSET);
+  }
+
+  /**
+   * 绘制主面板背景（带外阴影的凸起效果）
+   */
+  private drawMainPanelBackground(graphics: Phaser.GameObjects.Graphics, config: NeumorphicConfig): void {
+    const { x, y, width, height, baseColor } = config;
+
+    graphics.clear();
+
+    // 1. 外阴影（右下，更大偏移）
+    graphics.fillStyle(0x000000, 0.35);
+    graphics.fillRect(x + 6, y + 6, width, height);
+
+    // 2. 主背景
+    graphics.fillStyle(baseColor, 1);
+    graphics.fillRect(x, y, width, height);
+
+    // 3. 外高光（左上）
+    graphics.fillStyle(0xffffff, 0.08);
+    graphics.fillRect(x, y, width, 3);
+    graphics.fillRect(x, y, 3, height);
+  }
+
+  /**
    * 创建UI元素
    */
   private createUI(): void {
@@ -144,16 +246,16 @@ export class InventoryUI {
     this.container.setDepth(1000);
     this.container.setScrollFactor(0);
 
-    // 背景
-    this.background = this.scene.add.rectangle(
-      this.width / 2,
-      this.height / 2,
-      this.width,
-      this.height,
-      this.styles.background.fillColor,
-      this.styles.background.alpha
-    );
-    this.container.add(this.background);
+    // 背景（使用Graphics实现Neumorphism）
+    this.backgroundGraphics = this.scene.add.graphics();
+    this.drawMainPanelBackground(this.backgroundGraphics, {
+      x: 0,
+      y: 0,
+      width: this.width,
+      height: this.height,
+      baseColor: this.NEUMORPHIC.BASE_COLOR
+    });
+    this.container.add(this.backgroundGraphics);
 
     // 标题
     this.titleText = this.scene.add.text(
@@ -196,41 +298,91 @@ export class InventoryUI {
   }
 
   /**
-   * 创建Tab按钮
+   * 创建Tab按钮（Neumorphism风格）
    */
   private createTabs(): void {
     const tabWidth = 80;
+    const tabHeight = 28;
     const spacing = 10;
 
     INVENTORY_TYPES.forEach((typeConfig: InventoryTypeConfig, index: number) => {
       const xPos = index * (tabWidth + spacing);
 
-      const button = this.scene.add.text(
-        xPos,
-        0,
+      // 创建容器
+      const tabContainer = this.scene.add.container(xPos, 0);
+      this.tabsContainer.add(tabContainer);
+
+      // 创建Graphics背景
+      const graphics = this.scene.add.graphics();
+      this.drawInsetEffect(graphics, {
+        x: 0,
+        y: 0,
+        width: tabWidth,
+        height: tabHeight,
+        baseColor: this.NEUMORPHIC.BASE_COLOR
+      });
+      tabContainer.add(graphics);
+
+      // 创建文字
+      const text = this.scene.add.text(
+        tabWidth / 2,
+        tabHeight / 2,
         typeConfig.name,
         this.styles.tab
+      ).setOrigin(0.5);
+      tabContainer.add(text);
+
+      // 交互区域（使用透明Rectangle）
+      const hitArea = this.scene.add.rectangle(
+        tabWidth / 2,
+        tabHeight / 2,
+        tabWidth,
+        tabHeight,
+        0x000000,
+        0
       );
-      button.setInteractive({ useHandCursor: true });
-      button.setBackgroundColor(UI_COLOR_STRINGS.PANEL_DARK);
+      hitArea.setInteractive({ useHandCursor: true });
+      tabContainer.add(hitArea);
 
-      button.on('pointerdown', () => this.selectTab(typeConfig.id as InventoryTabType));
-      button.on('pointerover', () => {
+      hitArea.on('pointerdown', () => this.selectTab(typeConfig.id as InventoryTabType));
+      hitArea.on('pointerover', () => {
+        // 悬停效果：略微凸起
         if (!this.tabButtons.find(t => t.type === typeConfig.id)?.isSelected) {
-          button.setBackgroundColor('#3d3d5c');
+          this.drawRaisedEffect(graphics, {
+            x: 0,
+            y: 0,
+            width: tabWidth,
+            height: tabHeight,
+            baseColor: this.NEUMORPHIC.BASE_COLOR
+          });
         }
       });
-      button.on('pointerout', () => {
+      hitArea.on('pointerout', () => {
+        // 恢复原状态
         const tab = this.tabButtons.find(t => t.type === typeConfig.id);
-        if (!tab?.isSelected) {
-          button.setBackgroundColor(UI_COLOR_STRINGS.PANEL_DARK);
+        if (tab?.isSelected) {
+          this.drawRaisedEffect(graphics, {
+            x: 0,
+            y: 0,
+            width: tabWidth,
+            height: tabHeight,
+            baseColor: this.NEUMORPHIC.BASE_COLOR
+          });
+        } else {
+          this.drawInsetEffect(graphics, {
+            x: 0,
+            y: 0,
+            width: tabWidth,
+            height: tabHeight,
+            baseColor: this.NEUMORPHIC.BASE_COLOR
+          });
         }
       });
-
-      this.tabsContainer.add(button);
 
       this.tabButtons.push({
-        button,
+        container: tabContainer,
+        graphics,
+        text,
         type: typeConfig.id as InventoryTabType,
         isSelected: false
       });
@@ -238,41 +390,89 @@ export class InventoryUI {
   }
 
   /**
-   * 创建药袋按钮
+   * 创建药袋按钮（Neumorphism风格）
    */
   private createBagButtons(): void {
     const buttonWidth = 70;
+    const buttonHeight = 24;
     const spacing = 8;
 
     HERB_BAGS.forEach((bag: HerbBag, index: number) => {
       const xPos = index * (buttonWidth + spacing);
 
-      const button = this.scene.add.text(
-        xPos,
-        0,
+      // 创建容器
+      const bagContainer = this.scene.add.container(xPos, 0);
+      this.bagsContainer.add(bagContainer);
+
+      // 创建Graphics背景
+      const graphics = this.scene.add.graphics();
+      this.drawInsetEffect(graphics, {
+        x: 0,
+        y: 0,
+        width: buttonWidth,
+        height: buttonHeight,
+        baseColor: this.NEUMORPHIC.BASE_COLOR
+      });
+      bagContainer.add(graphics);
+
+      // 创建文字
+      const text = this.scene.add.text(
+        buttonWidth / 2,
+        buttonHeight / 2,
         bag.name,
         this.styles.bag
+      ).setOrigin(0.5);
+      bagContainer.add(text);
+
+      // 交互区域（使用透明Rectangle）
+      const hitArea = this.scene.add.rectangle(
+        buttonWidth / 2,
+        buttonHeight / 2,
+        buttonWidth,
+        buttonHeight,
+        0x000000,
+        0
       );
-      button.setInteractive({ useHandCursor: true });
-      button.setBackgroundColor(UI_COLOR_STRINGS.PANEL_DARK);
+      hitArea.setInteractive({ useHandCursor: true });
+      bagContainer.add(hitArea);
 
-      button.on('pointerdown', () => this.selectBag(bag.id));
-      button.on('pointerover', () => {
+      hitArea.on('pointerdown', () => this.selectBag(bag.id));
+      hitArea.on('pointerover', () => {
         if (!this.bagButtons.find(b => b.bagId === bag.id)?.isSelected) {
-          button.setBackgroundColor('#3a4a4a');
+          this.drawRaisedEffect(graphics, {
+            x: 0,
+            y: 0,
+            width: buttonWidth,
+            height: buttonHeight,
+            baseColor: this.NEUMORPHIC.BASE_COLOR
+          });
         }
       });
-      button.on('pointerout', () => {
+      hitArea.on('pointerout', () => {
         const bagUI = this.bagButtons.find(b => b.bagId === bag.id);
-        if (!bagUI?.isSelected) {
-          button.setBackgroundColor(UI_COLOR_STRINGS.PANEL_DARK);
+        if (bagUI?.isSelected) {
+          this.drawRaisedEffect(graphics, {
+            x: 0,
+            y: 0,
+            width: buttonWidth,
+            height: buttonHeight,
+            baseColor: this.NEUMORPHIC.BASE_COLOR
+          });
+        } else {
+          this.drawInsetEffect(graphics, {
+            x: 0,
+            y: 0,
+            width: buttonWidth,
+            height: buttonHeight,
+            baseColor: this.NEUMORPHIC.BASE_COLOR
+          });
         }
       });
-
-      this.bagsContainer.add(button);
 
       this.bagButtons.push({
-        button,
+        container: bagContainer,
+        graphics,
+        text,
         bagId: bag.id,
         isSelected: false
       });
@@ -283,15 +483,32 @@ export class InventoryUI {
    * 选择Tab
    */
   selectTab(tabType: InventoryTabType): void {
+    const tabWidth = 80;
+    const tabHeight = 28;
+
     // 更新Tab按钮状态
     this.tabButtons.forEach(tab => {
       tab.isSelected = tab.type === tabType;
       if (tab.isSelected) {
-        tab.button.setColor(this.styles.tabSelected.color);
-        tab.button.setBackgroundColor(this.styles.tabSelected.backgroundColor);
+        // 选中状态：凸起效果
+        this.drawRaisedEffect(tab.graphics, {
+          x: 0,
+          y: 0,
+          width: tabWidth,
+          height: tabHeight,
+          baseColor: this.NEUMORPHIC.BASE_COLOR
+        });
+        tab.text.setColor(this.styles.tabSelected.color);
       } else {
-        tab.button.setColor(this.styles.tab.color);
-        tab.button.setBackgroundColor(UI_COLOR_STRINGS.PANEL_DARK);
+        // 未选中状态：凹陷效果
+        this.drawInsetEffect(tab.graphics, {
+          x: 0,
+          y: 0,
+          width: tabWidth,
+          height: tabHeight,
+          baseColor: this.NEUMORPHIC.BASE_COLOR
+        });
+        tab.text.setColor(this.styles.tab.color);
       }
     });
 
@@ -312,15 +529,32 @@ export class InventoryUI {
    * 选择药袋
    */
   selectBag(bagId: string): void {
+    const buttonWidth = 70;
+    const buttonHeight = 24;
+
     // 更新药袋按钮状态
     this.bagButtons.forEach(bag => {
       bag.isSelected = bag.bagId === bagId;
       if (bag.isSelected) {
-        bag.button.setColor(this.styles.bagSelected.color);
-        bag.button.setBackgroundColor(this.styles.bagSelected.backgroundColor);
+        // 选中状态：凸起效果
+        this.drawRaisedEffect(bag.graphics, {
+          x: 0,
+          y: 0,
+          width: buttonWidth,
+          height: buttonHeight,
+          baseColor: this.NEUMORPHIC.BASE_COLOR
+        });
+        bag.text.setColor(this.styles.bagSelected.color);
       } else {
-        bag.button.setColor(this.styles.bag.color);
-        bag.button.setBackgroundColor(UI_COLOR_STRINGS.PANEL_DARK);
+        // 未选中状态：凹陷效果
+        this.drawInsetEffect(bag.graphics, {
+          x: 0,
+          y: 0,
+          width: buttonWidth,
+          height: buttonHeight,
+          baseColor: this.NEUMORPHIC.BASE_COLOR
+        });
+        bag.text.setColor(this.styles.bag.color);
       }
     });
 
@@ -483,7 +717,7 @@ export class InventoryUI {
   }
 
   /**
-   * 创建物品格子
+   * 创建物品格子（Neumorphism风格）
    */
   private createItemSlot(
     itemId: string,
@@ -493,51 +727,83 @@ export class InventoryUI {
     y: number,
     showQuantity: boolean = true
   ): void {
+    const slotWidth = this.styles.itemSlot.width;
+    const slotHeight = this.styles.itemSlot.height;
     const slotContainer = this.scene.add.container(x, y);
 
-    // 格子背景
-    const bg = this.scene.add.rectangle(
-      this.styles.itemSlot.width / 2,
-      this.styles.itemSlot.height / 2,
-      this.styles.itemSlot.width,
-      this.styles.itemSlot.height,
-      this.styles.itemSlot.fillColor
-    );
-    bg.setStrokeStyle(this.styles.itemSlot.borderWidth, this.styles.itemSlot.borderColor);
-    slotContainer.add(bg);
+    // 创建Graphics背景（默认凹陷效果）
+    const graphics = this.scene.add.graphics();
+    this.drawInsetEffect(graphics, {
+      x: 0,
+      y: 0,
+      width: slotWidth,
+      height: slotHeight,
+      baseColor: this.NEUMORPHIC.BASE_COLOR
+    });
+    slotContainer.add(graphics);
 
     // 物品名称（暂用文字代替图标）
     const icon = this.scene.add.text(
-      this.styles.itemSlot.width / 2,
-      this.styles.itemSlot.height / 2 - 10,
+      slotWidth / 2,
+      slotHeight / 2 - 10,
       itemName.substring(0, 3),  // 只显示前3个字
       this.styles.itemText
     ).setOrigin(0.5);
     slotContainer.add(icon);
 
     // 数量（如果需要显示）
+    let quantityText: Phaser.GameObjects.Text | undefined;
     if (showQuantity && quantity > 0) {
-      const quantityText = this.scene.add.text(
-        this.styles.itemSlot.width - 5,
-        this.styles.itemSlot.height - 5,
+      quantityText = this.scene.add.text(
+        slotWidth - 5,
+        slotHeight - 5,
         String(quantity),
         this.styles.quantityText
       ).setOrigin(1, 1);
       slotContainer.add(quantityText);
     }
 
-    // 交互
-    bg.setInteractive({ useHandCursor: true });
-    bg.on('pointerdown', () => this.selectItem(itemId));
-    bg.on('pointerover', () => bg.setFillStyle(UI_COLORS.PANEL_LIGHT));
-    bg.on('pointerout', () => bg.setFillStyle(this.styles.itemSlot.fillColor));
+    // 交互区域（使用透明Rectangle）
+    const hitArea = this.scene.add.rectangle(
+      slotWidth / 2,
+      slotHeight / 2,
+      slotWidth,
+      slotHeight,
+      0x000000,
+      0
+    );
+    hitArea.setInteractive({ useHandCursor: true });
+    slotContainer.add(hitArea);
+
+    hitArea.on('pointerdown', () => this.selectItem(itemId));
+    hitArea.on('pointerover', () => {
+      // 悬停时略微凸起
+      this.drawRaisedEffect(graphics, {
+        x: 0,
+        y: 0,
+        width: slotWidth,
+        height: slotHeight,
+        baseColor: this.NEUMORPHIC.BASE_COLOR
+      });
+    });
+    hitArea.on('pointerout', () => {
+      // 恢复凹陷效果
+      this.drawInsetEffect(graphics, {
+        x: 0,
+        y: 0,
+        width: slotWidth,
+        height: slotHeight,
+        baseColor: this.NEUMORPHIC.BASE_COLOR
+      });
+    });
 
     this.contentContainer.add(slotContainer);
 
     this.itemSlots.push({
       container: slotContainer,
+      graphics,
       icon,
-      quantityText: showQuantity ? slotContainer.getAt(2) as Phaser.GameObjects.Text : undefined,
+      quantityText,
       itemId,
       isSelected: false
     });
@@ -547,6 +813,33 @@ export class InventoryUI {
    * 选择物品
    */
   private selectItem(itemId: string): void {
+    const slotWidth = this.styles.itemSlot.width;
+    const slotHeight = this.styles.itemSlot.height;
+
+    // 更新所有物品格子的状态
+    this.itemSlots.forEach(slot => {
+      slot.isSelected = slot.itemId === itemId;
+      if (slot.isSelected) {
+        // 选中状态：凸起效果
+        this.drawRaisedEffect(slot.graphics, {
+          x: 0,
+          y: 0,
+          width: slotWidth,
+          height: slotHeight,
+          baseColor: this.NEUMORPHIC.BASE_COLOR
+        });
+      } else {
+        // 未选中状态：凹陷效果
+        this.drawInsetEffect(slot.graphics, {
+          x: 0,
+          y: 0,
+          width: slotWidth,
+          height: slotHeight,
+          baseColor: this.NEUMORPHIC.BASE_COLOR
+        });
+      }
+    });
+
     // 发送事件（供其他系统响应）
     this.eventBus.emit('inventory:item_selected', {
       item_id: itemId,

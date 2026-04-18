@@ -1134,62 +1134,86 @@ zhongyi_game_v3/
 
 ---
 
-### 第四轮视觉优化：现代弹窗设计方案 ⏳ 待实施 (2026-04-18)
+### 第四轮视觉优化：现代弹窗设计方案 ⏳ 进行中 (2026-04-18)
 
 **触发原因**: 用户验收体验发现多个UI问题
 
-**用户反馈问题清单**:
+**用户反馈问题清单（第二轮验收）**:
 | 问题 | 位置 | 描述 |
 |-----|------|------|
-| 文字看不清 | TitleScene | "最近存档"、"方向键"等文字对比度不足 |
-| 弹窗无边框 | SaveUI | 存档选择弹窗没有边框，取消按钮看不清 |
-| 弹窗无边框 | TutorialUI | 新游戏确认弹窗、引导面板没有边框 |
-| 进度条不对齐 | TutorialUI | 进度条长度和边框没有对齐 |
-| 文字溢出 | TutorialUI | 场景提示文字超出边框 |
+| 标题按钮未调整 | TitleScene | 开始游戏等按钮无立体感、无边框 |
+| 进度条超出弹窗 | TutorialUI | 进度条长度远远超过弹窗长度 |
+| 存档弹窗与背景重合 | SaveUI | 弹窗和背景完全重合，看不到弹窗 |
+| 跳过弹窗融合 | TutorialUI | 跳过确认弹窗与底部弹窗融合，文字超出 |
+| 问诊页面未调整 | InquiryUI等 | 问诊/诊断弹窗未修改 |
+| 多层弹窗重叠问题 | 多个UI | 上层弹窗与下层视觉区分不明显 |
 
-**已确认的弹窗设计方案**:
-| 场景 | 方案 | 核心特征 |
+**核心设计规范（v3完善版）**:
+
+### 多层弹窗层级规范（关键！）
+| 层级 | 边框颜色 | 透明度 | 外阴影 | 适用场景 |
+|-----|---------|--------|--------|---------|
+| 底层弹窗 | 绿色(#80a040) | 0.85-0.90 | 8px blur | 主面板 |
+| 顶层弹窗 | 金棕(#c0a080) | **1.0（完全不透明）** | 16px+外发光 | 确认弹窗 |
+
+**核心原则**: 顶层弹窗必须**完全不透明**(alpha=1.0)，边框颜色与底层不同！
+
+### 内容宽度约束公式
+```
+文字maxWidth = 弹窗宽度 - 边框宽度*2 - padding*2
+进度条effectiveWidth = barWidth - strokeWidth*2 - internalPadding*2
+```
+
+**设计方案速查表**:
+| 方案 | 适用场景 | 核心特征 | 透明度 |
+|-----|---------|---------|--------|
+| **方案A** | 标题画面/入口弹窗 | 渐变玻璃 + 金棕边框 + 顶部光带 | 0.85-0.90 |
+| **方案B** | 游戏内主弹窗 | 3D立体边框（绿边框+高光阴影） | 0.85-0.90 |
+| **方案C** | 确认/警告弹窗（顶层） | 强金棕边框 + **完全不透明** + 外发光 | **1.0** |
+| **方案D** | 悬浮卡片/提示 | 底部阴影 + 渐变背景 + 顶部光带 | 1.0 |
+| **方案8** | 内凹槽位 | 暗顶左边框 + 亮底右边框 | 1.0 |
+| **方案4** | 新拟态 | 凸起/凹陷效果（阴影+高光） | 1.0 |
+
+**Round 4 初版已完成（部分问题待修复）**:
+- ✅ 配色常量已添加到ui-color-theme.ts
+- ✅ TitleScene文字对比度已修复（TEXT_TIP）
+- ✅ TutorialUI渐变玻璃背景已实现（方案A）
+- ✅ SaveUI 3D立体边框已实现（方案B）
+- ✅ SaveUI内凹槽位已实现（方案8）
+- ✅ InventoryUI新拟态已实现（方案4）
+- ✅ TutorialUI场景提示已实现（方案D）
+
+**待修复任务（P0必须修复）**:
+| 任务 | 文件 | 问题 | 设计方案 |
+|-----|------|------|---------|
+| P0-1 | TitleScene.ts | 按钮3D立体化 | 方案A + 3D按钮 |
+| P0-2 | TutorialUI.ts | 进度条精确对齐 | 公式修复 |
+| P0-3 | TutorialUI.ts | 跳过弹窗层级（完全不透明） | 方案C |
+| P0-4 | TutorialUI.ts | 文字宽度约束 | maxWidth公式 |
+| P0-5 | SaveUI.ts | 主面板透明度检查 | 方案B |
+| P0-6 | SaveUI.ts | 删除弹窗层级（完全不透明） | 方案C |
+
+**后续任务（P1问诊/诊断）**:
+| 任务 | 文件 | 设计方案 |
 |-----|------|---------|
-| 标题画面/新手引导 | 方案3（渐变玻璃） | 渐变背景 + 顶部光带 + 金棕边框 |
-| 游戏内弹窗 | 方案5（3D立体边框） | 多层边框（亮左上+暗右下） |
-| 背包/选择界面 | 方案4（Neumorphism） | 凸起=选中，凹陷=未选中 |
-| 输入框/存档槽位 | 方案8（内凹槽位） | 暗顶左+亮底右边框 |
-| 成就/临时提示 | 方案6（悬浮卡片） | 底部阴影+悬浮感 |
-| 认/警告框 | 方案2（深色玻璃） | 高透明度+强边框分隔 |
+| P1-1 | DialogUI.ts | 方案D（悬浮卡片） |
+| P1-2 | InquiryUI.ts | 方案B + 方案8 |
+| P1-3~P1-6 | PulseUI/TongueUI/SyndromeUI/PrescriptionUI | 方案B |
+| P1-7 | ResultUI.ts | 方案B |
+| P1-8 | NPCFeedbackUI.ts | 方案D（顶层） |
+| P1-9~P1-11 | DecoctionUI/ProcessingUI/PlantingUI | 方案B |
 
-**设计风格**: Glassmorphism（玻璃态） + Neumorphism（新拟态） + 3D立体边框，融合中医田园配色
-
-**新增配色常量（待添加）**:
-```
-PANEL_GLASS_LIGHT: 0x408080   // 灰蓝（渐变起点）
-PANEL_GLASS_DARK: 0x402020    // 土黄（渐变终点）
-PANEL_NEUMORPHIC: 0x2a3e32    // 新拟态背景
-PANEL_INSET: 0x0d1f17         // 内凹底色
-BORDER_OUTER_GREEN: 0x80a040  // 外层亮绿边框
-BORDER_TOP_LIGHT: 0x90c070    // 顶部高光
-BORDER_BOTTOM_SHADOW: 0x604020// 底部阴影
-TEXT_TIP: 0xd4c4b4            // 提示文字 (对比度 5.2:1)
-TEXT_WARM: 0xe5d5c5           // 温暖文字 (对比度 6.5:1)
-TEXT_BRIGHT: 0xf0e0d0         // 高亮文字 (对比度 7.5:1)
-```
-
-**下一步任务列表**:
-| 优先级 | 任务 | 文件 | 状态 |
-|--------|------|------|------|
-| P0-1 | 添加新配色常量到ui-color-theme.ts | ui-color-theme.ts | 待执行 |
-| P0-2 | TitleScene文字对比度修复 | TitleScene.ts | 待执行 |
-| P0-3 | TutorialUI集中引导改方案3（渐变玻璃） | TutorialUI.ts | 待执行 |
-| P0-4 | SaveUI弹窗改方案5（3D立体）+ 方案8（槽位） | SaveUI.ts | 待执行 |
-| P1-1 | TutorialUI进度条对齐修复 | TutorialUI.ts | 待执行 |
-| P1-2 | TutorialUI场景提示改方案6（悬浮卡片） | TutorialUI.ts | 待执行 |
-| P1-3 | InventoryUI背包改方案4（新拟态） | InventoryUI.ts | 待执行 |
+**后续任务（P2病案/通知）**:
+| 任务 | 文件 | 设计方案 |
+|-----|------|---------|
+| P2-1 | CasesListUI.ts | 方案B |
+| P2-2 | CaseDetailUI.ts | 方案B |
+| P2-3 | ExperienceUI.ts | 方案D |
 
 **设计文档**:
-- [弹窗设计方案规范](docs/superpowers/specs/2026-04-18-modal-design-spec.md) ⭐最终确认版
-- [HTML Demo](docs/design/modal-design-demo-v2.html) ⭐可视化预览
+- [弹窗设计方案规范 v3](docs/design/modal-design-v3-comprehensive.html) ⭐HTML可视化预览
+- [实施任务清单](docs/superpowers/specs/2026-04-18-modal-visual-optimization-tasks.md) ⭐详细任务分解
 - [用户反馈问题记录](docs/testing/visual-issues-feedback-2026-04-18.md)
-
-**问题修复记录**: [docs/testing/phase2-test-fixes-record.md](docs/testing/phase2-test-fixes-record.md)
 
 
 ## 相关文档

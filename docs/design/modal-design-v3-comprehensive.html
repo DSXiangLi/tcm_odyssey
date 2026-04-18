@@ -1,0 +1,874 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>弹窗设计方案 v3 - 完善版</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Microsoft YaHei', sans-serif;
+            background: #1a2e26;
+            padding: 40px;
+            color: #f0e0d0;
+        }
+
+        .page-title {
+            font-size: 28px;
+            text-align: center;
+            margin-bottom: 20px;
+            color: #90c070;
+        }
+
+        .section {
+            margin-bottom: 50px;
+        }
+
+        .section-title {
+            font-size: 20px;
+            margin-bottom: 15px;
+            color: #c0a080;
+            border-bottom: 2px solid #c0a080;
+            padding-bottom: 5px;
+        }
+
+        .demo-container {
+            display: flex;
+            gap: 30px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .demo-box {
+            width: 400px;
+            padding: 20px;
+            background: #2a3e32;
+            border-radius: 8px;
+        }
+
+        .demo-title {
+            font-size: 16px;
+            margin-bottom: 15px;
+            color: #d4c4b4;
+        }
+
+        /* === 场景背景模拟 === */
+        .scene-bg {
+            width: 800px;
+            height: 400px;
+            background: linear-gradient(135deg, #408080 0%, #402020 100%);
+            border-radius: 12px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .scene-bg::before {
+            content: '场景背景';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: rgba(255,255,255,0.3);
+            font-size: 24px;
+        }
+
+        /* === 方案A: 渐变玻璃（标题画面） === */
+        .modal-glass-title {
+            position: absolute;
+            width: 480px;
+            height: 320px;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            /* 渐变背景 */
+            background: linear-gradient(135deg,
+                rgba(64, 128, 128, 0.85) 0%,
+                rgba(64, 32, 32, 0.90) 100%);
+            /* 顶部光带 */
+            border-top: 40px solid rgba(192, 160, 128, 0.25);
+            border-top-color: transparent;
+            background-origin: border-box;
+            /* 金棕边框 - 强对比 */
+            border: 3px solid rgba(192, 160, 128, 0.7);
+            border-radius: 12px;
+            box-shadow: 0 0 20px rgba(192, 160, 128, 0.3);
+        }
+
+        .modal-glass-title::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 40px;
+            background: linear-gradient(180deg,
+                rgba(192, 160, 128, 0.25) 0%,
+                transparent 100%);
+            border-radius: 12px 12px 0 0;
+        }
+
+        .modal-glass-title h2 {
+            color: #f0e0d0;
+            font-size: 24px;
+            text-align: center;
+            margin-top: 30px;
+        }
+
+        .modal-glass-title p {
+            color: #d4c4b4;
+            font-size: 16px;
+            text-align: center;
+            margin: 15px auto;
+            max-width: calc(100% - 60px); /* 内容宽度约束 */
+            line-height: 1.5;
+        }
+
+        .btn-glass {
+            display: inline-block;
+            padding: 12px 40px;
+            margin: 10px;
+            background: linear-gradient(135deg, #90c070 0%, #70a050 100%);
+            color: #f0e0d0;
+            border: 2px solid #a0d080;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+            box-shadow:
+                inset 0 1px 0 rgba(255,255,255,0.3),
+                0 4px 12px rgba(0,0,0,0.3);
+        }
+
+        .btn-glass:hover {
+            background: linear-gradient(135deg, #a0d080 0%, #80b060 100%);
+        }
+
+        .btn-glass-secondary {
+            background: linear-gradient(135deg, #a08060 0%, #806040 100%);
+            border-color: #c0a080;
+        }
+
+        /* === 方案B: 3D立体边框（游戏内弹窗） === */
+        .modal-3d-game {
+            position: absolute;
+            width: 500px;
+            height: 300px;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            background: #1a2e26;
+            border-radius: 8px;
+            /* 外层亮绿边框 */
+            border: 4px solid #80a040;
+            box-shadow:
+                /* 外阴影 */
+                0 8px 32px rgba(0,0,0,0.5),
+                /* 内部高光边框（顶部+左侧） */
+                inset 2px 2px 0 #90c070,
+                /* 内部阴影边框（底部+右侧） */
+                inset -2px -2px 0 #604020;
+        }
+
+        .modal-3d-game h2 {
+            color: #f0e0d0;
+            font-size: 20px;
+            text-align: center;
+            padding: 20px;
+            /* 顶部分隔线 */
+            border-bottom: 2px solid #604020;
+            margin-bottom: 0;
+        }
+
+        .modal-3d-game .content {
+            padding: 20px;
+            color: #d4c4b4;
+        }
+
+        /* === 方案C: 多层弹窗重叠解决方案 === */
+        .modal-stack-demo {
+            position: relative;
+            width: 800px;
+            height: 450px;
+            background: linear-gradient(135deg, #408080 0%, #402020 100%);
+            border-radius: 12px;
+        }
+
+        /* 底层弹窗 - 主面板 */
+        .modal-layer-base {
+            position: absolute;
+            width: 600px;
+            height: 350px;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            background: #1a2e26;
+            border: 4px solid #80a040;
+            border-radius: 8px;
+            z-index: 1;
+            box-shadow:
+                inset 2px 2px 0 #90c070,
+                inset -2px -2px 0 #604020,
+                0 8px 24px rgba(0,0,0,0.4);
+        }
+
+        .modal-layer-base h3 {
+            color: #f0e0d0;
+            padding: 15px;
+            border-bottom: 2px solid #604020;
+            font-size: 18px;
+        }
+
+        .modal-layer-base .slots {
+            padding: 10px 20px;
+        }
+
+        /* 内凹槽位 - 存档槽 */
+        .slot-inset {
+            display: block;
+            width: calc(100% - 20px); /* 宽度约束 */
+            height: 50px;
+            margin: 8px auto;
+            background: #0d1f17;
+            border-radius: 4px;
+            border-left: 2px solid #0a1510;
+            border-top: 2px solid #0a1510;
+            border-right: 2px solid #406050;
+            border-bottom: 2px solid #406050;
+            padding: 8px 15px;
+            color: #d4c4b4;
+            line-height: 32px;
+        }
+
+        /* 上层弹窗 - 确认弹窗（关键：更强的视觉区分） */
+        .modal-layer-top {
+            position: absolute;
+            width: 400px;
+            height: 200px;
+            left: 50%;
+            top: 40%;
+            transform: translate(-50%, -50%);
+            /* 更深的背景色 - 区分层级 */
+            background: rgba(26, 46, 38, 1.0); /* 完全不透明 - 关键！ */
+            /* 更强的边框 - 增强对比 */
+            border: 4px solid #c0a080; /* 金棕色边框更醒目 */
+            border-radius: 8px;
+            z-index: 10;
+            box-shadow:
+                /* 更强的外阴影 - 悬浮感 */
+                0 16px 48px rgba(0,0,0,0.6),
+                /* 外发光边框 - 增强边界可见性 */
+                0 0 0 2px rgba(192, 160, 128, 0.4),
+                /* 内高光 */
+                inset 2px 2px 0 rgba(192, 160, 128, 0.3);
+        }
+
+        .modal-layer-top h3 {
+            color: #f0e0d0;
+            padding: 15px;
+            text-align: center;
+            font-size: 18px;
+        }
+
+        .modal-layer-top p {
+            color: #d4c4b4;
+            text-align: center;
+            /* 内容宽度约束 */
+            max-width: calc(100% - 60px);
+            margin: 10px auto;
+            font-size: 14px;
+        }
+
+        /* === 方案D: 进度条精确对齐 === */
+        .progress-align-demo {
+            padding: 20px;
+        }
+
+        .progress-bar-container {
+            width: 300px;
+            height: 24px;
+            background: #0d1f17;
+            border-radius: 4px;
+            border-left: 2px solid #0a1510;
+            border-top: 2px solid #0a1510;
+            border-right: 2px solid #406050;
+            border-bottom: 2px solid #406050;
+            margin: 10px auto;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .progress-bar-fill {
+            position: absolute;
+            top: 4px;        /* stroke(2) + internalPadding(2) */
+            left: 4px;       /* stroke(2) + internalPadding(2) */
+            height: 16px;    /* 24 - 4 - 4 = 16 */
+            width: calc(100% - 8px); /* 300 - strokePadding(4) - internalPadding(4) = 292 */
+            /* 但实际填充宽度 = effectiveWidth * progress */
+            width: calc((100% - 8px) * 0.75); /* 75%进度 */
+            background: linear-gradient(90deg, #90c070 0%, #70a050 100%);
+            border-radius: 2px;
+        }
+
+        .progress-text {
+            text-align: center;
+            color: #d4c4b4;
+            font-size: 14px;
+        }
+
+        /* === 方案E: 悬浮卡片（NPC对话/提示） === */
+        .floating-card {
+            position: absolute;
+            width: 400px;
+            /* 固定高度容纳maxLines:2 */
+            height: 72px;
+            bottom: 50px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: linear-gradient(180deg, #406050 0%, #304030 100%);
+            border-radius: 8px;
+            /* 底部悬浮阴影 */
+            box-shadow:
+                0 4px 8px rgba(0,0,0,0.5),
+                0 8px 16px rgba(0,0,0,0.3);
+            /* 顶部光带 */
+            border-top: 2px solid rgba(192, 160, 128, 0.3);
+        }
+
+        .floating-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: rgba(255,255,255,0.1);
+        }
+
+        .floating-card p {
+            color: #d4c4b4;
+            font-size: 16px;
+            text-align: center;
+            padding: 15px 20px;
+            /* 关键：max-width约束 */
+            max-width: calc(100% - 40px);
+            max-height: calc(100% - 20px);
+            overflow: hidden;
+            line-height: 1.4;
+            /* 最多2行 */
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+        }
+
+        /* === 方案F: 问诊界面设计 === */
+        .inquiry-demo {
+            position: relative;
+            width: 800px;
+            height: 500px;
+            background: linear-gradient(135deg, #408080 0%, #402020 100%);
+            border-radius: 12px;
+        }
+
+        .inquiry-panel {
+            position: absolute;
+            width: 640px;
+            height: 420px;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            background: #1a2e26;
+            border: 4px solid #80a040;
+            border-radius: 8px;
+            box-shadow:
+                inset 2px 2px 0 #90c070,
+                inset -2px -2px 0 #604020,
+                0 8px 32px rgba(0,0,0,0.5);
+        }
+
+        .inquiry-panel h3 {
+            color: #f0e0d0;
+            padding: 15px;
+            border-bottom: 2px solid #604020;
+            font-size: 18px;
+        }
+
+        .inquiry-content {
+            padding: 15px 20px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .inquiry-section {
+            background: #0d1f17;
+            border-radius: 4px;
+            border-left: 2px solid #0a1510;
+            border-top: 2px solid #0a1510;
+            border-right: 2px solid #406050;
+            border-bottom: 2px solid #406050;
+            padding: 15px;
+            /* 内容约束 */
+            overflow: hidden;
+        }
+
+        .inquiry-section h4 {
+            color: #f0e0d0;
+            font-size: 14px;
+            margin-bottom: 10px;
+        }
+
+        .inquiry-section p {
+            color: #d4c4b4;
+            font-size: 13px;
+            line-height: 1.5;
+            /* 内容宽度约束 */
+            max-width: 100%;
+        }
+
+        /* === 新增：标题画面按钮设计 === */
+        .title-buttons-demo {
+            text-align: center;
+            padding: 30px;
+        }
+
+        .btn-title-main {
+            display: inline-block;
+            padding: 16px 60px;
+            margin: 15px;
+            background: linear-gradient(135deg, #90c070 0%, #70a050 100%);
+            color: #f0e0d0;
+            border: 3px solid #a0d080;
+            border-radius: 12px;
+            font-size: 20px;
+            cursor: pointer;
+            box-shadow:
+                /* 3D高光阴影 */
+                inset 0 2px 0 rgba(255,255,255,0.3),
+                inset 0 -2px 0 rgba(0,0,0,0.2),
+                0 6px 20px rgba(0,0,0,0.4);
+            text-shadow: 0 1px 2px rgba(0,0,0,0.3);
+        }
+
+        .btn-title-secondary {
+            display: inline-block;
+            padding: 12px 40px;
+            margin: 10px;
+            background: linear-gradient(135deg, #a08060 0%, #806040 100%);
+            color: #f0e0d0;
+            border: 2px solid #c0a080;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+            box-shadow:
+                inset 0 1px 0 rgba(255,255,255,0.2),
+                0 4px 12px rgba(0,0,0,0.3);
+        }
+
+        .btn-title-small {
+            display: inline-block;
+            padding: 8px 24px;
+            margin: 8px;
+            background: rgba(64, 128, 128, 0.6);
+            color: #d4c4b4;
+            border: 2px solid rgba(192, 160, 128, 0.5);
+            border-radius: 6px;
+            font-size: 14px;
+        }
+
+        /* === 规范说明表格 === */
+        .spec-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        .spec-table th {
+            background: #2a3e32;
+            color: #f0e0d0;
+            padding: 10px;
+            border: 1px solid #604020;
+        }
+
+        .spec-table td {
+            padding: 10px;
+            border: 1px solid #406050;
+            color: #d4c4b4;
+        }
+
+        .spec-table tr:nth-child(even) {
+            background: rgba(13, 31, 23, 0.5);
+        }
+
+        /* === 核心设计原则 === */
+        .principle-box {
+            background: rgba(64, 128, 128, 0.3);
+            border: 2px solid #c0a080;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+
+        .principle-box h4 {
+            color: #c0a080;
+            margin-bottom: 10px;
+        }
+
+        .principle-box ul {
+            color: #d4c4b4;
+            padding-left: 20px;
+        }
+
+        .principle-box li {
+            margin: 8px 0;
+        }
+
+        .color-demo {
+            display: inline-block;
+            width: 60px;
+            height: 30px;
+            border-radius: 4px;
+            margin: 5px;
+            text-align: center;
+            line-height: 30px;
+            font-size: 12px;
+            color: #f0e0d0;
+        }
+    </style>
+</head>
+<body>
+    <h1 class="page-title">弹窗设计方案 v3 - 完善版</h1>
+
+    <!-- 核心设计原则 -->
+    <div class="section">
+        <h2 class="section-title">核心设计原则</h2>
+        <div class="principle-box">
+            <h4>1. 多层弹窗可见性原则</h4>
+            <ul>
+                <li><strong>上层弹窗必须比下层更醒目</strong>：更强的边框、更低的透明度、更强的外阴影</li>
+                <li><strong>边框颜色区分层级</strong>：底层用绿色边框(#80a040)，顶层用金棕边框(#c0a080)</li>
+                <li><strong>背景透明度递减</strong>：底层0.85-0.90，顶层1.0（完全不透明，完全不透明才能清晰区分层级）</li>
+            </ul>
+        </div>
+
+        <div class="principle-box">
+            <h4>2. 内容宽度约束原则</h4>
+            <ul>
+                <li><strong>文字max-width = 弹窗宽度 - 边框宽度*2 - padding*2</strong></li>
+                <li><strong>进度条有效宽度 = 容器宽度 - stroke宽度*2 - 内部间隙*2</strong></li>
+                <li><strong>永远不要让内容超出弹窗边界</strong></li>
+            </ul>
+        </div>
+
+        <div class="principle-box">
+            <h4>3. 弹窗类型与方案对应</h4>
+            <ul>
+                <li><strong>标题画面/入口弹窗</strong> → 方案A（渐变玻璃，强装饰感）</li>
+                <li><strong>游戏内主弹窗</strong> → 方案B（3D立体边框，清晰层次）</li>
+                <li><strong>确认/警告弹窗（顶层）</strong> → 方案C（强边框+低透明度）</li>
+                <li><strong>对话/提示浮层</strong> → 方案D（悬浮卡片）</li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- 方案A: 渐变玻璃（标题画面） -->
+    <div class="section">
+        <h2 class="section-title">方案A: 渐变玻璃 - 标题画面/入口弹窗</h2>
+        <div class="demo-container">
+            <div class="scene-bg" style="width: 600px; height: 400px;">
+                <div class="modal-glass-title" style="width: 400px; height: 280px;">
+                    <h2>药灵山谷</h2>
+                    <p>v3.0 - Phase 2 NPC Agent</p>
+                    <p style="color: #d4c4b4; font-size: 14px;">最近存档: 2026-04-18 10:30</p>
+                    <div style="text-align: center; margin-top: 20px;">
+                        <button class="btn-glass">开始游戏</button>
+                        <button class="btn-glass btn-glass-secondary">存档管理</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="demo-box">
+                <h3 class="demo-title">设计特征</h3>
+                <table class="spec-table">
+                    <tr><th>特征</th><th>值</th></tr>
+                    <tr><td>背景渐变</td><td>灰蓝(0x408080, 0.85) → 土黄(0x402020, 0.90)</td></tr>
+                    <tr><td>顶部光带</td><td>金棕(0xc0a080, 0.25) → 透明，高度40px</td></tr>
+                    <tr><td>边框</td><td>3px 金棕(0xc0a080, 0.7) + 外发光</td></tr>
+                    <tr><td>按钮</td><td>3D渐变按钮（高光+阴影）</td></tr>
+                    <tr><td>内容宽度</td><td>弹窗宽度 - 60px（边框+padding）</td></tr>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- 标题画面按钮设计 -->
+    <div class="section">
+        <h2 class="section-title">标题画面按钮设计（新增）</h2>
+        <div class="demo-container">
+            <div class="demo-box" style="width: 600px; background: linear-gradient(135deg, #408080 0%, #402020 100%);">
+                <div class="title-buttons-demo">
+                    <button class="btn-title-main">开始游戏</button>
+                    <button class="btn-title-secondary">存档管理</button>
+                    <br>
+                    <button class="btn-title-small">继续游戏</button>
+                    <button class="btn-title-small">设置</button>
+                </div>
+            </div>
+
+            <div class="demo-box">
+                <h3 class="demo-title">按钮规范</h3>
+                <table class="spec-table">
+                    <tr><th>按钮类型</th><th>样式</th></tr>
+                    <tr><td>主要按钮</td><td>绿色渐变 + 3px边框 + 双层阴影</td></tr>
+                    <tr><td>次要按钮</td><td>棕色渐变 + 2px边框 + 单层阴影</td></tr>
+                    <tr><td>小按钮</td><td>半透明背景 + 金棕边框</td></tr>
+                </table>
+                <p style="color: #d4c4b4; margin-top: 15px; font-size: 14px;">
+                    关键：所有按钮必须有<strong>立体感</strong>（高光阴影）和<strong>边框</strong>
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- 方案B: 3D立体边框（游戏内弹窗） -->
+    <div class="section">
+        <h2 class="section-title">方案B: 3D立体边框 - 游戏内弹窗</h2>
+        <div class="demo-container">
+            <div class="scene-bg" style="width: 600px; height: 400px;">
+                <div class="modal-3d-game" style="width: 400px; height: 250px;">
+                    <h2>煎药结果</h2>
+                    <div class="content">
+                        <p>配伍评分: 85分</p>
+                        <p>火候评分: 90分</p>
+                        <div style="text-align: center; margin-top: 20px;">
+                            <button class="btn-glass">确认</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="demo-box">
+                <h3 class="demo-title">设计特征</h3>
+                <table class="spec-table">
+                    <tr><th>特征</th><th>值</th></tr>
+                    <tr><td>外层边框</td><td>4px 亮绿(0x80a040)</td></tr>
+                    <tr><td>背景</td><td>深绿(0x1a2e26)，透明度0.95</td></tr>
+                    <tr><td>顶部/左侧高光</td><td>inset 2px 2px 0 亮绿(0x90c070)</td></tr>
+                    <tr><td>底部/右侧阴影</td><td>inset -2px -2px 0 暗棕(0x604020)</td></tr>
+                    <tr><td>外阴影</td><td>0 8px 32px rgba(0,0,0,0.5)</td></tr>
+                </table>
+                <p style="color: #90c070; margin-top: 15px; font-size: 14px;">
+                    适用：煎药/炮制/种植结果、诊断各阶段、病案详情
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- 方案C: 多层弹窗重叠 -->
+    <div class="section">
+        <h2 class="section-title">方案C: 多层弹窗重叠 - 层级区分解决方案</h2>
+        <div class="demo-container">
+            <div class="modal-stack-demo">
+                <!-- 底层：存档管理面板 -->
+                <div class="modal-layer-base">
+                    <h3>存档管理</h3>
+                    <div class="slots">
+                        <div class="slot-inset">槽位 1 | 2026-04-18 10:30 | Phase 2 S7</div>
+                        <div class="slot-inset">槽位 2 | 2026-04-17 15:20 | Phase 2 S6</div>
+                        <div class="slot-inset">槽位 3 | 空</div>
+                    </div>
+                </div>
+
+                <!-- 上层：确认弹窗（关键：更强的视觉区分） -->
+                <div class="modal-layer-top">
+                    <h3>确认删除</h3>
+                    <p>确定要删除槽位 1 的存档吗？此操作无法撤销。</p>
+                    <div style="text-align: center; margin-top: 15px;">
+                        <button class="btn-glass" style="padding: 8px 24px; font-size: 14px;">确认</button>
+                        <button class="btn-glass btn-glass-secondary" style="padding: 8px 24px; font-size: 14px;">取消</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="demo-box">
+                <h3 class="demo-title">层级区分规范</h3>
+                <table class="spec-table">
+                    <tr><th>层级</th><th>边框颜色</th><th>透明度</th><th>阴影强度</th></tr>
+                    <tr><td>底层弹窗</td><td>绿色(#80a040)</td><td>0.85-0.90</td><td>中等(8px)</td></tr>
+                    <tr><td>顶层弹窗</td><td>金棕(#c0a080)</td><td>1.0（完全不透明）</td><td>强(16px+外发光)</td></tr>
+                </table>
+                <p style="color: #c0a080; margin-top: 15px; font-size: 14px;">
+                    <strong>关键原则</strong>：顶层弹窗边框颜色与底层不同（金棕vs绿），透明度更低，阴影更强，外发光增强边界可见性
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- 进度条精确对齐 -->
+    <div class="section">
+        <h2 class="section-title">进度条精确对齐方案</h2>
+        <div class="demo-container">
+            <div class="demo-box" style="width: 400px;">
+                <div class="progress-align-demo">
+                    <h3 style="color: #f0e0d0; text-align: center; margin-bottom: 20px;">75% 进度</h3>
+                    <div class="progress-bar-container">
+                        <div class="progress-bar-fill"></div>
+                    </div>
+                    <p class="progress-text">步骤 3/4: 背包系统</p>
+
+                    <h3 style="color: #f0e0d0; text-align: center; margin: 30px 0 20px;">100% 进度</h3>
+                    <div class="progress-bar-container">
+                        <div class="progress-bar-fill" style="width: calc(100% - 8px);"></div>
+                    </div>
+                    <p class="progress-text">完成！</p>
+                </div>
+            </div>
+
+            <div class="demo-box">
+                <h3 class="demo-title">计算公式</h3>
+                <div style="background: #0d1f17; padding: 15px; border-radius: 4px; color: #d4c4b4; font-size: 14px;">
+                    <p><strong>容器宽度</strong>: barWidth (如300px)</p>
+                    <p><strong>边框宽度</strong>: strokeWidth = 2px</p>
+                    <p><strong>内部间隙</strong>: internalPadding = 2px</p>
+                    <br>
+                    <p><strong>边框占用</strong>: strokePadding = strokeWidth * 2 = 4px</p>
+                    <p><strong>间隙占用</strong>: gapPadding = internalPadding * 2 = 4px</p>
+                    <br>
+                    <p style="color: #90c070;"><strong>有效宽度</strong>: effectiveWidth = barWidth - 8px</p>
+                    <p style="color: #90c070;"><strong>填充宽度</strong>: fillWidth = Math.floor(effectiveWidth * progress)</p>
+                    <br>
+                    <p style="color: #c0a080;"><strong>填充位置</strong>: fillX = strokeWidth + internalPadding</p>
+                    <p style="color: #c0a080;"><strong>填充高度</strong>: fillHeight = barHeight - 8px</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 方案D: 悬浮卡片（NPC对话/提示） -->
+    <div class="section">
+        <h2 class="section-title">方案D: 悬浮卡片 - NPC对话/提示浮层</h2>
+        <div class="demo-container">
+            <div class="scene-bg">
+                <div class="floating-card">
+                    <p>按 B 键打开背包，查看已收集的药材和道具。按方向键或 WASD 移动角色探索药王谷。</p>
+                </div>
+            </div>
+
+            <div class="demo-box">
+                <h3 class="demo-title">设计特征</h3>
+                <table class="spec-table">
+                    <tr><th>特征</th><th>值</th></tr>
+                    <tr><td>背景</td><td>渐变 #406050 → #304030</td></tr>
+                    <tr><td>底部阴影</td><td>双层阴影(8px + 16px)产生悬浮感</td></tr>
+                    <tr><td>顶部光带</td><td>2px 金棕 + 1px 白色高光</td></tr>
+                    <tr><td>文字限制</td><td>maxLines: 2，max-width约束</td></tr>
+                    <tr><td>固定高度</td><td>72px（容纳2行16px文字）</td></tr>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- 方案E: 问诊界面设计 -->
+    <div class="section">
+        <h2 class="section-title">方案E: 问诊界面设计（新增）</h2>
+        <div class="demo-container">
+            <div class="inquiry-demo">
+                <div class="inquiry-panel">
+                    <h3>问诊 - 病人张三</h3>
+                    <div class="inquiry-content">
+                        <div class="inquiry-section">
+                            <h4>已收集线索</h4>
+                            <p>• 发热三天<br>• 头痛<br>• 咳嗽<br>• 舌红苔黄</p>
+                        </div>
+                        <div class="inquiry-section">
+                            <h4>可询问选项</h4>
+                            <p>• 询问饮食<br>• 询问睡眠<br>• 询问二便<br>• 询问既往病史</p>
+                        </div>
+                    </div>
+                    <div style="text-align: center; margin-top: 15px;">
+                        <button class="btn-glass" style="padding: 8px 30px; font-size: 14px;">继续问诊</button>
+                        <button class="btn-glass btn-glass-secondary" style="padding: 8px 30px; font-size: 14px;">结束问诊</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="demo-box">
+                <h3 class="demo-title">问诊UI规范</h3>
+                <table class="spec-table">
+                    <tr><th>组件</th><th>设计方案</th></tr>
+                    <tr><td>主面板</td><td>方案B（3D立体边框）</td></tr>
+                    <tr><td>内容区域</td><td>方案8（内凹槽位）分隔</td></tr>
+                    <tr><td>按钮</td><td>3D渐变按钮</td></tr>
+                    <tr><td>内容宽度</td><td>max-width = 区域宽度 - padding</td></tr>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- 完整弹窗清单 -->
+    <div class="section">
+        <h2 class="section-title">完整弹窗清单与方案对应</h2>
+        <table class="spec-table">
+            <tr><th>弹窗类型</th><th>组件</th><th>设计方案</th><th>层级</th><th>修改优先级</th></tr>
+            <tr><td>标题画面</td><td>TitleScene按钮</td><td>方案A + 3D按钮</td><td>Base</td><td>P0</td></tr>
+            <tr><td>标题画面</td><td>加载存档确认弹窗</td><td>方案A（渐变玻璃）</td><td>Top</td><td>P0</td></tr>
+            <tr><td>新手引导</td><td>集中引导面板</td><td>方案A（渐变玻璃）</td><td>Overlay</td><td>已修改</td></tr>
+            <tr><td>新手引导</td><td>跳过确认弹窗</td><td>方案C（强边框顶层）</td><td>Top</td><td>P0需修复</td></tr>
+            <tr><td>新手引导</td><td>场景提示气泡</td><td>方案D（悬浮卡片）</td><td>900</td><td>已修改</td></tr>
+            <tr><td>存档管理</td><td>存档主面板</td><td>方案B（3D边框）</td><td>Overlay</td><td>P0需修复</td></tr>
+            <tr><td>存档管理</td><td>删除确认弹窗</td><td>方案C（强边框顶层）</td><td>Top</td><td>P0需修复</td></tr>
+            <tr><td>存档管理</td><td>存档槽位</td><td>方案8（内凹槽位）</td><td>内嵌</td><td>已修改</td></tr>
+            <tr><td>背包</td><td>背包主面板</td><td>方案4（新拟态）</td><td>Overlay</td><td>已修改</td></tr>
+            <tr><td>NPC对话</td><td>对话底栏</td><td>方案D（悬浮卡片）</td><td>Overlay</td><td>P1</td></tr>
+            <tr><td>问诊</td><td>问诊主面板</td><td>方案B（3D边框）</td><td>Overlay</td><td>P1</td></tr>
+            <tr><td>诊断</td><td>脉诊/舌诊/辨证/选方</td><td>方案B（3D边框）</td><td>Overlay</td><td>P1</td></tr>
+            <tr><td>诊断结果</td><td>ResultUI评分界面</td><td>方案B（3D边框）</td><td>Overlay</td><td>P1</td></tr>
+            <tr><td>NPC点评</td><td>NPCFeedbackUI</td><td>方案D（悬浮卡片）</td><td>Top</td><td>P1</td></tr>
+            <tr><td>煎药</td><td>DecoctionUI各阶段</td><td>方案B（3D边框）</td><td>Overlay</td><td>P1</td></tr>
+            <tr><td>炮制</td><td>ProcessingUI各阶段</td><td>方案B（3D边框）</td><td>Overlay</td><td>P1</td></tr>
+            <tr><td>种植</td><td>PlantingUI各阶段</td><td>方案B（3D边框）</td><td>Overlay</td><td>P1</td></tr>
+            <tr><td>病案</td><td>CasesListUI列表</td><td>方案B（3D边框）</td><td>Overlay</td><td>P2</td></tr>
+            <tr><td>病案</td><td>CaseDetailUI详情</td><td>方案B（3D边框）</td><td>Overlay</td><td>P2</td></tr>
+            <tr><td>经验值</td><td>解锁通知弹窗</td><td>方案D（悬浮卡片）</td><td>Top</td><td>P2</td></tr>
+        </table>
+    </div>
+
+    <!-- 颜色参考 -->
+    <div class="section">
+        <h2 class="section-title">颜色参考</h2>
+        <div class="demo-box" style="width: 100%; max-width: 800px;">
+            <div style="display: flex; gap: 20px; flex-wrap: wrap; justify-content: center;">
+                <div class="color-demo" style="background: #408080;">灰蓝</div>
+                <div class="color-demo" style="background: #402020;">土黄</div>
+                <div class="color-demo" style="background: #1a2e26;">深绿</div>
+                <div class="color-demo" style="background: #0d1f17;">内凹底</div>
+                <div class="color-demo" style="background: #80a040;">亮绿边框</div>
+                <div class="color-demo" style="background: #90c070;">顶部高光</div>
+                <div class="color-demo" style="background: #604020;">底部阴影</div>
+                <div class="color-demo" style="background: #c0a080;">金棕边框</div>
+                <div class="color-demo" style="background: #0a1510;">内凹暗边</div>
+                <div class="color-demo" style="background: #406050;">内凹亮边</div>
+            </div>
+            <div style="margin-top: 20px; display: flex; gap: 20px; justify-content: center;">
+                <div class="color-demo" style="background: #2a3e32;">新拟态底</div>
+                <div class="color-demo" style="background: #f0e0d0; color: #1a2e26;">TEXT_BRIGHT</div>
+                <div class="color-demo" style="background: #d4c4b4; color: #1a2e26;">TEXT_TIP</div>
+                <div class="color-demo" style="background: #e5d5c5; color: #1a2e26;">TEXT_WARM</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="section" style="text-align: center; padding: 30px;">
+        <p style="color: #90c070; font-size: 18px;">
+            请确认此设计方案后，我将开始实施修改。<br>
+            <span style="color: #d4c4b4; font-size: 14px;">
+                优先修复：P0（标题按钮、存档弹窗层级、进度条对齐）<br>
+                后续完成：P1（问诊/诊断界面）、P2（病案/通知）
+            </span>
+        </p>
+    </div>
+</body>
+</html>

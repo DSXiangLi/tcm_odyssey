@@ -498,6 +498,30 @@ export class InquiryScene extends Phaser.Scene {
     }));
   }
 
+  /**
+   * 返回诊所场景（供UI调用）
+   */
+  returnToClinic(): void {
+    this.eventBus.emit(GameEvents.SCENE_SWITCH, {
+      from: 'InquiryScene',
+      to: SCENES.CLINIC
+    });
+
+    // 清理组件
+    if (this.inquiryUI) {
+      this.inquiryUI.destroy();
+    }
+    if (this.clueTracker) {
+      this.clueTracker.destroy();
+    }
+    if (this.patientGenerator) {
+      this.patientGenerator.destroy();
+    }
+
+    // 切换场景
+    this.scene.start(SCENES.CLINIC);
+  }
+
   update(): void {
     // 暂时不需要update逻辑
   }

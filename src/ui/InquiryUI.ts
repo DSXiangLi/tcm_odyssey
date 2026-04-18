@@ -104,6 +104,53 @@ export class InquiryUI extends Phaser.GameObjects.Container {
 
     // 监听键盘输入
     this.setupKeyboardInput(scene);
+
+    // 创建退出按钮
+    const exitButton = this.createExitButton();
+    this.add(exitButton);
+  }
+
+  /**
+   * 创建退出按钮（右上角）
+   */
+  private createExitButton(): Phaser.GameObjects.Text {
+    const exitButton = this.scene.add.text(
+      300,  // 右上角位置（考虑UI宽度640）
+      -200,
+      '[退出问诊]',
+      {
+        fontSize: '16px',
+        color: UI_COLOR_STRINGS.TEXT_PRIMARY,
+        backgroundColor: UI_COLOR_STRINGS.PANEL_DARK,
+        padding: { x: 10, y: 5 }
+      }
+    ).setOrigin(0.5).setInteractive({ useHandCursor: true });
+
+    exitButton.on('pointerover', () => {
+      exitButton.setColor(UI_COLOR_STRINGS.BUTTON_PRIMARY_HOVER);
+    });
+
+    exitButton.on('pointerout', () => {
+      exitButton.setColor(UI_COLOR_STRINGS.TEXT_PRIMARY);
+    });
+
+    exitButton.on('pointerdown', () => {
+      this.handleExit();
+    });
+
+    return exitButton;
+  }
+
+  /**
+   * 处理退出
+   */
+  private handleExit(): void {
+    // 通知场景退出
+    const inquiryScene = this.scene as any;
+    if (inquiryScene.returnToClinic) {
+      inquiryScene.returnToClinic();
+    }
+    this.destroy();
   }
 
   /**

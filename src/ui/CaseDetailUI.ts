@@ -47,8 +47,8 @@ export class CaseDetailUI extends Phaser.GameObjects.Container {
       return;
     }
 
-    // 创建背景 - 扩展高度以覆盖关闭按钮
-    this.background = scene.add.rectangle(0, -15, 720, 510, UI_COLORS.PANEL_PRIMARY, 0.85);
+    // 创建背景 - 扩展高度以完全覆盖关闭按钮（按钮在-270，需要背景上边缘至少-285）
+    this.background = scene.add.rectangle(0, -25, 720, 530, UI_COLORS.PANEL_PRIMARY, 0.85);
     this.background.setOrigin(0.5);
     this.add(this.background);
 

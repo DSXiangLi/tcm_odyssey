@@ -7,12 +7,104 @@
  * - 提供结束点评按钮
  *
  * Phase 2 S6e 实现
+ * Round 4 视觉优化: 方案D悬浮卡片（顶层弹窗）
  */
 
 import Phaser from 'phaser';
 import { UI_COLORS, UI_COLOR_STRINGS } from '../data/ui-color-theme';
 import { SSEClient } from '../utils/sseClient';
 import { DiagnosisScore } from '../systems/ScoringSystem';
+
+/**
+ * 创建顶层悬浮卡片背景Graphics对象（方案D + 顶层特性）
+ *
+ * 设计特征（顶层弹窗专用）:
+ * - 背景: 完全不透明(alpha=1.0)，渐变灰蓝到暗绿
+ * - 底部阴影: 产生悬浮感
+ * - 顶部光带: 金棕装饰
+ * - 边框: 2px 金棕边框
+ *
+ * @param scene Phaser场景
+ * @param x 绘制起点X（左上角）
+ * @param y 绘制起点Y（左上角）
+ * @param width 宽度
+ * @param height 高度
+ * @returns Graphics对象
+ */
+function createTopLevelFloatingCardBackground(
+  scene: Phaser.Scene,
+  x: number,
+  y: number,
+  width: number,
+  height: number
+): Phaser.GameObjects.Graphics {
+  const graphics = scene.add.graphics();
+
+  // 1. 底部悬浮阴影（模拟卡片悬浮感）
+  graphics.fillStyle(0x000000, 0.5);
+  graphics.fillRect(x + 4, y + height + 4, width, 8);
+
+  // 2. 边缘阴影（卡片四周的柔和阴影）
+  graphics.fillStyle(0x000000, 0.3);
+  graphics.fillRect(x + 4, y + 4, width, height);
+
+  // 3. 主背景渐变（灰蓝到暗绿，从上到下，完全不透明）
+  graphics.fillGradientStyle(
+    0x406050, 1,  // 左上: 灰蓝
+    0x406050, 1,  // 右上: 灰蓝
+    0x304030, 1,  // 左下: 暗绿
+    0x304030, 1   // 右下: 暗绿
+  );
+  graphics.fillRect(x, y, width, height);
+
+  // 4. 顶部光带（金棕色装饰，3px高度）
+  graphics.fillStyle(UI_COLORS.BORDER_GLOW, 0.3);
+  graphics.fillRect(x, y, width, 3);
+
+  // 5. 顶部微弱高光（1px白色高光）
+  graphics.fillStyle(0xffffff, 0.1);
+  graphics.fillRect(x, y, width, 1);
+
+  // 6. 金棕边框（3px，顶层强调）
+  graphics.lineStyle(3, UI_COLORS.BORDER_GLOW, 1);
+  graphics.strokeRect(x, y, width, height);
+
+  return graphics;
+}
+
+/**
+ * 创建内凹内容区域背景（方案8）
+ *
+ * 设计特征:
+ * - 暗顶左边框 + 亮底右边框
+ * - 完全不透明
+ *
+ * @param scene Phaser场景
+ * @param x 绘制起点X
+ * @param y 绘制起点Y
+ * @param width 宽度
+ * @param height 高度
+ * @returns Graphics对象
+ */
+function createInsetContentBackground(
+  scene: Phaser.Scene,
+  x: number,
+  y: number,
+  width: number,
+  height: number
+): Phaser.GameObjects.Graphics {
+  const graphics = scene.add.graphics();
+
+  // 主背景（内凹底色）
+  graphics.fillStyle(UI_COLORS.PANEL_INSET, 1);
+  graphics.fillRect(x, y, width, height);
+
+  // 内凹边框效果（暗边在上/左，亮边在下/右）
+  graphics.lineStyle(2, UI_COLORS.BORDER_INSET_DARK, 1);
+  graphics.strokeRect(x, y, width, height);
+
+  return graphics;
+}
 
 export interface NPCFeedbackUIConfig {
   npcId: string;           // NPC ID
@@ -25,8 +117,8 @@ export interface NPCFeedbackUIConfig {
 
 export class NPCFeedbackUI extends Phaser.GameObjects.Container {
   // 界面元素
-  private background!: Phaser.GameObjects.Rectangle;
-  private npcAvatar!: Phaser.GameObjects.Rectangle;
+  private background!: Phaser.GameObjects.Graphics;  // 方案D: Graphics渐变背景
+  private npcAvatar!: Phaser.GameObjects.Graphics;   // 头像区域也使用Graphics
   private npcNameText!: Phaser.GameObjects.Text;
   private feedbackText!: Phaser.GameObjects.Text;
   private cursorText!: Phaser.GameObjects.Text;
@@ -44,22 +136,31 @@ export class NPCFeedbackUI extends Phaser.GameObjects.Container {
     this.config = config;
     this.sseClient = new SSEClient();
 
-    // 创建主背景
-    this.background = scene.add.rectangle(0, 0, 640, 360, UI_COLORS.PANEL_PRIMARY, 0.85);
-    this.background.setOrigin(0.5);
+    // 弹窗尺寸
+    const panelWidth = 640;
+    const panelHeight = 360;
+
+    // 创建主背景（方案D: 顶层悬浮卡片，完全不透明）
+    this.background = createTopLevelFloatingCardBackground(
+      scene,
+      -panelWidth / 2,  // x（左上角）
+      -panelHeight / 2, // y（左上角）
+      panelWidth,
+      panelHeight
+    );
     this.add(this.background);
 
     // 创建NPC头像区域
-    this.createNPCAvatarArea(scene);
+    this.createNPCAvatarArea(scene, panelWidth, panelHeight);
 
     // 创建点评内容区域
-    this.createFeedbackArea(scene);
+    this.createFeedbackArea(scene, panelWidth, panelHeight);
 
     // 创建按钮区域
-    this.createButtonArea(scene);
+    this.createButtonArea(scene, panelHeight);
 
-    // 设置深度
-    this.setDepth(100);
+    // 设置深度（顶层弹窗）
+    this.setDepth(200);
     this.setScrollFactor(0);
 
     // 添加到场景
@@ -75,51 +176,96 @@ export class NPCFeedbackUI extends Phaser.GameObjects.Container {
   /**
    * 创建NPC头像区域
    */
-  private createNPCAvatarArea(scene: Phaser.Scene): void {
-    // NPC头像占位
-    this.npcAvatar = scene.add.rectangle(-300, -150, 80, 80, UI_COLORS.BORDER_PRIMARY, 0.9);
-    this.npcAvatar.setOrigin(0.5);
+  private createNPCAvatarArea(scene: Phaser.Scene, panelWidth: number, panelHeight: number): void {
+    // NPC头像位置（左上区域）
+    const avatarX = -panelWidth / 2 + 50;
+    const avatarY = -panelHeight / 2 + 50;
+    const avatarSize = 80;
+
+    // NPC头像背景（使用柔和绿色边框）
+    this.npcAvatar = scene.add.graphics();
+    // 头像背景填充
+    this.npcAvatar.fillStyle(UI_COLORS.PANEL_SECONDARY, 1);
+    this.npcAvatar.fillRect(avatarX, avatarY, avatarSize, avatarSize);
+    // 头像边框（金棕色）
+    this.npcAvatar.lineStyle(2, UI_COLORS.BORDER_GLOW, 1);
+    this.npcAvatar.strokeRect(avatarX, avatarY, avatarSize, avatarSize);
     this.add(this.npcAvatar);
 
-    // NPC名称
-    this.npcNameText = scene.add.text(-300, -90, this.config.npcName, {
-      fontSize: '20px',
-      color: UI_COLOR_STRINGS.TEXT_PRIMARY,
+    // NPC名称（头像下方）
+    this.npcNameText = scene.add.text(avatarX + avatarSize / 2, avatarY + avatarSize + 15, this.config.npcName, {
+      fontSize: '18px',
+      color: UI_COLOR_STRINGS.TEXT_BRIGHT,  // 高亮文字
       fontStyle: 'bold'
     });
     this.npcNameText.setOrigin(0.5);
     this.add(this.npcNameText);
 
-    // 点评标题
-    const titleText = scene.add.text(0, -170, '诊治点评', {
+    // 点评标题（居中，顶部）
+    const titleText = scene.add.text(0, -panelHeight / 2 + 25, '诊治点评', {
       fontSize: '24px',
-      color: '#c0c080',  // SOFT_YELLOW
+      color: UI_COLOR_STRINGS.SOFT_YELLOW,  // 柔和黄色标题
       fontStyle: 'bold'
     });
     titleText.setOrigin(0.5);
     this.add(titleText);
+
+    // 评分摘要（右侧）
+    const score = this.config.score;
+    const scoreText = scene.add.text(panelWidth / 2 - 100, avatarY + 20, `得分: ${score.total}分`, {
+      fontSize: '20px',
+      color: UI_COLOR_STRINGS.TEXT_BRIGHT,
+      fontStyle: 'bold'
+    });
+    scoreText.setOrigin(0.5);
+    this.add(scoreText);
+
+    // 评分百分比
+    const percentText = scene.add.text(panelWidth / 2 - 100, avatarY + 50, `${score.percentage}%`, {
+      fontSize: '16px',
+      color: score.percentage >= 80 ? UI_COLOR_STRINGS.STATUS_SUCCESS :
+            score.percentage >= 60 ? UI_COLOR_STRINGS.STATUS_WARNING :
+            UI_COLOR_STRINGS.STATUS_ERROR
+    });
+    percentText.setOrigin(0.5);
+    this.add(percentText);
   }
 
   /**
    * 创建点评内容区域
    */
-  private createFeedbackArea(scene: Phaser.Scene): void {
-    // 点评内容背景
-    const contentBg = scene.add.rectangle(0, -50, 600, 180, UI_COLORS.PANEL_SECONDARY, 0.9);
-    contentBg.setOrigin(0.5);
+  private createFeedbackArea(scene: Phaser.Scene, panelWidth: number, _panelHeight: number): void {
+    // 内容区域尺寸和位置
+    const contentWidth = panelWidth - 40;  // 左右留边距
+    const contentHeight = 180;
+    const contentX = -contentWidth / 2;
+    const contentY = -30;  // 居中偏上
+
+    // 点评内容背景（方案8: 内凹效果）
+    const contentBg = createInsetContentBackground(
+      scene,
+      contentX,
+      contentY,
+      contentWidth,
+      contentHeight
+    );
     this.add(contentBg);
 
+    // 文字区域约束（确保不溢出）
+    const textPadding = 20;
+    const textMaxWidth = contentWidth - textPadding * 2;
+
     // 点评文本
-    this.feedbackText = scene.add.text(-340, -130, '', {
+    this.feedbackText = scene.add.text(contentX + textPadding, contentY + textPadding, '', {
       fontSize: '16px',
-      color: UI_COLOR_STRINGS.TEXT_PRIMARY,
-      wordWrap: { width: 680 },
+      color: UI_COLOR_STRINGS.TEXT_TIP,  // 提示文字色（高对比度）
+      wordWrap: { width: textMaxWidth },
       lineSpacing: 8
     });
     this.add(this.feedbackText);
 
     // 光标效果
-    this.cursorText = scene.add.text(340, -130, '|', {
+    this.cursorText = scene.add.text(contentX + textPadding, contentY + textPadding, '|', {
       fontSize: '16px',
       color: UI_COLOR_STRINGS.STATUS_SUCCESS
     });
@@ -130,13 +276,16 @@ export class NPCFeedbackUI extends Phaser.GameObjects.Container {
   /**
    * 创建按钮区域
    */
-  private createButtonArea(scene: Phaser.Scene): void {
-    // 停止生成按钮
-    this.stopButton = scene.add.text(-100, 140, '[停止生成]', {
+  private createButtonArea(scene: Phaser.Scene, _panelHeight: number): void {
+    // 按钮位置（底部区域）
+    const buttonY = 360 / 2 - 50;  // 使用固定值，panelHeight = 360
+
+    // 停止生成按钮（柔和红色警示）
+    this.stopButton = scene.add.text(-100, buttonY, '[停止生成]', {
       fontSize: '16px',
-      color: UI_COLOR_STRINGS.STATUS_WARNING,
-      backgroundColor: UI_COLOR_STRINGS.PANEL_SECONDARY,
-      padding: { x: 8, y: 4 }
+      color: UI_COLOR_STRINGS.SOFT_RED,  // 柔和红色
+      backgroundColor: UI_COLOR_STRINGS.PANEL_DARK,
+      padding: { x: 12, y: 6 }
     });
     this.stopButton.setOrigin(0.5);
     this.stopButton.setInteractive({ useHandCursor: true });
@@ -145,21 +294,37 @@ export class NPCFeedbackUI extends Phaser.GameObjects.Container {
       this.handleStop();
     });
 
+    // 悬停效果
+    this.stopButton.on('pointerover', () => {
+      this.stopButton.setColor('#d08080');  // 悬停红色更亮
+    });
+    this.stopButton.on('pointerout', () => {
+      this.stopButton.setColor(UI_COLOR_STRINGS.SOFT_RED);
+    });
+
     this.stopButton.setVisible(false);  // 默认隐藏
     this.add(this.stopButton);
 
-    // 完成按钮
-    this.completeButton = scene.add.text(100, 140, '[完成点评]', {
-      fontSize: '16px',
-      color: UI_COLOR_STRINGS.ACCENT_SKY,
-      backgroundColor: UI_COLOR_STRINGS.PANEL_SECONDARY,
-      padding: { x: 8, y: 4 }
+    // 完成按钮（柔和绿色成功）
+    this.completeButton = scene.add.text(100, buttonY, '[完成点评]', {
+      fontSize: '18px',
+      color: UI_COLOR_STRINGS.TEXT_BRIGHT,  // 高亮文字
+      backgroundColor: UI_COLOR_STRINGS.BUTTON_SUCCESS,  // 柔和绿色背景
+      padding: { x: 12, y: 6 }
     });
     this.completeButton.setOrigin(0.5);
     this.completeButton.setInteractive({ useHandCursor: true });
 
     this.completeButton.on('pointerdown', () => {
       this.handleComplete();
+    });
+
+    // 悬停效果
+    this.completeButton.on('pointerover', () => {
+      this.completeButton.setBackgroundColor(UI_COLOR_STRINGS.SOFT_GREEN_HOVER);
+    });
+    this.completeButton.on('pointerout', () => {
+      this.completeButton.setBackgroundColor(UI_COLOR_STRINGS.BUTTON_SUCCESS);
     });
 
     this.completeButton.setVisible(false);  // 默认隐藏，生成完成后显示
@@ -237,9 +402,16 @@ export class NPCFeedbackUI extends Phaser.GameObjects.Container {
     this.currentFeedback += chunk;
     this.feedbackText.setText(this.currentFeedback);
 
-    // 更新光标位置
-    const lastLineY = this.feedbackText.height;
-    this.cursorText.setPosition(-340 + this.feedbackText.width, -130 + lastLineY);
+    // 内容区域参数
+    const contentWidth = 640 - 40;  // panelWidth - padding
+    const contentX = -contentWidth / 2;
+    const contentY = -30;
+    const textPadding = 20;
+
+    // 更新光标位置（跟随文字）
+    const cursorX = contentX + textPadding + this.feedbackText.width;
+    const cursorY = contentY + textPadding + this.feedbackText.height;
+    this.cursorText.setPosition(cursorX, cursorY);
 
     this.exposeToGlobal();
   }

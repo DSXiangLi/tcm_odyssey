@@ -4,11 +4,71 @@
  * 显示流式对话文字，支持停止生成
  *
  * Phase 2 S3 实现
+ * Phase 4 P1-1 视觉优化：方案D悬浮卡片背景
  */
 
 import Phaser from 'phaser';
 import { SSEClient } from '../utils/sseClient';
 import { UI_COLORS, UI_COLOR_STRINGS } from '../data/ui-color-theme';
+
+/**
+ * 创建悬浮卡片背景Graphics对象（方案D）
+ *
+ * 设计特征:
+ * - 底部悬浮阴影: 黑色(0x000000, 0.5) 8px高度
+ * - 边缘阴影: 黑色(0x000000, 0.3) 4px偏移
+ * - 主背景渐变: 灰蓝(0x406050) → 暗绿(0x304030)
+ * - 顶部光带: 金棕(0xc0a080, 0.3) 2px
+ * - 顶部高光: 白色(0xffffff, 0.1) 1px
+ * - 边框: 2px 金棕(0xc0a080, 0.5)
+ *
+ * @param scene Phaser场景
+ * @param x 绘制起点X（左上角）
+ * @param y 绘制起点Y（左上角）
+ * @param width 宽度
+ * @param height 高度
+ * @returns Graphics对象
+ */
+function createFloatingCardBackground(
+  scene: Phaser.Scene,
+  x: number,
+  y: number,
+  width: number,
+  height: number
+): Phaser.GameObjects.Graphics {
+  const graphics = scene.add.graphics();
+
+  // 1. 底部悬浮阴影（模拟卡片悬浮感）
+  graphics.fillStyle(0x000000, 0.5);
+  graphics.fillRect(x + 4, y + height + 4, width, 8);
+
+  // 2. 边缘阴影（卡片四周的柔和阴影）
+  graphics.fillStyle(0x000000, 0.3);
+  graphics.fillRect(x + 4, y + 4, width, height);
+
+  // 3. 主背景渐变（灰蓝到暗绿，从上到下）
+  graphics.fillGradientStyle(
+    0x406050, 1,  // 左上: 灰蓝
+    0x406050, 1,  // 右上: 灰蓝
+    0x304030, 1,  // 左下: 暗绿
+    0x304030, 1   // 右下: 暗绿
+  );
+  graphics.fillRect(x, y, width, height);
+
+  // 4. 顶部光带（金棕色装饰，2px高度）
+  graphics.fillStyle(UI_COLORS.BORDER_GLOW, 0.3);
+  graphics.fillRect(x, y, width, 2);
+
+  // 5. 顶部微弱高光（1px白色高光）
+  graphics.fillStyle(0xffffff, 0.1);
+  graphics.fillRect(x, y, width, 1);
+
+  // 6. 金棕边框（2px）
+  graphics.lineStyle(2, UI_COLORS.BORDER_GLOW, 0.5);
+  graphics.strokeRect(x, y, width, height);
+
+  return graphics;
+}
 
 export interface DialogUIConfig {
   npcId: string;
@@ -19,7 +79,7 @@ export interface DialogUIConfig {
 }
 
 export class DialogUI extends Phaser.GameObjects.Container {
-  private background: Phaser.GameObjects.Rectangle;
+  private background: Phaser.GameObjects.Graphics;  // 方案D: 悬浮卡片背景（Graphics代替Rectangle）
   private avatar: Phaser.GameObjects.Image;
   private nameText: Phaser.GameObjects.Text;
   private contentText: Phaser.GameObjects.Text;
@@ -29,14 +89,23 @@ export class DialogUI extends Phaser.GameObjects.Container {
   private currentText: string = '';
   private isGenerating: boolean = false;
 
+  // 弹窗尺寸常量
+  private readonly dialogWidth = 600;
+  private readonly dialogHeight = 200;
+
   constructor(scene: Phaser.Scene, x: number, y: number, config: DialogUIConfig) {
     super(scene, x, y);
     this.config = config;
     this.sseClient = new SSEClient();
 
-    // 创建背景
-    this.background = scene.add.rectangle(0, 0, 600, 200, UI_COLORS.PANEL_PRIMARY, 0.85);
-    this.background.setOrigin(0.5);
+    // 创建背景 - 方案D悬浮卡片（Graphics绘制，起点为左上角）
+    this.background = createFloatingCardBackground(
+      scene,
+      -this.dialogWidth / 2,  // 容器中心(0,0)，绘制起点为左上角
+      -this.dialogHeight / 2,
+      this.dialogWidth,
+      this.dialogHeight
+    );
     this.add(this.background);
 
     // 创建头像占位（使用默认纹理或创建占位图形）
@@ -58,11 +127,12 @@ export class DialogUI extends Phaser.GameObjects.Container {
     });
     this.add(this.nameText);
 
-    // 创建内容文本
+    // 创建内容文本（文字宽度约束公式：dialogWidth - 40）
+    const textMaxWidth = this.dialogWidth - 40;  // 文字宽度约束
     this.contentText = scene.add.text(-100, -50, '', {
       fontSize: '16px',
       color: UI_COLOR_STRINGS.TEXT_PRIMARY,
-      wordWrap: { width: 400 }
+      wordWrap: { width: textMaxWidth }
     });
     this.add(this.contentText);
 

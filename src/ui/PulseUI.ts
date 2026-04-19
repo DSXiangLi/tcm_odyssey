@@ -8,11 +8,13 @@
  *
  * Phase 2 S6a 实现
  * Round 4 视觉优化: 3D立体边框(方案B)
+ * Phase 2.5 UI统一化: 使用SelectionButtonComponent (Task 10)
  */
 
 import Phaser from 'phaser';
 import { UI_COLORS, UI_COLOR_STRINGS } from '../data/ui-color-theme';
 import pulseDescriptions from '../data/pulse_descriptions.json';
+import SelectionButtonComponent, { SelectionButtonContent } from './components/SelectionButtonComponent';
 
 export interface PulseUIConfig {
   correctPosition: string;    // 正确脉位
@@ -27,8 +29,8 @@ export class PulseUI extends Phaser.GameObjects.Container {
   private titleText!: Phaser.GameObjects.Text;
   private descriptionText!: Phaser.GameObjects.Text;
   private sourceText!: Phaser.GameObjects.Text;
-  private positionOptions: Phaser.GameObjects.Text[] = [];
-  private tensionOptions: Phaser.GameObjects.Text[] = [];
+  private positionButtons: SelectionButtonComponent[] = [];  // 使用SelectionButtonComponent替代Text
+  private tensionButtons: SelectionButtonComponent[] = [];   // 使用SelectionButtonComponent替代Text
   private confirmButton!: Phaser.GameObjects.Text;
 
   // 状态
@@ -127,6 +129,7 @@ export class PulseUI extends Phaser.GameObjects.Container {
 
   /**
    * 创建脉位选择区域
+   * 使用SelectionButtonComponent，○→●符号切换表示选中状态
    */
   private createPositionOptions(scene: Phaser.Scene): void {
     // 标签
@@ -139,44 +142,34 @@ export class PulseUI extends Phaser.GameObjects.Container {
     // 获取脉位选项
     const positions = pulseDescriptions.pulse_positions;
 
-    // 创建选项
+    // 创建SelectionButtonComponent
     for (let i = 0; i < positions.length; i++) {
       const position = positions[i];
       const optionX = -280 + i * 150;
       const optionY = 60;
 
-      const option = scene.add.text(optionX, optionY, `○ ${position.name}`, {
-        fontSize: '20px',
-        color: UI_COLOR_STRINGS.TEXT_PRIMARY,
-        backgroundColor: UI_COLOR_STRINGS.PANEL_LIGHT,
-        padding: { x: 10, y: 5 }
-      });
-      option.setInteractive({ useHandCursor: true });
+      // 创建按钮内容
+      const content: SelectionButtonContent = {
+        label: position.name,
+        value: position.id
+      };
 
-      // 点击选择
-      option.on('pointerdown', () => {
-        this.selectPosition(position.id, option);
-      });
-
-      // hover效果
-      option.on('pointerover', () => {
-        if (this.selectedPosition !== position.id) {
-          option.setColor('#88aaff');
+      // 创建SelectionButtonComponent
+      const button = new SelectionButtonComponent(scene, content, {
+        onSelect: (value: string) => {
+          this.selectPosition(value);
         }
-      });
-      option.on('pointerout', () => {
-        if (this.selectedPosition !== position.id) {
-          option.setColor('#ffffff');
-        }
-      });
+      }, optionX, optionY);
 
-      this.add(option);
-      this.positionOptions.push(option);
+      // 添加按钮容器到PulseUI容器
+      this.add(button.container);
+      this.positionButtons.push(button);
     }
   }
 
   /**
    * 创建脉势选择区域
+   * 使用SelectionButtonComponent，○→●符号切换表示选中状态
    */
   private createTensionOptions(scene: Phaser.Scene): void {
     // 标签
@@ -189,39 +182,28 @@ export class PulseUI extends Phaser.GameObjects.Container {
     // 获取脉势选项
     const tensions = pulseDescriptions.pulse_tensions;
 
-    // 创建选项
+    // 创建SelectionButtonComponent
     for (let i = 0; i < tensions.length; i++) {
       const tension = tensions[i];
       const optionX = -280 + i * 150;
       const optionY = 140;
 
-      const option = scene.add.text(optionX, optionY, `○ ${tension.name}`, {
-        fontSize: '20px',
-        color: UI_COLOR_STRINGS.TEXT_PRIMARY,
-        backgroundColor: UI_COLOR_STRINGS.PANEL_LIGHT,
-        padding: { x: 10, y: 5 }
-      });
-      option.setInteractive({ useHandCursor: true });
+      // 创建按钮内容
+      const content: SelectionButtonContent = {
+        label: tension.name,
+        value: tension.id
+      };
 
-      // 点击选择
-      option.on('pointerdown', () => {
-        this.selectTension(tension.id, option);
-      });
-
-      // hover效果
-      option.on('pointerover', () => {
-        if (this.selectedTension !== tension.id) {
-          option.setColor('#88aaff');
+      // 创建SelectionButtonComponent
+      const button = new SelectionButtonComponent(scene, content, {
+        onSelect: (value: string) => {
+          this.selectTension(value);
         }
-      });
-      option.on('pointerout', () => {
-        if (this.selectedTension !== tension.id) {
-          option.setColor('#ffffff');
-        }
-      });
+      }, optionX, optionY);
 
-      this.add(option);
-      this.tensionOptions.push(option);
+      // 添加按钮容器到PulseUI容器
+      this.add(button.container);
+      this.tensionButtons.push(button);
     }
   }
 
@@ -336,46 +318,40 @@ export class PulseUI extends Phaser.GameObjects.Container {
 
   /**
    * 选择脉位
+   * 更新所有SelectionButtonComponent的选中状态
    */
-  private selectPosition(positionId: string, option: Phaser.GameObjects.Text): void {
+  private selectPosition(positionId: string): void {
     // 更新选中状态
     this.selectedPosition = positionId;
 
-    // 更新所有选项显示
-    for (const opt of this.positionOptions) {
-      const text = opt.text;
-      if (text.includes('●')) {
-        opt.setText(text.replace('●', '○'));
-        opt.setColor('#ffffff');
+    // 更新所有按钮显示：只选中当前，取消其他
+    for (const button of this.positionButtons) {
+      if (button.content.value === positionId) {
+        button.select();
+      } else {
+        button.deselect();
       }
     }
-
-    // 更新当前选中
-    option.setText(option.text.replace('○', '●'));
-    option.setColor(UI_COLOR_STRINGS.BUTTON_PRIMARY);
 
     this.exposeToGlobal();
   }
 
   /**
    * 选择脉势
+   * 更新所有SelectionButtonComponent的选中状态
    */
-  private selectTension(tensionId: string, option: Phaser.GameObjects.Text): void {
+  private selectTension(tensionId: string): void {
     // 更新选中状态
     this.selectedTension = tensionId;
 
-    // 更新所有选项显示
-    for (const opt of this.tensionOptions) {
-      const text = opt.text;
-      if (text.includes('●')) {
-        opt.setText(text.replace('●', '○'));
-        opt.setColor('#ffffff');
+    // 更新所有按钮显示：只选中当前，取消其他
+    for (const button of this.tensionButtons) {
+      if (button.content.value === tensionId) {
+        button.select();
+      } else {
+        button.deselect();
       }
     }
-
-    // 更新当前选中
-    option.setText(option.text.replace('○', '●'));
-    option.setColor(UI_COLOR_STRINGS.BUTTON_PRIMARY);
 
     this.exposeToGlobal();
   }
@@ -459,8 +435,16 @@ export class PulseUI extends Phaser.GameObjects.Container {
    * 销毁组件
    */
   destroy(): void {
-    this.positionOptions = [];
-    this.tensionOptions = [];
+    // 销毁所有SelectionButtonComponent
+    for (const button of this.positionButtons) {
+      button.destroy();
+    }
+    for (const button of this.tensionButtons) {
+      button.destroy();
+    }
+
+    this.positionButtons = [];
+    this.tensionButtons = [];
 
     // 清理全局引用
     if (typeof window !== 'undefined') {

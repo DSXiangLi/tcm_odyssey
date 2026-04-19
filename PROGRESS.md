@@ -13,7 +13,7 @@
 
 **目标**: 统一所有UI组件的尺寸、边框、退出机制，创建BaseUIComponent架构
 
-**Phase 1核心基础设施 ✅ 完成**:
+**核心基础设施 ✅ 完成（Task 1-5）**:
 | Task | 文件 | 测试数 | 状态 |
 |-----|------|-------|------|
 | Task 1 | UIBorderStyles.ts | 12 | ✅ |
@@ -22,19 +22,30 @@
 | Task 4 | ui/index.ts更新 | - | ✅ |
 | Task 5 | 全量测试验证 | 541 | ✅ |
 
+**统一化套件化规范 ✅ 已补充**:
+| 规范类型 | 内容 |
+|---------|------|
+| 选中状态强制规范 | 文字选项用○→●，格子用Neumorphism，卡片用颜色高亮 |
+| 物品格子统一复用 | ItemSlotComponent 60×60 在背包/煎药/炮制/种植中统一复用 |
+| 槽位类型统一 | 5种槽位尺寸/风格统一（CompatibilitySlot 120×100） |
+| 组件映射表 | 每个UI组件明确使用哪些基础组件 |
+| 边框方案编号 | B-01~B-07统一编号体系 |
+
 **设计文档**: [UI组件系统统一化设计](docs/superpowers/specs/2026-04-19-ui-component-system-design.md)
 **游戏交互设计**: [游戏化交互设计](docs/superpowers/specs/2026-04-19-game-interaction-design.md)
 **完整执行计划**: [Phase 2.5完整执行计划（Task 6-20）](docs/superpowers/plans/2026-04-19-phase2-5-full-implementation-plan.md)
 
-**后续待执行（Task 6-20）**:
-| Phase | 内容 | Tasks |
-|-------|------|-------|
-| Phase 2-4 | 内部组件创建 | Task 6-8 |
-| Phase 5 | InventoryUI重构 | Task 9 |
-| Phase 6 | 诊断类UI重构 | Task 10-13 |
-| Phase 7 | 小游戏UI重构 | Task 14-16 |
-| Phase 8-9 | 其他UI重构 | Task 17-19 |
-| Phase 10 | 最终验收 | Task 20 |
+**后续待执行（Task 6-20，使用Section编号）**:
+| Section | 内容 | Tasks |
+|---------|------|-------|
+| Section A | ItemSlotComponent创建 | Task 6 |
+| Section B | SelectionButtonComponent创建 | Task 7 |
+| Section C | CompatibilitySlotComponent创建 | Task 8 |
+| Section D | InventoryUI重构 | Task 9 |
+| Section E | 诊断类UI重构 | Task 10-13 |
+| Section F | 小游戏UI重构 | Task 14-16 |
+| Section G-H | 其他UI重构 | Task 17-19 |
+| Section I | 最终验收 | Task 20 |
 
 **标准弹窗尺寸规范（已实现）**:
 | 弹窗类型 | 尺寸 | 适用场景 |

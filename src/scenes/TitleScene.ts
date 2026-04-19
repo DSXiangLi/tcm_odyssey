@@ -540,16 +540,13 @@ export class TitleScene extends Phaser.Scene {
 
   /**
    * 打开存档管理
+   * Phase 2.5: SaveUI使用FULLSCREEN_MODAL标准尺寸(1024×768)
    */
   private openSaveManagement(): void {
     // 动态导入SaveUI（避免循环依赖）
     import('../ui/SaveUI').then(({ SaveUI }) => {
       new SaveUI({
         scene: this,
-        x: (GAME_WIDTH - 600) / 2,
-        y: 50,
-        width: 600,
-        height: 450,
         mode: 'load',
         onClose: () => {
           // 刷新存档状态

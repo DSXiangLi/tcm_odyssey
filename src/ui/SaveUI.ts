@@ -10,21 +10,19 @@
  * - 自动存档状态显示
  *
  * Phase 2 S7 实现
- * Round 4 视觉优化: 3D立体边框(方案5) + 内凹槽位(方案8)
+ * Phase 2.5 UI统一化: 继承ModalUI基类，使用FULLSCREEN_MODAL标准尺寸
  */
 
 import Phaser from 'phaser';
 import { SaveManager, SaveSlotInfo } from '../systems/SaveManager';
 import { EventBus, EventData } from '../systems/EventBus';
+import ModalUI from './base/ModalUI';
+import { drawInsetSlotBorder } from './base/UIBorderStyles';
 import { UI_COLORS, UI_COLOR_STRINGS } from '../data/ui-color-theme';
 
 // 存档UI配置
 export interface SaveUIConfig {
   scene: Phaser.Scene;
-  x?: number;
-  y?: number;
-  width?: number;
-  height?: number;
   mode?: 'save' | 'load';  // 存档模式或加载模式
   onClose?: () => void;
 }
@@ -32,7 +30,7 @@ export interface SaveUIConfig {
 // 存档槽位UI状态
 interface SlotUIState {
   container: Phaser.GameObjects.Container;
-  graphics: Phaser.GameObjects.Graphics;  // 使用Graphics替代Rectangle
+  graphics: Phaser.GameObjects.Graphics;
   info: SaveSlotInfo;
   saveButton?: Phaser.GameObjects.Text;
   loadButton?: Phaser.GameObjects.Text;
@@ -42,27 +40,19 @@ interface SlotUIState {
 
 /**
  * 存档界面类
+ * 继承ModalUI，使用FULLSCREEN_MODAL标准尺寸(1024×768)
  */
-export class SaveUI {
-  private scene: Phaser.Scene;
+export class SaveUI extends ModalUI {
   private saveManager: SaveManager;
   private eventBus: EventBus;
 
-  private container!: Phaser.GameObjects.Container;
-  private backgroundGraphics!: Phaser.GameObjects.Graphics;  // 使用Graphics替代Rectangle
   private titleText!: Phaser.GameObjects.Text;
   private slotsContainer!: Phaser.GameObjects.Container;
-  private closeButton!: Phaser.GameObjects.Text;
 
-  private x: number;
-  private y: number;
-  private width: number;
-  private height: number;
   private mode: 'save' | 'load';
 
   private slotUIs: SlotUIState[] = [];
   private selectedSlot: number = 1;
-  private onClose?: () => void;
 
   // 自动存档状态显示
   private autoSaveIndicator!: Phaser.GameObjects.Text;
@@ -71,17 +61,8 @@ export class SaveUI {
   private saveSuccessListener: (data: EventData) => void;
   private saveAutoListener: (data: EventData) => void;
 
-  // 样式配置（基于场景PNG配色 + Round 4 3D边框设计）
+  // 样式配置（基于场景PNG配色）
   private readonly SaveUI_COLORS = {
-    // 方案5: 3D立体边框
-    outerBorder: UI_COLORS.BORDER_OUTER_GREEN,      // 亮绿边框 0x80a040
-    panelBg: UI_COLORS.PANEL_3D_BG,                 // 深绿背景 0x1a2e26
-    topLight: UI_COLORS.BORDER_TOP_LIGHT,           // 顶部高光 0x90c070
-    bottomShadow: UI_COLORS.BORDER_BOTTOM_SHADOW,   // 底部阴影 0x604020
-    // 方案8: 内凹槽位
-    insetBg: UI_COLORS.PANEL_INSET,                 // 内凹底色 0x0d1f17
-    insetDarkBorder: UI_COLORS.BORDER_INSET_DARK,   // 暗边框 0x0a1510
-    insetLightBorder: UI_COLORS.BORDER_INSET_LIGHT, // 亮边框 0x406050
     // 槽位状态色
     slotSelectedHighlight: 0x304030,                // 选中高亮（稍亮）
     // 文字
@@ -90,21 +71,41 @@ export class SaveUI {
     slotInfoText: { fontSize: '12px', color: UI_COLOR_STRINGS.TEXT_TIP },
     button: { fontSize: '16px', color: UI_COLOR_STRINGS.TEXT_BRIGHT, backgroundColor: UI_COLOR_STRINGS.BUTTON_PRIMARY },
     buttonHover: { backgroundColor: UI_COLOR_STRINGS.BUTTON_PRIMARY_HOVER },
-    buttonDisabled: { backgroundColor: '#555555', color: UI_COLOR_STRINGS.TEXT_DISABLED },
     closeButton: { fontSize: '14px', color: '#ff6b6b' }
   };
 
   constructor(config: SaveUIConfig) {
-    this.scene = config.scene;
+    // 调用父类构造函数
+    // FULLSCREEN_MODAL: 1024×768
+    super(
+      config.scene,
+      'FULLSCREEN_MODAL',
+      '关闭 [ESC]',
+      () => {
+        // 清理事件监听
+        this.eventBus.off('save:success', this.saveSuccessListener);
+        this.eventBus.off('save:auto', this.saveAutoListener);
+
+        // 调用外部onClose回调
+        if (config.onClose) {
+          config.onClose();
+        }
+
+        // 存档UI关闭标记
+        if (typeof window !== 'undefined') {
+          (window as any).__SAVE_UI_OPEN__ = false;
+        }
+
+        // 调用父类destroy
+        super.destroy();
+      },
+      1000  // 深度层级
+    );
+
     this.saveManager = SaveManager.getInstance();
     this.eventBus = EventBus.getInstance();
 
-    this.x = config.x ?? 100;
-    this.y = config.y ?? 50;
-    this.width = config.width ?? 600;
-    this.height = config.height ?? 450;
     this.mode = config.mode ?? 'save';
-    this.onClose = config.onClose;
 
     // 创建监听器函数引用
     this.saveSuccessListener = (_data: EventData) => {
@@ -114,48 +115,18 @@ export class SaveUI {
       this.updateAutoSaveIndicator();
     };
 
-    this.createUI();
+    // 创建内部UI元素
+    this.createInternalUI();
     this.loadSlots();
     this.registerEvents();
-  }
 
-  /**
-   * 绘制3D立体边框（方案5）
-   * 外层边框 + 顶部高光 + 底部阴影
-   *
-   * @param alpha 背景透明度，默认0.85（让背景略微可见但面板清晰）
-   */
-  private draw3DBorder(
-    graphics: Phaser.GameObjects.Graphics,
-    x: number,
-    y: number,
-    width: number,
-    height: number,
-    alpha: number = 0.85
-  ): void {
-    // 1. 外层边框（亮绿色）
-    graphics.lineStyle(4, this.SaveUI_COLORS.outerBorder);
-    graphics.strokeRect(x - 4, y - 4, width + 8, height + 8);
+    // 存档UI打开标记
+    if (typeof window !== 'undefined') {
+      (window as any).__SAVE_UI_OPEN__ = true;
+    }
 
-    // 2. 主背景（深绿色，可调透明度）
-    graphics.fillStyle(this.SaveUI_COLORS.panelBg, alpha);
-    graphics.fillRect(x, y, width, height);
-
-    // 3. 顶部/左侧高光边框（亮绿）
-    graphics.lineStyle(2, this.SaveUI_COLORS.topLight);
-    graphics.beginPath();
-    graphics.moveTo(x, y + height);
-    graphics.lineTo(x, y);
-    graphics.lineTo(x + width, y);
-    graphics.strokePath();
-
-    // 4. 底部/右侧阴影边框（暗棕）
-    graphics.lineStyle(2, this.SaveUI_COLORS.bottomShadow);
-    graphics.beginPath();
-    graphics.moveTo(x + width, y);
-    graphics.lineTo(x + width, y + height);
-    graphics.lineTo(x, y + height);
-    graphics.strokePath();
+    // 暴露到全局（供测试访问）
+    this.exposeToGlobal('__SAVE_UI__');
   }
 
   /**
@@ -193,10 +164,12 @@ export class SaveUI {
   }
 
   /**
-   * 绘制内凹槽位（方案8）
-   * 深色底 + 暗顶左边框 + 亮底右边框
+   * 绘制内凹槽位（用于存档槽位）
+   * 使用UIBorderStyles的drawInsetSlotBorder
+   *
+   * @param isSelected 是否选中，选中时背景稍亮
    */
-  private drawInsetSlot(
+  private drawSlotInset(
     graphics: Phaser.GameObjects.Graphics,
     x: number,
     y: number,
@@ -205,93 +178,55 @@ export class SaveUI {
     isSelected: boolean = false
   ): void {
     // 如果选中，背景稍亮
-    const bgColor = isSelected
-      ? this.SaveUI_COLORS.slotSelectedHighlight
-      : this.SaveUI_COLORS.insetBg;
+    if (isSelected) {
+      // 先绘制选中高亮背景
+      graphics.fillStyle(this.SaveUI_COLORS.slotSelectedHighlight, 1);
+      graphics.fillRect(x + 2, y + 2, width - 4, height - 4);
+    }
 
-    // 1. 深色底背景
-    graphics.fillStyle(bgColor, 1);
-    graphics.fillRect(x, y, width, height);
-
-    // 2. 顶部/左侧暗边框（凹陷效果）
-    graphics.lineStyle(2, this.SaveUI_COLORS.insetDarkBorder);
-    graphics.beginPath();
-    graphics.moveTo(x + width, y);
-    graphics.lineTo(x, y);
-    graphics.lineTo(x, y + height);
-    graphics.strokePath();
-
-    // 3. 底部/右侧亮边框（凸出效果）
-    graphics.lineStyle(2, this.SaveUI_COLORS.insetLightBorder);
-    graphics.beginPath();
-    graphics.moveTo(x, y + height);
-    graphics.lineTo(x + width, y + height);
-    graphics.lineTo(x + width, y);
-    graphics.strokePath();
+    // 使用标准内凹边框绘制函数
+    drawInsetSlotBorder(graphics, x, y, width, height);
   }
 
   /**
-   * 创建UI元素
+   * 创建内部UI元素（标题、槽位容器等）
    */
-  private createUI(): void {
-    // 初始化容器
-    this.container = this.scene.add.container(this.x, this.y);
-    this.container.setDepth(1000);  // 确保在最上层
-    this.container.setScrollFactor(0);  // 不跟随相机
-
-    // 背景 - 使用Graphics绘制3D立体边框（方案5）
-    this.backgroundGraphics = this.scene.add.graphics();
-    this.draw3DBorder(this.backgroundGraphics, 0, 0, this.width, this.height);
-    this.container.add(this.backgroundGraphics);
+  private createInternalUI(): void {
+    // 计算相对于容器中心的位置
+    // FULLSCREEN_MODAL: 1024×768，中心为(0, 0)
+    const contentStartX = -this.width / 2 + 20;  // 左侧20px边距
+    const contentStartY = -this.height / 2 + 30; // 顶部30px边距（标题区域）
 
     // 标题 - 使用TEXT_BRIGHT提高对比度
     const titleText = this.mode === 'save' ? '存档管理' : '加载存档';
     this.titleText = this.scene.add.text(
-      this.width / 2,
-      30,
+      0,  // 相对中心
+      contentStartY,
       titleText,
       this.SaveUI_COLORS.title
-    ).setOrigin(0.5);
+    ).setOrigin(0.5, 0);
     this.container.add(this.titleText);
 
-    // 槽位容器
-    this.slotsContainer = this.scene.add.container(20, 70);
-    this.container.add(this.slotsContainer);
-
-    // 自动存档状态指示
+    // 自动存档状态指示（右上角）
     this.autoSaveIndicator = this.scene.add.text(
-      this.width - 20,
-      30,
+      this.width / 2 - 20,  // 右侧20px边距
+      contentStartY,
       '',
       { fontSize: '12px', color: UI_COLOR_STRINGS.TEXT_DISABLED }
-    ).setOrigin(1, 0.5);
+    ).setOrigin(1, 0);
     this.container.add(this.autoSaveIndicator);
     this.updateAutoSaveIndicator();
 
-    // 关闭按钮
-    this.closeButton = this.scene.add.text(
-      this.width - 20,
-      this.height - 20,
-      '关闭 [ESC]',
-      this.SaveUI_COLORS.closeButton
-    ).setOrigin(1);
-    this.closeButton.setInteractive({ useHandCursor: true });
-    this.closeButton.on('pointerover', () => {
-      this.closeButton.setStyle({ color: '#ff8b8b' });
-    });
-    this.closeButton.on('pointerout', () => {
-      this.closeButton.setStyle({ color: '#ff6b6b' });
-    });
-    this.closeButton.on('pointerdown', () => {
-      this.destroy();
-    });
-    this.container.add(this.closeButton);
+    // 槽位容器（内容区域，在标题下方）
+    const slotsY = contentStartY + 50;  // 标题下方50px
+    this.slotsContainer = this.scene.add.container(contentStartX, slotsY);
+    this.container.add(this.slotsContainer);
 
-    // 快捷存档按钮（存档模式）
+    // 快捷存档按钮（存档模式，底部中央）
     if (this.mode === 'save') {
       const quickSaveButton = this.scene.add.text(
-        this.width / 2,
-        this.height - 50,
+        0,  // 相对中心
+        this.height / 2 - 60,  // 底部60px（退出按钮上方）
         '快速存档 [当前槽位]',
         {
           fontSize: '18px',
@@ -324,7 +259,7 @@ export class SaveUI {
 
     const slots = this.saveManager.getSaveSlots();
     const slotHeight = 100;
-    const slotWidth = this.width - 40;
+    const slotWidth = this.width - 40;  // 全宽减去左右边距
 
     for (let i = 0; i < slots.length; i++) {
       const slot = slots[i];
@@ -334,9 +269,9 @@ export class SaveUI {
       const slotContainer = this.scene.add.container(0, yOffset);
       this.slotsContainer.add(slotContainer);
 
-      // 槽位背景 - 使用Graphics绘制内凹槽位（方案8）
+      // 槽位背景 - 使用内凹边框
       const slotGraphics = this.scene.add.graphics();
-      this.drawInsetSlot(slotGraphics, 0, 0, slotWidth, slotHeight, isSelected);
+      this.drawSlotInset(slotGraphics, 0, 0, slotWidth, slotHeight, isSelected);
       slotContainer.add(slotGraphics);
 
       // 点击区域 - 使用透明Rectangle作为交互区域
@@ -494,7 +429,7 @@ export class SaveUI {
       slotUI.graphics.clear();
       const slotWidth = this.width - 40;
       const slotHeight = 100;
-      this.drawInsetSlot(slotUI.graphics, 0, 0, slotWidth, slotHeight, isSelected);
+      this.drawSlotInset(slotUI.graphics, 0, 0, slotWidth, slotHeight, isSelected);
     }
 
     console.log(`[SaveUI] Selected slot ${slotId}`);
@@ -580,27 +515,26 @@ export class SaveUI {
   ): Phaser.GameObjects.Container {
     const dialogWidth = 300;
     const dialogHeight = 150;
-    const dialogContainer = this.scene.add.container(
-      this.width / 2 - dialogWidth / 2,
-      this.height / 2 - dialogHeight / 2
-    );
-    dialogContainer.setDepth(1100);
+
+    // 确认对话框相对于容器中心（居中显示）
+    const dialogContainer = this.scene.add.container(0, 0);
+    dialogContainer.setDepth(1100);  // 比主弹窗更高的层级
     this.container.add(dialogContainer);
 
     // 背景 - 使用顶层确认弹窗边框（方案C：金棕边框+完全不透明+外发光）
     const dialogGraphics = this.scene.add.graphics();
-    this.drawTopLevelConfirmBorder(dialogGraphics, 0, 0, dialogWidth, dialogHeight);
+    this.drawTopLevelConfirmBorder(dialogGraphics, -dialogWidth / 2, -dialogHeight / 2, dialogWidth, dialogHeight);
     dialogContainer.add(dialogGraphics);
 
     // 消息 - 使用TEXT_BRIGHT
-    const msgText = this.scene.add.text(dialogWidth / 2, 30, message, {
+    const msgText = this.scene.add.text(0, -dialogHeight / 2 + 30, message, {
       fontSize: '16px',
       color: UI_COLOR_STRINGS.TEXT_BRIGHT
     }).setOrigin(0.5);
     dialogContainer.add(msgText);
 
     // 确认按钮（删除操作，使用红色警示）
-    const confirmBtn = this.scene.add.text(dialogWidth / 2 - 70, dialogHeight - 40, '确认', {
+    const confirmBtn = this.scene.add.text(-70, dialogHeight / 2 - 40, '确认', {
       fontSize: '14px',
       color: UI_COLOR_STRINGS.TEXT_BRIGHT,
       backgroundColor: '#c75050',
@@ -611,7 +545,7 @@ export class SaveUI {
     dialogContainer.add(confirmBtn);
 
     // 取消按钮
-    const cancelBtn = this.scene.add.text(dialogWidth / 2 + 70, dialogHeight - 40, '取消', {
+    const cancelBtn = this.scene.add.text(70, dialogHeight / 2 - 40, '取消', {
       fontSize: '14px',
       color: UI_COLOR_STRINGS.TEXT_BRIGHT,
       backgroundColor: UI_COLOR_STRINGS.BUTTON_SECONDARY,
@@ -629,8 +563,8 @@ export class SaveUI {
    */
   private showStatusMessage(message: string, color: string): void {
     const statusText = this.scene.add.text(
-      this.width / 2,
-      this.height - 80,
+      0,  // 相对中心
+      this.height / 2 - 100,  // 底部区域
       message,
       {
         fontSize: '16px',
@@ -696,13 +630,6 @@ export class SaveUI {
     this.eventBus.on('save:success', this.saveSuccessListener);
 
     this.eventBus.on('save:auto', this.saveAutoListener);
-
-    // ESC键关闭
-    if (this.scene.input.keyboard) {
-      this.scene.input.keyboard.on('keydown-ESC', () => {
-        this.destroy();
-      });
-    }
   }
 
   /**
@@ -738,22 +665,20 @@ export class SaveUI {
   }
 
   /**
-   * 销毁
+   * 销毁（重写父类destroy，确保清理）
    */
   destroy(): void {
-    // 取消事件监听（使用存储的监听器引用）
+    // 取消事件监听
     this.eventBus.off('save:success', this.saveSuccessListener);
     this.eventBus.off('save:auto', this.saveAutoListener);
 
-    if (this.scene.input.keyboard) {
-      this.scene.input.keyboard.off('keydown-ESC');
+    // 存档UI关闭标记
+    if (typeof window !== 'undefined') {
+      (window as any).__SAVE_UI_OPEN__ = false;
     }
 
-    this.container.destroy();
-
-    if (this.onClose) {
-      this.onClose();
-    }
+    // 调用父类销毁方法
+    super.destroy();
   }
 }
 

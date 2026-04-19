@@ -3,12 +3,13 @@
  * 炮制游戏UI组件
  *
  * Phase 2 S10.3 实现
+ * Phase 2.5 UI组件系统统一化 Task 15: 使用ItemSlotComponent和SelectionButtonComponent
  *
  * 功能:
- * - 药材选择界面
- * - 方法选择界面（炒/炙/煅/蒸/煮）
- * - 辅料选择界面
- * - 预处理界面（简化）
+ * - 药材选择界面（使用ItemSlotComponent网格布局）
+ * - 方法选择界面（使用SelectionButtonComponent，炒/炙/煅/蒸/煮）
+ * - 辅料选择界面（使用SelectionButtonComponent）
+ * - 预处理界面（简化，使用ItemSlotComponent显示已选择药材/辅料）
  * - 炮制进度界面
  * - 结果评分界面
  */
@@ -26,10 +27,18 @@ import {
   getMethodsByCategory,
   type ProcessingPhase,
   type ProcessingScoreResult,
-  type ProcessingMethodCategory
+  type ProcessingMethodCategory,
+  type ProcessingMethodType,
+  type AdjuvantType,
 } from '../data/processing-data';
 import { getHerbById } from '../data/inventory-data';
 import { UI_COLORS, UI_COLOR_STRINGS } from '../data/ui-color-theme';
+import ItemSlotComponent, {
+  ItemSlotContent,
+} from './components/ItemSlotComponent';
+import SelectionButtonComponent, {
+  SelectionButtonContent,
+} from './components/SelectionButtonComponent';
 
 /**
  * UI配置
@@ -60,6 +69,13 @@ export class ProcessingUI {
   private contentContainer: Phaser.GameObjects.Container | null = null;
   private progressFill: Phaser.GameObjects.Rectangle | null = null;
   private timeText: Phaser.GameObjects.Text | null = null;
+
+  // Phase 2.5: 新组件实例
+  private herbSlots: ItemSlotComponent[] = [];           // 药材选择格子
+  private selectedHerbSlot: ItemSlotComponent | null = null;  // 已选药材格子
+  private selectedAdjuvantSlot: ItemSlotComponent | null = null; // 已选辅料格子
+  private methodButtons: SelectionButtonComponent[] = [];    // 方法选择按钮
+  private adjuvantButtons: SelectionButtonComponent[] = [];  // 辅料选择按钮
 
   // 样式配置（Round 4 3D边框设计 - 方案B）
   private readonly PROCESSING_UI_COLORS = {
@@ -230,6 +246,36 @@ export class ProcessingUI {
   }
 
   /**
+   * 清除组件引用（Phase 2.5）
+   * 清理ItemSlotComponent和SelectionButtonComponent实例
+   */
+  private clearComponentReferences(): void {
+    // 清理药材选择格子
+    this.herbSlots.forEach(slot => slot.destroy());
+    this.herbSlots = [];
+
+    // 清理已选药材格子
+    if (this.selectedHerbSlot) {
+      this.selectedHerbSlot.destroy();
+      this.selectedHerbSlot = null;
+    }
+
+    // 清理已选辅料格子
+    if (this.selectedAdjuvantSlot) {
+      this.selectedAdjuvantSlot.destroy();
+      this.selectedAdjuvantSlot = null;
+    }
+
+    // 清理方法选择按钮
+    this.methodButtons.forEach(btn => btn.destroy());
+    this.methodButtons = [];
+
+    // 清理辅料选择按钮
+    this.adjuvantButtons.forEach(btn => btn.destroy());
+    this.adjuvantButtons = [];
+  }
+
+  /**
    * 创建文本按钮
    */
   private createButton(
@@ -282,9 +328,11 @@ export class ProcessingUI {
 
   /**
    * 显示药材选择界面
+   * Phase 2.5: 使用ItemSlotComponent网格布局
    */
   private showHerbSelection(): void {
     this.clearContent();
+    this.clearComponentReferences();
 
     // 标题
     this.titleText = this.createText(this.width / 2, 50, '选择炮制药材', {
@@ -314,31 +362,50 @@ export class ProcessingUI {
       });
       this.contentContainer!.add(hintText);
 
-      // 药材列表
-      const startY = 150;
-      const spacing = 60;
+      // Phase 2.5: 使用ItemSlotComponent网格布局
+      // 每行显示4个药材格子
+      const slotSize = ItemSlotComponent.SLOT_SIZE;
+      const cols = 4;
+      const gridStartX = (this.width - cols * slotSize - (cols - 1) * 20) / 2 + slotSize / 2;
+      const gridStartY = 150;
+      const spacingX = slotSize + 20;
+      const spacingY = slotSize + 40; // 额留空间显示推荐方法提示
 
       availableHerbs.forEach((herbId, index) => {
         const herb = getHerbById(herbId);
         const params = getHerbProcessingParams(herbId);
-        const y = startY + index * spacing;
+        const col = index % cols;
+        const row = Math.floor(index / cols);
+        const x = gridStartX + col * spacingX;
+        const y = gridStartY + row * spacingY;
 
-        // 药材按钮
-        const button = this.createButton(this.width / 2, y, herb?.name || herbId, () => {
-          this.manager.selectHerb(herbId);
-        });
+        // 创建ItemSlotComponent
+        const slotContent: ItemSlotContent = {
+          itemId: herbId,
+          name: herb?.name || herbId,
+          quantity: 1, // 炮制每次选一个
+        };
 
-        // 推荐方法提示
+        const slot = new ItemSlotComponent(this.scene, {
+          selectable: true,
+          onClick: () => {
+            this.manager.selectHerb(herbId);
+          },
+        }, x, y);
+
+        slot.setContent(slotContent);
+        this.herbSlots.push(slot);
+        this.contentContainer!.add(slot.container);
+
+        // 推荐方法提示（在格子下方）
         if (params) {
           const methodConfig = getProcessingMethodConfig(params.default_method);
-          const methodHint = this.createText(this.width / 2, y + 25,
-            `推荐方法: ${methodConfig?.name || params.default_method}`,
-            { fontSize: '14px', color: UI_COLOR_STRINGS.STATUS_WARNING }
-          );
+          const methodHint = this.scene.add.text(x, y + slotSize / 2 + 15,
+            `推荐: ${methodConfig?.name || params.default_method}`,
+            { fontSize: '12px', color: UI_COLOR_STRINGS.STATUS_WARNING }
+          ).setOrigin(0.5);
           this.contentContainer!.add(methodHint);
         }
-
-        this.contentContainer!.add(button);
       });
     }
 
@@ -366,9 +433,11 @@ export class ProcessingUI {
 
   /**
    * 显示方法选择界面
+   * Phase 2.5: 使用SelectionButtonComponent（○→●符号切换）
    */
   private showMethodSelection(): void {
     this.clearContent();
+    this.clearComponentReferences();
 
     const state = this.manager.getState();
     const herb = getHerbById(state.herb_id || '');
@@ -377,6 +446,22 @@ export class ProcessingUI {
     // 标题
     this.titleText?.setText(`选择炮制方法 - ${herb?.name || ''}`);
     this.container.add(this.titleText!);
+
+    // Phase 2.5: 显示已选药材格子
+    if (state.herb_id) {
+      const herbSlotX = 100;
+      const herbSlotY = 90;
+      const herbContent: ItemSlotContent = {
+        itemId: state.herb_id,
+        name: herb?.name || state.herb_id,
+        quantity: 1,
+      };
+      this.selectedHerbSlot = new ItemSlotComponent(this.scene, {
+        selectable: false,
+      }, herbSlotX, herbSlotY);
+      this.selectedHerbSlot.setContent(herbContent);
+      this.container.add(this.selectedHerbSlot.container);
+    }
 
     // 内容容器
     this.contentContainer = this.scene.add.container(0, 0);
@@ -389,7 +474,7 @@ export class ProcessingUI {
     });
     this.contentContainer!.add(hintText);
 
-    // 方法分类显示
+    // Phase 2.5: 方法分类显示，使用SelectionButtonComponent
     const categories: ProcessingMethodCategory[] = ['chao', 'zhi', 'duan', 'zheng', 'zhu'];
     const categoryNames: Record<ProcessingMethodCategory, string> = {
       'chao': '炒法',
@@ -400,7 +485,8 @@ export class ProcessingUI {
     };
 
     const startY = 150;
-    const categorySpacing = 100;
+    const categorySpacing = 80;
+    const buttonWidth = 100;
 
     categories.forEach((category, catIndex) => {
       const y = startY + catIndex * categorySpacing;
@@ -412,28 +498,46 @@ export class ProcessingUI {
       }).setOrigin(0, 0.5);
       this.contentContainer!.add(categoryTitle);
 
-      // 该分类下的方法
+      // Phase 2.5: 该分类下的方法，使用SelectionButtonComponent
       const methods = getMethodsByCategory(category);
-      const methodButtons: Phaser.GameObjects.Text[] = [];
 
       methods.forEach((method, methodIndex) => {
-        const x = 200 + methodIndex * 120;
+        const x = 200 + methodIndex * (buttonWidth + 15);
         const isRecommended = params?.suitable_methods.includes(method.id);
         const isSelected = state.method === method.id;
 
-        const btn = this.createButton(x, y, method.name, () => {
-          this.manager.selectMethod(method.id);
-        }, {
-          fontSize: '14px',
-          color: isSelected ? UI_COLOR_STRINGS.BUTTON_SUCCESS : (isRecommended ? UI_COLOR_STRINGS.STATUS_WARNING : UI_COLOR_STRINGS.TEXT_PRIMARY),
-          backgroundColor: isSelected ? '#2E7D32' : UI_COLOR_STRINGS.PANEL_PRIMARY,
-          padding: { x: 10, y: 5 }
-        });
+        const buttonContent: SelectionButtonContent = {
+          label: method.name,
+          value: method.id,
+        };
 
-        methodButtons.push(btn);
+        const button = new SelectionButtonComponent(this.scene, buttonContent, {
+          selected: isSelected,
+          width: buttonWidth,
+          onSelect: (value: string) => {
+            // 取消其他按钮选中状态
+            this.methodButtons.forEach(btn => {
+              if (btn.content.value !== value) {
+                btn.deselect();
+              }
+            });
+            this.manager.selectMethod(value as ProcessingMethodType);
+          },
+        }, x, y);
+
+        // 推荐方法使用特殊颜色（通过hover提示）
+        if (isRecommended && !isSelected) {
+          // 推荐提示：添加小标记
+          const recommendMark = this.scene.add.text(x + buttonWidth / 2, y - 20, '★推荐', {
+            fontSize: '10px',
+            color: UI_COLOR_STRINGS.STATUS_WARNING,
+          }).setOrigin(0.5);
+          this.contentContainer!.add(recommendMark);
+        }
+
+        this.methodButtons.push(button);
+        this.contentContainer!.add(button.container);
       });
-
-      this.contentContainer!.add(methodButtons);
     });
 
     // 确认按钮
@@ -459,9 +563,11 @@ export class ProcessingUI {
 
   /**
    * 显示辅料选择界面
+   * Phase 2.5: 使用SelectionButtonComponent和ItemSlotComponent
    */
   private showAdjuvantSelection(): void {
     this.clearContent();
+    this.clearComponentReferences();
 
     const state = this.manager.getState();
     const methodConfig = state.method ? getProcessingMethodConfig(state.method) : null;
@@ -470,6 +576,23 @@ export class ProcessingUI {
     // 标题
     this.titleText?.setText(`选择辅料 - ${methodConfig?.name || ''}`);
     this.container.add(this.titleText!);
+
+    // Phase 2.5: 显示已选药材格子
+    if (state.herb_id) {
+      const herb = getHerbById(state.herb_id);
+      const herbSlotX = 100;
+      const herbSlotY = 90;
+      const herbContent: ItemSlotContent = {
+        itemId: state.herb_id,
+        name: herb?.name || state.herb_id,
+        quantity: 1,
+      };
+      this.selectedHerbSlot = new ItemSlotComponent(this.scene, {
+        selectable: false,
+      }, herbSlotX, herbSlotY);
+      this.selectedHerbSlot.setContent(herbContent);
+      this.container.add(this.selectedHerbSlot.container);
+    }
 
     // 内容容器
     this.contentContainer = this.scene.add.container(0, 0);
@@ -482,9 +605,10 @@ export class ProcessingUI {
     });
     this.contentContainer!.add(hintText);
 
-    // 辅料列表
+    // Phase 2.5: 辅料列表，使用SelectionButtonComponent
     const startY = 150;
     const spacing = 70;
+    const buttonWidth = 200;
 
     availableAdjuvants.forEach((adjuvantId, index) => {
       const adjuvantConfig = getAdjuvantConfig(adjuvantId);
@@ -493,17 +617,38 @@ export class ProcessingUI {
       const isSelected = state.adjuvant === adjuvantId;
       const y = startY + index * spacing;
 
-      // 辅料按钮
-      const button = this.createButton(this.width / 2, y, adjuvantConfig?.name || adjuvantId, () => {
-        this.manager.selectAdjuvant(adjuvantId);
-      }, {
-        fontSize: '18px',
-        color: isSelected ? UI_COLOR_STRINGS.BUTTON_SUCCESS : (isRecommended ? UI_COLOR_STRINGS.STATUS_WARNING : UI_COLOR_STRINGS.TEXT_PRIMARY),
-        backgroundColor: isSelected ? '#2E7D32' : UI_COLOR_STRINGS.PANEL_PRIMARY,
-        padding: { x: 20, y: 10 }
-      });
+      const buttonContent: SelectionButtonContent = {
+        label: adjuvantConfig?.name || adjuvantId,
+        value: adjuvantId,
+      };
 
-      // 辅料功效
+      const button = new SelectionButtonComponent(this.scene, buttonContent, {
+        selected: isSelected,
+        width: buttonWidth,
+        onSelect: (value: string) => {
+          // 取消其他按钮选中状态
+          this.adjuvantButtons.forEach(btn => {
+            if (btn.content.value !== value) {
+              btn.deselect();
+            }
+          });
+          this.manager.selectAdjuvant(value as AdjuvantType);
+        },
+      }, this.width / 2, y);
+
+      // 推荐辅料使用特殊标记
+      if (isRecommended && !isSelected) {
+        const recommendMark = this.scene.add.text(this.width / 2 + buttonWidth / 2 + 10, y, '★推荐', {
+          fontSize: '10px',
+          color: UI_COLOR_STRINGS.STATUS_WARNING,
+        }).setOrigin(0, 0.5);
+        this.contentContainer!.add(recommendMark);
+      }
+
+      this.adjuvantButtons.push(button);
+      this.contentContainer!.add(button.container);
+
+      // 辅料功效说明
       if (adjuvantConfig) {
         const effectText = this.scene.add.text(this.width / 2, y + 25, adjuvantConfig.effect, {
           fontSize: '14px',
@@ -512,8 +657,6 @@ export class ProcessingUI {
         }).setOrigin(0.5);
         this.contentContainer!.add(effectText);
       }
-
-      this.contentContainer!.add(button);
     });
 
     // 退出按钮
@@ -526,31 +669,80 @@ export class ProcessingUI {
 
   /**
    * 显示预处理界面（简化）
+   * Phase 2.5: 使用ItemSlotComponent显示已选药材和辅料
    */
   private showPreprocess(): void {
     this.clearContent();
+    this.clearComponentReferences();
 
     const state = this.manager.getState();
     const herb = getHerbById(state.herb_id || '');
     const methodConfig = state.method ? getProcessingMethodConfig(state.method) : null;
+    const adjuvantConfig = state.adjuvant ? getAdjuvantConfig(state.adjuvant) : null;
 
     // 标题
     this.titleText?.setText('预处理准备');
     this.container.add(this.titleText!);
 
+    // Phase 2.5: 显示已选药材格子
+    if (state.herb_id) {
+      const herbSlotX = 200;
+      const herbSlotY = 100;
+      const herbContent: ItemSlotContent = {
+        itemId: state.herb_id,
+        name: herb?.name || state.herb_id,
+        quantity: 1,
+      };
+      this.selectedHerbSlot = new ItemSlotComponent(this.scene, {
+        selectable: false,
+      }, herbSlotX, herbSlotY);
+      this.selectedHerbSlot.setContent(herbContent);
+      this.container.add(this.selectedHerbSlot.container);
+
+      // 药材名称标签
+      const herbLabel = this.scene.add.text(herbSlotX, herbSlotY + 35, '药材', {
+        fontSize: '12px',
+        color: UI_COLOR_STRINGS.TEXT_SECONDARY,
+      }).setOrigin(0.5);
+      this.container.add(herbLabel);
+    }
+
+    // Phase 2.5: 显示已选辅料格子
+    if (state.adjuvant) {
+      const adjuvantSlotX = 300;
+      const adjuvantSlotY = 100;
+      const adjuvantContent: ItemSlotContent = {
+        itemId: state.adjuvant,
+        name: adjuvantConfig?.name || state.adjuvant,
+        quantity: 1,
+      };
+      this.selectedAdjuvantSlot = new ItemSlotComponent(this.scene, {
+        selectable: false,
+      }, adjuvantSlotX, adjuvantSlotY);
+      this.selectedAdjuvantSlot.setContent(adjuvantContent);
+      this.container.add(this.selectedAdjuvantSlot.container);
+
+      // 辅料名称标签
+      const adjuvantLabel = this.scene.add.text(adjuvantSlotX, adjuvantSlotY + 35, '辅料', {
+        fontSize: '12px',
+        color: UI_COLOR_STRINGS.TEXT_SECONDARY,
+      }).setOrigin(0.5);
+      this.container.add(adjuvantLabel);
+    }
+
     // 内容容器
     this.contentContainer = this.scene.add.container(0, 0);
     this.container.add(this.contentContainer);
 
-    // 当前选择摘要
-    const summaryText = this.createText(this.width / 2, 100,
-      `药材: ${herb?.name || ''} | 方法: ${methodConfig?.name || ''}`,
+    // 当前选择摘要（方法信息）
+    const summaryText = this.createText(this.width / 2, 160,
+      `方法: ${methodConfig?.name || ''}`,
       { fontSize: '18px', color: UI_COLOR_STRINGS.BUTTON_SUCCESS }
     );
     this.contentContainer!.add(summaryText);
 
     // 预处理说明（简化）
-    const hintText = this.createText(this.width / 2, 150,
+    const hintText = this.createText(this.width / 2, 200,
       '预处理步骤已自动完成（一期简化）',
       { fontSize: '16px', color: UI_COLOR_STRINGS.TEXT_SECONDARY }
     );
@@ -578,16 +770,66 @@ export class ProcessingUI {
 
   /**
    * 显示炮制进度界面
+   * Phase 2.5: 使用ItemSlotComponent显示已选药材和辅料
    */
   private showProcessingProgress(): void {
     this.clearContent();
+    this.clearComponentReferences();
 
     const state = this.manager.getState();
     const methodConfig = state.method ? getProcessingMethodConfig(state.method) : null;
+    const herb = getHerbById(state.herb_id || '');
+    const adjuvantConfig = state.adjuvant ? getAdjuvantConfig(state.adjuvant) : null;
 
     // 标题
     this.titleText?.setText('炮制进行中...');
     this.container.add(this.titleText!);
+
+    // Phase 2.5: 显示已选药材格子
+    if (state.herb_id) {
+      const herbSlotX = 150;
+      const herbSlotY = 80;
+      const herbContent: ItemSlotContent = {
+        itemId: state.herb_id,
+        name: herb?.name || state.herb_id,
+        quantity: 1,
+      };
+      this.selectedHerbSlot = new ItemSlotComponent(this.scene, {
+        selectable: false,
+      }, herbSlotX, herbSlotY);
+      this.selectedHerbSlot.setContent(herbContent);
+      this.container.add(this.selectedHerbSlot.container);
+
+      // 药材名称标签
+      const herbLabel = this.scene.add.text(herbSlotX, herbSlotY + 35, '药材', {
+        fontSize: '12px',
+        color: UI_COLOR_STRINGS.TEXT_SECONDARY,
+      }).setOrigin(0.5);
+      this.container.add(herbLabel);
+    }
+
+    // Phase 2.5: 显示已选辅料格子
+    if (state.adjuvant) {
+      const adjuvantSlotX = 250;
+      const adjuvantSlotY = 80;
+      const adjuvantContent: ItemSlotContent = {
+        itemId: state.adjuvant,
+        name: adjuvantConfig?.name || state.adjuvant,
+        quantity: 1,
+      };
+      this.selectedAdjuvantSlot = new ItemSlotComponent(this.scene, {
+        selectable: false,
+      }, adjuvantSlotX, adjuvantSlotY);
+      this.selectedAdjuvantSlot.setContent(adjuvantContent);
+      this.container.add(this.selectedAdjuvantSlot.container);
+
+      // 辅料名称标签
+      const adjuvantLabel = this.scene.add.text(adjuvantSlotX, adjuvantSlotY + 35, '辅料', {
+        fontSize: '12px',
+        color: UI_COLOR_STRINGS.TEXT_SECONDARY,
+      }).setOrigin(0.5);
+      this.container.add(adjuvantLabel);
+    }
 
     // 内容容器
     this.contentContainer = this.scene.add.container(0, 0);
@@ -775,6 +1017,9 @@ export class ProcessingUI {
     this.eventBus.off(ProcessingEvent.ADJUVANT_SELECTED, this.adjuvantSelectedHandler);
     this.eventBus.off(ProcessingEvent.PROCESSING_TICK, this.processingTickHandler);
     this.eventBus.off(ProcessingEvent.SCORE_CALCULATED, this.scoreCalculatedHandler);
+
+    // Phase 2.5: 清理组件引用
+    this.clearComponentReferences();
 
     // 清除内容
     this.clearContent();

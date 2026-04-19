@@ -9,12 +9,13 @@
  * - 支持开始诊治或回顾历史
  *
  * Phase 2 S5 实现
- * Round 4 视觉优化: 3D立体边框(方案B)
+ * Phase 2.5 UI统一化: 继承ModalUI基类
  */
 
 import Phaser from 'phaser';
 import { UI_COLORS, UI_COLOR_STRINGS } from '../data/ui-color-theme';
 import { CaseManager, CaseState, CaseHistoryRecord } from '../systems/CaseManager';
+import ModalUI from './base/ModalUI';
 
 export interface CaseDetailUIConfig {
   caseId: string;
@@ -25,126 +26,87 @@ export interface CaseDetailUIConfig {
 
 /**
  * 病案详情UI组件
- * Round 4 视觉优化: 3D立体边框(方案B)
+ * Phase 2.5 UI统一化: 继承ModalUI，使用标准弹窗尺寸
  */
-export class CaseDetailUI extends Phaser.GameObjects.Container {
+export class CaseDetailUI extends ModalUI {
   private caseId: string;
   private caseManager: CaseManager;
   private caseState: CaseState;
-  private backgroundGraphics!: Phaser.GameObjects.Graphics;
   private titleText!: Phaser.GameObjects.Text;
-  private closeButton!: Phaser.GameObjects.Text;
   private config: CaseDetailUIConfig;
 
-  // 样式配置（Round 4 3D边框设计 - 方案B）
-  private readonly CASE_DETAIL_UI_COLORS = {
-    outerBorder: UI_COLORS.BORDER_OUTER_GREEN,      // 亮绿边框 0x80a040
-    panelBg: UI_COLORS.PANEL_3D_BG,                 // 深绿背景 0x1a2e26
-    topLight: UI_COLORS.BORDER_TOP_LIGHT,           // 顶部高光 0x90c070
-    bottomShadow: UI_COLORS.BORDER_BOTTOM_SHADOW,   // 底部阴影 0x604020
-  };
+  constructor(scene: Phaser.Scene, config: CaseDetailUIConfig) {
+    // 先调用super()，使用空回调（稍后会在onExit中设置）
+    // 注意：不能在super()参数中使用this，因为此时this还未创建
+    super(
+      scene,
+      'DIAGNOSIS_MODAL',
+      '[关闭]',
+      () => {
+        // 占位回调，会在super()返回后重新设置
+      },
+      100
+    );
 
-  constructor(scene: Phaser.Scene, x: number, y: number, config: CaseDetailUIConfig) {
-    super(scene, x, y);
+    // super()完成后，this已创建，可以安全设置属性
     this.config = config;
     this.caseId = config.caseId;
     this.caseManager = config.caseManager;
     this.caseState = this.caseManager.getCase(this.caseId)!;
 
+    // 重新设置onExit回调，此时可以安全使用this
+    this.onExit = () => {
+      console.log('[CaseDetailUI] Close button clicked');
+      if (config.onClose) config.onClose();
+      this.destroy();
+    };
+
     if (!this.caseState) {
       console.error(`[CaseDetailUI] Case ${this.caseId} not found`);
+      this.exposeErrorState(`Case ${this.caseId} not found`);
       this.destroy();
       return;
     }
 
-    // 创建3D立体边框背景（方案B）
-    this.backgroundGraphics = scene.add.graphics();
-    // 背景尺寸: 720x530，中心偏移-25（y方向）
-    // 计算: x = -360, y = -290（-25 - 530/2 = -290）
-    this.draw3DBorder(this.backgroundGraphics, -360, -290, 720, 530);
-    this.add(this.backgroundGraphics);
+    try {
+      // 创建标题
+      this.titleText = scene.add.text(0, -230, '病案详情', {
+        fontSize: '24px',
+        color: UI_COLOR_STRINGS.TEXT_PRIMARY,
+        fontStyle: 'bold'
+      });
+      this.titleText.setOrigin(0.5);
+      this.container.add(this.titleText);
 
-    // 创建标题
-    this.titleText = scene.add.text(0, -270, '病案详情', {
-      fontSize: '24px',
-      color: UI_COLOR_STRINGS.TEXT_PRIMARY,
-      fontStyle: 'bold'
-    });
-    this.titleText.setOrigin(0.5);
-    this.add(this.titleText);
+      // 创建病案ID和状态
+      this.createHeader();
 
-    // 创建病案ID和状态
-    this.createHeader();
+      // 创建内容区域
+      this.createContent();
 
-    // 创建内容区域
-    this.createContent();
+      // 设置深度
+      this.container.setDepth(this.depth);
 
-    // 创建关闭按钮 - 添加padding扩大点击区域
-    this.closeButton = scene.add.text(350, -270, '[关闭]', {
-      fontSize: '16px',
-      color: '#c09060',  // SOFT_ORANGE
-      backgroundColor: UI_COLOR_STRINGS.PANEL_DARK,
-      padding: { x: 10, y: 5 }
-    });
-    this.closeButton.setOrigin(0.5);
-    this.closeButton.setInteractive({ useHandCursor: true });
-    this.closeButton.on('pointerover', () => {
-      this.closeButton.setColor(UI_COLOR_STRINGS.BUTTON_PRIMARY_HOVER);
-    });
-    this.closeButton.on('pointerout', () => {
-      this.closeButton.setColor('#c09060');
-    });
-    this.closeButton.on('pointerdown', () => {
-      console.log('[CaseDetailUI] Close button clicked');
-      if (config.onClose) config.onClose();
-      this.destroy();
-    });
-    this.add(this.closeButton);
+      // 暴露到全局供测试访问
+      this.exposeToGlobalCustom();
 
-    // 设置深度
-    this.setDepth(100);
-
-    // 添加到场景
-    scene.add.existing(this);
-
-    // 暴露到全局供测试访问
-    this.exposeToGlobal();
+      console.log('[CaseDetailUI] Constructor completed successfully');
+    } catch (error) {
+      console.error('[CaseDetailUI] Constructor error:', error);
+      this.exposeErrorState(error);
+    }
   }
 
   /**
-   * 绘制3D立体边框（方案B）
-   * 外层边框 + 顶部高光 + 底部阴影
+   * 暴露错误状态（用于调试）
    */
-  private draw3DBorder(
-    graphics: Phaser.GameObjects.Graphics,
-    x: number,
-    y: number,
-    width: number,
-    height: number
-  ): void {
-    // 1. 外层边框（亮绿色，4px）
-    graphics.lineStyle(4, this.CASE_DETAIL_UI_COLORS.outerBorder);
-    graphics.strokeRect(x, y, width, height);
-
-    // 2. 主背景（深绿色，完全不透明）
-    graphics.fillStyle(this.CASE_DETAIL_UI_COLORS.panelBg, 1.0);
-    graphics.fillRect(x + 2, y + 2, width - 4, height - 4);
-
-    // 3. 顶部/左侧高光边框（亮绿，2px）
-    graphics.lineStyle(2, this.CASE_DETAIL_UI_COLORS.topLight);
-    graphics.beginPath();
-    graphics.moveTo(x + 2, y + height - 2);
-    graphics.lineTo(x + 2, y + 2);
-    graphics.lineTo(x + width - 2, y + 2);
-    graphics.strokePath();
-
-    // 4. 底部/右侧阴影边框（暗棕，2px）
-    graphics.lineStyle(2, this.CASE_DETAIL_UI_COLORS.bottomShadow);
-    graphics.beginPath();
-    graphics.moveTo(x + width - 2, y + 2);
-    graphics.lineTo(x + width - 2, y + height - 2);
-    graphics.lineTo(x + 2, y + height - 2);
-    graphics.strokePath();
+  private exposeErrorState(error: any): void {
+    if (typeof window !== 'undefined') {
+      (window as any).__CASE_DETAIL_UI__ = {
+        error: error?.message || 'Unknown error',
+        visible: false
+      };
+    }
   }
 
   /**
@@ -154,24 +116,24 @@ export class CaseDetailUI extends Phaser.GameObjects.Container {
     const definition = this.caseState.definition;
 
     // 病案ID
-    const idText = this.scene.add.text(-350, -240, `ID: ${this.caseId}`, {
+    const idText = this.scene.add.text(-340, -200, `ID: ${this.caseId}`, {
       fontSize: '14px',
       color: UI_COLOR_STRINGS.TEXT_SECONDARY
     });
-    this.add(idText);
+    this.container.add(idText);
 
     // 状态标签
-    const statusText = this.scene.add.text(350, -240, this.getStatusText(), {
+    const statusText = this.scene.add.text(340, -200, this.getStatusText(), {
       fontSize: '14px',
       color: this.getStatusColor(),
       backgroundColor: UI_COLOR_STRINGS.PANEL_DARK,
       padding: { x: 6, y: 2 }
     });
     statusText.setOrigin(1, 0);
-    this.add(statusText);
+    this.container.add(statusText);
 
     // 证型标题
-    const syndromeTitle = this.scene.add.text(0, -200,
+    const syndromeTitle = this.scene.add.text(0, -160,
       `${definition.syndrome.type} (${definition.syndrome.category})`,
       {
         fontSize: '20px',
@@ -180,10 +142,10 @@ export class CaseDetailUI extends Phaser.GameObjects.Container {
       }
     );
     syndromeTitle.setOrigin(0.5);
-    this.add(syndromeTitle);
+    this.container.add(syndromeTitle);
 
     // 方剂名称
-    const prescriptionText = this.scene.add.text(0, -170,
+    const prescriptionText = this.scene.add.text(0, -130,
       `方剂: ${definition.prescription.name}`,
       {
         fontSize: '16px',
@@ -191,17 +153,17 @@ export class CaseDetailUI extends Phaser.GameObjects.Container {
       }
     );
     prescriptionText.setOrigin(0.5);
-    this.add(prescriptionText);
+    this.container.add(prescriptionText);
 
     // 难度
-    const difficultyText = this.scene.add.text(-350, -170,
+    const difficultyText = this.scene.add.text(-340, -130,
       `难度: ${this.getDifficultyText(definition.difficulty)}`,
       {
         fontSize: '14px',
         color: this.getDifficultyColor(definition.difficulty)
       }
     );
-    this.add(difficultyText);
+    this.container.add(difficultyText);
   }
 
   /**
@@ -209,72 +171,72 @@ export class CaseDetailUI extends Phaser.GameObjects.Container {
    */
   private createContent(): void {
     const definition = this.caseState.definition;
-    let contentY = -130;
+    let contentY = -90;
 
     // 主诉
-    this.createSectionTitle('主诉', -350, contentY);
-    const chiefComplaint = this.scene.add.text(-350, contentY + 25,
+    this.createSectionTitle('主诉', -340, contentY);
+    const chiefComplaint = this.scene.add.text(-340, contentY + 25,
       definition.chief_complaint_template,
       {
         fontSize: '14px',
         color: UI_COLOR_STRINGS.TEXT_PRIMARY,
-        wordWrap: { width: 350 }
+        wordWrap: { width: 340 }
       }
     );
-    this.add(chiefComplaint);
+    this.container.add(chiefComplaint);
     contentY += 60;
 
     // 关键线索
-    this.createSectionTitle('必须线索', -350, contentY);
-    const requiredClues = this.scene.add.text(-350, contentY + 25,
+    this.createSectionTitle('必须线索', -340, contentY);
+    const requiredClues = this.scene.add.text(-340, contentY + 25,
       definition.clues.required.join('、'),
       {
         fontSize: '14px',
         color: '#90c070',  // SOFT_GREEN
-        wordWrap: { width: 350 }
+        wordWrap: { width: 340 }
       }
     );
-    this.add(requiredClues);
+    this.container.add(requiredClues);
 
-    this.createSectionTitle('辅助线索', 50, contentY);
-    const auxiliaryClues = this.scene.add.text(50, contentY + 25,
+    this.createSectionTitle('辅助线索', 40, contentY);
+    const auxiliaryClues = this.scene.add.text(40, contentY + 25,
       definition.clues.auxiliary.join('、'),
       {
         fontSize: '14px',
         color: '#b0a090',  // TEXT_SECONDARY
-        wordWrap: { width: 350 }
+        wordWrap: { width: 340 }
       }
     );
-    this.add(auxiliaryClues);
+    this.container.add(auxiliaryClues);
     contentY += 70;
 
     // 脉象和舌象
-    this.createSectionTitle('脉象', -350, contentY);
-    const pulseText = this.scene.add.text(-350, contentY + 25,
+    this.createSectionTitle('脉象', -340, contentY);
+    const pulseText = this.scene.add.text(-340, contentY + 25,
       `${definition.pulse.position}${definition.pulse.tension}脉\n"${definition.pulse.description}"`,
       {
         fontSize: '14px',
         color: '#c0c080',  // SOFT_YELLOW
-        wordWrap: { width: 350 }
+        wordWrap: { width: 340 }
       }
     );
-    this.add(pulseText);
+    this.container.add(pulseText);
 
-    this.createSectionTitle('舌象', 50, contentY);
-    const tongueText = this.scene.add.text(50, contentY + 25,
+    this.createSectionTitle('舌象', 40, contentY);
+    const tongueText = this.scene.add.text(40, contentY + 25,
       `舌${definition.tongue.body_color}，苔${definition.tongue.coating}\n舌形${definition.tongue.shape}，${definition.tongue.moisture}`,
       {
         fontSize: '14px',
         color: '#c0c080',  // SOFT_YELLOW
-        wordWrap: { width: 350 }
+        wordWrap: { width: 340 }
       }
     );
-    this.add(tongueText);
+    this.container.add(tongueText);
     contentY += 90;
 
     // 教学要点
-    this.createSectionTitle('教学要点', -350, contentY);
-    const keyPoints = this.scene.add.text(-350, contentY + 25,
+    this.createSectionTitle('教学要点', -340, contentY);
+    const keyPoints = this.scene.add.text(-340, contentY + 25,
       definition.teaching_notes.key_points.join('\n'),
       {
         fontSize: '12px',
@@ -282,12 +244,12 @@ export class CaseDetailUI extends Phaser.GameObjects.Container {
         wordWrap: { width: 700 }
       }
     );
-    this.add(keyPoints);
+    this.container.add(keyPoints);
     contentY += 60;
 
     // 常见错误
-    this.createSectionTitle('常见错误', -350, contentY);
-    const mistakes = this.scene.add.text(-350, contentY + 25,
+    this.createSectionTitle('常见错误', -340, contentY);
+    const mistakes = this.scene.add.text(-340, contentY + 25,
       definition.teaching_notes.common_mistakes.join('\n'),
       {
         fontSize: '12px',
@@ -295,7 +257,7 @@ export class CaseDetailUI extends Phaser.GameObjects.Container {
         wordWrap: { width: 700 }
       }
     );
-    this.add(mistakes);
+    this.container.add(mistakes);
 
     // 如果已完成，显示历史记录
     if (this.caseState.status === 'completed' && this.caseState.history) {
@@ -312,14 +274,14 @@ export class CaseDetailUI extends Phaser.GameObjects.Container {
   private createSectionTitle(title: string, x: number, y: number): void {
     const titleBg = this.scene.add.rectangle(x, y, 760, 25, UI_COLORS.PANEL_LIGHT, 0.8);
     titleBg.setOrigin(0, 0);
-    this.add(titleBg);
+    this.container.add(titleBg);
 
     const titleText = this.scene.add.text(x + 10, y + 5, title, {
       fontSize: '14px',
       color: UI_COLOR_STRINGS.TEXT_PRIMARY,
       fontStyle: 'bold'
     });
-    this.add(titleText);
+    this.container.add(titleText);
   }
 
   /**
@@ -328,7 +290,7 @@ export class CaseDetailUI extends Phaser.GameObjects.Container {
   private createHistorySection(history: CaseHistoryRecord): void {
     // 创建分隔线
     const divider = this.scene.add.rectangle(0, 100, 660, 2, UI_COLORS.DIVIDER);
-    this.add(divider);
+    this.container.add(divider);
 
     // 标题
     const historyTitle = this.scene.add.text(0, 130, '诊治记录', {
@@ -337,7 +299,7 @@ export class CaseDetailUI extends Phaser.GameObjects.Container {
       fontStyle: 'bold'
     });
     historyTitle.setOrigin(0.5);
-    this.add(historyTitle);
+    this.container.add(historyTitle);
 
     // 评分详情
     this.createScoreDisplay(history);
@@ -364,7 +326,7 @@ export class CaseDetailUI extends Phaser.GameObjects.Container {
         fontStyle: 'bold'
       }
     );
-    this.add(totalScore);
+    this.container.add(totalScore);
 
     // 各环节分数
     const scores = [
@@ -380,7 +342,7 @@ export class CaseDetailUI extends Phaser.GameObjects.Container {
       fontSize: '12px',
       color: UI_COLOR_STRINGS.TEXT_SECONDARY
     });
-    this.add(scoreDetails);
+    this.container.add(scoreDetails);
 
     // 完成时间
     const timeText = this.scene.add.text(-300, scoreY + 30,
@@ -390,7 +352,7 @@ export class CaseDetailUI extends Phaser.GameObjects.Container {
         color: UI_COLOR_STRINGS.TEXT_DISABLED
       }
     );
-    this.add(timeText);
+    this.container.add(timeText);
   }
 
   /**
@@ -408,7 +370,7 @@ export class CaseDetailUI extends Phaser.GameObjects.Container {
         wordWrap: { width: 350 }
       }
     );
-    this.add(requiredText);
+    this.container.add(requiredText);
 
     // 辅助线索收集
     const auxiliaryText = this.scene.add.text(100, cluesY,
@@ -419,7 +381,7 @@ export class CaseDetailUI extends Phaser.GameObjects.Container {
         wordWrap: { width: 350 }
       }
     );
-    this.add(auxiliaryText);
+    this.container.add(auxiliaryText);
   }
 
   /**
@@ -429,28 +391,28 @@ export class CaseDetailUI extends Phaser.GameObjects.Container {
     const feedbackY = 260;
 
     // 辨证论述
-    this.createSectionTitle('辨证论述', -350, feedbackY);
-    const reasoningText = this.scene.add.text(-350, feedbackY + 30,
+    this.createSectionTitle('辨证论述', -340, feedbackY);
+    const reasoningText = this.scene.add.text(-340, feedbackY + 30,
       history.syndrome_reasoning,
       {
         fontSize: '12px',
         color: '#ffffff',
-        wordWrap: { width: 350 }
+        wordWrap: { width: 340 }
       }
     );
-    this.add(reasoningText);
+    this.container.add(reasoningText);
 
     // NPC点评
-    this.createSectionTitle('青木点评', 50, feedbackY);
-    const feedbackText = this.scene.add.text(50, feedbackY + 30,
+    this.createSectionTitle('青木点评', 40, feedbackY);
+    const feedbackText = this.scene.add.text(40, feedbackY + 30,
       history.npc_feedback,
       {
         fontSize: '12px',
         color: UI_COLOR_STRINGS.TEXT_HIGHLIGHT,
-        wordWrap: { width: 350 }
+        wordWrap: { width: 340 }
       }
     );
-    this.add(feedbackText);
+    this.container.add(feedbackText);
   }
 
   /**
@@ -474,7 +436,7 @@ export class CaseDetailUI extends Phaser.GameObjects.Container {
           if (this.config.onClose) this.config.onClose();
           this.destroy();
         });
-        this.add(backButton);
+        this.container.add(backButton);
         break;
 
       case 'in_progress':
@@ -493,7 +455,7 @@ export class CaseDetailUI extends Phaser.GameObjects.Container {
           }
           this.destroy();
         });
-        this.add(continueButton);
+        this.container.add(continueButton);
         break;
 
       case 'unlocked':
@@ -512,7 +474,7 @@ export class CaseDetailUI extends Phaser.GameObjects.Container {
           }
           this.destroy();
         });
-        this.add(startButton);
+        this.container.add(startButton);
         break;
 
       case 'locked':
@@ -527,7 +489,7 @@ export class CaseDetailUI extends Phaser.GameObjects.Container {
           }
         );
         lockedText.setOrigin(0.5);
-        this.add(lockedText);
+        this.container.add(lockedText);
         break;
     }
   }
@@ -583,9 +545,9 @@ export class CaseDetailUI extends Phaser.GameObjects.Container {
   }
 
   /**
-   * 暴露到全局（供测试访问）
+   * 暴露到全局（供测试访问）- 自定义名称
    */
-  private exposeToGlobal(): void {
+  private exposeToGlobalCustom(): void {
     if (typeof window !== 'undefined') {
       (window as any).__CASE_DETAIL_UI__ = {
         caseId: this.caseId,
@@ -593,7 +555,7 @@ export class CaseDetailUI extends Phaser.GameObjects.Container {
         syndrome: this.caseState.definition.syndrome.type,
         prescription: this.caseState.definition.prescription.name,
         score: this.caseState.history?.score.total || null,
-        visible: this.visible
+        visible: this.container.visible
       };
     }
   }
@@ -625,10 +587,7 @@ export class CaseDetailUI extends Phaser.GameObjects.Container {
     if (typeof window !== 'undefined') {
       (window as any).__CASE_DETAIL_UI__ = null;
     }
-    // 清理背景Graphics
-    if (this.backgroundGraphics) {
-      this.backgroundGraphics.destroy();
-    }
+    // 调用父类销毁方法
     super.destroy();
   }
 }

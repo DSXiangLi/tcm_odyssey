@@ -9,7 +9,41 @@
 
 ## 当前进行中任务
 
-### 1. 第三轮视觉优化 ⏳ 进行中
+### 1. Phase 2.5: UI组件系统统一化 ⏳ 设计阶段
+
+**目标**: 统一所有UI组件的尺寸、边框、退出机制，创建BaseUIComponent架构
+
+**设计状态**:
+| 文档 | 状态 | 内容 |
+|-----|------|------|
+| UI组件系统设计 | ✅ | docs/superpowers/specs/2026-04-19-ui-component-system-design.md |
+| 游戏交互设计 | ✅ | docs/superpowers/specs/2026-04-19-game-interaction-design.md |
+| 小游戏设计文档 | ✅ | 7个minigame设计文档（脉诊/舌诊/辨证/选方/煎药/炮制/种植） |
+| Phase 2.5实现计划 | ⏳ | docs/superpowers/plans/2026-04-19-phase2-5-ui-component-system-implementation.md |
+
+**Phase 2.5子计划（待编写）**:
+| 子计划 | 内容 | 状态 |
+|-------|------|------|
+| Phase 2.5.1 | 核心基础设施(BaseUIComponent/ModalUI/UIBorderStyles) | ✅ 计划已编写 |
+| Phase 2.5.2 | 统一槽位组件(CompatibilitySlot/SynthesisSlot/PlotSlot等) | ⏳ 待编写 |
+| Phase 2.5.3 | 选择卡片组件(SelectionCardComponent/ItemSlotEnhancement) | ⏳ 待编写 |
+| Phase 2.5.4 | 动画系统(FlyInAnimation/ResourcePanel) | ⏳ 待编写 |
+| Phase 2.5.5-15 | 各UI文件重构(11个UI组件TDD重构) | ⏳ 待编写 |
+
+**标准弹窗尺寸规范**:
+| 弹窗类型 | 尺寸 | 适用场景 |
+|---------|------|---------|
+| DIAGNOSIS_MODAL | 720×480 | 脉诊/舌诊/辨证/选方 |
+| INQUIRY_MODAL | 640×420 | 问诊 |
+| MINIGAME_MODAL | 800×600 | 煎药/炮制/种植 |
+| FULLSCREEN_MODAL | 1024×768 | 背包/存档 |
+
+**设计文档**: [UI组件系统统一化设计](docs/superpowers/specs/2026-04-19-ui-component-system-design.md)
+**游戏交互设计**: [游戏化交互设计](docs/superpowers/specs/2026-04-19-game-interaction-design.md)
+
+---
+
+### 2. 第三轮视觉优化 ⏳ 进行中
 
 **目标**: 扩展柔和田园配色系统，提升配色协调度
 

@@ -20,6 +20,7 @@
 | Round 4 弹窗设计 | ✅ 完成 | 现代弹窗设计方案 |
 | **Round 3 视觉优化** | ⏳ 进行中 | Task 4: AI评估验证待执行 |
 | **Phase 2 退出按钮** | ⏳ 进行中 | Task 4-10: Planting/问诊/诊治退出按钮待修复 |
+| **Phase 2.5 UI统一化** | ⏳ 设计阶段 | 设计文档完成，实现计划编写中 |
 
 ---
 
@@ -77,6 +78,29 @@
 **设计文档**: [Phase 2 NPC Agent系统完整设计](docs/superpowers/specs/2026-04-12-phase2-npc-agent-design.md)
 **实现计划**: [Phase 2实现计划（13步拆分）](docs/superpowers/plans/2026-04-12-phase2-implementation-plan.md)
 **测试验收**: [Phase 2测试验收标准](docs/superpowers/specs/2026-04-11-phase2-test-acceptance.md)
+
+---
+
+### Phase 2.5: UI组件系统统一化 ⏳ 设计阶段
+
+**核心目标**: 统一所有UI组件的尺寸、边框、退出机制，创建BaseUIComponent架构，实现游戏化交互设计。
+
+**设计文档**:
+| 文档 | 内容 |
+|-----|------|
+| [UI组件系统设计](docs/superpowers/specs/2026-04-19-ui-component-system-design.md) | BaseUIComponent架构、ModalUI规范、边框风格 |
+| [游戏交互设计](docs/superpowers/specs/2026-04-19-game-interaction-design.md) | 左槽位+右背包模式、统一槽位类型(5种) |
+| [小游戏设计文档](docs/superpowers/specs/minigames/) | 7个小游戏独立设计 |
+
+**标准弹窗尺寸**:
+| 类型 | 尺寸 | 适用 |
+|-----|------|------|
+| DIAGNOSIS_MODAL | 720×480 | 脉诊/舌诊/辨证/选方 |
+| MINIGAME_MODAL | 800×600 | 煎药/炮制/种植 |
+| INQUIRY_MODAL | 640×420 | 问诊 |
+| FULLSCREEN_MODAL | 1024×768 | 背包/存档 |
+
+**实现计划**: [Phase 2.5 UI组件系统实现计划](docs/superpowers/plans/2026-04-19-phase2-5-ui-component-system-implementation.md)
 
 ---
 

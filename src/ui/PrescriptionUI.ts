@@ -9,11 +9,15 @@
  *
  * Phase 2 S6d 实现
  * Round 4 视觉优化: 3D立体边框(方案B)
+ * Phase 2.5 UI统一化: 使用SelectionButtonComponent (Task 13)
  */
 
 import Phaser from 'phaser';
 import { UI_COLORS, UI_COLOR_STRINGS } from '../data/ui-color-theme';
 import prescriptionsData from '../data/prescriptions.json';
+import SelectionButtonComponent, {
+  SelectionButtonContent
+} from './components/SelectionButtonComponent';
 
 export interface PrescriptionUIConfig {
   correctPrescription: string;   // 正确方剂
@@ -24,7 +28,8 @@ export class PrescriptionUI extends Phaser.GameObjects.Container {
   // 界面元素
   private backgroundGraphics!: Phaser.GameObjects.Graphics;  // 使用Graphics替代Rectangle
   private titleText!: Phaser.GameObjects.Text;
-  private prescriptionOptions: Phaser.GameObjects.Text[] = [];
+  private prescriptionButtons: SelectionButtonComponent[] = [];  // 使用SelectionButtonComponent替代Text
+  private briefInfoTexts: Phaser.GameObjects.Text[] = [];  // 方剂简要组成文本
   private detailBox!: Phaser.GameObjects.Rectangle;
   private detailText!: Phaser.GameObjects.Text;
   private adjustmentButton!: Phaser.GameObjects.Text;  // 方剂加减按钮（锁定）
@@ -109,45 +114,51 @@ export class PrescriptionUI extends Phaser.GameObjects.Container {
     // 获取方剂列表
     const prescriptions = prescriptionsData.prescriptions;
 
-    // 创建方剂选项
+    // 创建方剂选项 - 使用SelectionButtonComponent
     for (let i = 0; i < prescriptions.length; i++) {
       const prescription = prescriptions[i];
-      const optionX = -350;
+      const optionX = -320;  // 调整位置以适应SelectionButtonComponent
       const optionY = -160 + i * 50;
 
-      const option = scene.add.text(optionX, optionY, `○ ${prescription.name}`, {
-        fontSize: '20px',
-        color: UI_COLOR_STRINGS.TEXT_PRIMARY,
-        backgroundColor: UI_COLOR_STRINGS.PANEL_LIGHT,
-        padding: { x: 10, y: 5 }
-      });
-      option.setInteractive({ useHandCursor: true });
+      // 创建SelectionButtonComponent内容
+      const buttonContent: SelectionButtonContent = {
+        label: prescription.name,
+        value: prescription.id
+      };
 
-      option.on('pointerdown', () => {
-        this.selectPrescription(prescription.id, prescription, option);
-      });
+      // 创建SelectionButtonComponent
+      const button = new SelectionButtonComponent(
+        scene,
+        buttonContent,
+        {
+          width: 150,  // 固定宽度以保持布局一致
+          onSelect: (value: string) => {
+            this.handlePrescriptionSelect(value, prescription);
+          }
+        },
+        optionX,
+        optionY
+      );
 
-      option.on('pointerover', () => {
-        if (this.selectedPrescription !== prescription.id) {
-          option.setColor('#88aaff');
-        }
-      });
-      option.on('pointerout', () => {
-        if (this.selectedPrescription !== prescription.id) {
-          option.setColor('#ffffff');
-        }
-      });
+      // 设置深度
+      button.setDepth(101);
 
-      this.add(option);
-      this.prescriptionOptions.push(option);
+      // 添加到容器（SelectionButtonComponent的container已经添加到场景，我们需要将其移到我们的容器）
+      // 由于SelectionButtonComponent已经通过scene.add.existing添加到场景，
+      // 我们需要重新添加其容器到我们的容器
+      this.add(button.container);
 
-      // 显示方剂简要组成
+      this.prescriptionButtons.push(button);
+
+      // 显示方剂简要组成（单独的文本）
       const compositionText = prescription.composition.map(c => c.herb).join('、');
       const briefInfo = scene.add.text(150, optionY, `组成: ${compositionText}`, {
         fontSize: '14px',
         color: UI_COLOR_STRINGS.TEXT_DISABLED
       });
+      briefInfo.setOrigin(0, 0.5);  // 与按钮中心对齐
       this.add(briefInfo);
+      this.briefInfoTexts.push(briefInfo);
     }
   }
 
@@ -306,27 +317,37 @@ export class PrescriptionUI extends Phaser.GameObjects.Container {
   }
 
   /**
-   * 选择方剂
+   * 处理方剂选择
+   * 实现单选行为：选中一个按钮时，取消其他按钮的选中状态
    */
-  private selectPrescription(prescriptionId: string, prescriptionData: any, option: Phaser.GameObjects.Text): void {
-    this.selectedPrescription = prescriptionId;
-    this.selectedPrescriptionData = prescriptionData;
+  private handlePrescriptionSelect(prescriptionId: string, prescriptionData: any): void {
+    // 检查是否是选中操作（从○到●）
+    const clickedButton = this.prescriptionButtons.find(btn => btn.content.value === prescriptionId);
 
-    // 更新所有选项
-    for (const opt of this.prescriptionOptions) {
-      const text = opt.text;
-      if (text.includes('●')) {
-        opt.setText(text.replace('●', '○'));
-        opt.setColor('#ffffff');
+    if (!clickedButton) return;
+
+    // 如果点击的按钮已经是选中状态，则取消选中
+    if (clickedButton.isSelected()) {
+      // 取消选中
+      clickedButton.deselect();
+      this.selectedPrescription = '';
+      this.selectedPrescriptionData = null;
+    } else {
+      // 单选行为：取消其他所有按钮的选中状态
+      for (const button of this.prescriptionButtons) {
+        if (button.isSelected() && button.content.value !== prescriptionId) {
+          button.deselect();
+        }
       }
+
+      // 选中新按钮
+      clickedButton.select();
+      this.selectedPrescription = prescriptionId;
+      this.selectedPrescriptionData = prescriptionData;
+
+      // 更新详情
+      this.updateDetail();
     }
-
-    // 更新选中
-    option.setText(option.text.replace('○', '●'));
-    option.setColor(UI_COLOR_STRINGS.BUTTON_PRIMARY);
-
-    // 更新详情
-    this.updateDetail();
 
     this.exposeToGlobal();
   }
@@ -456,7 +477,17 @@ ${composition}
    * 销毁
    */
   destroy(): void {
-    this.prescriptionOptions = [];
+    // 销毁所有SelectionButtonComponent
+    for (const button of this.prescriptionButtons) {
+      button.destroy();
+    }
+    this.prescriptionButtons = [];
+
+    // 销毁简要组成文本
+    for (const briefInfo of this.briefInfoTexts) {
+      briefInfo.destroy();
+    }
+    this.briefInfoTexts = [];
 
     if (typeof window !== 'undefined') {
       (window as any).__PRESCRIPTION_UI__ = null;

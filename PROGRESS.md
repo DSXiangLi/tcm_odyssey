@@ -9,37 +9,41 @@
 
 ## 当前进行中任务
 
-### 1. Phase 2.5: UI组件系统统一化 ⏳ 设计阶段
+### 1. Phase 2.5: UI组件系统统一化 ⏳ 核心基础设施完成
 
 **目标**: 统一所有UI组件的尺寸、边框、退出机制，创建BaseUIComponent架构
 
-**设计状态**:
-| 文档 | 状态 | 内容 |
-|-----|------|------|
-| UI组件系统设计 | ✅ | docs/superpowers/specs/2026-04-19-ui-component-system-design.md |
-| 游戏交互设计 | ✅ | docs/superpowers/specs/2026-04-19-game-interaction-design.md |
-| 小游戏设计文档 | ✅ | 7个minigame设计文档（脉诊/舌诊/辨证/选方/煎药/炮制/种植） |
-| Phase 2.5实现计划 | ⏳ | docs/superpowers/plans/2026-04-19-phase2-5-ui-component-system-implementation.md |
+**Phase 1核心基础设施 ✅ 完成**:
+| Task | 文件 | 测试数 | 状态 |
+|-----|------|-------|------|
+| Task 1 | UIBorderStyles.ts | 12 | ✅ |
+| Task 2 | BaseUIComponent.ts | 21 | ✅ |
+| Task 3 | ModalUI.ts | 33 | ✅ |
+| Task 4 | ui/index.ts更新 | - | ✅ |
+| Task 5 | 全量测试验证 | 541 | ✅ |
 
-**Phase 2.5子计划（待编写）**:
-| 子计划 | 内容 | 状态 |
-|-------|------|------|
-| Phase 2.5.1 | 核心基础设施(BaseUIComponent/ModalUI/UIBorderStyles) | ✅ 计划已编写 |
-| Phase 2.5.2 | 统一槽位组件(CompatibilitySlot/SynthesisSlot/PlotSlot等) | ⏳ 待编写 |
-| Phase 2.5.3 | 选择卡片组件(SelectionCardComponent/ItemSlotEnhancement) | ⏳ 待编写 |
-| Phase 2.5.4 | 动画系统(FlyInAnimation/ResourcePanel) | ⏳ 待编写 |
-| Phase 2.5.5-15 | 各UI文件重构(11个UI组件TDD重构) | ⏳ 待编写 |
+**设计文档**: [UI组件系统统一化设计](docs/superpowers/specs/2026-04-19-ui-component-system-design.md)
+**游戏交互设计**: [游戏化交互设计](docs/superpowers/specs/2026-04-19-game-interaction-design.md)
+**完整执行计划**: [Phase 2.5完整执行计划（Task 6-20）](docs/superpowers/plans/2026-04-19-phase2-5-full-implementation-plan.md)
 
-**标准弹窗尺寸规范**:
+**后续待执行（Task 6-20）**:
+| Phase | 内容 | Tasks |
+|-------|------|-------|
+| Phase 2-4 | 内部组件创建 | Task 6-8 |
+| Phase 5 | InventoryUI重构 | Task 9 |
+| Phase 6 | 诊断类UI重构 | Task 10-13 |
+| Phase 7 | 小游戏UI重构 | Task 14-16 |
+| Phase 8-9 | 其他UI重构 | Task 17-19 |
+| Phase 10 | 最终验收 | Task 20 |
+
+**标准弹窗尺寸规范（已实现）**:
 | 弹窗类型 | 尺寸 | 适用场景 |
 |---------|------|---------|
 | DIAGNOSIS_MODAL | 720×480 | 脉诊/舌诊/辨证/选方 |
 | INQUIRY_MODAL | 640×420 | 问诊 |
 | MINIGAME_MODAL | 800×600 | 煎药/炮制/种植 |
 | FULLSCREEN_MODAL | 1024×768 | 背包/存档 |
-
-**设计文档**: [UI组件系统统一化设计](docs/superpowers/specs/2026-04-19-ui-component-system-design.md)
-**游戏交互设计**: [游戏化交互设计](docs/superpowers/specs/2026-04-19-game-interaction-design.md)
+| DIALOG_MODAL | 500×300 | NPC对话 |
 
 ---
 

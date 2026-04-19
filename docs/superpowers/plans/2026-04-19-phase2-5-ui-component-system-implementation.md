@@ -1,4 +1,4 @@
-# UI核心基础设施实现计划
+# Phase 2.5: UI组件系统统一化 - 核心基础设施实现计划
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 

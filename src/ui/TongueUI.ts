@@ -8,11 +8,13 @@
  *
  * Phase 2 S6b 实现
  * Round 4 视觉优化: 3D立体边框(方案B)
+ * Phase 2.5 UI统一化: 使用SelectionButtonComponent (Task 11)
  */
 
 import Phaser from 'phaser';
 import { UI_COLORS, UI_COLOR_STRINGS } from '../data/ui-color-theme';
 import tongueDescriptions from '../data/tongue_descriptions.json';
+import SelectionButtonComponent, { SelectionButtonContent } from './components/SelectionButtonComponent';
 
 export interface TongueUIConfig {
   correctBodyColor: string;   // 正确舌体颜色
@@ -28,10 +30,10 @@ export class TongueUI extends Phaser.GameObjects.Container {
   private titleText!: Phaser.GameObjects.Text;
   private tongueImagePlaceholder!: Phaser.GameObjects.Rectangle;
   private tongueImageText!: Phaser.GameObjects.Text;
-  private bodyColorOptions: Phaser.GameObjects.Text[] = [];
-  private coatingOptions: Phaser.GameObjects.Text[] = [];
-  private shapeOptions: Phaser.GameObjects.Text[] = [];
-  private moistureOptions: Phaser.GameObjects.Text[] = [];
+  private bodyColorButtons: SelectionButtonComponent[] = [];
+  private coatingButtons: SelectionButtonComponent[] = [];
+  private shapeButtons: SelectionButtonComponent[] = [];
+  private moistureButtons: SelectionButtonComponent[] = [];
   private confirmButton!: Phaser.GameObjects.Text;
 
   // 状态
@@ -138,6 +140,7 @@ export class TongueUI extends Phaser.GameObjects.Container {
 
   /**
    * 创建舌体颜色选择区域
+   * 使用SelectionButtonComponent (Phase 2.5 Task 11)
    */
   private createBodyColorOptions(scene: Phaser.Scene): void {
     // 标签
@@ -150,42 +153,35 @@ export class TongueUI extends Phaser.GameObjects.Container {
     // 获取选项
     const colors = tongueDescriptions.body_colors;
 
-    // 创建选项（横向排列）
+    // 创建选项（使用SelectionButtonComponent）
     for (let i = 0; i < colors.length; i++) {
       const color = colors[i];
-      const optionX = -350 + i * 80;
-      const optionY = -10;
+      const buttonX = -320 + i * 90;  // 调整位置
+      const buttonY = -10;
 
-      const option = scene.add.text(optionX, optionY, `○${color.name}`, {
-        fontSize: '14px',
-        color: UI_COLOR_STRINGS.TEXT_PRIMARY,
-        backgroundColor: UI_COLOR_STRINGS.PANEL_LIGHT,
-        padding: { x: 4, y: 2 }
-      });
-      option.setInteractive({ useHandCursor: true });
+      const content: SelectionButtonContent = {
+        label: color.name,
+        value: color.id
+      };
 
-      option.on('pointerdown', () => {
-        this.selectBodyColor(color.id, option);
-      });
+      const button = new SelectionButtonComponent(
+        scene,
+        content,
+        {
+          onSelect: (value: string) => this.selectBodyColor(value)
+        },
+        buttonX,
+        buttonY
+      );
 
-      option.on('pointerover', () => {
-        if (this.selectedBodyColor !== color.id) {
-          option.setColor('#70a0c0');  // SOFT_BLUE
-        }
-      });
-      option.on('pointerout', () => {
-        if (this.selectedBodyColor !== color.id) {
-          option.setColor('#ffffff');
-        }
-      });
-
-      this.add(option);
-      this.bodyColorOptions.push(option);
+      this.add(button.container);
+      this.bodyColorButtons.push(button);
     }
   }
 
   /**
    * 创建舌苔选择区域
+   * 使用SelectionButtonComponent (Phase 2.5 Task 11)
    */
   private createCoatingOptions(scene: Phaser.Scene): void {
     // 标签
@@ -198,42 +194,35 @@ export class TongueUI extends Phaser.GameObjects.Container {
     // 获取选项
     const coatings = tongueDescriptions.coatings;
 
-    // 创建选项（横向排列）
+    // 创建选项（使用SelectionButtonComponent）
     for (let i = 0; i < coatings.length; i++) {
       const coating = coatings[i];
-      const optionX = -350 + i * 80;
-      const optionY = 70;
+      const buttonX = -320 + i * 90;  // 调整位置
+      const buttonY = 70;
 
-      const option = scene.add.text(optionX, optionY, `○${coating.name}`, {
-        fontSize: '14px',
-        color: UI_COLOR_STRINGS.TEXT_PRIMARY,
-        backgroundColor: UI_COLOR_STRINGS.PANEL_LIGHT,
-        padding: { x: 4, y: 2 }
-      });
-      option.setInteractive({ useHandCursor: true });
+      const content: SelectionButtonContent = {
+        label: coating.name,
+        value: coating.id
+      };
 
-      option.on('pointerdown', () => {
-        this.selectCoating(coating.id, option);
-      });
+      const button = new SelectionButtonComponent(
+        scene,
+        content,
+        {
+          onSelect: (value: string) => this.selectCoating(value)
+        },
+        buttonX,
+        buttonY
+      );
 
-      option.on('pointerover', () => {
-        if (this.selectedCoating !== coating.id) {
-          option.setColor('#70a0c0');  // SOFT_BLUE
-        }
-      });
-      option.on('pointerout', () => {
-        if (this.selectedCoating !== coating.id) {
-          option.setColor('#ffffff');
-        }
-      });
-
-      this.add(option);
-      this.coatingOptions.push(option);
+      this.add(button.container);
+      this.coatingButtons.push(button);
     }
   }
 
   /**
    * 创建舌形选择区域
+   * 使用SelectionButtonComponent (Phase 2.5 Task 11)
    */
   private createShapeOptions(scene: Phaser.Scene): void {
     // 标签
@@ -246,42 +235,35 @@ export class TongueUI extends Phaser.GameObjects.Container {
     // 获取选项
     const shapes = tongueDescriptions.shapes;
 
-    // 创建选项（横向排列）
+    // 创建选项（使用SelectionButtonComponent）
     for (let i = 0; i < shapes.length; i++) {
       const shape = shapes[i];
-      const optionX = -350 + i * 100;
-      const optionY = 150;
+      const buttonX = -320 + i * 100;  // 调整位置
+      const buttonY = 150;
 
-      const option = scene.add.text(optionX, optionY, `○${shape.name}`, {
-        fontSize: '14px',
-        color: UI_COLOR_STRINGS.TEXT_PRIMARY,
-        backgroundColor: UI_COLOR_STRINGS.PANEL_LIGHT,
-        padding: { x: 4, y: 2 }
-      });
-      option.setInteractive({ useHandCursor: true });
+      const content: SelectionButtonContent = {
+        label: shape.name,
+        value: shape.id
+      };
 
-      option.on('pointerdown', () => {
-        this.selectShape(shape.id, option);
-      });
+      const button = new SelectionButtonComponent(
+        scene,
+        content,
+        {
+          onSelect: (value: string) => this.selectShape(value)
+        },
+        buttonX,
+        buttonY
+      );
 
-      option.on('pointerover', () => {
-        if (this.selectedShape !== shape.id) {
-          option.setColor('#70a0c0');  // SOFT_BLUE
-        }
-      });
-      option.on('pointerout', () => {
-        if (this.selectedShape !== shape.id) {
-          option.setColor('#ffffff');
-        }
-      });
-
-      this.add(option);
-      this.shapeOptions.push(option);
+      this.add(button.container);
+      this.shapeButtons.push(button);
     }
   }
 
   /**
    * 创建润燥选择区域
+   * 使用SelectionButtonComponent (Phase 2.5 Task 11)
    */
   private createMoistureOptions(scene: Phaser.Scene): void {
     // 标签
@@ -294,37 +276,29 @@ export class TongueUI extends Phaser.GameObjects.Container {
     // 获取选项
     const moistures = tongueDescriptions.moistures;
 
-    // 创建选项（横向排列）
+    // 创建选项（使用SelectionButtonComponent）
     for (let i = 0; i < moistures.length; i++) {
       const moisture = moistures[i];
-      const optionX = -350 + i * 120;
-      const optionY = 230;
+      const buttonX = -320 + i * 100;  // 调整位置
+      const buttonY = 230;
 
-      const option = scene.add.text(optionX, optionY, `○${moisture.name}`, {
-        fontSize: '14px',
-        color: UI_COLOR_STRINGS.TEXT_PRIMARY,
-        backgroundColor: UI_COLOR_STRINGS.PANEL_LIGHT,
-        padding: { x: 4, y: 2 }
-      });
-      option.setInteractive({ useHandCursor: true });
+      const content: SelectionButtonContent = {
+        label: moisture.name,
+        value: moisture.id
+      };
 
-      option.on('pointerdown', () => {
-        this.selectMoisture(moisture.id, option);
-      });
+      const button = new SelectionButtonComponent(
+        scene,
+        content,
+        {
+          onSelect: (value: string) => this.selectMoisture(value)
+        },
+        buttonX,
+        buttonY
+      );
 
-      option.on('pointerover', () => {
-        if (this.selectedMoisture !== moisture.id) {
-          option.setColor('#70a0c0');  // SOFT_BLUE
-        }
-      });
-      option.on('pointerout', () => {
-        if (this.selectedMoisture !== moisture.id) {
-          option.setColor('#ffffff');
-        }
-      });
-
-      this.add(option);
-      this.moistureOptions.push(option);
+      this.add(button.container);
+      this.moistureButtons.push(button);
     }
   }
 
@@ -437,53 +411,70 @@ export class TongueUI extends Phaser.GameObjects.Container {
 
   /**
    * 选择舌体颜色
+   * 使用SelectionButtonComponent管理选中状态 (Phase 2.5 Task 11)
    */
-  private selectBodyColor(colorId: string, option: Phaser.GameObjects.Text): void {
+  private selectBodyColor(colorId: string): void {
     this.selectedBodyColor = colorId;
-    this.updateOptionSelection(this.bodyColorOptions, colorId, option);
+    // 更新按钮选中状态：先取消所有选中，再选中当前
+    for (const button of this.bodyColorButtons) {
+      if (button.content.value === colorId) {
+        button.select();
+      } else {
+        button.deselect();
+      }
+    }
     this.exposeToGlobal();
   }
 
   /**
    * 选择舌苔
+   * 使用SelectionButtonComponent管理选中状态 (Phase 2.5 Task 11)
    */
-  private selectCoating(coatingId: string, option: Phaser.GameObjects.Text): void {
+  private selectCoating(coatingId: string): void {
     this.selectedCoating = coatingId;
-    this.updateOptionSelection(this.coatingOptions, coatingId, option);
+    // 更新按钮选中状态：先取消所有选中，再选中当前
+    for (const button of this.coatingButtons) {
+      if (button.content.value === coatingId) {
+        button.select();
+      } else {
+        button.deselect();
+      }
+    }
     this.exposeToGlobal();
   }
 
   /**
    * 选择舌形
+   * 使用SelectionButtonComponent管理选中状态 (Phase 2.5 Task 11)
    */
-  private selectShape(shapeId: string, option: Phaser.GameObjects.Text): void {
+  private selectShape(shapeId: string): void {
     this.selectedShape = shapeId;
-    this.updateOptionSelection(this.shapeOptions, shapeId, option);
+    // 更新按钮选中状态：先取消所有选中，再选中当前
+    for (const button of this.shapeButtons) {
+      if (button.content.value === shapeId) {
+        button.select();
+      } else {
+        button.deselect();
+      }
+    }
     this.exposeToGlobal();
   }
 
   /**
    * 选择润燥
+   * 使用SelectionButtonComponent管理选中状态 (Phase 2.5 Task 11)
    */
-  private selectMoisture(moistureId: string, option: Phaser.GameObjects.Text): void {
+  private selectMoisture(moistureId: string): void {
     this.selectedMoisture = moistureId;
-    this.updateOptionSelection(this.moistureOptions, moistureId, option);
-    this.exposeToGlobal();
-  }
-
-  /**
-   * 更新选项选中状态
-   */
-  private updateOptionSelection(options: Phaser.GameObjects.Text[], _selectedId: string, selectedOption: Phaser.GameObjects.Text): void {
-    for (const opt of options) {
-      const text = opt.text;
-      if (text.includes('●')) {
-        opt.setText(text.replace('●', '○'));
-        opt.setColor('#ffffff');
+    // 更新按钮选中状态：先取消所有选中，再选中当前
+    for (const button of this.moistureButtons) {
+      if (button.content.value === moistureId) {
+        button.select();
+      } else {
+        button.deselect();
       }
     }
-    selectedOption.setText(selectedOption.text.replace('○', '●'));
-    selectedOption.setColor(UI_COLOR_STRINGS.BUTTON_PRIMARY);
+    this.exposeToGlobal();
   }
 
   /**
@@ -573,12 +564,27 @@ export class TongueUI extends Phaser.GameObjects.Container {
 
   /**
    * 销毁
+   * 使用SelectionButtonComponent (Phase 2.5 Task 11)
    */
   destroy(): void {
-    this.bodyColorOptions = [];
-    this.coatingOptions = [];
-    this.shapeOptions = [];
-    this.moistureOptions = [];
+    // 销毁SelectionButtonComponent
+    for (const button of this.bodyColorButtons) {
+      button.destroy();
+    }
+    for (const button of this.coatingButtons) {
+      button.destroy();
+    }
+    for (const button of this.shapeButtons) {
+      button.destroy();
+    }
+    for (const button of this.moistureButtons) {
+      button.destroy();
+    }
+
+    this.bodyColorButtons = [];
+    this.coatingButtons = [];
+    this.shapeButtons = [];
+    this.moistureButtons = [];
 
     if (typeof window !== 'undefined') {
       (window as any).__TONGUE_UI__ = null;

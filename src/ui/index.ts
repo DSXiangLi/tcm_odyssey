@@ -7,7 +7,23 @@
  * Phase 2 S6 实现 - PulseUI, TongueUI, SyndromeUI, PrescriptionUI, ResultUI, NPCFeedbackUI
  * Phase 2 S7 实现 - SaveUI
  * Phase 2 S8 实现 - InventoryUI
+ * Phase 2.5 实现 - UIBorderStyles, BaseUIComponent, ModalUI (UI核心基础设施)
  */
+
+// Phase 2.5: UI核心基础设施
+export {
+  BORDER_STYLE_CONFIGS,
+  draw3DBorder,
+  drawNeumorphicBorderRaised,
+  drawNeumorphicBorderInset,
+  drawInsetSlotBorder,
+} from './base/UIBorderStyles';
+export type { BorderStyleType, BorderStyleConfig } from './base/UIBorderStyles';
+
+export { default as BaseUIComponent } from './base/BaseUIComponent';
+
+export { default as ModalUI, MODAL_SIZES, EXIT_BUTTON_POSITIONS } from './base/ModalUI';
+export type { ModalType } from './base/ModalUI';
 
 export { DialogUI } from './DialogUI';
 export type { DialogUIConfig } from './DialogUI';

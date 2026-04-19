@@ -143,15 +143,16 @@ BaseUIComponent (抽象基类)
     │       └── ProcessingUI.qualityCard # 质量判断卡片
 
     ├── CompatibilitySlotComponent (配伍槽位组件)
-    │   ├── 尺寸: 120×80
+    │   ├── 尺寸: 120×100 (修正：与game-interaction-design.md一致)
     │   ├── 边框方案: 方案8(内凹槽位)
     │   ├── 内容布局
     │   │   ├── 角色标签: 君/臣/佐/使 (顶部)
-    │   │   ├── 药材槽位: ItemSlot (中央)
-    │   │   └── 顺序标签: 先煎/后下 (底部)
+    │   │   ├── 药材槽位: ItemSlot 60×60 (中央)
+    │   │   └── 顺序标签: 先煎/同煎/后下 (底部)
     │   │
     │   └── 使用场景
-    │       └── DecoctionUI.compatibilitySlots # 配伍放置
+    │       ├── DecoctionUI.compatibilitySlots # 煎药配伍放置
+    │       └── PrescriptionUI.roleSlots        # 选方角色槽位(可选)
 
     └── ProgressBarComponent (进度条组件)
         ├── 尺寸: 宽度自适应, 高度20px
@@ -413,7 +414,71 @@ src/ui/
 
 ---
 
-## 八、相关文档
+## 九、统一化套件化规范（强制执行）
+
+### 9.1 选中状态强制规范
+
+| 场景类型 | 必须使用方案 | 禁止使用方案 | 典型应用 |
+|---------|-------------|-------------|---------|
+| 单选文字选项 | 方案A(○→●) | 方案B/C | 脉位/脉势/舌象属性 |
+| 物品格子选择 | 方案B(Neumorphism凹陷→凸起) | 方案A/C | 药材/种子/辅料格子 |
+| 卡片选择 | 方案C(颜色高亮) | 方案A | 证型/方剂/方法卡片 |
+| 槽位填充状态 | 方案B(Neumorphism) + 满足绿条 | 方案A/C | 配伍槽/合成槽/地块 |
+
+### 9.2 物品格子统一复用规范
+
+**ItemSlotComponent (60×60)** 必须在以下所有场景复用：
+| UI组件 | 使用位置 | 复用规范 |
+|-------|---------|---------|
+| InventoryUI | slots (药材格子) | ✓ 统一60×60 Neumorphism |
+| DecoctionUI | herbSlots (煎药药材格子) | ✓ 统一60×60 Neumorphism |
+| ProcessingUI | herbSlots (炮制药材格子) | ✓ 统一60×60 Neumorphism |
+| PlantingUI | seedSlots (种子格子) | ✓ 统一60×60 Neumorphism |
+
+**统一视觉规格**:
+- 尺寸: 60×60
+- 边框风格: Neumorphism (凹陷=空, 凸起=选中)
+- 内部布局: 40×40图标区 + 12×12右下角数量角标
+- 选中边框: BUTTON_PRIMARY(#90c070) 4px高亮
+
+### 9.3 槽位类型统一规范
+
+| 槽位类型 | 尺寸 | 边框风格 | 复用场景 |
+|---------|------|---------|---------|
+| CompatibilitySlot | 120×100 | 内凹(inset) | DecoctionUI配伍、PrescriptionUI选方 |
+| SynthesisSlot | 100×80 | 内凹(inset) | ProcessingUI炮制合成 |
+| PlotSlot | 100×80 | 实线边框 | PlantingUI地块 |
+| DiagnosisSlot | 60×60 | 3D边框 | PulseUI/TongueUI/SyndromeUI诊断结果 |
+| TimelineSlot | 80×70 | 实线边框 | DecoctionUI时间轴 |
+
+### 9.4 UI组件到基础组件映射表
+
+| UI组件 | ItemSlot | SelectionButton | CompatibilitySlot | SynthesisSlot | PlotSlot | DiagnosisSlot | ProgressBar |
+|-------|:--------:|:--------------:|:-----------------:|:-------------:|:-------:|:-------------:|:-----------:|
+| InventoryUI | ✓(背包格子) | - | - | - | - | - | - |
+| PulseUI | - | ✓(脉位/脉势) | - | - | - | ✓(已选展示) | - |
+| TongueUI | - | ✓(舌象属性) | - | - | - | ✓(已选展示) | - |
+| SyndromeUI | - | ✓(证型选择) | - | - | - | ✓(已选展示) | - |
+| PrescriptionUI | - | ✓(方剂选择) | ✓(可选) | - | - | ✓(已选展示) | - |
+| DecoctionUI | ✓(药材格子) | ✓(火候选择) | ✓(配伍槽位) | - | - | - | ✓(煎药进度) |
+| ProcessingUI | ✓(药材格子) | ✓(方法选择) | - | ✓(合成槽位) | - | - | ✓(炮制进度) |
+| PlantingUI | ✓(种子格子) | ✓(水源/肥料) | - | - | ✓(地块槽位) | - | ✓(生长进度) |
+
+### 9.5 边框方案统一编号
+
+| 编号 | 名称 | 适用场景 | 颜色配置 |
+|-----|------|---------|---------|
+| B-01 | 3D立体边框 | 弹窗主背景、诊断槽位 | BORDER_OUTER_GREEN + 高光/阴影 |
+| B-02 | 玻璃态边框 | NPC对话弹窗 | PANEL_GLASS_LIGHT → DARK + 发光 |
+| B-03 | 传统边框 | 复古风格弹窗 | BORDER_PRIMARY + PANEL_SECONDARY |
+| B-04 | Neumorphism凸起 | 物品格子(选中状态) | 凸起阴影 + 高亮边框 |
+| B-05 | Neumorphism凹陷 | 物品格子(未选中状态) | 凹陷阴影 + 灰色边框 |
+| B-06 | 内凹槽位 | 配伍槽位、合成槽位、时间轴槽位 | BORDER_INSET_DARK + LIGHT |
+| B-07 | 实线边框 | 地块槽位、进度条背景 | 归经颜色或顺序颜色 |
+
+---
+
+## 十、相关文档
 
 - [脉诊游戏设计文档](./minigames/2026-04-19-pulse-minigame-design.md)
 - [舌诊游戏设计文档](./minigames/2026-04-19-tongue-minigame-design.md)

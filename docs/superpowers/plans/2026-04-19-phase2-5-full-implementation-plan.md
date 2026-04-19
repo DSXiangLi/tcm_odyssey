@@ -12,11 +12,62 @@
 
 ## 当前进度
 
-| Phase | 状态 | 说明 |
-|-----|------|------|
-| Phase 1 | ✅ 完成 | 核心基础设施（UIBorderStyles、BaseUIComponent、ModalUI） |
-| Phase 2-4 | ⏳ 待执行 | 内部组件创建 |
-| Phase 5-9 | ⏳ 待执行 | UI组件重构 |
+| Task范围 | 状态 | 说明 |
+|---------|------|------|
+| Task 1-5 | ✅ 完成 | 核心基础设施（UIBorderStyles、BaseUIComponent、ModalUI） |
+| Task 6-8 | ⏳ 待执行 | 内部组件创建 |
+| Task 9-19 | ⏳ 待执行 | UI组件重构 |
+| Task 20 | ⏳ 待执行 | 最终验收 |
+
+---
+
+## 统一化套件化规范（强制执行）
+
+### 选中状态强制规范
+
+| 场景类型 | 必须使用方案 | 禁止使用方案 |
+|---------|-------------|-------------|
+| 单选文字选项(脉位/脉势/舌象属性) | 方案A(○→●) | 方案B/C |
+| 物品格子选择(药材/种子/辅料) | 方案B(Neumorphism凹陷→凸起) | 方案A/C |
+| 卡片选择(证型/方剂/方法) | 方案C(颜色高亮) | 方案A |
+| 槽位填充状态 | 方案B(Neumorphism) + 满足绿条 | 方案A/C |
+
+### 物品格子统一复用规范
+
+**ItemSlotComponent (60×60)** 必须在以下所有场景复用：
+- InventoryUI.slots (背包药材格子)
+- DecoctionUI.herbSlots (煎药药材格子)
+- ProcessingUI.herbSlots (炮制药材格子)
+- PlantingUI.seedSlots (种子格子)
+
+**统一视觉规格**:
+- 尺寸: 60×60
+- 边框风格: Neumorphism (凹陷=空, 凸起=选中)
+- 内部布局: 40×40图标区 + 12×12右下角数量角标
+- 选中边框: BUTTON_PRIMARY(#90c070) 4px高亮
+
+### 槽位类型统一规范
+
+| 槽位类型 | 尺寸 | 边框风格 | 复用场景 |
+|---------|------|---------|---------|
+| CompatibilitySlot | 120×100 | 内凹(inset) | DecoctionUI配伍、PrescriptionUI选方 |
+| SynthesisSlot | 100×80 | 内凹(inset) | ProcessingUI炮制合成 |
+| PlotSlot | 100×80 | 实线边框 | PlantingUI地块 |
+| DiagnosisSlot | 60×60 | 3D边框 | PulseUI/TongueUI/SyndromeUI诊断结果 |
+| TimelineSlot | 80×70 | 实线边框 | DecoctionUI时间轴 |
+
+### UI组件到基础组件映射表
+
+| UI组件 | ItemSlot | SelectionButton | CompatibilitySlot | SynthesisSlot | PlotSlot | DiagnosisSlot | ProgressBar |
+|-------|:--------:|:--------------:|:-----------------:|:-------------:|:-------:|:-------------:|:-----------:|
+| InventoryUI | ✓ | - | - | - | - | - | - |
+| PulseUI | - | ✓ | - | - | - | ✓ | - |
+| TongueUI | - | ✓ | - | - | - | ✓ | - |
+| SyndromeUI | - | ✓ | - | - | - | ✓ | - |
+| PrescriptionUI | - | ✓ | ✓ | - | - | ✓ | - |
+| DecoctionUI | ✓ | ✓ | ✓ | - | - | - | ✓ |
+| ProcessingUI | ✓ | ✓ | - | ✓ | - | - | ✓ |
+| PlantingUI | ✓ | ✓ | - | - | ✓ | - | ✓ |
 
 ---
 
@@ -42,7 +93,7 @@
 
 ---
 
-## Phase 2: 创建ItemSlotComponent物品格子组件
+## Section A: 创建ItemSlotComponent物品格子组件
 
 ### Task 6: 创建ItemSlotComponent
 
@@ -399,7 +450,7 @@ EOF
 
 ---
 
-## Phase 3: 创建SelectionButtonComponent选择按钮组件
+## Section B: 创建SelectionButtonComponent选择按钮组件
 
 ### Task 7: 创建SelectionButtonComponent
 
@@ -426,7 +477,7 @@ EOF
 
 ---
 
-## Phase 4: 创建CompatibilitySlotComponent配伍槽位组件
+## Section C: 创建CompatibilitySlotComponent配伍槽位组件
 
 ### Task 8: 创建CompatibilitySlotComponent
 
@@ -454,7 +505,7 @@ EOF
 
 ---
 
-## Phase 5: 重构InventoryUI使用新组件
+## Section D: 重构InventoryUI使用新组件
 
 ### Task 9: 重构InventoryUI
 
@@ -523,7 +574,7 @@ test('InventoryUI重构后完整流程', async ({ page }) => {
 
 ---
 
-## Phase 6: 重构诊断类UI
+## Section E: 重构诊断类UI
 
 ### Task 10-13: 脉诊/舌诊/辨证/选方UI重构
 
@@ -584,7 +635,7 @@ test('诊断流程完整测试（脉诊→舌诊→辨证→选方）', async ({
 
 ---
 
-## Phase 7: 重构小游戏UI
+## Section F: 重构小游戏UI
 
 ### Task 14-16: 煎药/炮制/种植UI重构
 
@@ -598,13 +649,13 @@ test('诊断流程完整测试（脉诊→舌诊→辨证→选方）', async ({
 
 ---
 
-## Phase 8-9: 其他UI重构
+## Section G-H: 其他UI重构
 
 ### Task 17-19: 问诊/存档/病案UI重构
 
 ---
 
-## Phase 10: 最终验收
+## Section I: 最终验收
 
 ### Task 20: 全量测试运行
 

@@ -73,10 +73,14 @@ export default abstract class BaseUIComponent {
     this.height = height;
     this.depth = depth;
 
-    // 创建容器，位于屏幕中心
-    const centerX = scene.cameras.main.centerX;
-    const centerY = scene.cameras.main.centerY;
-    this.container = scene.add.container(centerX, centerY);
+    // 创建容器，位于屏幕中心（使用屏幕坐标而非世界坐标）
+    // 重要：centerX/centerY是相机视口的世界坐标中心，会随相机滚动变化
+    // 对于固定UI(setScrollFactor(0))，需要使用屏幕坐标中心
+    const screenWidth = scene.cameras.main.width;
+    const screenHeight = scene.cameras.main.height;
+    const screenCenterX = screenWidth / 2;
+    const screenCenterY = screenHeight / 2;
+    this.container = scene.add.container(screenCenterX, screenCenterY);
 
     // 设置深度
     this.container.setDepth(this.depth);

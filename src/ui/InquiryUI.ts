@@ -373,11 +373,12 @@ export class InquiryUI extends Phaser.GameObjects.Container {
    */
   private createClueTrackerArea(scene: Phaser.Scene): void {
     // 线索追踪区域位置和尺寸
-    // 修复：trackerX从280改为220，确保右边界在主面板内
-    // 主面板右边界 = -320 + 640 = 320
-    // tracker右边界 = trackerX + trackerWidth/2 = 220 + 90 = 310 < 320 ✓
+    // 修复：trackerY从-100改为-50，确保tracker顶部在主面板内
+    // 主面板边界：y从-210到210
+    // tracker顶部 = trackerY - trackerHeight/2 = -50 - 160 = -210 ✓（与面板顶部对齐）
+    // tracker底部 = trackerY + trackerHeight/2 = -50 + 160 = 110 ✓（在面板底部210内）
     const trackerX = 220;  // 修复：从280改为220
-    const trackerY = -100;
+    const trackerY = -50;  // 修复：从-100改为-50，使顶部与面板对齐
     const trackerWidth = 180;
     const trackerHeight = 320;
 

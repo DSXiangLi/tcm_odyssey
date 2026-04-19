@@ -95,13 +95,38 @@ export class BootScene extends Phaser.Scene {
   }
 
   create(): void {
+    // 标记BootScene被访问（供测试验证）
+    (window as any).__BOOT_SCENE_VISITED__ = true;
+
     this.createPlayerAnimations();
     this.createPlaceholderTextures();
 
     // Phase 2 S11: 初始化管理器并暴露到全局
     this.initializeManagers();
 
-    this.scene.start(SCENES.TOWN_OUTDOOR);
+    // ⭐ 关键修复：检查registry中是否有存档目标场景
+    // 存档加载时，TitleScene会将目标场景存入registry
+    const savedTargetScene = this.game.registry.get('savedTargetScene');
+    const savedPlayerPosition = this.game.registry.get('savedPlayerPosition');
+
+    if (savedTargetScene && typeof savedTargetScene === 'string') {
+      console.log(`[BootScene] Found saved target scene: ${savedTargetScene}`);
+
+      // 清理registry中的存档数据（避免下次启动时误用）
+      this.game.registry.remove('savedTargetScene');
+      this.game.registry.remove('savedPlayerPosition');
+
+      // 将玩家位置存入registry，供目标场景使用
+      if (savedPlayerPosition) {
+        this.game.registry.set('spawnPoint', savedPlayerPosition);
+      }
+
+      // 跳转到存档目标场景
+      this.scene.start(savedTargetScene);
+    } else {
+      // 新游戏流程：跳转到默认室外场景
+      this.scene.start(SCENES.TOWN_OUTDOOR);
+    }
   }
 
   /**

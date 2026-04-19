@@ -504,11 +504,19 @@ export class TitleScene extends Phaser.Scene {
           scene: saveData.scene_state.current_scene
         });
 
-        // 等待一小段时间后切换场景
+        // ⭐ 关键修复：存档加载时必须经过BootScene进行资源预加载
+        // 将存档目标场景存入registry，BootScene会读取并跳转到正确场景
+        this.game.registry.set('savedTargetScene', saveData.scene_state.current_scene);
+        this.game.registry.set('savedPlayerPosition', saveData.scene_state.player_position);
+
+        console.log(`[TitleScene] Saved target scene to registry: ${saveData.scene_state.current_scene}`);
+
+        // 等待一小段时间后切换到BootScene（资源加载）
         this.time.delayedCall(500, () => {
           this.cameras.main.fade(500, 0, 0, 0);
           this.time.delayedCall(500, () => {
-            this.scene.start(saveData.scene_state.current_scene);
+            // 跳转到BootScene进行资源加载，而非直接跳转到存档场景
+            this.scene.start(SCENES.BOOT);
           });
         });
       } else {

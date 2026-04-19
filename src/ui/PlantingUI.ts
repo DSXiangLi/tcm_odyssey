@@ -3,6 +3,7 @@
  * 种植游戏UI组件
  *
  * Phase 2 S11.3 实现
+ * Phase 2.5 UI组件系统统一化 Task 16 重构
  *
  * 功能:
  * - 种子选择界面
@@ -11,6 +12,10 @@
  * - 肥料选择界面（五味）
  * - 生长进度界面
  * - 收获考教界面
+ *
+ * 组件使用:
+ * - SelectionButtonComponent: 种子/地块/水源/肥料/考教选项 (方案A: ○→●)
+ * - ItemSlotComponent: 生长进度地块展示 (方案B: Neumorphism)
  */
 
 import Phaser from 'phaser';
@@ -27,6 +32,13 @@ import {
   type PlotState
 } from '../data/planting-data';
 import { UI_COLORS, UI_COLOR_STRINGS } from '../data/ui-color-theme';
+import SelectionButtonComponent, {
+  SelectionButtonContent,
+  SelectionButtonConfig
+} from './components/SelectionButtonComponent';
+import ItemSlotComponent, {
+  ItemSlotContent
+} from './components/ItemSlotComponent';
 
 /**
  * UI配置
@@ -53,6 +65,10 @@ export class PlantingUI {
   private titleText: Phaser.GameObjects.Text | null = null;
   private phaseText: Phaser.GameObjects.Text | null = null;
   private contentContainer: Phaser.GameObjects.Container | null = null;
+
+  // 组件引用（用于清理）
+  private selectionButtons: SelectionButtonComponent[] = [];
+  private itemSlots: ItemSlotComponent[] = [];
 
   // 事件监听器引用（用于正确清理）
   private phaseChangedHandler!: (data: EventData) => void;
@@ -176,6 +192,14 @@ export class PlantingUI {
    * 清空内容容器
    */
   private clearContent(): void {
+    // 清理SelectionButtonComponent
+    this.selectionButtons.forEach(btn => btn.destroy());
+    this.selectionButtons = [];
+
+    // 清理ItemSlotComponent
+    this.itemSlots.forEach(slot => slot.destroy());
+    this.itemSlots = [];
+
     if (this.contentContainer) {
       this.contentContainer.destroy();
     }
@@ -287,60 +311,50 @@ export class PlantingUI {
     ).setOrigin(0.5);
     this.contentContainer!.add(hintText);
 
-    // 种子选项
+    // 种子选项 - 使用SelectionButtonComponent (方案A: ○→●)
     const startY = 60;
     const itemHeight = 50;
 
     availableSeeds.forEach((seed, index) => {
       const y = startY + index * itemHeight;
 
-      // 种子按钮背景
-      const bg = this.scene.add.rectangle(
+      // 构建显示文本：种子名称 + 归经信息
+      const labelText = `${seed.name} (归${seed.meridian}经)`;
+      const subText = `需: ${seed.required_water}水 + ${seed.required_fertilizer}肥`;
+
+      // 使用SelectionButtonComponent
+      const buttonContent: SelectionButtonContent = {
+        label: labelText,
+        value: seed.id
+      };
+
+      const buttonConfig: SelectionButtonConfig = {
+        width: 300,
+        onSelect: () => {
+          this.manager.selectSeed(seed.id);
+        }
+      };
+
+      const button = new SelectionButtonComponent(
+        this.scene,
+        buttonContent,
+        buttonConfig,
         this.width / 2,
-        y,
-        300,
-        40,
-        UI_COLORS.BUTTON_PRIMARY
-      ).setInteractive({ useHandCursor: true });
-
-      // 种子名称
-      const nameText = this.scene.add.text(
-        this.width / 2 - 120,
-        y - 10,
-        seed.name,
-        { fontSize: '16px', color: UI_COLOR_STRINGS.TEXT_PRIMARY }
+        y
       );
 
-      // 归经信息
-      const meridianText = this.scene.add.text(
-        this.width / 2 + 80,
-        y - 10,
-        `归${seed.meridian}经`,
-        { fontSize: '12px', color: UI_COLOR_STRINGS.TEXT_SECONDARY }
-      );
-
-      // 需求信息
+      // 添加需求信息作为子文本（在按钮下方）
       const reqText = this.scene.add.text(
         this.width / 2 - 120,
-        y + 10,
-        `需: ${seed.required_water}水 + ${seed.required_fertilizer}肥`,
+        y + 20,
+        subText,
         { fontSize: '12px', color: UI_COLOR_STRINGS.TEXT_DISABLED }
       );
+      this.contentContainer!.add(reqText);
 
-      this.contentContainer!.add([bg, nameText, meridianText, reqText]);
-
-      // 点击选择
-      bg.on('pointerdown', () => {
-        this.manager.selectSeed(seed.id);
-      });
-
-      // 悬停效果
-      bg.on('pointerover', () => {
-        bg.setFillStyle(UI_COLORS.BUTTON_PRIMARY_HOVER);
-      });
-      bg.on('pointerout', () => {
-        bg.setFillStyle(UI_COLORS.BUTTON_PRIMARY);
-      });
+      // 将按钮容器添加到contentContainer
+      this.contentContainer!.add(button.container);
+      this.selectionButtons.push(button);
     });
 
     // 添加取消按钮
@@ -381,7 +395,7 @@ export class PlantingUI {
       this.contentContainer!.add(seedInfo);
     }
 
-    // 地块选项
+    // 地块选项 - 使用SelectionButtonComponent (方案A: ○→●)
     const startY = 60;
     const itemHeight = 50;
 
@@ -390,57 +404,38 @@ export class PlantingUI {
 
       // 判断地块是否匹配
       const isMatch = selectedSeed && (plot.meridian === selectedSeed.meridian || plot.meridian === 'general');
-      const bgColor = isMatch ? UI_COLORS.BUTTON_SUCCESS : UI_COLORS.BUTTON_PRIMARY;
 
-      // 地块按钮背景
-      const bg = this.scene.add.rectangle(
+      // 构建显示文本
+      const meridianLabel = plot.meridian === 'general' ? '通用' : `归${plot.meridian}经`;
+      const labelText = `${plot.name} (${meridianLabel})`;
+
+      // 匹配提示文本
+      const matchText = isMatch ? ' ✓匹配' : '';
+
+      const buttonContent: SelectionButtonContent = {
+        label: labelText + matchText,
+        value: plot.id
+      };
+
+      const buttonConfig: SelectionButtonConfig = {
+        width: 300,
+        selected: false,
+        onSelect: () => {
+          this.manager.selectPlot(plot.id);
+        }
+      };
+
+      const button = new SelectionButtonComponent(
+        this.scene,
+        buttonContent,
+        buttonConfig,
         this.width / 2,
-        y,
-        300,
-        40,
-        bgColor
-      ).setInteractive({ useHandCursor: true });
-
-      // 地块名称
-      const nameText = this.scene.add.text(
-        this.width / 2 - 120,
-        y,
-        plot.name,
-        { fontSize: '16px', color: UI_COLOR_STRINGS.TEXT_PRIMARY }
+        y
       );
 
-      // 归经信息
-      const meridianText = this.scene.add.text(
-        this.width / 2 + 80,
-        y,
-        plot.meridian === 'general' ? '通用' : `归${plot.meridian}经`,
-        { fontSize: '12px', color: UI_COLOR_STRINGS.TEXT_SECONDARY }
-      );
-
-      // 匹配提示
-      if (isMatch) {
-        const matchText = this.scene.add.text(
-          this.width / 2 + 50,
-          y + 10,
-          '✓ 匹配',
-          { fontSize: '12px', color: UI_COLOR_STRINGS.BUTTON_SUCCESS }
-        );
-        this.contentContainer!.add(matchText);
-      }
-
-      this.contentContainer!.add([bg, nameText, meridianText]);
-
-      // 点击选择
-      bg.on('pointerdown', () => {
-        this.manager.selectPlot(plot.id);
-      });
-
-      bg.on('pointerover', () => {
-        bg.setFillStyle(isMatch ? UI_COLORS.BUTTON_PRIMARY_HOVER : UI_COLORS.BUTTON_PRIMARY_HOVER);
-      });
-      bg.on('pointerout', () => {
-        bg.setFillStyle(bgColor);
-      });
+      // 将按钮容器添加到contentContainer
+      this.contentContainer!.add(button.container);
+      this.selectionButtons.push(button);
     });
   }
 
@@ -471,7 +466,7 @@ export class PlantingUI {
       this.contentContainer!.add(seedInfo);
     }
 
-    // 水源选项
+    // 水源选项 - 使用SelectionButtonComponent (方案A: ○→●)
     const startY = 60;
     const itemHeight = 40;
 
@@ -480,39 +475,31 @@ export class PlantingUI {
 
       // 判断水源是否匹配
       const isMatch = selectedSeed && (water.qi_type === selectedSeed.required_water || water.qi_type === 'neutral');
-      const bgColor = isMatch ? UI_COLORS.BUTTON_SUCCESS : UI_COLORS.BUTTON_PRIMARY;
+      const matchText = isMatch ? ' ✓' : '';
 
-      // 水源按钮
-      const bg = this.scene.add.rectangle(
+      const buttonContent: SelectionButtonContent = {
+        label: `${water.name} (${water.qi_type})${matchText}`,
+        value: water.id
+      };
+
+      const buttonConfig: SelectionButtonConfig = {
+        width: 280,
+        onSelect: () => {
+          this.manager.selectWater(water.id);
+        }
+      };
+
+      const button = new SelectionButtonComponent(
+        this.scene,
+        buttonContent,
+        buttonConfig,
         this.width / 2,
-        y,
-        280,
-        30,
-        bgColor
-      ).setInteractive({ useHandCursor: true });
-
-      const nameText = this.scene.add.text(
-        this.width / 2 - 120,
-        y,
-        water.name,
-        { fontSize: '14px', color: UI_COLOR_STRINGS.TEXT_PRIMARY }
+        y
       );
 
-      const qiText = this.scene.add.text(
-        this.width / 2 + 80,
-        y,
-        water.qi_type,
-        { fontSize: '12px', color: UI_COLOR_STRINGS.TEXT_SECONDARY }
-      );
-
-      this.contentContainer!.add([bg, nameText, qiText]);
-
-      bg.on('pointerdown', () => {
-        this.manager.selectWater(water.id);
-      });
-
-      bg.on('pointerover', () => bg.setFillStyle(UI_COLORS.BUTTON_PRIMARY_HOVER));
-      bg.on('pointerout', () => bg.setFillStyle(bgColor));
+      // 将按钮容器添加到contentContainer
+      this.contentContainer!.add(button.container);
+      this.selectionButtons.push(button);
     });
 
     // 退出按钮
@@ -547,7 +534,7 @@ export class PlantingUI {
       this.contentContainer!.add(seedInfo);
     }
 
-    // 肥料选项
+    // 肥料选项 - 使用SelectionButtonComponent (方案A: ○→●)
     const startY = 60;
     const itemHeight = 40;
 
@@ -556,39 +543,31 @@ export class PlantingUI {
 
       // 判断肥料是否匹配
       const isMatch = selectedSeed && fertilizer.flavor_type === selectedSeed.required_fertilizer;
-      const bgColor = isMatch ? UI_COLORS.BUTTON_SUCCESS : UI_COLORS.BUTTON_PRIMARY;
+      const matchText = isMatch ? ' ✓' : '';
 
-      // 肥料按钮
-      const bg = this.scene.add.rectangle(
+      const buttonContent: SelectionButtonContent = {
+        label: `${fertilizer.name} (${fertilizer.flavor_type})${matchText}`,
+        value: fertilizer.id
+      };
+
+      const buttonConfig: SelectionButtonConfig = {
+        width: 280,
+        onSelect: () => {
+          this.manager.selectFertilizer(fertilizer.id);
+        }
+      };
+
+      const button = new SelectionButtonComponent(
+        this.scene,
+        buttonContent,
+        buttonConfig,
         this.width / 2,
-        y,
-        280,
-        30,
-        bgColor
-      ).setInteractive({ useHandCursor: true });
-
-      const nameText = this.scene.add.text(
-        this.width / 2 - 120,
-        y,
-        fertilizer.name,
-        { fontSize: '14px', color: UI_COLOR_STRINGS.TEXT_PRIMARY }
+        y
       );
 
-      const flavorText = this.scene.add.text(
-        this.width / 2 + 80,
-        y,
-        fertilizer.flavor_type,
-        { fontSize: '12px', color: UI_COLOR_STRINGS.TEXT_SECONDARY }
-      );
-
-      this.contentContainer!.add([bg, nameText, flavorText]);
-
-      bg.on('pointerdown', () => {
-        this.manager.selectFertilizer(fertilizer.id);
-      });
-
-      bg.on('pointerover', () => bg.setFillStyle(UI_COLORS.BUTTON_PRIMARY_HOVER));
-      bg.on('pointerout', () => bg.setFillStyle(bgColor));
+      // 将按钮容器添加到contentContainer
+      this.contentContainer!.add(button.container);
+      this.selectionButtons.push(button);
     });
 
     // 退出按钮
@@ -637,63 +616,78 @@ export class PlantingUI {
     const plantedPlots = plots.filter((p: PlotState) => p.seed_id);
 
     const startY = 60;
-    const itemHeight = 60;
+    const itemHeight = 80;
 
     plantedPlots.forEach((plot: PlotState, index: number) => {
       const y = startY + index * itemHeight;
       const seed = plot.seed_id ? getSeedData(plot.seed_id) : null;
 
-      // 地块背景
-      const bg = this.scene.add.rectangle(
-        this.width / 2,
-        y,
-        280,
-        50,
-        UI_COLORS.PANEL_SECONDARY
-      );
+      // 使用ItemSlotComponent显示药材 (方案B: Neumorphism)
+      const slotX = this.width / 2 - 140;
+      const slotContent: ItemSlotContent = {
+        itemId: plot.seed_id || 'unknown',
+        name: seed?.name || '未知',
+        quantity: 1
+      };
 
-      // 药材名称
+      const slot = new ItemSlotComponent(
+        this.scene,
+        {
+          selectable: false,
+          onClick: () => {}
+        },
+        slotX,
+        y
+      );
+      slot.setContent(slotContent);
+
+      // 将slot容器添加到contentContainer
+      this.contentContainer!.add(slot.container);
+      this.itemSlots.push(slot);
+
+      // 药材名称文本（在slot右侧）
       const nameText = this.scene.add.text(
-        this.width / 2 - 120,
-        y - 15,
+        this.width / 2 - 70,
+        y - 20,
         seed?.name || '未知',
         { fontSize: '14px', color: UI_COLOR_STRINGS.TEXT_PRIMARY }
       );
 
       // 生长进度条背景
       const progressBg = this.scene.add.rectangle(
-        this.width / 2,
+        this.width / 2 - 70,
         y + 10,
-        200,
-        10,
+        180,
+        12,
         UI_COLORS.PANEL_DARK
       );
 
       // 生长进度条填充
+      const progressWidth = plot.growth_progress * 1.8;
       const progressFill = this.scene.add.rectangle(
-        this.width / 2 - 100 + plot.growth_progress * 2,
+        this.width / 2 - 70 - 90 + progressWidth / 2,
         y + 10,
-        plot.growth_progress * 2,
-        10,
+        progressWidth,
+        12,
         plot.is_ready ? UI_COLORS.BUTTON_SUCCESS : UI_COLORS.BUTTON_PRIMARY
-      ).setOrigin(0, 0.5);
+      );
 
       // 阶段文字
       const stageConfig = getGrowthStageConfig(plot.current_stage);
       const stageText = this.scene.add.text(
-        this.width / 2 + 60,
-        y - 15,
+        this.width / 2 + 40,
+        y - 20,
         stageConfig?.name || '',
         { fontSize: '12px', color: UI_COLOR_STRINGS.TEXT_DISABLED }
       );
 
-      // 收获按钮
+      // 收获按钮（当ready时）
       if (plot.is_ready) {
         const harvestBtn = this.scene.add.rectangle(
           this.width / 2 + 100,
           y,
           60,
-          30,
+          32,
           UI_COLORS.BUTTON_SUCCESS
         ).setInteractive({ useHandCursor: true });
         harvestBtn.on('pointerdown', () => {
@@ -709,7 +703,7 @@ export class PlantingUI {
         this.contentContainer!.add([harvestBtn, harvestText]);
       }
 
-      this.contentContainer!.add([bg, nameText, progressBg, progressFill, stageText]);
+      this.contentContainer!.add([nameText, progressBg, progressFill, stageText]);
     });
 
     // 返回按钮
@@ -771,36 +765,36 @@ export class PlantingUI {
     ).setOrigin(0.5);
     this.contentContainer!.add(questionText);
 
-    // 选项按钮
+    // 选项按钮 - 使用SelectionButtonComponent (方案A: ○→●)
     const startY = 80;
     const optionHeight = 45;
 
     options.forEach((option, index) => {
       const y = startY + index * optionHeight;
 
-      const bg = this.scene.add.rectangle(
+      const buttonContent: SelectionButtonContent = {
+        label: option,
+        value: option
+      };
+
+      const buttonConfig: SelectionButtonConfig = {
+        width: 200,
+        onSelect: () => {
+          this.manager.submitQuiz(option);
+        }
+      };
+
+      const button = new SelectionButtonComponent(
+        this.scene,
+        buttonContent,
+        buttonConfig,
         this.width / 2,
-        y,
-        200,
-        35,
-        UI_COLORS.BUTTON_PRIMARY
-      ).setInteractive({ useHandCursor: true });
+        y
+      );
 
-      const optText = this.scene.add.text(
-        this.width / 2,
-        y,
-        option,
-        { fontSize: '14px', color: UI_COLOR_STRINGS.TEXT_PRIMARY }
-      ).setOrigin(0.5);
-
-      this.contentContainer!.add([bg, optText]);
-
-      bg.on('pointerdown', () => {
-        this.manager.submitQuiz(option);
-      });
-
-      bg.on('pointerover', () => bg.setFillStyle(UI_COLORS.BUTTON_PRIMARY_HOVER));
-      bg.on('pointerout', () => bg.setFillStyle(UI_COLORS.BUTTON_PRIMARY));
+      // 将按钮容器添加到contentContainer
+      this.contentContainer!.add(button.container);
+      this.selectionButtons.push(button);
     });
   }
 
@@ -927,6 +921,14 @@ export class PlantingUI {
     this.eventBus.off(PlantingEvent.GROWTH_UPDATED, this.growthUpdatedHandler);
     this.eventBus.off(PlantingEvent.QUIZ_STARTED, this.quizStartedHandler);
     this.eventBus.off(PlantingEvent.HARVEST_COMPLETE, this.harvestCompleteHandler);
+
+    // 清理SelectionButtonComponent
+    this.selectionButtons.forEach(btn => btn.destroy());
+    this.selectionButtons = [];
+
+    // 清理ItemSlotComponent
+    this.itemSlots.forEach(slot => slot.destroy());
+    this.itemSlots = [];
 
     // 销毁容器
     this.container.destroy();

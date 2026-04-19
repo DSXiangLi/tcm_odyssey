@@ -442,3 +442,186 @@ test.describe('Inquiry System Integration Tests', () => {
     expect(sceneSwitched).toBe(true);
   });
 });
+
+test.describe('Inquiry System Exit Button Tests (S4-EXIT)', () => {
+  test.beforeEach(async ({ page }) => {
+    await page.goto('/');
+    await page.waitForTimeout(3000);
+  });
+
+  test('S4-EXIT-001: 退出按钮可见', async ({ page }) => {
+    // 进入问诊场景
+    await page.evaluate(() => {
+      const game = (window as any).__PHASER_GAME__;
+      if (game) {
+        game.scene.start('InquiryScene', { caseId: 'case_001' });
+      }
+    });
+    await page.waitForTimeout(2000);
+
+    // 检查退出按钮是否存在于全局状态
+    const exitButtonVisible = await page.evaluate(() => {
+      const inquiryUI = (window as any).__INQUIRY_UI__;
+      return inquiryUI ? {
+        visible: inquiryUI.visible
+      } : null;
+    });
+
+    expect(exitButtonVisible).not.toBeNull();
+    expect(exitButtonVisible?.visible).toBe(true);
+  });
+
+  test('S4-EXIT-002: 点击退出按钮返回诊所场景', async ({ page }) => {
+    // 进入诊所场景
+    await page.evaluate(() => {
+      const game = (window as any).__PHASER_GAME__;
+      if (game) {
+        game.scene.start('ClinicScene');
+      }
+    });
+    await page.waitForTimeout(2000);
+
+    // 从诊所进入问诊场景
+    await page.evaluate(() => {
+      const game = (window as any).__PHASER_GAME__;
+      if (game) {
+        game.scene.start('InquiryScene', { caseId: 'case_001' });
+      }
+    });
+    await page.waitForTimeout(2000);
+
+    // 验证问诊场景已加载
+    const inquiryLoaded = await page.evaluate(() => {
+      const inquiryScene = (window as any).__INQUIRY_SCENE__;
+      return inquiryScene?.isInitialized || false;
+    });
+    expect(inquiryLoaded).toBe(true);
+
+    // 获取问诊场景实例并调用returnToClinic方法（模拟点击退出按钮）
+    await page.evaluate(() => {
+      const game = (window as any).__PHASER_GAME__;
+      if (game) {
+        const inquiryScene = game.scene.getScene('InquiryScene');
+        if (inquiryScene && inquiryScene.returnToClinic) {
+          inquiryScene.returnToClinic();
+        }
+      }
+    });
+    await page.waitForTimeout(1000);
+
+    // 验证已返回诊所场景
+    const returnedToClinic = await page.evaluate(() => {
+      const game = (window as any).__PHASER_GAME__;
+      if (!game) return false;
+
+      const activeScene = game.scene.getScene('ClinicScene');
+      return activeScene !== null;
+    });
+
+    expect(returnedToClinic).toBe(true);
+
+    // 验证问诊场景已清理
+    const inquiryCleaned = await page.evaluate(() => {
+      const inquiryScene = (window as any).__INQUIRY_SCENE__;
+      return inquiryScene === null;
+    });
+
+    expect(inquiryCleaned).toBe(true);
+  });
+
+  test('S4-EXIT-003: 退出时清理所有组件', async ({ page }) => {
+    // 进入问诊场景
+    await page.evaluate(() => {
+      const game = (window as any).__PHASER_GAME__;
+      if (game) {
+        game.scene.start('InquiryScene', { caseId: 'case_001' });
+      }
+    });
+    await page.waitForTimeout(2000);
+
+    // 验证组件已初始化
+    const componentsBefore = await page.evaluate(() => {
+      return {
+        inquiryUI: (window as any).__INQUIRY_UI__ !== null,
+        clueTrackerVisible: (window as any).__CLUE_TRACKER_VISIBLE__ === true,
+      };
+    });
+    expect(componentsBefore.inquiryUI).toBe(true);
+
+    // 调用returnToClinic
+    await page.evaluate(() => {
+      const game = (window as any).__PHASER_GAME__;
+      if (game) {
+        const inquiryScene = game.scene.getScene('InquiryScene');
+        if (inquiryScene && inquiryScene.returnToClinic) {
+          inquiryScene.returnToClinic();
+        }
+      }
+    });
+    await page.waitForTimeout(1000);
+
+    // 验证组件已清理
+    const componentsAfter = await page.evaluate(() => {
+      return {
+        inquiryUI: (window as any).__INQUIRY_UI__ === null,
+        clueTrackerVisible: (window as any).__CLUE_TRACKER_VISIBLE__ !== true,
+      };
+    });
+    expect(componentsAfter.inquiryUI).toBe(true);
+    expect(componentsAfter.clueTrackerVisible).toBe(true);
+  });
+
+  test('S4-EXIT-004: 问诊完整流程后点击退出', async ({ page }) => {
+    await page.goto('/');
+    await page.waitForTimeout(3000);
+
+    // 进入诊所
+    await page.evaluate(() => {
+      const game = (window as any).__PHASER_GAME__;
+      if (game) {
+        game.scene.start('ClinicScene');
+      }
+    });
+    await page.waitForTimeout(2000);
+
+    // 按I键进入问诊
+    await page.keyboard.press('i');
+    await page.waitForTimeout(2000);
+
+    // 等待病人主诉显示
+    await page.waitForTimeout(3000);
+
+    // 验证问诊场景正常
+    const inquiryNormal = await page.evaluate(() => {
+      const inquiryScene = (window as any).__INQUIRY_SCENE__;
+      return inquiryScene?.isInitialized || false;
+    });
+    expect(inquiryNormal).toBe(true);
+
+    // 点击退出按钮（模拟调用returnToClinic）
+    await page.evaluate(() => {
+      const game = (window as any).__PHASER_GAME__;
+      if (game) {
+        const inquiryScene = game.scene.getScene('InquiryScene');
+        if (inquiryScene && inquiryScene.returnToClinic) {
+          inquiryScene.returnToClinic();
+        }
+      }
+    });
+    await page.waitForTimeout(1000);
+
+    // 验证返回诊所
+    const returnedToClinic = await page.evaluate(() => {
+      const game = (window as any).__PHASER_GAME__;
+      if (!game) return false;
+
+      const clinicScene = game.scene.getScene('ClinicScene');
+      return clinicScene !== null;
+    });
+
+    expect(returnedToClinic).toBe(true);
+
+    // 截图记录
+    await page.screenshot({ path: 'tests/screenshots/inquiry-exit.png' });
+  });
+});

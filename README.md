@@ -2,6 +2,22 @@
 
 一款2D像素风格的中医学习游戏，在探索药王谷的过程中学习中医知识。
 
+## 游戏演示
+
+### 药园区域
+
+<video src="assets/herb_area.mp4" controls="controls" width="100%" height="auto">
+  <source src="assets/herb_area.mp4" type="video/mp4">
+  <img src="assets/herb_area.gif" alt="药园区域演示">
+</video>
+
+### 诊所区域
+
+<video src="assets/clinic_area.mp4" controls="controls" width="100%" height="auto">
+  <source src="assets/clinic_area.mp4" type="video/mp4">
+  <img src="assets/clinic_area.gif" alt="诊所区域演示">
+</video>
+
 ## 技术栈
 
 - **游戏引擎**: Phaser 3

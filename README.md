@@ -6,17 +6,11 @@
 
 ### 药园区域
 
-<video src="assets/herb_area.mp4" controls="controls" width="100%" height="auto">
-  <source src="assets/herb_area.mp4" type="video/mp4">
-  <img src="assets/herb_area.gif" alt="药园区域演示">
-</video>
+![药园区域演示](assets/herb_area.gif)
 
 ### 诊所区域
 
-<video src="assets/clinic_area.mp4" controls="controls" width="100%" height="auto">
-  <source src="assets/clinic_area.mp4" type="video/mp4">
-  <img src="assets/clinic_area.gif" alt="诊所区域演示">
-</video>
+![诊所区域演示](assets/clinic_area.gif)
 
 ## 技术栈
 

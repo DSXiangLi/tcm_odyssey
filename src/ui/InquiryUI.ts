@@ -272,18 +272,20 @@ export class InquiryUI extends Phaser.GameObjects.Container {
 
   /**
    * 创建对话显示区域
+   * Round 4 布局修复: 文字宽度约束
    */
   private createDialogueArea(scene: Phaser.Scene): void {
-    // 对话背景
+    // 对话背景（宽度460）
     const dialogueBg = scene.add.rectangle(-150, -80, 460, 180, UI_COLORS.PANEL_SECONDARY, 0.9);
     dialogueBg.setOrigin(0.5);
     this.add(dialogueBg);
 
-    // 对话文本
-    this.dialogueText = scene.add.text(-380, -160, '', {
+    // 对话文本（宽度=背景宽度-边框*2-padding*2 = 460-4-16 = 440）
+    // 位置：背景左边界 = -150-230 = -380，加padding 8 = -372
+    this.dialogueText = scene.add.text(-372, -165, '', {
       fontSize: '16px',
       color: UI_COLOR_STRINGS.TEXT_PRIMARY,
-      wordWrap: { width: 480 },
+      wordWrap: { width: 440 },  // 修复：从480改为440
       lineSpacing: 8
     });
     this.add(this.dialogueText);
@@ -291,31 +293,32 @@ export class InquiryUI extends Phaser.GameObjects.Container {
 
   /**
    * 创建输入区域
+   * Round 4 布局修复: 文字宽度约束
    */
   private createInputArea(scene: Phaser.Scene): void {
-    // 输入框背景
+    // 输入框背景（宽度460）
     this.inputBox = scene.add.rectangle(-150, 80, 460, 50, UI_COLORS.PANEL_LIGHT, 0.9);
     this.inputBox.setOrigin(0.5);
     this.inputBox.setStrokeStyle(2, UI_COLORS.BORDER_LIGHT);
     this.add(this.inputBox);
 
-    // 输入文本
-    this.inputText = scene.add.text(-380, 60, '', {
+    // 输入文本（宽度440）
+    this.inputText = scene.add.text(-372, 58, '', {
       fontSize: '16px',
       color: UI_COLOR_STRINGS.TEXT_PRIMARY,
-      wordWrap: { width: 480 }
+      wordWrap: { width: 440 }  // 修复：从480改为440
     });
     this.add(this.inputText);
 
     // 输入提示
-    this.inputHint = scene.add.text(-380, 60, '输入追问问题...', {
+    this.inputHint = scene.add.text(-372, 58, '输入追问问题...', {
       fontSize: '16px',
       color: UI_COLOR_STRINGS.TEXT_DISABLED
     });
     this.add(this.inputHint);
 
-    // 发送按钮
-    this.sendButton = scene.add.text(120, 65, '[发送]', {
+    // 发送按钮（位置调整：背景右边界 = -150+230 = 80，按钮在80附近）
+    this.sendButton = scene.add.text(70, 65, '[发送]', {
       fontSize: '18px',
       color: UI_COLOR_STRINGS.ACCENT_SKY,
       backgroundColor: UI_COLOR_STRINGS.PANEL_SECONDARY,
@@ -331,10 +334,15 @@ export class InquiryUI extends Phaser.GameObjects.Container {
 
   /**
    * 创建常用问题按钮
+   * Round 4 布局修复: 按钮间距和位置调整
    */
   private createQuestionButtons(scene: Phaser.Scene): void {
-    const startX = -380;
+    // 修复：调整起始位置和间距，确保在主面板边界内
+    // 主面板宽度640，中心0，左边界-320，右边界320
+    // 6个按钮，每行3个，需要调整间距
+    const startX = -300;  // 修复：从-380改为-300
     const startY = 140;
+    const spacing = 130;  // 修复：从170改为130
 
     for (let i = 0; i < COMMON_QUESTIONS.length; i++) {
       const question = COMMON_QUESTIONS[i];
@@ -342,7 +350,7 @@ export class InquiryUI extends Phaser.GameObjects.Container {
       const row = Math.floor(i / 3);
 
       const button = scene.add.text(
-        startX + col * 170,
+        startX + col * spacing,
         startY + row * 30,
         `[${question}]`,
         {
@@ -361,10 +369,14 @@ export class InquiryUI extends Phaser.GameObjects.Container {
 
   /**
    * 创建线索追踪区域（使用内凹槽位方案8）
+   * Round 4 布局修复: 位置调整确保在主面板边界内
    */
   private createClueTrackerArea(scene: Phaser.Scene): void {
     // 线索追踪区域位置和尺寸
-    const trackerX = 280;
+    // 修复：trackerX从280改为220，确保右边界在主面板内
+    // 主面板右边界 = -320 + 640 = 320
+    // tracker右边界 = trackerX + trackerWidth/2 = 220 + 90 = 310 < 320 ✓
+    const trackerX = 220;  // 修复：从280改为220
     const trackerY = -100;
     const trackerWidth = 180;
     const trackerHeight = 320;

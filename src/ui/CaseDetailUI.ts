@@ -9,6 +9,7 @@
  * - 支持开始诊治或回顾历史
  *
  * Phase 2 S5 实现
+ * Round 4 视觉优化: 3D立体边框(方案B)
  */
 
 import Phaser from 'phaser';
@@ -24,15 +25,24 @@ export interface CaseDetailUIConfig {
 
 /**
  * 病案详情UI组件
+ * Round 4 视觉优化: 3D立体边框(方案B)
  */
 export class CaseDetailUI extends Phaser.GameObjects.Container {
   private caseId: string;
   private caseManager: CaseManager;
   private caseState: CaseState;
-  private background!: Phaser.GameObjects.Rectangle;
+  private backgroundGraphics!: Phaser.GameObjects.Graphics;
   private titleText!: Phaser.GameObjects.Text;
   private closeButton!: Phaser.GameObjects.Text;
   private config: CaseDetailUIConfig;
+
+  // 样式配置（Round 4 3D边框设计 - 方案B）
+  private readonly CASE_DETAIL_UI_COLORS = {
+    outerBorder: UI_COLORS.BORDER_OUTER_GREEN,      // 亮绿边框 0x80a040
+    panelBg: UI_COLORS.PANEL_3D_BG,                 // 深绿背景 0x1a2e26
+    topLight: UI_COLORS.BORDER_TOP_LIGHT,           // 顶部高光 0x90c070
+    bottomShadow: UI_COLORS.BORDER_BOTTOM_SHADOW,   // 底部阴影 0x604020
+  };
 
   constructor(scene: Phaser.Scene, x: number, y: number, config: CaseDetailUIConfig) {
     super(scene, x, y);
@@ -47,10 +57,12 @@ export class CaseDetailUI extends Phaser.GameObjects.Container {
       return;
     }
 
-    // 创建背景 - 扩展高度以完全覆盖关闭按钮（按钮在-270，需要背景上边缘至少-285）
-    this.background = scene.add.rectangle(0, -25, 720, 530, UI_COLORS.PANEL_PRIMARY, 0.85);
-    this.background.setOrigin(0.5);
-    this.add(this.background);
+    // 创建3D立体边框背景（方案B）
+    this.backgroundGraphics = scene.add.graphics();
+    // 背景尺寸: 720x530，中心偏移-25（y方向）
+    // 计算: x = -360, y = -290（-25 - 530/2 = -290）
+    this.draw3DBorder(this.backgroundGraphics, -360, -290, 720, 530);
+    this.add(this.backgroundGraphics);
 
     // 创建标题
     this.titleText = scene.add.text(0, -270, '病案详情', {
@@ -97,6 +109,42 @@ export class CaseDetailUI extends Phaser.GameObjects.Container {
 
     // 暴露到全局供测试访问
     this.exposeToGlobal();
+  }
+
+  /**
+   * 绘制3D立体边框（方案B）
+   * 外层边框 + 顶部高光 + 底部阴影
+   */
+  private draw3DBorder(
+    graphics: Phaser.GameObjects.Graphics,
+    x: number,
+    y: number,
+    width: number,
+    height: number
+  ): void {
+    // 1. 外层边框（亮绿色，4px）
+    graphics.lineStyle(4, this.CASE_DETAIL_UI_COLORS.outerBorder);
+    graphics.strokeRect(x, y, width, height);
+
+    // 2. 主背景（深绿色，完全不透明）
+    graphics.fillStyle(this.CASE_DETAIL_UI_COLORS.panelBg, 1.0);
+    graphics.fillRect(x + 2, y + 2, width - 4, height - 4);
+
+    // 3. 顶部/左侧高光边框（亮绿，2px）
+    graphics.lineStyle(2, this.CASE_DETAIL_UI_COLORS.topLight);
+    graphics.beginPath();
+    graphics.moveTo(x + 2, y + height - 2);
+    graphics.lineTo(x + 2, y + 2);
+    graphics.lineTo(x + width - 2, y + 2);
+    graphics.strokePath();
+
+    // 4. 底部/右侧阴影边框（暗棕，2px）
+    graphics.lineStyle(2, this.CASE_DETAIL_UI_COLORS.bottomShadow);
+    graphics.beginPath();
+    graphics.moveTo(x + width - 2, y + 2);
+    graphics.lineTo(x + width - 2, y + height - 2);
+    graphics.lineTo(x + 2, y + height - 2);
+    graphics.strokePath();
   }
 
   /**
@@ -576,6 +624,10 @@ export class CaseDetailUI extends Phaser.GameObjects.Container {
     // 清理全局引用
     if (typeof window !== 'undefined') {
       (window as any).__CASE_DETAIL_UI__ = null;
+    }
+    // 清理背景Graphics
+    if (this.backgroundGraphics) {
+      this.backgroundGraphics.destroy();
     }
     super.destroy();
   }

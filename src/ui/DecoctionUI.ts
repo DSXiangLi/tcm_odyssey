@@ -3,13 +3,14 @@
  * 煎药游戏UI组件
  *
  * Phase 2 S9.3 实现
+ * Phase 2.5 UI组件系统统一化 Task 14 - 重构使用新组件
  *
  * 功能:
  * - 方剂选择界面
- * - 药材选择界面
- * - 配伍放置界面（君臣佐使）
- * - 顺序设置界面（先煎/后下）
- * - 火候控制界面（武火/文火）
+ * - 药材选择界面（使用ItemSlotComponent 60×60）
+ * - 配伍放置界面（使用CompatibilitySlotComponent 120×100）
+ * - 顺序设置界面（使用SelectionButtonComponent）
+ * - 火候控制界面（使用SelectionButtonComponent）
  * - 煎药进度界面
  * - 结果评分界面
  */
@@ -36,6 +37,15 @@ import {
 import prescriptionsData from '../data/prescriptions.json';
 import { UI_COLORS, UI_COLOR_STRINGS } from '../data/ui-color-theme';
 
+// Phase 2.5 新组件导入
+import ItemSlotComponent, {
+  ItemSlotContent
+} from './components/ItemSlotComponent';
+import SelectionButtonComponent from './components/SelectionButtonComponent';
+import CompatibilitySlotComponent, {
+  CompatibilityRole
+} from './components/CompatibilitySlotComponent';
+
 /**
  * UI配置
  */
@@ -48,6 +58,7 @@ interface DecoctionUIConfig {
 /**
  * 煎药UI组件
  * Round 4 视觉优化: 3D立体边框(方案B)
+ * Phase 2.5: 使用ItemSlotComponent、CompatibilitySlotComponent、SelectionButtonComponent
  */
 export class DecoctionUI {
   private scene: Phaser.Scene;
@@ -67,7 +78,12 @@ export class DecoctionUI {
   // 当前选择的元素
   private selectedPrescriptionId: string | null = null;
   private selectedHerbs: string[] = [];
-  private compatibilitySlots: Map<string, Phaser.GameObjects.Container> = new Map();
+
+  // Phase 2.5: 使用新组件存储
+  private herbSlots: Map<string, ItemSlotComponent> = new Map();
+  private compatibilitySlots: Map<CompatibilityRole, CompatibilitySlotComponent> = new Map();
+  private orderButtons: Map<string, SelectionButtonComponent[]> = new Map();
+  private fireButtons: SelectionButtonComponent[] = [];
 
   // 样式配置（Round 4 3D边框设计 - 方案B）
   private readonly DECOCTION_UI_COLORS = {
@@ -222,6 +238,7 @@ export class DecoctionUI {
 
   /**
    * 清除内容容器
+   * Phase 2.5: 同时清理组件集合
    */
   private clearContent(): void {
     if (this.contentContainer) {
@@ -229,6 +246,19 @@ export class DecoctionUI {
       this.contentContainer.destroy();
       this.contentContainer = null;
     }
+
+    // Phase 2.5: 清理组件集合（但保留引用供下次使用）
+    this.herbSlots.forEach(slot => slot.destroy());
+    this.herbSlots.clear();
+
+    this.compatibilitySlots.forEach(slot => slot.destroy());
+    this.compatibilitySlots.clear();
+
+    this.orderButtons.forEach(buttons => buttons.forEach(btn => btn.destroy()));
+    this.orderButtons.clear();
+
+    this.fireButtons.forEach(btn => btn.destroy());
+    this.fireButtons = [];
   }
 
   /**
@@ -309,6 +339,7 @@ export class DecoctionUI {
 
   /**
    * 显示药材选择界面
+   * Phase 2.5: 使用ItemSlotComponent (60×60)
    */
   private showHerbSelection(): void {
     this.clearContent();
@@ -353,38 +384,55 @@ export class DecoctionUI {
     ).setOrigin(0.5);
     this.contentContainer.add(hintText);
 
-    // 药材列表
+    // Phase 2.5: 使用ItemSlotComponent创建药材格子
+    // 布局: 每行5个，60×60格子，间距10px
+    const slotSize = ItemSlotComponent.SLOT_SIZE; // 60
+    const spacing = 10;
+    const cols = 5;
     const startY = 120;
-    const spacing = 50;
-    const colWidth = this.width / 3;
+    const startX = (this.width - (cols * (slotSize + spacing) - spacing)) / 2;
+
+    // 清空旧的药材格子
+    this.herbSlots.forEach(slot => slot.destroy());
+    this.herbSlots.clear();
 
     HERBS_DATA.forEach((herb, index) => {
-      const col = index % 3;
-      const row = Math.floor(index / 3);
-      const x = colWidth / 2 + col * colWidth;
-      const y = startY + row * spacing;
+      const col = index % cols;
+      const row = Math.floor(index / cols);
+      const x = startX + col * (slotSize + spacing) + slotSize / 2;
+      const y = startY + row * (slotSize + spacing) + slotSize / 2;
 
-      // 是否是必需药材
-      const isRequired = requiredHerbs.includes(herb.id);
       const isSelected = this.selectedHerbs.includes(herb.id);
 
-      // 药材按钮
-      const button = this.scene.add.text(x, y, herb.name, {
-        fontSize: '16px',
-        color: isSelected ? UI_COLOR_STRINGS.BUTTON_SUCCESS : (isRequired ? UI_COLOR_STRINGS.STATUS_WARNING : UI_COLOR_STRINGS.TEXT_PRIMARY),
-        backgroundColor: isSelected ? '#2E7D32' : UI_COLOR_STRINGS.PANEL_PRIMARY,
-        padding: { x: 10, y: 5 }
-      }).setOrigin(0.5).setInteractive();
-
-      button.on('pointerdown', () => {
-        if (isSelected) {
-          this.manager.removeHerb(herb.id);
-        } else {
-          this.manager.addHerb(herb.id);
+      // 创建ItemSlotComponent
+      const slot = new ItemSlotComponent(this.scene, {
+        selectable: true,
+        onClick: () => {
+          if (this.selectedHerbs.includes(herb.id)) {
+            this.manager.removeHerb(herb.id);
+          } else {
+            this.manager.addHerb(herb.id);
+          }
         }
-      });
+      }, x, y);
 
-      this.contentContainer?.add(button);
+      // 设置内容
+      const content: ItemSlotContent = {
+        itemId: herb.id,
+        name: herb.name,
+      };
+      slot.setContent(content);
+
+      // 如果已选中，设置为SELECTED状态
+      if (isSelected) {
+        slot.select();
+      }
+
+      // 必需药材的视觉提示（通过颜色或边框）
+      // ItemSlotComponent的SELECTED状态会显示高亮边框
+
+      this.herbSlots.set(herb.id, slot);
+      this.contentContainer?.add(slot.container);
     });
 
     // 确认按钮
@@ -420,6 +468,7 @@ export class DecoctionUI {
 
   /**
    * 显示配伍放置界面
+   * Phase 2.5: 使用CompatibilitySlotComponent (120×100)
    */
   private showCompatibilityPlacement(): void {
     this.clearContent();
@@ -452,42 +501,59 @@ export class DecoctionUI {
     ).setOrigin(0.5);
     this.contentContainer.add(hintText);
 
-    // 角色槽位
-    const roles = ['君', '臣', '佐', '使'];
-    const slotY = 150;
-    const slotSpacing = 80;
+    // Phase 2.5: 使用CompatibilitySlotComponent创建角色槽位
+    const roles: CompatibilityRole[] = ['君', '臣', '佐', '使'];
+    const slotWidth = CompatibilitySlotComponent.SLOT_WIDTH; // 120
+    const slotHeight = CompatibilitySlotComponent.SLOT_HEIGHT; // 100
+    const slotSpacing = 20;
+    const startY = 150;
+
+    // 清空旧的配伍槽位
+    this.compatibilitySlots.forEach(slot => slot.destroy());
+    this.compatibilitySlots.clear();
+
+    // 布局: 水平排列4个槽位
+    const totalWidth = roles.length * slotWidth + (roles.length - 1) * slotSpacing;
+    const startX = (this.width - totalWidth) / 2 + slotWidth / 2;
 
     roles.forEach((role, index) => {
-      const y = slotY + index * slotSpacing;
+      const x = startX + index * (slotWidth + slotSpacing);
+      const y = startY + slotHeight / 2;
 
-      // 角色标签
-      const roleLabel = this.scene.add.text(100, y, `${role}:`, {
-        fontSize: '18px',
-        color: UI_COLOR_STRINGS.TEXT_PRIMARY
-      }).setOrigin(0.5);
+      // 创建CompatibilitySlotComponent
+      const slot = new CompatibilitySlotComponent(this.scene, role, {
+        onHerbPlaced: (placedRole, herbId) => {
+          this.manager.placeRole(herbId, placedRole);
+          this.updateCompatibilityDisplay();
+        },
+        onOrderChanged: (placedRole, order) => {
+          // 顺序变更回调（在煎药顺序阶段使用）
+          const herbId = this.getHerbIdByRole(placedRole);
+          if (herbId) {
+            const orderType = this.convertOrderToType(order);
+            this.manager.setOrder(herbId, orderType);
+          }
+        },
+        onRemove: (placedRole) => {
+          // 移除药材回调
+          const herbId = this.getHerbIdByRole(placedRole);
+          if (herbId) {
+            this.manager.removeHerb(herbId);
+          }
+        }
+      }, x, y);
 
-      // 槽位容器
-      const slotContainer = this.scene.add.container(200, y);
-
-      // 占位文字
-      const placeholder = this.scene.add.text(0, 0, '空', {
-        fontSize: '16px',
-        color: UI_COLOR_STRINGS.TEXT_DISABLED
-      }).setOrigin(0, 0.5);
-
-      slotContainer.add(placeholder);
-      this.compatibilitySlots.set(role, slotContainer);
-
-      this.contentContainer?.add([roleLabel, slotContainer]);
+      this.compatibilitySlots.set(role, slot);
+      this.contentContainer?.add(slot.container);
     });
 
-    // 已选药材列表
-    const herbStartY = 450;
-    const herbSpacing = 40;
+    // 已选药材列表（用于放置到槽位）
+    const herbListY = 280;
+    const herbSpacing = 50;
 
     this.selectedHerbs.forEach((herbId, index) => {
       const herb = getHerbById(herbId);
-      const y = herbStartY + index * herbSpacing;
+      const y = herbListY + index * herbSpacing;
 
       // 药材名称
       const herbLabel = this.scene.add.text(100, y, herb?.name || herbId, {
@@ -495,7 +561,7 @@ export class DecoctionUI {
         color: UI_COLOR_STRINGS.TEXT_PRIMARY
       }).setOrigin(0, 0.5);
 
-      // 角色选择按钮
+      // 角色选择按钮（点击放置到对应槽位）
       const roleButtons = roles.map((role, roleIndex) => {
         const x = 250 + roleIndex * 80;
         const btn = this.scene.add.text(x, y, role, {
@@ -538,15 +604,39 @@ export class DecoctionUI {
   }
 
   /**
+   * 根据角色获取药材ID
+   */
+  private getHerbIdByRole(role: string): string | null {
+    const state = this.manager.getState();
+    for (const [herbId, placedRole] of state.compatibility_placement) {
+      if (placedRole === role) {
+        return herbId;
+      }
+    }
+    return null;
+  }
+
+  /**
+   * 将顺序字符串转换为DecoctionOrderType
+   */
+  private convertOrderToType(order: string): DecoctionOrderType {
+    switch (order) {
+      case '先煎': return 'first';
+      case '同煎': return 'normal';
+      case '后下': return 'last';
+      default: return 'normal';
+    }
+  }
+
+  /**
    * 更新配伍显示
+   * Phase 2.5: 使用CompatibilitySlotComponent更新
    */
   private updateCompatibilityDisplay(): void {
     const state = this.manager.getState();
 
     // 更新槽位显示
-    this.compatibilitySlots.forEach((slotContainer, role) => {
-      slotContainer.removeAll(true);
-
+    this.compatibilitySlots.forEach((slot, role) => {
       // 查找放置在该角色的药材
       let placedHerb: string | null = null;
       state.compatibility_placement.forEach((placedRole, herbId) => {
@@ -557,23 +647,22 @@ export class DecoctionUI {
 
       if (placedHerb) {
         const herb = getHerbById(placedHerb);
-        const herbText = this.scene.add.text(0, 0, herb?.name || placedHerb, {
-          fontSize: '16px',
-          color: UI_COLOR_STRINGS.BUTTON_SUCCESS
-        }).setOrigin(0, 0.5);
-        slotContainer.add(herbText);
+        // 使用CompatibilitySlotComponent的setContent方法
+        slot.setContent({
+          role: role,
+          herbId: placedHerb,
+          herbName: herb?.name || placedHerb
+        });
       } else {
-        const placeholder = this.scene.add.text(0, 0, '空', {
-          fontSize: '16px',
-          color: UI_COLOR_STRINGS.TEXT_DISABLED
-        }).setOrigin(0, 0.5);
-        slotContainer.add(placeholder);
+        // 清空槽位
+        slot.clearContent();
       }
     });
   }
 
   /**
    * 显示顺序设置界面
+   * Phase 2.5: 使用SelectionButtonComponent (○→●符号切换)
    */
   private showOrderSetting(): void {
     this.clearContent();
@@ -600,12 +689,18 @@ export class DecoctionUI {
     ).setOrigin(0.5);
     this.contentContainer.add(hintText);
 
-    // 顺序选项
+    // Phase 2.5: 使用SelectionButtonComponent创建顺序选项
     const orders: DecoctionOrderType[] = ['first', 'normal', 'last'];
+
+    // 清空旧的顺序按钮
+    this.orderButtons.forEach(buttons => buttons.forEach(btn => btn.destroy()));
+    this.orderButtons.clear();
 
     // 药材列表
     const herbStartY = 130;
     const herbSpacing = 50;
+    const buttonWidth = 80;
+    const startX = 200;
 
     this.selectedHerbs.forEach((herbId, index) => {
       const herb = getHerbById(herbId);
@@ -617,28 +712,33 @@ export class DecoctionUI {
         color: UI_COLOR_STRINGS.TEXT_PRIMARY
       }).setOrigin(0, 0.5);
 
-      // 顺序按钮
-      const orderButtons = orders.map((order, orderIndex) => {
-        const x = 250 + orderIndex * 100;
+      // 使用SelectionButtonComponent创建顺序按钮
+      const buttons: SelectionButtonComponent[] = [];
+      orders.forEach((order, orderIndex) => {
+        const x = startX + orderIndex * buttonWidth + buttonWidth / 2;
         const orderConfig = getDecoctionOrderConfig(order);
         const isSelected = this.manager.getState().order_settings.get(herbId) === order;
 
-        const btn = this.scene.add.text(x, y, orderConfig?.name || order, {
-          fontSize: '14px',
-          color: isSelected ? UI_COLOR_STRINGS.BUTTON_SUCCESS : UI_COLOR_STRINGS.TEXT_PRIMARY,
-          backgroundColor: isSelected ? '#2E7D32' : UI_COLOR_STRINGS.PANEL_PRIMARY,
-          padding: { x: 10, y: 5 }
-        }).setOrigin(0.5).setInteractive();
+        const button = new SelectionButtonComponent(this.scene, {
+          label: orderConfig?.name || order,
+          value: order
+        }, {
+          selected: isSelected,
+          width: buttonWidth,
+          onSelect: (value: string) => {
+            const orderType = value as DecoctionOrderType;
+            this.manager.setOrder(herbId, orderType);
+            // 重新渲染以更新选中状态
+            this.showOrderSetting();
+          }
+        }, x, y);
 
-        btn.on('pointerdown', () => {
-          this.manager.setOrder(herbId, order);
-          this.showOrderSetting(); // 重新渲染
-        });
-
-        return btn;
+        buttons.push(button);
+        this.contentContainer?.add(button.container);
       });
 
-      this.contentContainer?.add([herbLabel, ...orderButtons]);
+      this.orderButtons.set(herbId, buttons);
+      this.contentContainer?.add(herbLabel);
     });
 
     // 确认按钮
@@ -662,6 +762,7 @@ export class DecoctionUI {
 
   /**
    * 显示火候设置界面
+   * Phase 2.5: 使用SelectionButtonComponent (○→●符号切换)
    */
   private showFireSetting(): void {
     this.clearContent();
@@ -688,30 +789,39 @@ export class DecoctionUI {
     ).setOrigin(0.5);
     this.contentContainer.add(hintText);
 
-    // 火候选项
+    // Phase 2.5: 使用SelectionButtonComponent创建火候选项
     const fires: FireLevel[] = ['wu', 'wen'];
     const fireY = 150;
     const fireSpacing = 100;
+
+    // 清空旧的火候按钮
+    this.fireButtons.forEach(btn => btn.destroy());
+    this.fireButtons = [];
 
     fires.forEach((fire, index) => {
       const y = fireY + index * fireSpacing;
       const fireConfig = getFireLevelConfig(fire);
       const isSelected = this.manager.getState().fire_level === fire;
 
-      // 火候按钮
-      const button = this.scene.add.text(this.width / 2, y, fireConfig?.name || fire, {
-        fontSize: '24px',
-        color: isSelected ? '#ff5722' : UI_COLOR_STRINGS.TEXT_PRIMARY,
-        backgroundColor: isSelected ? '#bf360c' : UI_COLOR_STRINGS.PANEL_PRIMARY,
-        padding: { x: 40, y: 20 }
-      }).setOrigin(0.5).setInteractive();
+      // 使用SelectionButtonComponent
+      const button = new SelectionButtonComponent(this.scene, {
+        label: fireConfig?.name || fire,
+        value: fire
+      }, {
+        selected: isSelected,
+        width: 150, // 固定宽度
+        onSelect: (value: string) => {
+          const fireLevel = value as FireLevel;
+          this.manager.setFireLevel(fireLevel);
+          // 重新渲染以更新选中状态
+          this.showFireSetting();
+        }
+      }, this.width / 2, y);
 
-      button.on('pointerdown', () => {
-        this.manager.setFireLevel(fire);
-        this.showFireSetting(); // 重新渲染
-      });
+      this.fireButtons.push(button);
+      this.contentContainer?.add(button.container);
 
-      // 描述文字
+      // 描述文字（在按钮下方）
       const descText = this.scene.add.text(this.width / 2, y + 40,
         fireConfig?.description || '',
         {
@@ -720,8 +830,7 @@ export class DecoctionUI {
           wordWrap: { width: this.width - 80 }
         }
       ).setOrigin(0.5);
-
-      this.contentContainer?.add([button, descText]);
+      this.contentContainer?.add(descText);
     });
 
     // 目标时间显示
@@ -954,6 +1063,7 @@ export class DecoctionUI {
 
   /**
    * 销毁UI
+   * Phase 2.5: 清理新组件类型
    */
   destroy(): void {
     // 移除事件监听（使用保存的引用正确清理）
@@ -965,6 +1075,19 @@ export class DecoctionUI {
 
     // 清除内容
     this.clearContent();
+
+    // Phase 2.5: 清理新组件
+    this.herbSlots.forEach(slot => slot.destroy());
+    this.herbSlots.clear();
+
+    this.compatibilitySlots.forEach(slot => slot.destroy());
+    this.compatibilitySlots.clear();
+
+    this.orderButtons.forEach(buttons => buttons.forEach(btn => btn.destroy()));
+    this.orderButtons.clear();
+
+    this.fireButtons.forEach(btn => btn.destroy());
+    this.fireButtons = [];
 
     // 销毁背景Graphics
     if (this.backgroundGraphics) {

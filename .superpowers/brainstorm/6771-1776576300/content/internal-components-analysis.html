@@ -1,0 +1,238 @@
+<h2>内部组件标准化分析</h2>
+<p class="subtitle">UI组件层级架构统一化需求</p>
+
+<div class="section">
+<h3>当前内部组件对比</h3>
+
+<div class="mockup">
+<div class="mockup-header">物品卡片/格子组件对比</div>
+<div class="mockup-body">
+<table style="width:100%; border-collapse: collapse; font-size: 13px;">
+<tr style="background: #2a3e32; color: #90c070;">
+<th style="padding: 8px; border: 1px solid #406050;">来源UI</th>
+<th style="padding: 8px; border: 1px solid #406050;">组件名</th>
+<th style="padding: 8px; border: 1px solid #406050;">尺寸</th>
+<th style="padding: 8px; border: 1px solid #406050;">边框风格</th>
+<th style="padding: 8px; border: 1px solid #406050;">内容布局</th>
+<th style="padding: 8px; border: 1px solid #406050;">交互方式</th>
+</tr>
+<tr>
+<td style="padding: 6px; border: 1px solid #406050;">InventoryUI</td>
+<td style="padding: 6px; border: 1px solid #406050;">ItemSlotUI</td>
+<td style="padding: 6px; border: 1px solid #406050; color: #c0c080;">60×60</td>
+<td style="padding: 6px; border: 1px solid #406050;">Neumorphism凸起/凹陷</td>
+<td style="padding: 6px; border: 1px solid #406050;">图标+数量角标</td>
+<td style="padding: 6px; border: 1px solid #406050;">点击选择</td>
+</tr>
+<tr>
+<td style="padding: 6px; border: 1px solid #406050;">DecoctionUI</td>
+<td style="padding: 6px; border: 1px solid #406050;">药材选择按钮</td>
+<td style="padding: 6px; border: 1px solid #406050; color: #ff6b6b;">动态(文字宽度)</td>
+<td style="padding: 6px; border: 1px solid #406050;">无边框(纯文字背景)</td>
+<td style="padding: 6px; border: 1px solid #406050;">文字+背景色</td>
+<td style="padding: 6px; border: 1px solid #406050;">点击选择</td>
+</tr>
+<tr>
+<td style="padding: 6px; border: 1px solid #406050;">ProcessingUI</td>
+<td style="padding: 6px; border: 1px solid #406050;">药材/方法按钮</td>
+<td style="padding: 6px; border: 1px solid #406050; color: #ff6b6b;">动态(文字宽度)</td>
+<td style="padding: 6px; border: 1px solid #406050;">无边框(createButton函数)</td>
+<td style="padding: 6px; border: 1px solid #406050;">文字+背景色</td>
+<td style="padding: 6px; border: 1px solid #406050;">点击选择</td>
+</tr>
+<tr>
+<td style="padding: 6px; border: 1px solid #406050;">PlantingUI</td>
+<td style="padding: 6px; border: 1px solid #406050;">种子选项</td>
+<td style="padding: 6px; border: 1px solid #406050; color: #ff6b6b;">动态(Rectangle背景)</td>
+<td style="padding: 6px; border: 1px solid #406050;">无边框(Rectangle背景)</td>
+<td style="padding: 6px; border: 1px solid #406050;">名称+描述文字</td>
+<td style="padding: 6px; border: 1px solid #406050;">点击选择</td>
+</tr>
+<tr>
+<td style="padding: 6px; border: 1px solid #406050;">PulseUI</td>
+<td style="padding: 6px; border: 1px solid #406050;">选项按钮</td>
+<td style="padding: 6px; border: 1px solid #406050; color: #ff6b6b;">动态(padding×文字)</td>
+<td style="padding: 6px; border: 1px solid #406050;">无边框(文字背景色)</td>
+<td style="padding: 6px; border: 1px solid #406050;">○/●符号+文字</td>
+<td style="padding: 6px; border: 1px solid #406050;">点击切换○→●</td>
+</tr>
+<tr>
+<td style="padding: 6px; border: 1px solid #406050;">PrescriptionUI</td>
+<td style="padding: 6px; border: 1px solid #406050;">方剂选项</td>
+<td style="padding: 6px; border: 1px solid #406050; color: #ff6b6b;">动态(padding×文字)</td>
+<td style="padding: 6px; border: 1px solid #406050;">无边框(文字背景色)</td>
+<td style="padding: 6px; border: 1px solid #406050;">○/●符号+文字</td>
+<td style="padding: 6px; border: 1px solid #406050;">点击切换</td>
+</tr>
+</table>
+</div>
+</div>
+
+<div class="pros-cons">
+<div class="cons">
+<h4>核心问题</h4>
+<ul>
+<li><strong>尺寸不一致</strong>: InventoryUI固定60×60, 其他UI动态计算</li>
+<li><strong>边框风格不统一</strong>: InventoryUI用Neumorphism, 其他用纯文字背景</li>
+<li><strong>选中状态表示混乱</strong>: ○/●符号 vs Neumorphism凸起 vs 颜色变化</li>
+<li><strong>交互反馈不一致</strong>: hover效果、选中效果各不相同</li>
+<li><strong>无统一基类</strong>: 每个UI独立实现createButton/ItemSlot等方法</li>
+</ul>
+</div>
+</div>
+</div>
+
+<div class="section">
+<h3>建议的UI组件层级架构</h3>
+
+<div class="mockup">
+<div class="mockup-body" style="font-size: 14px;">
+<div style="display: flex; flex-direction: column; gap: 12px;">
+
+<!-- 架构图 -->
+<div style="background: #1a2e26; padding: 16px; border-radius: 4px; border: 2px solid #80a040;">
+<div style="color: #c0a080; font-weight: bold; margin-bottom: 12px;">UI组件层级结构</div>
+<pre style="color: #90c070; font-size: 12px; line-height: 1.6;">
+BaseUIComponent (抽象基类)
+├── drawBorder()          # 绘制边框(3D/Neumorphism/玻璃态)
+├── createExitButton()    # 标准退出按钮(右上角固定位置)
+├── getStandardSize()     # 获取标准尺寸
+└── destroy()             # 标准销毁流程
+
+ModalUI (弹窗基类, extends BaseUIComponent)
+├── 标准尺寸: 720×480 (诊断类) / 640×420 (问诊类)
+├── 边框方案: 方案B(3D立体)为主
+├── 退出按钮位置: (340, -250) 固定
+└── 内部容器标准化
+
+├── DialogUI              # NPC对话
+├── InquiryUI             # 问诊界面
+├── PulseUI               # 脉诊
+├── TongueUI              # 舌诊
+├── SyndromeUI            # 辨证
+├── PrescriptionUI        # 选方
+├── DecoctionUI           # 煎药
+├── ProcessingUI          # 炮制
+└── PlantingUI            # 种植
+
+ItemSlotComponent (物品格子组件)
+├── 标准尺寸: 60×60
+├── 边框方案: 方案4(Neumorphism)
+├── 内容布局: 图标+数量角标+选中状态
+└── 交互: 点击选择, hover凸起
+
+├── InventoryUI.slots     # 背包物品格子
+├── DecoctionUI.herbSlots # 煎药药材格子
+├── ProcessingUI.herbSlots # 炮制药材格子
+└── PlantingUI.seedSlots  # 种子格子
+
+SelectionButtonComponent (选择按钮组件)
+├── 尺寸: 固定宽度(选项文字自适应)
+├── 边框方案: 方案4(Neumorphism)或方案8(内凹槽位)
+├── 选中状态: ○→● 或 凸起效果
+└── 交互: 点击切换, hover高亮
+
+├── PulseUI.options       # 脉位/脉势选择
+├── TongueUI.options      # 舌象属性选择
+├── SyndromeUI.options    # 证型选择
+└── PrescriptionUI.options # 方剂选择
+</pre>
+</div>
+
+</div>
+</div>
+</div>
+</div>
+
+<div class="section">
+<h3>小游戏完整设计 - 第一部分</h3>
+
+<div class="mockup">
+<div class="mockup-header">脉诊 (PulseScene) - 完整设计 vs 当前实现</div>
+<div class="mockup-body" style="font-size: 12px;">
+
+<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+<div style="border: 2px solid #90c070; padding: 12px; background: #1a2e26;">
+<div style="color: #90c070; font-weight: bold; margin-bottom: 8px;">✅ 已实现</div>
+<ul style="color: #c0c080; padding-left: 16px; margin: 0;">
+<li>PulseUI基础框架(标题+描述+选项)</li>
+<li>脉位选项(浮/沉/迟/数/虚/实)</li>
+<li>脉势选项(紧/缓/滑/涩/弦/濡)</li>
+<li>○/●选中状态切换</li>
+<li>正确性验证(isCorrect判断)</li>
+<li>退出按钮(右上角)</li>
+<li>场景切换到舌诊</li>
+</ul>
+</div>
+
+<div style="border: 2px solid #ff6b6b; padding: 12px; background: #402020;">
+<div style="color: #ff6b6b; font-weight: bold; margin-bottom: 8px;">❌ 缺失功能</div>
+<ul style="color: #ff9999; padding-left: 16px; margin: 0;">
+<li><strong>教学引导</strong>: 青木先生语音/文字讲解脉诊要点</li>
+<li><strong>脉象动画</strong>: 脉搏跳动视觉效果(强弱/快慢)</li>
+<li><strong>难度分级</strong>: 初级(2选项)→中级(4选项)→高级(6选项)</li>
+<li><strong>错误反馈</strong>: 选择错误时显示正确答案+解释</li>
+<li><strong>线索提示</strong>: 根据问诊信息提示脉象特征</li>
+<li><strong>历史记录</strong>: 记录玩家脉诊判断历史供复盘</li>
+<li><strong>评分细项</strong>: 单次正确率/多次练习进步曲线</li>
+<li><strong>快捷键支持</strong>: 数字键1-6快速选择选项</li>
+<li><strong>脉象知识库</strong>: 各脉象的临床意义说明卡片</li>
+<li><strong>对比学习</strong>: 相似脉象对比(浮vs虚、紧vs弦)</li>
+<li><strong>触觉模拟</strong>: 手指按压模拟脉搏感觉(可选)</li>
+</ul>
+</div>
+</div>
+
+</div>
+</div>
+
+<div class="mockup">
+<div class="mockup-header">舌诊 (TongueScene) - 完整设计 vs 当前实现</div>
+<div class="mockup-body" style="font-size: 12px;">
+
+<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+<div style="border: 2px solid #90c070; padding: 12px; background: #1a2e26;">
+<div style="color: #90c070; font-weight: bold; margin-bottom: 8px;">✅ 已实现</div>
+<ul style="color: #c0c080; padding-left: 16px; margin: 0;">
+<li>TongueUI基础框架</li>
+<li>舌体颜色选项(淡红/红/绛红/青紫)</li>
+<li>舌苔选项(薄白/厚白/薄黄/厚黄)</li>
+<li>舌形选项(正常/胖大/瘦薄/裂纹)</li>
+<li>润燥选项(润/燥/滑)</li>
+<li>文字描述舌象</li>
+<li>○/●选中状态</li>
+<li>退出按钮</li>
+</ul>
+</div>
+
+<div style="border: 2px solid #ff6b6b; padding: 12px; background: #402020;">
+<div style="color: #ff6b6b; font-weight: bold; margin-bottom: 8px;">❌ 缺失功能</div>
+<ul style="color: #ff9999; padding-left: 16px; margin: 0;">
+<li><strong>舌象图片展示</strong>: 真实舌象照片/示意图</li>
+<li><strong>舌象动画</strong>: 舌体动态展示(颜色变化/舌苔分布)</li>
+<li><strong>教学引导</strong>: 青木先生讲解舌诊要点</li>
+<li><strong>对比学习</strong>: 正常舌象vs病理舌象对照</li>
+<li><strong>局部放大</strong>: 点击舌象部位放大查看细节</li>
+<li><strong>舌苔厚度可视化</strong>: 薄/厚用透明度/厚度表示</li>
+<li><strong>错误反馈</strong>: 选择错误显示正确答案+临床意义</li>
+<li><strong>舌诊知识卡片</strong>: 各舌象与证型的对应关系</li>
+<li><strong>难度分级</strong>: 初级(识别1项)→中级(2项)→高级(全项)</li>
+<li><strong>舌象组合评分</strong>: 四项综合正确率计算</li>
+<li><strong>历史记录</strong>: 舌诊判断记录供复盘</li>
+</ul>
+</div>
+</div>
+
+</div>
+</div>
+</div>
+
+<div style="text-align: center; margin-top: 16px;">
+<button onclick="location.href='http://localhost:61299'" style="padding: 10px 20px; background: #80a040; color: white; border: none; border-radius: 4px; cursor: pointer;">
+查看第二部分: 辨证/选方/煎药/炮制/种植
+</button>
+</div>
+
+<p style="text-align: center; color: #707070;">
+请在终端回复,告诉我你的想法或选择方向
+</p>

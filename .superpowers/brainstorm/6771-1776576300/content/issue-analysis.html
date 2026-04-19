@@ -1,0 +1,202 @@
+<h2>问题诊断: UI布局与小游戏设计</h2>
+<p class="subtitle">基于代码分析的系统性问题排查</p>
+
+<div class="section">
+<h3>问题一: UI组件布局混乱</h3>
+
+<div class="mockup">
+<div class="mockup-header">当前各弹窗尺寸不一致</div>
+<div class="mockup-body">
+<table style="width:100%; border-collapse: collapse; font-size: 14px;">
+<tr style="background: #2a3e32; color: #90c070;">
+<th style="padding: 8px; border: 1px solid #406050;">组件</th>
+<th style="padding: 8px; border: 1px solid #406050;">尺寸</th>
+<th style="padding: 8px; border: 1px solid #406050;">退出按钮位置</th>
+<th style="padding: 8px; border: 1px solid #406050;">边框方案</th>
+</tr>
+<tr>
+<td style="padding: 6px; border: 1px solid #406050;">InquiryUI</td>
+<td style="padding: 6px; border: 1px solid #406050; color: #ff6b6b;">640×420</td>
+<td style="padding: 6px; border: 1px solid #406050;">(300, -200)</td>
+<td style="padding: 6px; border: 1px solid #406050;">3D边框+内凹槽位</td>
+</tr>
+<tr>
+<td style="padding: 6px; border: 1px solid #406050;">PulseUI</td>
+<td style="padding: 6px; border: 1px solid #406050; color: #ff6b6b;">720×420</td>
+<td style="padding: 6px; border: 1px solid #406050;">(340, -200)</td>
+<td style="padding: 6px; border: 1px solid #406050;">3D边框</td>
+</tr>
+<tr>
+<td style="padding: 6px; border: 1px solid #406050;">TongueUI</td>
+<td style="padding: 6px; border: 1px solid #406050; color: #ff6b6b;">720×480</td>
+<td style="padding: 6px; border: 1px solid #406050;">(340, -250)</td>
+<td style="padding: 6px; border: 1px solid #406050;">3D边框</td>
+</tr>
+<tr>
+<td style="padding: 6px; border: 1px solid #406050;">SyndromeUI</td>
+<td style="padding: 6px; border: 1px solid #406050; color: #ff6b6b;">720×480</td>
+<td style="padding: 6px; border: 1px solid #406050;">(340, -250)</td>
+<td style="padding: 6px; border: 1px solid #406050;">3D边框</td>
+</tr>
+<tr>
+<td style="padding: 6px; border: 1px solid #406050;">PrescriptionUI</td>
+<td style="padding: 6px; border: 1px solid #406050; color: #ff6b6b;">720×480</td>
+<td style="padding: 6px; border: 1px solid #406050;">(340, -250)</td>
+<td style="padding: 6px; border: 1px solid #406050;">3D边框</td>
+</tr>
+<tr>
+<td style="padding: 6px; border: 1px solid #406050;">DecoctionUI</td>
+<td style="padding: 6px; border: 1px solid #406050; color: #ff6b6b;">动态(width×height)</td>
+<td style="padding: 6px; border: 1px solid #406050;">(width-60, 30)</td>
+<td style="padding: 6px; border: 1px solid #406050;">3D边框</td>
+</tr>
+<tr>
+<td style="padding: 6px; border: 1px solid #406050;">ProcessingUI</td>
+<td style="padding: 6px; border: 1px solid #406050; color: #ff6b6b;">动态(width×height)</td>
+<td style="padding: 6px; border: 1px solid #406050;">(width-60, 30)</td>
+<td style="padding: 6px; border: 1px solid #406050;">3D边框</td>
+</tr>
+<tr>
+<td style="padding: 6px; border: 1px solid #406050;">PlantingUI</td>
+<td style="padding: 6px; border: 1px solid #406050; color: #ff6b6b;">动态(width×height)</td>
+<td style="padding: 6px; border: 1px solid #406050;">(width-60, 30)</td>
+<td style="padding: 6px; border: 1px solid #406050;">半透明Rectangle</td>
+</tr>
+</table>
+</div>
+</div>
+
+<div class="pros-cons">
+<div class="cons">
+<h4>核心问题</h4>
+<ul>
+<li><strong>尺寸不一致</strong>: 诊断类(720×420/480) vs 问诊类(640×420)</li>
+<li><strong>退出按钮位置混乱</strong>: 有的在右上角(-250/-200), 有的用动态计算</li>
+<li><strong>边框绘制代码重复</strong>: draw3DBorder方法在每个UI中重复实现</li>
+<li><strong>PlantingUI未应用3D边框</strong>: 只用半透明背景,与其他组件风格不统一</li>
+<li><strong>无统一UI基类</strong>: 每个组件独立实现,难以统一维护</li>
+</ul>
+</div>
+</div>
+</div>
+
+<div class="section">
+<h3>问题二: 小游戏设计缺失</h3>
+
+<div class="mockup">
+<div class="mockup-header">小游戏关联关系与缺失分析</div>
+<div class="mockup-body" style="font-size: 13px;">
+
+<div style="display: flex; flex-direction: column; gap: 16px;">
+
+<!-- 诊断流程 -->
+<div style="border: 2px solid #80a040; padding: 12px; background: #1a2e26; border-radius: 4px;">
+<div style="color: #c0a080; font-weight: bold; margin-bottom: 8px;">诊断流程 (诊所)</div>
+<div style="display: flex; align-items: center; gap: 8px;">
+<div style="background: #408080; padding: 6px 10px; border-radius: 2px;">问诊</div>
+<span style="color: #90c070;">→</span>
+<div style="background: #408080; padding: 6px 10px; border-radius: 2px;">脉诊</div>
+<span style="color: #90c070;">→</span>
+<div style="background: #408080; padding: 6px 10px; border-radius: 2px;">舌诊</div>
+<span style="color: #90c070;">→</span>
+<div style="background: #408080; padding: 6px 10px; border-radius: 2px;">辨证</div>
+<span style="color: #90c070;">→</span>
+<div style="background: #408080; padding: 6px 10px; border-radius: 2px;">选方</div>
+<span style="color: #90c070;">→</span>
+<div style="background: #c07070; padding: 6px 10px; border-radius: 2px;">煎药</div>
+</div>
+</div>
+
+<!-- 药园流程 -->
+<div style="border: 2px solid #80a040; padding: 12px; background: #1a2e26; border-radius: 4px;">
+<div style="color: #c0a080; font-weight: bold; margin-bottom: 8px;">药园流程 (老张药园)</div>
+<div style="display: flex; align-items: center; gap: 8px;">
+<div style="background: #604020; padding: 6px 10px; border-radius: 2px;">种植</div>
+<span style="color: #90c070;">→</span>
+<div style="background: #604020; padding: 6px 10px; border-radius: 2px;">生长等待</div>
+<span style="color: #90c070;">→</span>
+<div style="background: #604020; padding: 6px 10px; border-radius: 2px;">收获考教</div>
+<span style="color: #90c070;">→</span>
+<div style="background: #c07070; padding: 6px 10px; border-radius: 2px;">炮制</div>
+</div>
+</div>
+
+<!-- 缺失分析 -->
+<div style="border: 2px solid #ff6b6b; padding: 12px; background: #402020; border-radius: 4px;">
+<div style="color: #ff6b6b; font-weight: bold; margin-bottom: 8px;">缺失功能分析</div>
+<table style="width: 100%; border-collapse: collapse;">
+<tr style="background: #503030;">
+<th style="padding: 6px; border: 1px solid #704040;">小游戏</th>
+<th style="padding: 6px; border: 1px solid #704040;">当前状态</th>
+<th style="padding: 6px; border: 1px solid #704040;">缺失内容</th>
+</tr>
+<tr>
+<td style="padding: 4px; border: 1px solid #704040;">脉诊</td>
+<td style="padding: 4px; border: 1px solid #704040; color: #90c070;">UI完成</td>
+<td style="padding: 4px; border: 1px solid #704040; color: #ff6b6b;">无教学逻辑、无难度分级、无错误反馈机制</td>
+</tr>
+<tr>
+<td style="padding: 4px; border: 1px solid #704040;">舌诊</td>
+<td style="padding: 4px; border: 1px solid #704040; color: #90c070;">UI完成</td>
+<td style="padding: 4px; border: 1px solid #704040; color: #ff6b6b;">无舌象图片展示、无选项权重、无引导提示</td>
+</tr>
+<tr>
+<td style="padding: 4px; border: 1px solid #704040;">辨证</td>
+<td style="padding: 4px; border: 1px solid #704040; color: #90c070;">UI完成</td>
+<td style="padding: 4px; border: 1px solid #704040; color: #ff6b6b;">论述评分逻辑缺失、AI评估未实现、无参考提示</td>
+</tr>
+<tr>
+<td style="padding: 4px; border: 1px solid #704040;">选方</td>
+<td style="padding: 4px; border: 1px solid #704040; color: #90c070;">UI完成</td>
+<td style="padding: 4px; border: 1px solid #704040; color: #ff6b6b;">方剂加减锁定机制未设计、解锁条件未定义</td>
+</tr>
+<tr>
+<td style="padding: 4px; border: 1px solid #704040;">煎药</td>
+<td style="padding: 4px; border: 1px solid #704040; color: #c0c080;">部分完成</td>
+<td style="padding: 4px; border: 1px solid #704040; color: #ff6b6b;">火候交互无动态反馈、配伍评分逻辑简化</td>
+</tr>
+<tr>
+<td style="padding: 4px; border: 1px solid #704040;">炮制</td>
+<td style="padding: 4px; border: 1px solid #704040; color: #c0c080;">部分完成</td>
+<td style="padding: 4px; border: 1px solid #704040; color: #ff6b6b;">预处理步骤简化、无炮制效果可视化</td>
+</tr>
+<tr>
+<td style="padding: 4px; border: 1px solid #704040;">种植</td>
+<td style="padding: 4px; border: 1px solid #704040; color: #c0c080;">部分完成</td>
+<td style="padding: 4px; border: 1px solid #704040; color: #ff6b6b;">四气五味与药材匹配无提示、生长动画缺失</td>
+</tr>
+</table>
+</div>
+
+</div>
+</div>
+</div>
+</div>
+
+<div class="options">
+<div class="option" data-choice="ui-first" onclick="toggleSelect(this)">
+<div class="letter">A</div>
+<div class="content">
+<h3>优先解决UI布局问题</h3>
+<p>创建统一UI基类,标准化弹窗尺寸和退出机制</p>
+</div>
+</div>
+<div class="option" data-choice="minigame-first" onclick="toggleSelect(this)">
+<div class="letter">B</div>
+<div class="content">
+<h3>优先解决小游戏设计</h3>
+<p>为每个小游戏创建详细功能设计文档</p>
+</div>
+</div>
+<div class="option" data-choice="both" onclick="toggleSelect(this)">
+<div class="letter">C</div>
+<div class="content">
+<h3>同时解决两个问题</h3>
+<p>UI统一化 + 小游戏功能设计并行推进</p>
+</div>
+</div>
+</div>
+
+<p style="text-align: center; color: #707070; margin-top: 16px;">
+点击选项选择优先方向,然后在终端告诉我你的想法
+</p>

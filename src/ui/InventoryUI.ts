@@ -11,6 +11,7 @@
  *
  * Phase 2 S8.3 实现
  * Round 4 视觉优化: Neumorphism新拟态设计
+ * Phase 2.5 UI组件系统统一化: 使用ItemSlotComponent
  */
 
 import Phaser from 'phaser';
@@ -23,6 +24,7 @@ import {
   InventoryTypeConfig
 } from '../data/inventory-data';
 import { UI_COLORS, UI_COLOR_STRINGS } from '../data/ui-color-theme';
+import ItemSlotComponent, { ItemSlotContent } from './components/ItemSlotComponent';
 
 // 背包UI配置
 export interface InventoryUIConfig {
@@ -36,16 +38,6 @@ export interface InventoryUIConfig {
 
 // Tab类型
 export type InventoryTabType = 'herbs' | 'seeds' | 'tools' | 'knowledge';
-
-// 物品格子UI状态
-interface ItemSlotUI {
-  container: Phaser.GameObjects.Container;
-  graphics: Phaser.GameObjects.Graphics;
-  icon?: Phaser.GameObjects.Text;  // 使用文字代替图标（暂时）
-  quantityText?: Phaser.GameObjects.Text;
-  itemId: string;
-  isSelected: boolean;
-}
 
 // Tab按钮UI状态
 interface TabButtonUI {
@@ -100,8 +92,8 @@ export class InventoryUI {
   private bagButtons: BagButtonUI[] = [];
   private currentBag: string = 'jiebiao_bag';
 
-  // 物品格子
-  private itemSlots: ItemSlotUI[] = [];
+  // 物品格子 - 使用统一的ItemSlotComponent
+  private itemSlots: ItemSlotComponent[] = [];
 
   // 位置和尺寸
   private x: number;
@@ -130,12 +122,6 @@ export class InventoryUI {
     tabSelected: { color: UI_COLOR_STRINGS.TEXT_PRIMARY },
     bag: { fontSize: '12px', color: UI_COLOR_STRINGS.TEXT_DISABLED },
     bagSelected: { color: UI_COLOR_STRINGS.TEXT_PRIMARY },
-    itemSlot: {
-      width: 60,
-      height: 60
-    },
-    itemText: { fontSize: '10px', color: UI_COLOR_STRINGS.TEXT_PRIMARY },
-    quantityText: { fontSize: '12px', color: UI_COLOR_STRINGS.STATUS_WARNING, fontStyle: 'bold' },
     closeButton: { fontSize: '16px', color: '#ff6b6b' }
   };
 
@@ -604,17 +590,16 @@ export class InventoryUI {
       return;
     }
 
-    // 创建药材格子
+    // 创建药材格子（使用统一尺寸）
     const cols = 6;
-    const slotWidth = this.styles.itemSlot.width;
-    const slotHeight = this.styles.itemSlot.height;
+    const slotSize = ItemSlotComponent.SLOT_SIZE;
     const spacing = 10;
 
     herbsInBag.forEach((item, index) => {
       const col = index % cols;
       const row = Math.floor(index / cols);
-      const xPos = col * (slotWidth + spacing);
-      const yPos = row * (slotHeight + spacing);
+      const xPos = col * (slotSize + spacing);
+      const yPos = row * (slotSize + spacing);
 
       this.createItemSlot(item.herb.id, item.herb.name, item.quantity, xPos, yPos);
     });
@@ -638,15 +623,14 @@ export class InventoryUI {
     }
 
     const cols = 6;
-    const slotWidth = this.styles.itemSlot.width;
-    const slotHeight = this.styles.itemSlot.height;
+    const slotSize = ItemSlotComponent.SLOT_SIZE;
     const spacing = 10;
 
     seeds.forEach((item, index) => {
       const col = index % cols;
       const row = Math.floor(index / cols);
-      const xPos = col * (slotWidth + spacing);
-      const yPos = row * (slotHeight + spacing);
+      const xPos = col * (slotSize + spacing);
+      const yPos = row * (slotSize + spacing);
 
       this.createItemSlot(item.seed.id, item.seed.name, item.quantity, xPos, yPos);
     });
@@ -670,15 +654,14 @@ export class InventoryUI {
     }
 
     const cols = 6;
-    const slotWidth = this.styles.itemSlot.width;
-    const slotHeight = this.styles.itemSlot.height;
+    const slotSize = ItemSlotComponent.SLOT_SIZE;
     const spacing = 10;
 
     tools.forEach((tool, index) => {
       const col = index % cols;
       const row = Math.floor(index / cols);
-      const xPos = col * (slotWidth + spacing);
-      const yPos = row * (slotHeight + spacing);
+      const xPos = col * (slotSize + spacing);
+      const yPos = row * (slotSize + spacing);
 
       this.createItemSlot(tool.id, tool.name, 1, xPos, yPos, false);
     });
@@ -702,22 +685,21 @@ export class InventoryUI {
     }
 
     const cols = 6;
-    const slotWidth = this.styles.itemSlot.width;
-    const slotHeight = this.styles.itemSlot.height;
+    const slotSize = ItemSlotComponent.SLOT_SIZE;
     const spacing = 10;
 
     cards.forEach((card, index) => {
       const col = index % cols;
       const row = Math.floor(index / cols);
-      const xPos = col * (slotWidth + spacing);
-      const yPos = row * (slotHeight + spacing);
+      const xPos = col * (slotSize + spacing);
+      const yPos = row * (slotSize + spacing);
 
       this.createItemSlot(card.id, card.name, 1, xPos, yPos, false);
     });
   }
 
   /**
-   * 创建物品格子（Neumorphism风格）
+   * 创建物品格子（使用统一的ItemSlotComponent）
    */
   private createItemSlot(
     itemId: string,
@@ -727,116 +709,44 @@ export class InventoryUI {
     y: number,
     showQuantity: boolean = true
   ): void {
-    const slotWidth = this.styles.itemSlot.width;
-    const slotHeight = this.styles.itemSlot.height;
-    const slotContainer = this.scene.add.container(x, y);
+    // ItemSlotComponent使用中心定位（origin 0.5），需要调整位置
+    const slotSize = ItemSlotComponent.SLOT_SIZE;
+    const centerX = x + slotSize / 2;
+    const centerY = y + slotSize / 2;
 
-    // 创建Graphics背景（默认凹陷效果）
-    const graphics = this.scene.add.graphics();
-    this.drawInsetEffect(graphics, {
-      x: 0,
-      y: 0,
-      width: slotWidth,
-      height: slotHeight,
-      baseColor: this.NEUMORPHIC.BASE_COLOR
-    });
-    slotContainer.add(graphics);
+    // 创建ItemSlotComponent
+    const slot = new ItemSlotComponent(this.scene, {
+      selectable: true,
+      onClick: () => this.selectItem(itemId)
+    }, centerX, centerY);
 
-    // 物品名称（暂用文字代替图标）
-    const icon = this.scene.add.text(
-      slotWidth / 2,
-      slotHeight / 2 - 10,
-      itemName.substring(0, 3),  // 只显示前3个字
-      this.styles.itemText
-    ).setOrigin(0.5);
-    slotContainer.add(icon);
+    // 设置内容
+    const content: ItemSlotContent = {
+      itemId: itemId,
+      name: itemName,
+      quantity: showQuantity ? quantity : undefined
+    };
+    slot.setContent(content);
 
-    // 数量（如果需要显示）
-    let quantityText: Phaser.GameObjects.Text | undefined;
-    if (showQuantity && quantity > 0) {
-      quantityText = this.scene.add.text(
-        slotWidth - 5,
-        slotHeight - 5,
-        String(quantity),
-        this.styles.quantityText
-      ).setOrigin(1, 1);
-      slotContainer.add(quantityText);
-    }
+    // 添加到内容容器
+    this.contentContainer.add(slot.container);
 
-    // 交互区域（使用透明Rectangle）
-    const hitArea = this.scene.add.rectangle(
-      slotWidth / 2,
-      slotHeight / 2,
-      slotWidth,
-      slotHeight,
-      0x000000,
-      0
-    );
-    hitArea.setInteractive({ useHandCursor: true });
-    slotContainer.add(hitArea);
-
-    hitArea.on('pointerdown', () => this.selectItem(itemId));
-    hitArea.on('pointerover', () => {
-      // 悬停时略微凸起
-      this.drawRaisedEffect(graphics, {
-        x: 0,
-        y: 0,
-        width: slotWidth,
-        height: slotHeight,
-        baseColor: this.NEUMORPHIC.BASE_COLOR
-      });
-    });
-    hitArea.on('pointerout', () => {
-      // 恢复凹陷效果
-      this.drawInsetEffect(graphics, {
-        x: 0,
-        y: 0,
-        width: slotWidth,
-        height: slotHeight,
-        baseColor: this.NEUMORPHIC.BASE_COLOR
-      });
-    });
-
-    this.contentContainer.add(slotContainer);
-
-    this.itemSlots.push({
-      container: slotContainer,
-      graphics,
-      icon,
-      quantityText,
-      itemId,
-      isSelected: false
-    });
+    // 存储引用
+    this.itemSlots.push(slot);
   }
 
   /**
    * 选择物品
    */
   private selectItem(itemId: string): void {
-    const slotWidth = this.styles.itemSlot.width;
-    const slotHeight = this.styles.itemSlot.height;
-
     // 更新所有物品格子的状态
     this.itemSlots.forEach(slot => {
-      slot.isSelected = slot.itemId === itemId;
-      if (slot.isSelected) {
-        // 选中状态：凸起效果
-        this.drawRaisedEffect(slot.graphics, {
-          x: 0,
-          y: 0,
-          width: slotWidth,
-          height: slotHeight,
-          baseColor: this.NEUMORPHIC.BASE_COLOR
-        });
+      if (slot.content && slot.content.itemId === itemId) {
+        // 选中该格子
+        slot.select();
       } else {
-        // 未选中状态：凹陷效果
-        this.drawInsetEffect(slot.graphics, {
-          x: 0,
-          y: 0,
-          width: slotWidth,
-          height: slotHeight,
-          baseColor: this.NEUMORPHIC.BASE_COLOR
-        });
+        // 取消选中其他格子
+        slot.deselect();
       }
     });
 
@@ -853,8 +763,9 @@ export class InventoryUI {
    * 清除物品格子
    */
   private clearItemSlots(): void {
+    // 销毁所有ItemSlotComponent
     this.itemSlots.forEach(slot => {
-      slot.container.destroy();
+      slot.destroy();
     });
     this.itemSlots = [];
 

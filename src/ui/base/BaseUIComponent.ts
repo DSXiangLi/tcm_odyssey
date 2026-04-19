@@ -251,6 +251,17 @@ export default abstract class BaseUIComponent {
   }
 
   /**
+   * 设置滚动因子
+   * @param x X方向滚动因子，默认1（跟随相机）
+   * @param y Y方向滚动因子，默认1（跟随相机）
+   * @returns this（用于链式调用）
+   */
+  setScrollFactor(x: number = 1, y: number = 1): this {
+    this.container.setScrollFactor(x, y);
+    return this;
+  }
+
+  /**
    * 暴露到全局（供测试访问）
    * @param name 全局变量名
    */

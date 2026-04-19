@@ -1,0 +1,314 @@
+<h2>小游戏完整设计分析 - 第二部分</h2>
+<p class="subtitle">辨证/选方/煎药/炮制/种植的完整功能设计</p>
+
+<div class="section">
+<div class="mockup">
+<div class="mockup-header">辨证 (SyndromeScene) - 完整设计 vs 当前实现</div>
+<div class="mockup-body" style="font-size: 12px;">
+
+<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+<div style="border: 2px solid #90c070; padding: 12px; background: #1a2e26;">
+<div style="color: #90c070; font-weight: bold; margin-bottom: 8px;">✅ 已实现</div>
+<ul style="color: #c0c080; padding-left: 16px; margin: 0;">
+<li>SyndromeUI基础框架</li>
+<li>证型选择列表(风寒表实/风寒表虚等)</li>
+<li>论述输入框(玩家分析说明)</li>
+<li>○/●选中状态</li>
+<li>确认按钮</li>
+<li>退出按钮</li>
+<li>简单评分(isCorrect判断)</li>
+</ul>
+</div>
+
+<div style="border: 2px solid #ff6b6b; padding: 12px; background: #402020;">
+<div style="color: #ff6b6b; font-weight: bold; margin-bottom: 8px;">❌ 缺失功能</div>
+<ul style="color: #ff9999; padding-left: 16px; margin: 0;">
+<li><strong>论述评分系统</strong>: AI评估论述内容的关键词覆盖</li>
+<li><strong>辨证逻辑检查</strong>: 症状→舌脉→证型的逻辑链验证</li>
+<li><strong>参考提示系统</strong>: 问诊线索提示可点击查看</li>
+<li><strong>证型对比卡片</strong>: 相似证型(风寒表实vs表虚)对比</li>
+<li><strong>错误诊断反馈</strong>: 选择错误证型时给出正确分析</li>
+<li><strong>症状权重评分</strong>: 各症状在辨证中的权重计算</li>
+<li><strong>教学引导</strong>: 青木先生讲解辨证思维方法</li>
+<li><strong>分步引导模式</strong>: 初级玩家分步引导辨证过程</li>
+<li><strong>辨证流程图</strong>: 症状→舌脉→证型的流程可视化</li>
+<li><strong>历史病例库</strong>: 同类证型历史病例参考</li>
+<li><strong>难度分级</strong>: 简单(2选项)→中等(4选项)→困难(全选项)</li>
+</ul>
+</div>
+</div>
+
+</div>
+</div>
+
+<div class="mockup">
+<div class="mockup-header">选方 (PrescriptionScene) - 完整设计 vs 当前实现</div>
+<div class="mockup-body" style="font-size: 12px;">
+
+<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+<div style="border: 2px solid #90c070; padding: 12px; background: #1a2e26;">
+<div style="color: #90c070; font-weight: bold; margin-bottom: 8px;">✅ 已实现</div>
+<ul style="color: #c0c080; padding-left: 16px; margin: 0;">
+<li>PrescriptionUI基础框架</li>
+<li>方剂列表(麻黄汤/桂枝汤/银翘散/桑菊饮)</li>
+<li>方剂详情展示(组成/功效/主治)</li>
+<li>方剂加减按钮(锁定状态)</li>
+<li>○/●选中状态</li>
+<li>确认按钮</li>
+<li>退出按钮</li>
+<li>正确性验证</li>
+</ul>
+</div>
+
+<div style="border: 2px solid #ff6b6b; padding: 12px; background: #402020;">
+<div style="color: #ff6b6b; font-weight: bold; margin-bottom: 8px;">❌ 缺失功能</div>
+<ul style="color: #ff9999; padding-left: 16px; margin: 0;">
+<li><strong>方剂加减解锁机制</strong>: 经验值阈值定义+解锁动画</li>
+<li><strong>加减药材选择</strong>: 解锁后可调整方剂组成</li>
+<li><strong>方剂对比功能</strong>: 麻黄汤vs桂枝汤详细对比</li>
+<li><strong>方剂组成可视化</strong>: 君臣佐使药材分层展示</li>
+<li><strong>配伍禁忌检查</strong>: 相反/相畏药材组合警告</li>
+<li><strong>方歌背诵辅助</strong>: 方歌显示+背诵练习模式</li>
+<li><strong>剂量计算</strong>: 根据病情轻重调整剂量</li>
+<li><strong>煎法提示</strong>: 方剂煎煮方法提示</li>
+<li><strong>教学引导</strong>: 青木先生讲解方剂选择要点</li>
+<li><strong>错误反馈</strong>: 选错方剂时显示正确方剂分析</li>
+<li><strong>难度分级</strong>: 初级(提示证型)→高级(无提示)</li>
+<li><strong>方剂知识卡片</strong>: 各方剂适应证详细说明</li>
+</ul>
+</div>
+</div>
+
+</div>
+</div>
+
+<div class="mockup">
+<div class="mockup-header">煎药 (DecoctionScene) - 完整设计 vs 当前实现</div>
+<div class="mockup-body" style="font-size: 12px;">
+
+<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+<div style="border: 2px solid #c0c080; padding: 12px; background: #1a2e26;">
+<div style="color: #c0c080; font-weight: bold; margin-bottom: 8px;">⚠️ 部分实现</div>
+<ul style="color: #c0c080; padding-left: 16px; margin: 0;">
+<li>DecoctionUI基础框架(3D边框)</li>
+<li>方剂选择界面</li>
+<li>药材选择界面</li>
+<li>配伍放置界面(君臣佐使槽位)</li>
+<li>顺序设置界面(先煎/后下)</li>
+<li>火候选择界面(武火/文火/缓火)</li>
+<li>煎药进度界面(进度条+时间显示)</li>
+<li>评分结果界面(总分+维度分)</li>
+<li>退出按钮</li>
+<li>评分数据定义(decoction-data.ts)</li>
+<li>DecoctionManager状态管理</li>
+</ul>
+</div>
+
+<div style="border: 2px solid #ff6b6b; padding: 12px; background: #402020;">
+<div style="color: #ff6b6b; font-weight: bold; margin-bottom: 8px;">❌ 缺失功能</div>
+<ul style="color: #ff9999; padding-left: 16px; margin: 0;">
+<li><strong>火候动态反馈</strong>: 火焰动画+温度曲线可视化</li>
+<li><strong>药材放入动画</strong>: 药材投入药罐动画效果</li>
+<li><strong>煎煮过程模拟</strong>: 水位变化+气泡+药材颜色变化</li>
+<li><strong>时间控制交互</strong>: 手动调整煎煮时间(快进/暂停)</li>
+<li><strong>中途检查</strong>: 煎煮中途可检查药材状态</li>
+<li><strong>错误即时反馈</strong>: 配伍错误时即时提示而非评分时</li>
+<li><strong>药材卡片统一</strong>: 与背包格子风格统一</li>
+<li><strong>配伍槽位可视化</strong>: 君臣佐使用图标而非纯文字</li>
+<li><strong>先煎后下动画</strong>: 不同顺序药材分开动画展示</li>
+<li><strong>教学引导</strong>: 老张讲解煎药要点</li>
+<li><strong>煎药知识卡片</strong>: 各药材煎法特殊要求</li>
+<li><strong>难度分级</strong>: 初级(提示配伍)→高级(无提示)</li>
+</ul>
+</div>
+</div>
+
+</div>
+</div>
+
+<div class="mockup">
+<div class="mockup-header">炮制 (ProcessingScene) - 完整设计 vs 当前实现</div>
+<div class="mockup-body" style="font-size: 12px;">
+
+<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+<div style="border: 2px solid #c0c080; padding: 12px; background: #1a2e26;">
+<div style="color: #c0c080; font-weight: bold; margin-bottom: 8px;">⚠️ 部分实现</div>
+<ul style="color: #c0c080; padding-left: 16px; margin: 0;">
+<li>ProcessingUI基础框架</li>
+<li>药材选择界面</li>
+<li>方法选择界面(炒/炙/煅/蒸/煮大类)</li>
+<li>辅料选择界面</li>
+<li>预处理界面(简化)</li>
+<li>炮制进度界面</li>
+<li>评分结果界面</li>
+<li>退出按钮</li>
+<li>ProcessingManager状态管理</li>
+<li>炮制数据定义(processing-data.ts)</li>
+</ul>
+</div>
+
+<div style="border: 2px solid #ff6b6b; padding: 12px; background: #402020;">
+<div style="color: #ff6b6b; font-weight: bold; margin-bottom: 8px;">❌ 缺失功能</div>
+<ul style="color: #ff9999; padding-left: 16px; margin: 0;">
+<li><strong>预处理详细流程</strong>: 清洗/浸泡/切片等完整步骤</li>
+<li><strong>炮制效果可视化</strong>: 药材颜色/质地变化动画</li>
+<li><strong>温度控制交互</strong>: 手动调节火候大小</li>
+<li><strong>终点判断训练</strong>: 何时停止炮制的判断练习</li>
+<li><strong>炮制方法动画</strong>: 炒(翻动)/炙(浸润)/煅(燃烧)</li>
+<li><strong>辅料加入时机</strong>: 辅料添加时机可视化</li>
+<li><strong>药材卡片统一</strong>: 与背包格子风格统一</li>
+<li><strong>炮制前后对比</strong>: 生药vs炮制品对比展示</li>
+<li><strong>质量判断训练</strong>: 终点质量检查要点练习</li>
+<li><strong>教学引导</strong>: 老张讲解炮制要点</li>
+<li><strong>炮制知识卡片</strong>: 各药材炮制要求详细说明</li>
+<li><strong>难度分级</strong>: 初级(提示方法)→高级(无提示)</li>
+</ul>
+</div>
+</div>
+
+</div>
+</div>
+
+<div class="mockup">
+<div class="mockup-header">种植 (PlantingScene) - 完整设计 vs 当前实现</div>
+<div class="mockup-body" style="font-size: 12px;">
+
+<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+<div style="border: 2px solid #c0c080; padding: 12px; background: #1a2e26;">
+<div style="color: #c0c080; font-weight: bold; margin-bottom: 8px;">⚠️ 部分实现</div>
+<ul style="color: #c0c080; padding-left: 16px; margin: 0;">
+<li>PlantingUI基础框架</li>
+<li>种子选择界面</li>
+<li>地块选择界面(归经属性)</li>
+<li>水源选择界面(四气对应)</li>
+<li>肥料选择界面(五味对应)</li>
+<li>生长进度界面(进度条)</li>
+<li>收获考教界面(选择题)</li>
+<li>退出按钮</li>
+<li>PlantingManager状态管理</li>
+<li>种植数据定义(planting-data.ts)</li>
+</ul>
+</div>
+
+<div style="border: 2px solid #ff6b6b; padding: 12px; background: #402020;">
+<div style="color: #ff6b6b; font-weight: bold; margin-bottom: 8px;">❌ 缺失功能</div>
+<ul style="color: #ff9999; padding-left: 16px; margin: 0;">
+<li><strong>生长动画</strong>: 种子→发芽→生长→成熟视觉变化</li>
+<li><strong>地块网格可视化</strong>: 药园地块网格布局展示</li>
+<li><strong>四气五味提示</strong>: 药材需求与水源肥料匹配提示</li>
+<li><strong>归经知识卡片</strong>: 各药材归经说明</li>
+<li><strong>水源肥料选择动画</strong>: 倒水/施肥动画效果</li>
+<li><strong>生长影响因素</strong>: 天气/季节对生长的影响</li>
+<li><strong>药材卡片统一</strong>: 与背包格子风格统一</li>
+<li><strong>考教深化</strong>: 多轮考教(性味/功效/主治)</li>
+<li><strong>药袋分类动画</strong>: 成熟药材放入对应药袋动画</li>
+<li><strong>教学引导</strong>: 老张讲解种植要点</li>
+<li><strong>种植日志</strong>: 记录种植过程供复盘</li>
+<li><strong>难度分级</strong>: 初级(提示匹配)→高级(无提示)</li>
+</ul>
+</div>
+</div>
+
+</div>
+</div>
+</div>
+
+<div class="section">
+<h3>小游戏关联关系与数据流</h3>
+
+<div class="mockup">
+<div class="mockup-body">
+<div style="background: #1a2e26; padding: 16px; border-radius: 4px; border: 2px solid #80a040;">
+<pre style="color: #90c070; font-size: 11px; line-height: 1.5;">
+                    ┌─────────────────────────────────────────────────────────┐
+                    │                     病案数据 (core_cases.json)            │
+                    │  case_id, symptoms, pulse, tongue, syndrome, prescription │
+                    └─────────────────────────────────────────────────────────┘
+                                              │
+                    ┌─────────────────────────┼─────────────────────────┐
+                    │                         │                         │
+                    ▼                         ▼                         ▼
+              ┌──────────┐            ┌──────────┐            ┌──────────┐
+              │  问诊    │            │  药园    │            │  背包    │
+              │ Inquiry  │            │ Garden   │            │ Inventory│
+              └──────────┘            └──────────┘            └──────────┘
+                    │                         │                         │
+                    │  线索数据               │  种植数据               │  物品数据
+                    │  ClueTracker           │  PlantingManager        │  InventoryManager
+                    │                         │                         │
+                    ▼                         ▼                         ▼
+              ┌──────────┐            ┌──────────┐            ┌──────────┐
+              │  脉诊    │            │  种植    │            │  药材    │
+              │ Pulse    │            │ Planting │            │  卡片    │
+              └──────────┘            └──────────┘            └──────────┘
+                    │                         │                         │
+                    │  脉象数据               │  收获药材               │  药材属性
+                    │  position/tension      │  herb_id               │  四气五味归经
+                    │                         │                         │
+                    ▼                         ▼                         ▼
+              ┌──────────┐            ┌──────────┐            ┌──────────┐
+              │  舌诊    │            │  炮制    │            │  煎药    │
+              │ Tongue   │            │ Processing│           │ Decoction│
+              └──────────┘            └──────────┘            └──────────┘
+                    │                         │                         │
+                    │  舌象数据               │  炮制后药材             │  方剂煎煮
+                    │  body/coat/moist       │  processed_herb        │  配伍/顺序/火候
+                    │                         │                         │
+                    ▼                         │                         ▼
+              ┌──────────┐                    │                   ┌──────────┐
+              │  辨证    │                    │                   │  评分    │
+              │ Syndrome │                    │                   │ Result   │
+              └──────────┘                    │                   └──────────┘
+                    │                         │                         │
+                    │  证型数据               │                         │
+                    │  syndrome_type         │                         │
+                    │                         │                         │
+                    ▼                         ▼                         │
+              ┌──────────┐            ┌──────────┐                    │
+              │  选方    │            │  背包    │                    │
+              │Prescription│           │ Inventory│                    │
+              └──────────┘            └──────────┘                    │
+                    │                         │                         │
+                    │  方剂数据               │  炮制后药材入库         │
+                    │  prescription_id       │                         │
+                    │                         │                         │
+                    └─────────────────────────┼─────────────────────────┘
+                                              │
+                                              ▼
+                    ┌─────────────────────────────────────────────────────────┐
+                    │                   DiagnosisFlowManager                  │
+                    │  诊断流程管理: 问诊→脉诊→舌诊→辨证→选方→煎药→评分       │
+                    └─────────────────────────────────────────────────────────┘
+</pre>
+</div>
+</div>
+</div>
+</div>
+
+<div class="options">
+<div class="option" data-choice="design-first" onclick="toggleSelect(this)">
+<div class="letter">A</div>
+<div class="content">
+<h3>先完成完整设计文档</h3>
+<p>为每个小游戏创建详细的功能设计文档,明确所有缺失功能</p>
+</div>
+</div>
+<div class="option" data-choice="ui-first" onclick="toggleSelect(this)">
+<div class="letter">B</div>
+<div class="content">
+<h3>先完成UI组件标准化</h3>
+<p>创建BaseUIComponent基类,统一内部组件风格</p>
+</div>
+</div>
+<div class="option" data-choice="parallel" onclick="toggleSelect(this)">
+<div class="letter">C</div>
+<div class="content">
+<h3>设计文档+UI标准化并行</h3>
+<p>同时创建设计文档和UI基类,分阶段实现</p>
+</div>
+</div>
+</div>
+
+<p style="text-align: center; color: #707070; margin-top: 16px;">
+点击选项选择优先方向,然后在终端告诉我你的想法
+</p>

@@ -553,11 +553,8 @@ export class ClinicScene extends Phaser.Scene {
       }
     };
 
-    // 病案列表位置：屏幕中央
-    const casesX = this.cameras.main.width / 2;
-    const casesY = this.cameras.main.height / 2;
-
-    this.casesListUI = new CasesListUI(this, casesX, casesY, config);
+    // Phase 2.5 UI统一化: ModalUI自动放置在屏幕中央
+    this.casesListUI = new CasesListUI(this, config);
     this.casesListUI.setScrollFactor(0);
 
     console.log('[ClinicScene] Cases list shown');
@@ -593,11 +590,8 @@ export class ClinicScene extends Phaser.Scene {
       }
     };
 
-    // 病案详情位置：屏幕中央
-    const detailX = this.cameras.main.width / 2;
-    const detailY = this.cameras.main.height / 2;
-
-    this.caseDetailUI = new CaseDetailUI(this, detailX, detailY, config);
+    // Phase 2.5 UI统一化: ModalUI自动放置在屏幕中央
+    this.caseDetailUI = new CaseDetailUI(this, config);
     this.caseDetailUI.setScrollFactor(0);
 
     console.log(`[ClinicScene] Case detail shown for ${caseId}`);

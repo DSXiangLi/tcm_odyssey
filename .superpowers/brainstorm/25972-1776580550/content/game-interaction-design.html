@@ -1,0 +1,325 @@
+<h2>游戏化交互设计方案</h2>
+<p class="subtitle">参考《桃源深处有人家》，左侧槽位+右侧背包模式</p>
+
+<div class="section">
+<h3>核心交互模式对比</h3>
+
+<div class="split">
+<div class="mockup">
+<div class="mockup-header">旧设计(文字为主)</div>
+<div class="mockup-body" style="font-size: 12px; color: #ff9999;">
+<pre style="line-height: 1.8;">
+脉位选择:
+○ 浮脉
+○ 沉脉
+○ 迟脉
+○ 数脉
+○ 虚脉
+○ 实脉
+
+脉势选择:
+○ 紧脉
+○ 缓脉
+○ 滑脉
+○ 涩脉
+○ 弦脉
+○ 濡脉
+
+[确认选择]
+</pre>
+<div style="color: #ff6b6b; margin-top: 8px;">
+问题: 纯文字选项，视觉单调，学习成本高
+</div>
+</div>
+</div>
+
+<div class="mockup">
+<div class="mockup-header">新设计(视觉卡片)</div>
+<div class="mockup-body" style="font-size: 12px; color: #90c070;">
+<pre style="line-height: 1.8;">
+┌────────────┐ ┌────────────┐
+│    ↑      │ │    ↓      │  ← 脉位图标
+│   浮脉    │ │   沉脉    │     (浮↑/沉↓)
+│  轻取得   │ │  重按得   │
+└────────────┘ └────────────┘
+
+┌────────────┐ ┌────────────┐
+│   ═══     │ │   ≈≈≈     │  ← 脉势图标
+│   紧脉    │ │   缓脉    │     (紧线/缓波)
+│  如转索   │ │  来舒缓   │
+└────────────┘ └────────────┘
+
+点击卡片 → 飞入展示区
+</pre>
+<div style="color: #90c070; margin-top: 8px;">
+优势: 视觉直观，游戏化交互，降低学习成本
+</div>
+</div>
+</div>
+</div>
+</div>
+
+<div class="section">
+<h3>小游戏交互设计示意</h3>
+
+<div class="mockup">
+<div class="mockup-header">煎药配伍 - 左槽位+右背包</div>
+<div class="mockup-body" style="font-size: 11px;">
+<div style="display: flex; gap: 20px;">
+<div style="flex: 1; border: 2px solid #80a040; padding: 10px; background: #1a2e26;">
+<div style="color: #c0a080; font-weight: bold; margin-bottom: 10px;">配伍槽位(左侧)</div>
+<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+<div style="border: 2px dashed #406050; padding: 20px; text-align: center; background: #0d1f17;">
+<div style="color: #604020;">君</div>
+<div style="color: #808080; font-size: 10px;">[空槽]</div>
+<div style="color: #90c070; font-size: 10px;">先煎 ○</div>
+</div>
+<div style="border: 2px dashed #406050; padding: 20px; text-align: center; background: #0d1f17;">
+<div style="color: #604020;">臣</div>
+<div style="color: #808080; font-size: 10px;">[空槽]</div>
+<div style="color: #90c070; font-size: 10px;">同煎</div>
+</div>
+<div style="border: 2px dashed #406050; padding: 20px; text-align: center; background: #0d1f17;">
+<div style="color: #604020;">佐</div>
+<div style="color: #808080; font-size: 10px;">[空槽]</div>
+<div style="color: #90c070; font-size: 10px;">同煎</div>
+</div>
+<div style="border: 2px dashed #406050; padding: 20px; text-align: center; background: #0d1f17;">
+<div style="color: #604020;">使</div>
+<div style="color: #808080; font-size: 10px;">[空槽]</div>
+<div style="color: #90c070; font-size: 10px;">后下 ○</div>
+</div>
+</div>
+</div>
+<div style="flex: 1; border: 2px solid #80a040; padding: 10px; background: #1a2e26;">
+<div style="color: #c0a080; font-weight: bold; margin-bottom: 10px;">背包饮片(右侧)</div>
+<div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px;">
+<div style="width: 50px; height: 50px; border: 2px solid #90c070; padding: 4px; text-align: center; background: #2a3e32; font-size: 10px;">
+<div style="color: #90c070;">麻黄</div>
+<div style="color: #c09060;">×5</div>
+</div>
+<div style="width: 50px; height: 50px; border: 2px solid #90c070; padding: 4px; text-align: center; background: #2a3e32; font-size: 10px;">
+<div style="color: #90c070;">桂枝</div>
+<div style="color: #c09060;">×3</div>
+</div>
+<div style="width: 50px; height: 50px; border: 2px solid #90c070; padding: 4px; text-align: center; background: #2a3e32; font-size: 10px;">
+<div style="color: #90c070;">杏仁</div>
+<div style="color: #c09060;">×4</div>
+</div>
+<div style="width: 50px; height: 50px; border: 2px solid #90c070; padding: 4px; text-align: center; background: #2a3e32; font-size: 10px;">
+<div style="color: #90c070;">甘草</div>
+<div style="color: #c09060;">×6</div>
+</div>
+</div>
+<div style="color: #707070; font-size: 10px; margin-top: 10px;">
+点击饮片 → 点击槽位 → 饮片飞入
+</div>
+</div>
+</div>
+</div>
+</div>
+
+<div class="mockup">
+<div class="mockup-header">炮制 - 合成式交互(药材+辅料)</div>
+<div class="mockup-body" style="font-size: 11px;">
+<div style="display: flex; gap: 20px;">
+<div style="flex: 1; border: 2px solid #80a040; padding: 10px; background: #1a2e26;">
+<div style="color: #c0a080; font-weight: bold; margin-bottom: 10px;">炮制槽位</div>
+<div style="border: 2px dashed #406050; padding: 15px; margin-bottom: 10px; background: #0d1f17;">
+<div style="color: #604020;">药材槽</div>
+<div style="color: #808080; font-size: 10px;">需要: XX饮片</div>
+<div style="color: #90c070; font-size: 10px;">点击背包药材放入</div>
+</div>
+<div style="border: 2px dashed #406050; padding: 15px; margin-bottom: 10px; background: #0d1f17;">
+<div style="color: #604020;">辅料槽</div>
+<div style="color: #808080; font-size: 10px;">需要: 蜂蜜(蜜炙)</div>
+<div style="color: #90c070; font-size: 10px;">点击背包辅料放入</div>
+</div>
+<div style="border: 2px solid #90c070; padding: 10px; background: #2a3e32; text-align: center;">
+<div style="color: #90c070;">合成预览</div>
+<div style="color: #c0c080;">甘草 + 蜂蜜 → 蜜甘草</div>
+</div>
+</div>
+<div style="flex: 1; border: 2px solid #80a040; padding: 10px; background: #1a2e26;">
+<div style="color: #c0a080; font-weight: bold; margin-bottom: 10px;">背包物品</div>
+<div style="color: #707070; font-size: 10px;">[药材] [辅料]</div>
+<div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; margin-top: 10px;">
+<div style="width: 50px; height: 50px; border: 2px solid #90c070; padding: 4px; text-align: center; background: #2a3e32; font-size: 10px;">
+<div style="color: #90c070;">甘草</div>
+<div style="color: #c09060;">×6</div>
+</div>
+<div style="width: 50px; height: 50px; border: 2px solid #90c070; padding: 4px; text-align: center; background: #2a3e32; font-size: 10px;">
+<div style="color: #90c070;">麻黄</div>
+<div style="color: #c09060;">×5</div>
+</div>
+</div>
+<div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; margin-top: 10px;">
+<div style="width: 50px; height: 50px; border: 2px solid #c0c080; padding: 4px; text-align: center; background: #403020; font-size: 10px;">
+<div style="color: #c0c080;">蜂蜜</div>
+<div style="color: #c09060;">×3</div>
+</div>
+<div style="width: 50px; height: 50px; border: 2px solid #c0c080; padding: 4px; text-align: center; background: #403020; font-size: 10px;">
+<div style="color: #c0c080;">黄酒</div>
+<div style="color: #c09060;">×2</div>
+</div>
+<div style="width: 50px; height: 50px; border: 2px solid #c0c080; padding: 4px; text-align: center; background: #403020; font-size: 10px;">
+<div style="color: #c0c080;">米醋</div>
+<div style="color: #c09060;">×4</div>
+</div>
+<div style="width: 50px; height: 50px; border: 2px solid #c0c080; padding: 4px; text-align: center; background: #403020; font-size: 10px;">
+<div style="color: #c0c080;">盐水</div>
+<div style="color: #c09060;">×∞</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+<div class="mockup">
+<div class="mockup-header">种植 - 地块网格+资源卡片</div>
+<div class="mockup-body" style="font-size: 11px;">
+<div style="display: flex; gap: 20px;">
+<div style="flex: 1; border: 2px solid #80a040; padding: 10px; background: #1a2e26;">
+<div style="color: #c0a080; font-weight: bold; margin-bottom: 10px;">地块网格</div>
+<div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px;">
+<div style="border: 2px solid #90c070; padding: 15px; text-align: center; background: #2a3e32;">
+<div style="color: #90c070; font-size: 10px;">肺经A</div>
+<div style="color: #808080; font-size: 10px;">[空]</div>
+<div style="color: #707070; font-size: 9px;">适合: 麻黄</div>
+</div>
+<div style="border: 2px solid #90c070; padding: 15px; text-align: center; background: #2a3e32;">
+<div style="color: #90c070; font-size: 10px;">肺经B</div>
+<div style="color: #808080; font-size: 10px;">[空]</div>
+</div>
+<div style="border: 2px solid #70a0c0; padding: 15px; text-align: center; background: #203040;">
+<div style="color: #70a0c0; font-size: 10px;">心经</div>
+<div style="color: #808080; font-size: 10px;">[空]</div>
+<div style="color: #707070; font-size: 9px;">适合: 桂枝</div>
+</div>
+<div style="border: 2px solid #a08060; padding: 15px; text-align: center; background: #2a3e32;">
+<div style="color: #a08060; font-size: 10px;">通用</div>
+<div style="color: #808080; font-size: 10px;">[空]</div>
+</div>
+</div>
+<div style="color: #90c070; margin-top: 10px;">
+匹配度: ━━━━━━━━━━ 100%
+</div>
+</div>
+<div style="flex: 1; border: 2px solid #80a040; padding: 10px; background: #1a2e26;">
+<div style="color: #c0a080; font-weight: bold; margin-bottom: 10px;">资源卡片</div>
+<div style="color: #707070; font-size: 10px;">[种子] [水源] [肥料]</div>
+<div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; margin-top: 10px;">
+<div style="width: 50px; height: 50px; border: 2px solid #90c070; padding: 4px; text-align: center; background: #2a3e32; font-size: 10px;">
+<div style="color: #90c070;">麻黄</div>
+<div style="color: #c09060;">种子</div>
+</div>
+<div style="width: 50px; height: 50px; border: 2px solid #90c070; padding: 4px; text-align: center; background: #2a3e32; font-size: 10px;">
+<div style="color: #90c070;">桂枝</div>
+<div style="color: #c09060;">种子</div>
+</div>
+<div style="width: 50px; height: 50px; border: 2px solid #90c070; padding: 4px; text-align: center; background: #2a3e32; font-size: 10px;">
+<div style="color: #90c070;">金银花</div>
+<div style="color: #c09060;">种子</div>
+</div>
+</div>
+<div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; margin-top: 10px;">
+<div style="width: 50px; height: 50px; border: 2px solid #c07070; padding: 4px; text-align: center; background: #402020; font-size: 10px;">
+<div style="color: #c07070;">温泉🔥</div>
+<div style="color: #707070;">热</div>
+</div>
+<div style="width: 50px; height: 50px; border: 2px solid #90c070; padding: 4px; text-align: center; background: #2a3e32; font-size: 10px;">
+<div style="color: #90c070;">温水🌡</div>
+<div style="color: #707070;">温</div>
+</div>
+<div style="width: 50px; height: 50px; border: 2px solid #70a0c0; padding: 4px; text-align: center; background: #203040; font-size: 10px;">
+<div style="color: #70a0c0;">溪水❄</div>
+<div style="color: #707070;">凉</div>
+</div>
+</div>
+<div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; margin-top: 10px;">
+<div style="width: 40px; height: 40px; border: 2px solid #c09060; padding: 2px; text-align: center; background: #403020; font-size: 9px;">
+<div style="color: #c09060;">辛🌶</div>
+</div>
+<div style="width: 40px; height: 40px; border: 2px solid #90c070; padding: 2px; text-align: center; background: #2a3e32; font-size: 9px;">
+<div style="color: #90c070;">甘🍯</div>
+</div>
+<div style="width: 40px; height: 40px; border: 2px solid #70a0c0; padding: 2px; text-align: center; background: #203040; font-size: 9px;">
+<div style="color: #70a0c0;">苦💊</div>
+</div>
+<div style="width: 40px; height: 40px; border: 2px solid #c0c080; padding: 2px; text-align: center; background: #403020; font-size: 9px;">
+<div style="color: #c0c080;">酸🍋</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+<div class="section">
+<h3>交互动画示意</h3>
+
+<div class="mockup">
+<div class="mockup-body">
+<div style="display: flex; gap: 16px; flex-wrap: wrap;">
+<div style="border: 2px solid #80a040; padding: 12px; background: #1a2e26; width: 200px;">
+<div style="color: #c0a080; font-weight: bold;">点击选择</div>
+<div style="color: #90c070; font-size: 12px;">
+点击资源 → 高亮<br>
+点击槽位 → 飞入填充
+</div>
+</div>
+<div style="border: 2px solid #80a040; padding: 12px; background: #1a2e26; width: 200px;">
+<div style="color: #c0a080; font-weight: bold;">拖放操作</div>
+<div style="color: #90c070; font-size: 12px;">
+拖起资源 → 移动<br>
+释放槽位 → 填充
+</div>
+</div>
+<div style="border: 2px solid #80a040; padding: 12px; background: #1a2e26; width: 200px;">
+<div style="color: #c0a080; font-weight: bold;">双击快速</div>
+<div style="color: #90c070; font-size: 12px;">
+双击资源 → 自动<br>
+放入第一个空槽
+</div>
+</div>
+<div style="border: 2px solid #80a040; padding: 12px; background: #1a2e26; width: 200px;">
+<div style="color: #c0a080; font-weight: bold;">即时反馈</div>
+<div style="color: #90c070; font-size: 12px;">
+正确: 绿色脉冲<br>
+错误: 红色闪烁
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+<div class="options">
+<div class="option" data-choice="approve" onclick="toggleSelect(this)">
+<div class="letter">A</div>
+<div class="content">
+<h3>认可新交互设计</h3>
+<p>采用左侧槽位+右侧背包的游戏化交互模式</p>
+</div>
+</div>
+<div class="option" data-choice="modify" onclick="toggleSelect(this)">
+<div class="letter">B</div>
+<div class="content">
+<h3>需要调整部分设计</h3>
+<p>请在终端说明需要调整的具体内容</p>
+</div>
+</div>
+<div class="option" data-choice="reject" onclick="toggleSelect(this)">
+<div class="letter">C</div>
+<div class="content">
+<h3>保持原有文字选项设计</h3>
+<p>不改变当前交互模式</p>
+</div>
+</div>
+</div>
+
+<p style="text-align: center; color: #707070; margin-top: 16px;">
+点击选项并在浏览器(http://localhost:54488)中查看，然后在终端告诉我你的想法
+</p>

@@ -90,8 +90,9 @@ export default abstract class BaseUIComponent {
    * 绘制边框
    * @param style 边框样式，默认 '3d'
    * @param config 可选的自定义配置
+   * @returns Graphics对象（用于链式调用）
    */
-  drawBorder(style: BorderStyleType = '3d'): void {
+  protected drawBorder(style: BorderStyleType = '3d'): Phaser.GameObjects.Graphics {
     // 创建或清除Graphics
     if (this.graphics) {
       this.graphics.clear();
@@ -124,6 +125,8 @@ export default abstract class BaseUIComponent {
       default:
         draw3DBorder(this.graphics, x, y, this.width, this.height);
     }
+
+    return this.graphics;
   }
 
   /**
@@ -184,7 +187,7 @@ export default abstract class BaseUIComponent {
    * @param action 点击回调函数
    * @returns 创建的Text对象
    */
-  createExitButton(
+  protected createExitButton(
     text: string = '退出',
     position?: ExitButtonPosition,
     action?: () => void
@@ -240,10 +243,12 @@ export default abstract class BaseUIComponent {
   /**
    * 设置深度层级
    * @param depth 深度值
+   * @returns this（用于链式调用）
    */
-  setDepth(depth: number): void {
+  setDepth(depth: number): this {
     this.depth = depth;
     this.container.setDepth(depth);
+    return this;
   }
 
   /**

@@ -133,18 +133,32 @@ describe('BaseUIComponent', () => {
       expect(component.container.setDepth).toHaveBeenCalledWith(200);
       expect(component.depth).toBe(200);
     });
+
+    it('should return this for chaining in setDepth', () => {
+      const component = new BaseUIComponent(mockScene, 720, 480);
+      const result = component.setDepth(200);
+      expect(result).toBe(component);
+    });
+
+    it('should support chaining setDepth calls', () => {
+      const component = new BaseUIComponent(mockScene, 720, 480);
+      component.setDepth(100).setDepth(200);
+      expect(component.depth).toBe(200);
+    });
   });
 
   describe('drawBorder方法', () => {
     it('should have drawBorder method', () => {
       const component = new BaseUIComponent(mockScene, 720, 480);
-      expect(component.drawBorder).toBeDefined();
-      expect(typeof component.drawBorder).toBe('function');
+      // drawBorder is protected, access via type casting for testing
+      expect((component as any).drawBorder).toBeDefined();
+      expect(typeof (component as any).drawBorder).toBe('function');
     });
 
     it('should draw border with 3d style by default', () => {
       const component = new BaseUIComponent(mockScene, 720, 480);
-      component.drawBorder();
+      // drawBorder is protected, access via type casting for testing
+      (component as any).drawBorder();
       // Should call graphics methods for 3d border style
       expect(mockScene.add.graphics).toHaveBeenCalled();
       expect(component.graphics).toBeDefined();
@@ -157,22 +171,32 @@ describe('BaseUIComponent', () => {
       const styles: BorderStyleType[] = ['glass', '3d', 'traditional', 'neumorphic', 'inset'];
 
       for (const style of styles) {
-        component.drawBorder(style);
+        // drawBorder is protected, access via type casting for testing
+        (component as any).drawBorder(style);
         expect(mockScene.add.graphics).toHaveBeenCalled();
       }
+    });
+
+    it('should return Graphics object for chaining', () => {
+      const component = new BaseUIComponent(mockScene, 720, 480);
+      // drawBorder is protected, access via type casting for testing
+      const result = (component as any).drawBorder('3d');
+      expect(result).toBe(component.graphics);
     });
   });
 
   describe('createExitButton方法', () => {
     it('should have createExitButton method', () => {
       const component = new BaseUIComponent(mockScene, 720, 480);
-      expect(component.createExitButton).toBeDefined();
-      expect(typeof component.createExitButton).toBe('function');
+      // createExitButton is protected, access via type casting for testing
+      expect((component as any).createExitButton).toBeDefined();
+      expect(typeof (component as any).createExitButton).toBe('function');
     });
 
     it('should create exit button with text', () => {
       const component = new BaseUIComponent(mockScene, 720, 480);
-      const exitButton = component.createExitButton('退出', { x: 10, y: 10 });
+      // createExitButton is protected, access via type casting for testing
+      const exitButton = (component as any).createExitButton('退出', { x: 10, y: 10 });
 
       expect(mockScene.add.text).toHaveBeenCalled();
       expect(exitButton).toBeDefined();
@@ -181,7 +205,8 @@ describe('BaseUIComponent', () => {
     it('should create interactive exit button', () => {
       const component = new BaseUIComponent(mockScene, 720, 480);
       const mockAction = vi.fn();
-      const exitButton = component.createExitButton('退出', { x: 10, y: 10 }, mockAction);
+      // createExitButton is protected, access via type casting for testing
+      const exitButton = (component as any).createExitButton('退出', { x: 10, y: 10 }, mockAction);
 
       expect(mockScene.add.text).toHaveBeenCalled();
       // The text should have setInteractive called
@@ -191,8 +216,9 @@ describe('BaseUIComponent', () => {
 
     it('should have default position for exit button (top-right corner)', () => {
       const component = new BaseUIComponent(mockScene, 720, 480);
+      // createExitButton is protected, access via type casting for testing
       // Default position should be at top-right corner relative to container
-      const exitButton = component.createExitButton('退出');
+      const exitButton = (component as any).createExitButton('退出');
 
       expect(mockScene.add.text).toHaveBeenCalled();
     });
@@ -213,7 +239,8 @@ describe('BaseUIComponent', () => {
       const component = new BaseUIComponent(mockScene, 720, 480);
       expect(component.graphics).toBeNull(); // Initially null
 
-      component.drawBorder();
+      // drawBorder is protected, access via type casting for testing
+      (component as any).drawBorder();
       expect(component.graphics).toBeDefined();
     });
   });
@@ -221,7 +248,8 @@ describe('BaseUIComponent', () => {
   describe('销毁流程', () => {
     it('should destroy graphics when calling destroy', () => {
       const component = new BaseUIComponent(mockScene, 720, 480);
-      component.drawBorder();
+      // drawBorder is protected, access via type casting for testing
+      (component as any).drawBorder();
       const graphicsRef = component.graphics;
       component.destroy();
 

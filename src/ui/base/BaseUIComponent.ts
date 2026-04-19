@@ -19,7 +19,6 @@ import {
   BORDER_STYLE_CONFIGS,
   draw3DBorder,
   drawNeumorphicBorderRaised,
-  drawNeumorphicBorderInset,
   drawInsetSlotBorder,
 } from './UIBorderStyles';
 import { UI_COLOR_STRINGS } from '../../data/ui-color-theme';

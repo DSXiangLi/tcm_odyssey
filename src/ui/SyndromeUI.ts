@@ -9,11 +9,15 @@
  *
  * Phase 2 S6c 实现
  * Round 4 视觉优化: 3D立体边框(方案B)
+ * Phase 2.5 UI统一化: 使用SelectionButtonComponent (Task 12)
  */
 
 import Phaser from 'phaser';
 import { UI_COLORS, UI_COLOR_STRINGS } from '../data/ui-color-theme';
 import { ClueState } from '../systems/ClueTracker';
+import SelectionButtonComponent, {
+  SelectionButtonContent
+} from './components/SelectionButtonComponent';
 
 export interface InfoSummaryData {
   chiefComplaint: string;     // 主诉
@@ -35,7 +39,7 @@ export class SyndromeUI extends Phaser.GameObjects.Container {
   private backgroundGraphics!: Phaser.GameObjects.Graphics;  // 使用Graphics替代Rectangle
   private titleText!: Phaser.GameObjects.Text;
   private summaryContainer!: Phaser.GameObjects.Container;
-  private syndromeOptions: Phaser.GameObjects.Text[] = [];
+  private syndromeButtons: SelectionButtonComponent[] = [];  // 使用SelectionButtonComponent替代Text
   private reasoningBox!: Phaser.GameObjects.Rectangle;
   private reasoningText!: Phaser.GameObjects.Text;
   private reasoningHint!: Phaser.GameObjects.Text;
@@ -162,6 +166,7 @@ export class SyndromeUI extends Phaser.GameObjects.Container {
 
   /**
    * 创建证型选择区域
+   * Phase 2.5: 使用SelectionButtonComponent替代手动创建Text
    */
   private createSyndromeOptions(scene: Phaser.Scene): void {
     // 标签
@@ -171,37 +176,36 @@ export class SyndromeUI extends Phaser.GameObjects.Container {
     });
     this.add(label);
 
-    // 创建证型选项
+    // 使用SelectionButtonComponent创建证型选项
     for (let i = 0; i < this.config.syndromeOptions.length; i++) {
       const syndrome = this.config.syndromeOptions[i];
       const optionX = -350;
       const optionY = -30 + i * 35;
 
-      const option = scene.add.text(optionX, optionY, `○ ${syndrome}`, {
-        fontSize: '18px',
-        color: UI_COLOR_STRINGS.TEXT_PRIMARY,
-        backgroundColor: UI_COLOR_STRINGS.PANEL_LIGHT,
-        padding: { x: 8, y: 4 }
-      });
-      option.setInteractive({ useHandCursor: true });
+      const content: SelectionButtonContent = {
+        label: syndrome,
+        value: syndrome
+      };
 
-      option.on('pointerdown', () => {
-        this.selectSyndrome(syndrome, option);
-      });
+      const button = new SelectionButtonComponent(
+        scene,
+        content,
+        {
+          // 证型选择为单选模式
+          multiSelect: false,
+          onSelect: (value: string) => {
+            this.handleSyndromeSelection(value, button);
+          }
+        },
+        optionX,
+        optionY
+      );
 
-      option.on('pointerover', () => {
-        if (this.selectedSyndrome !== syndrome) {
-          option.setColor('#70a0c0');  // SOFT_BLUE
-        }
-      });
-      option.on('pointerout', () => {
-        if (this.selectedSyndrome !== syndrome) {
-          option.setColor('#ffffff');
-        }
-      });
+      // 设置深度
+      button.setDepth(50);
 
-      this.add(option);
-      this.syndromeOptions.push(option);
+      this.add(button.container);
+      this.syndromeButtons.push(button);
     }
   }
 
@@ -373,24 +377,21 @@ export class SyndromeUI extends Phaser.GameObjects.Container {
   }
 
   /**
-   * 选择证型
+   * 处理证型选择
+   * Phase 2.5: 使用SelectionButtonComponent的选中状态管理
    */
-  private selectSyndrome(syndrome: string, option: Phaser.GameObjects.Text): void {
-    this.selectedSyndrome = syndrome;
-
-    // 更新所有选项
-    for (const opt of this.syndromeOptions) {
-      const text = opt.text;
-      if (text.includes('●')) {
-        opt.setText(text.replace('●', '○'));
-        opt.setColor('#ffffff');
+  private handleSyndromeSelection(value: string, selectedButton: SelectionButtonComponent): void {
+    // 单选模式：先取消其他按钮的选中状态
+    for (const button of this.syndromeButtons) {
+      if (button !== selectedButton && button.isSelected()) {
+        button.deselect();
       }
     }
 
-    // 更新选中
-    option.setText(option.text.replace('○', '●'));
-    option.setColor(UI_COLOR_STRINGS.BUTTON_PRIMARY);
+    // 更新选中状态
+    this.selectedSyndrome = value;
 
+    // 暴露到全局供测试验证
     this.exposeToGlobal();
   }
 
@@ -473,9 +474,14 @@ export class SyndromeUI extends Phaser.GameObjects.Container {
 
   /**
    * 销毁
+   * Phase 2.5: 清理SelectionButtonComponent实例
    */
   destroy(): void {
-    this.syndromeOptions = [];
+    // 清理所有SelectionButtonComponent
+    for (const button of this.syndromeButtons) {
+      button.destroy();
+    }
+    this.syndromeButtons = [];
 
     if (typeof window !== 'undefined') {
       (window as any).__SYNDROME_UI__ = null;

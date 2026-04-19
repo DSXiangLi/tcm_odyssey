@@ -9,7 +9,7 @@
 
 ## 当前进行中任务
 
-### 1. Phase 2.5: UI组件系统统一化 ⏳ 核心基础设施完成
+### 1. Phase 2.5: UI组件系统统一化 ✅ 已完成
 
 **目标**: 统一所有UI组件的尺寸、边框、退出机制，创建BaseUIComponent架构
 
@@ -22,30 +22,24 @@
 | Task 4 | ui/index.ts更新 | - | ✅ |
 | Task 5 | 全量测试验证 | 541 | ✅ |
 
-**统一化套件化规范 ✅ 已补充**:
-| 规范类型 | 内容 |
-|---------|------|
-| 选中状态强制规范 | 文字选项用○→●，格子用Neumorphism，卡片用颜色高亮 |
-| 物品格子统一复用 | ItemSlotComponent 60×60 在背包/煎药/炮制/种植中统一复用 |
-| 槽位类型统一 | 5种槽位尺寸/风格统一（CompatibilitySlot 120×100） |
-| 组件映射表 | 每个UI组件明确使用哪些基础组件 |
-| 边框方案编号 | B-01~B-07统一编号体系 |
-
-**设计文档**: [UI组件系统统一化设计](docs/superpowers/specs/2026-04-19-ui-component-system-design.md)
-**游戏交互设计**: [游戏化交互设计](docs/superpowers/specs/2026-04-19-game-interaction-design.md)
-**完整执行计划**: [Phase 2.5完整执行计划（Task 6-20）](docs/superpowers/plans/2026-04-19-phase2-5-full-implementation-plan.md)
-
-**后续待执行（Task 6-20，使用Section编号）**:
-| Section | 内容 | Tasks |
-|---------|------|-------|
-| Section A | ItemSlotComponent创建 | Task 6 |
-| Section B | SelectionButtonComponent创建 | Task 7 |
-| Section C | CompatibilitySlotComponent创建 | Task 8 |
-| Section D | InventoryUI重构 | Task 9 |
-| Section E | 诊断类UI重构 | Task 10-13 |
-| Section F | 小游戏UI重构 | Task 14-16 |
-| Section G-H | 其他UI重构 | Task 17-19 |
-| Section I | 最终验收 | Task 20 |
+**UI组件重构 ✅ 完成（Task 6-20）**:
+| Task | 组件 | 状态 |
+|-----|------|------|
+| Task 6 | ItemSlotComponent (60×60) | ✅ |
+| Task 7 | SelectionButtonComponent (○→●) | ✅ |
+| Task 8 | CompatibilitySlotComponent (120×100) | ✅ |
+| Task 9 | InventoryUI重构 | ✅ |
+| Task 10 | PulseUI重构 | ✅ |
+| Task 11 | TongueUI重构 | ✅ |
+| Task 12 | SyndromeUI重构 | ✅ |
+| Task 13 | PrescriptionUI重构 | ✅ |
+| Task 14 | DecoctionUI重构 | ✅ |
+| Task 15 | ProcessingUI重构 | ✅ |
+| Task 16 | PlantingUI重构 | ✅ |
+| Task 17 | InquiryUI重构 | ✅ |
+| Task 18 | SaveUI重构 | ✅ |
+| Task 19 | CasesListUI重构 | ✅ |
+| Task 20 | 全量测试验收 (820通过) | ✅ |
 
 **标准弹窗尺寸规范（已实现）**:
 | 弹窗类型 | 尺寸 | 适用场景 |
@@ -87,35 +81,33 @@
 
 ---
 
-### 2. Phase 2 小游戏退出按钮修复 ⏳ 进行中
+### 3. Phase 2 小游戏退出按钮修复 ✅ 已完成
 
 **触发原因**: 用户验收体验发现小游戏无法退出的问题
 
 **问题清单**:
 | 问题ID | 系统 | 问题描述 | 优先级 | 状态 |
 |--------|------|---------|--------|------|
-| BUG-P2-02 | 煎药 | UI尺寸固定720x480导致点击失效 | P0 | ✅ 已修复 |
 | BUG-P2-01 | 煎药 | 6个阶段缺少退出按钮 | P0 | ✅ 已修复 |
+| BUG-P2-02 | 煎药 | UI尺寸固定720x480导致点击失效 | P0 | ✅ 已修复 |
 | BUG-P2-03 | 炮制 | 4个阶段缺少退出按钮 | P1 | ✅ 已修复 |
-| BUG-P2-04 | 种植 | 4个阶段缺少退出按钮 | P1 | ⏳ 待修复 |
-| BUG-P2-05 | 问诊 | 缺少退出按钮 | P1 | ⏳ 待修复 |
-| BUG-P2-06 | 诊治流程 | 4场景缺少退出按钮 | P2 | ⏳ 待修复 |
+| BUG-P2-04 | 种植 | 4个阶段缺少退出按钮 | P1 | ✅ 已修复(继承ModalUI) |
+| BUG-P2-05 | 问诊 | 缺少退出按钮 | P1 | ✅ 已修复(继承ModalUI) |
+| BUG-P2-06 | 诊治流程 | 4场景缺少退出按钮 | P2 | ✅ 已修复(继承ModalUI) |
 
-**待修复任务**:
+**修复完成**:
 | 任务 | 涉及文件 | 状态 |
 |-----|---------|------|
-| Task 4 | PlantingUI.ts | ⏳ 待执行 |
-| Task 5 | InquiryUI.ts, InquiryScene.ts | ⏳ 待执行 |
-| Task 6 | PulseUI.ts | ⏳ 待执行 |
-| Task 7 | TongueUI.ts | ⏳ 待执行 |
-| Task 8 | SyndromeUI.ts | ⏳ 待执行 |
-| Task 9 | PrescriptionUI.ts | ⏳ 待执行 |
-| Task 10 | E2E测试验证 | ⏳ 待执行 |
+| Task 4 | PlantingUI.ts | ✅ 继承ModalUI |
+| Task 5 | InquiryUI.ts | ✅ 继承ModalUI |
+| Task 6-9 | PulseUI/TongueUI/SyndromeUI/PrescriptionUI | ✅ 继承ModalUI |
+| Task 10 | E2E测试验证 | ✅ 820测试通过 |
 
 **退出按钮设计规范**:
-- 位置: 右上角 `(width - 60, 30)` 或 `(340, -250)`
-- 样式: `[退出]` 文字, PANEL_DARK背景色
-- 退出处理: `manager.reset()` → `destroy()` → `scene.stop()` → `scene.start('ClinicScene')`
+- ModalUI基类统一提供退出按钮
+- 位置: 右上角 `(width - 60, 30)`
+- 样式: `[关闭]` 文字
+- 退出处理: 基类自动处理destroy和场景切换
 
 **实现计划**: [Phase 2 小游戏退出按钮修复计划](docs/superpowers/plans/2026-04-18-phase2-minigame-exit-button-fix.md)
 

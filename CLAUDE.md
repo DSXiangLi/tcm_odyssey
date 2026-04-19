@@ -1,6 +1,6 @@
 # 药灵山谷 (Yaoling Shangu) - 项目文档
 
-**版本**: v3.0 - Phase 2全部完成，Phase 2.5核心基础设施完成
+**版本**: v3.0 - Phase 2全部完成，Phase 2.5 UI组件统一化完成
 **最后更新**: 2026-04-19
 **技术栈**: Phaser 3 + TypeScript + Vite + Hermes-Agent
 
@@ -19,8 +19,8 @@
 | Round 1-2 UI配色 | ✅ 完成 | 配色协调优化 |
 | Round 4 弹窗设计 | ✅ 完成 | 现代弹窗设计方案 |
 | **Round 3 视觉优化** | ⏳ 进行中 | Task 4: AI评估验证待执行 |
-| **Phase 2 退出按钮** | ⏳ 进行中 | Task 4-10: Planting/问诊/诊治退出按钮待修复 |
-| **Phase 2.5 UI统一化** | ⏳ 核心基础设施完成 | Task 1-5完成(66测试)，统一化规范已补充，Task 6-20待执行 |
+| **Phase 2 退出按钮** | ✅ 完成 | 所有UI继承ModalUI基类 |
+| **Phase 2.5 UI统一化** | ✅ 完成 | 15个UI组件重构完成，820测试通过 |
 
 ---
 
@@ -81,9 +81,19 @@
 
 ---
 
-### Phase 2.5: UI组件系统统一化 ⏳ 设计阶段
+### Phase 2.5: UI组件系统统一化 ✅ 完成
 
 **核心目标**: 统一所有UI组件的尺寸、边框、退出机制，创建BaseUIComponent架构，实现游戏化交互设计。
+
+**完成的组件重构**:
+| 组件 | 用途 | 状态 |
+|-----|------|------|
+| ItemSlotComponent | 60×60物品格子，Neumorphism边框 | ✅ |
+| SelectionButtonComponent | ○→●符号切换选择按钮 | ✅ |
+| CompatibilitySlotComponent | 120×100配伍槽位，角色色系 | ✅ |
+| PulseUI/TongueUI/SyndromeUI/PrescriptionUI | 诊断类UI | ✅ |
+| DecoctionUI/ProcessingUI/PlantingUI | 小游戏UI | ✅ |
+| InventoryUI/SaveUI/CasesListUI | 其他UI | ✅ |
 
 **设计文档**:
 | 文档 | 内容 |
@@ -100,7 +110,7 @@
 | INQUIRY_MODAL | 640×420 | 问诊 |
 | FULLSCREEN_MODAL | 1024×768 | 背包/存档 |
 
-**实现计划**: [Phase 2.5 UI组件系统实现计划](docs/superpowers/plans/2026-04-19-phase2-5-ui-component-system-implementation.md)
+**测试覆盖**: 820个单元/集成测试全部通过
 
 ---
 

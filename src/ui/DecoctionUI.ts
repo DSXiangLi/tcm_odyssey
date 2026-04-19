@@ -47,6 +47,7 @@ interface DecoctionUIConfig {
 
 /**
  * 煎药UI组件
+ * Round 4 视觉优化: 3D立体边框(方案B)
  */
 export class DecoctionUI {
   private scene: Phaser.Scene;
@@ -56,6 +57,7 @@ export class DecoctionUI {
   private container: Phaser.GameObjects.Container;
   private width: number;
   private height: number;
+  private backgroundGraphics: Phaser.GameObjects.Graphics | null = null;
 
   // UI元素
   private titleText: Phaser.GameObjects.Text | null = null;
@@ -66,6 +68,14 @@ export class DecoctionUI {
   private selectedPrescriptionId: string | null = null;
   private selectedHerbs: string[] = [];
   private compatibilitySlots: Map<string, Phaser.GameObjects.Container> = new Map();
+
+  // 样式配置（Round 4 3D边框设计 - 方案B）
+  private readonly DECOCTION_UI_COLORS = {
+    outerBorder: UI_COLORS.BORDER_OUTER_GREEN,      // 亮绿边框 0x80a040
+    panelBg: UI_COLORS.PANEL_3D_BG,                 // 深绿背景 0x1a2e26
+    topLight: UI_COLORS.BORDER_TOP_LIGHT,           // 顶部高光 0x90c070
+    bottomShadow: UI_COLORS.BORDER_BOTTOM_SHADOW,   // 底部阴影 0x604020
+  };
 
   // 事件监听器引用（用于正确清理）
   private phaseChangedHandler!: (data: EventData) => void;
@@ -86,22 +96,52 @@ export class DecoctionUI {
     this.container = this.scene.add.container(0, 0);
     this.container.setDepth(100);
 
-    // 创建半透明背景
-    const background = this.scene.add.rectangle(
-      this.width / 2,
-      this.height / 2,
-      this.width,
-      this.height,
-      UI_COLORS.PANEL_PRIMARY,
-      0.85
-    );
-    this.container.add(background);
+    // 创建3D立体边框背景（方案B）
+    this.backgroundGraphics = this.scene.add.graphics();
+    this.draw3DBorder(this.backgroundGraphics, 0, 0, this.width, this.height);
+    this.container.add(this.backgroundGraphics);
 
     // 监听事件
     this.setupEventListeners();
 
     // 初始显示
     this.showPrescriptionSelection();
+  }
+
+  /**
+   * 绘制3D立体边框（方案B）
+   * 外层边框 + 顶部高光 + 底部阴影
+   */
+  private draw3DBorder(
+    graphics: Phaser.GameObjects.Graphics,
+    x: number,
+    y: number,
+    width: number,
+    height: number
+  ): void {
+    // 1. 外层边框（亮绿色，4px）
+    graphics.lineStyle(4, this.DECOCTION_UI_COLORS.outerBorder);
+    graphics.strokeRect(x, y, width, height);
+
+    // 2. 主背景（深绿色，完全不透明）
+    graphics.fillStyle(this.DECOCTION_UI_COLORS.panelBg, 1.0);
+    graphics.fillRect(x + 2, y + 2, width - 4, height - 4);
+
+    // 3. 顶部/左侧高光边框（亮绿，2px）
+    graphics.lineStyle(2, this.DECOCTION_UI_COLORS.topLight);
+    graphics.beginPath();
+    graphics.moveTo(x + 2, y + height - 2);
+    graphics.lineTo(x + 2, y + 2);
+    graphics.lineTo(x + width - 2, y + 2);
+    graphics.strokePath();
+
+    // 4. 底部/右侧阴影边框（暗棕，2px）
+    graphics.lineStyle(2, this.DECOCTION_UI_COLORS.bottomShadow);
+    graphics.beginPath();
+    graphics.moveTo(x + width - 2, y + 2);
+    graphics.lineTo(x + width - 2, y + height - 2);
+    graphics.lineTo(x + 2, y + height - 2);
+    graphics.strokePath();
   }
 
   /**
@@ -925,6 +965,12 @@ export class DecoctionUI {
 
     // 清除内容
     this.clearContent();
+
+    // 销毁背景Graphics
+    if (this.backgroundGraphics) {
+      this.backgroundGraphics.destroy();
+      this.backgroundGraphics = null;
+    }
 
     // 销毁主容器
     this.container.removeAll(true);

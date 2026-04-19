@@ -56,6 +56,9 @@ test.describe('视觉验收截图采集', () => {
   });
 
   test('采集全部场景截图', async ({ page }) => {
+    // 设置更长超时时间，因为需要遍历所有场景
+    test.setTimeout(180000); // 3分钟
+
     const collectedScreenshots: string[] = [];
     const errors: string[] = [];
 

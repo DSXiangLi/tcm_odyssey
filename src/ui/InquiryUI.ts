@@ -64,6 +64,11 @@ export class InquiryUI extends Phaser.GameObjects.Container {
   private isGenerating: boolean = false;
   private sseClient: SSEClient;
 
+  // 主面板边界常量（注释说明）
+  // 主面板绘制: draw3DBorder(graphics, -320, -210, 640, 420)
+  // 边界: x[-320,320], y[-210,210]
+  // 内边距约10像素
+
   // 样式配置（Round 4 3D边框设计）
   private readonly InquiryUI_COLORS = {
     // 方案B: 3D立体边框
@@ -204,17 +209,20 @@ export class InquiryUI extends Phaser.GameObjects.Container {
 
   /**
    * 创建退出按钮（右上角）
+   * 布局修复：确保按钮在主面板边界内
    */
   private createExitButton(): Phaser.GameObjects.Text {
+    // 右上角位置：PANEL_RIGHT - PADDING - 按钮宽度 ≈ 290
+    // 顶部位置：PANEL_TOP + PADDING + 按钮高度 ≈ -185
     const exitButton = this.scene.add.text(
-      300,  // 右上角位置（考虑UI宽度640）
-      -200,
-      '[退出问诊]',
+      280,  // 右侧，留出边距
+      -185,  // 顶部，留出边距
+      '[退出]',
       {
-        fontSize: '16px',
+        fontSize: '14px',
         color: UI_COLOR_STRINGS.TEXT_PRIMARY,
         backgroundColor: UI_COLOR_STRINGS.PANEL_DARK,
-        padding: { x: 10, y: 5 }
+        padding: { x: 8, y: 4 }
       }
     ).setOrigin(0.5).setInteractive({ useHandCursor: true });
 
@@ -246,25 +254,27 @@ export class InquiryUI extends Phaser.GameObjects.Container {
 
   /**
    * 创建病人信息区域
+   * 布局修复：确保所有元素在主面板边界内
    */
   private createPatientInfoArea(scene: Phaser.Scene): void {
-    // 病人头像占位
-    this.patientAvatar = scene.add.image(-300, -180, '__DEFAULT');
-    this.patientAvatar.setDisplaySize(80, 80);
+    // 病人头像占位 - 调整位置确保不超出边界
+    // 头像尺寸80x80，要使顶部≥PANEL_TOP+PADDING=-200，中心y≥-200+40=-160
+    this.patientAvatar = scene.add.image(-300, -175, '__DEFAULT');
+    this.patientAvatar.setDisplaySize(60, 60);  // 缩小尺寸以适应
     this.patientAvatar.setTint(0x8B4513);
     this.add(this.patientAvatar);
 
-    // 病人姓名
-    this.patientNameText = scene.add.text(-250, -200, this.config.patientName, {
-      fontSize: '24px',
+    // 病人姓名 - y位置调整避免超出
+    this.patientNameText = scene.add.text(-260, -195, this.config.patientName, {
+      fontSize: '20px',
       color: UI_COLOR_STRINGS.TEXT_PRIMARY,
       fontStyle: 'bold'
     });
     this.add(this.patientNameText);
 
     // 病人信息（职业、年龄）
-    this.patientInfoText = scene.add.text(-250, -170, `${this.config.patientOccupation}，${this.config.patientAge}岁`, {
-      fontSize: '16px',
+    this.patientInfoText = scene.add.text(-260, -170, `${this.config.patientOccupation}，${this.config.patientAge}岁`, {
+      fontSize: '14px',
       color: UI_COLOR_STRINGS.TEXT_SECONDARY
     });
     this.add(this.patientInfoText);
@@ -272,57 +282,72 @@ export class InquiryUI extends Phaser.GameObjects.Container {
 
   /**
    * 创建对话显示区域
-   * Round 4 布局修复: 文字宽度约束
+   * 布局修复：调整宽度确保不超出主面板边界
    */
   private createDialogueArea(scene: Phaser.Scene): void {
-    // 对话背景（宽度460）
-    const dialogueBg = scene.add.rectangle(-150, -80, 460, 180, UI_COLORS.PANEL_SECONDARY, 0.9);
+    // 对话背景 - 减小宽度从460改为280，调整位置
+    // 左边界=PANEL_LEFT+PADDING=-310，宽度280，中心x=-310+140=-170
+    const dialogueWidth = 280;
+    const dialogueHeight = 140;
+    const dialogueX = -170;  // 左侧区域中心
+    const dialogueY = -60;
+
+    const dialogueBg = scene.add.rectangle(dialogueX, dialogueY, dialogueWidth, dialogueHeight, UI_COLORS.PANEL_SECONDARY, 0.9);
     dialogueBg.setOrigin(0.5);
     this.add(dialogueBg);
 
-    // 对话文本（宽度=背景宽度-边框*2-padding*2 = 460-4-16 = 440）
-    // 位置：背景左边界 = -150-230 = -380，加padding 8 = -372
-    this.dialogueText = scene.add.text(-372, -165, '', {
-      fontSize: '16px',
+    // 对话文本 - 位置调整
+    // 文字宽度=背景宽度-边框-padding=280-4-8=268
+    const textLeft = dialogueX - dialogueWidth / 2 + 8;  // 左边界+padding
+    const textTop = dialogueY - dialogueHeight / 2 + 8;
+    this.dialogueText = scene.add.text(textLeft, textTop, '', {
+      fontSize: '14px',
       color: UI_COLOR_STRINGS.TEXT_PRIMARY,
-      wordWrap: { width: 440 },  // 修复：从480改为440
-      lineSpacing: 8
+      wordWrap: { width: 264 },
+      lineSpacing: 6
     });
     this.add(this.dialogueText);
   }
 
   /**
    * 创建输入区域
-   * Round 4 布局修复: 文字宽度约束
+   * 布局修复：调整宽度确保不超出主面板边界
    */
   private createInputArea(scene: Phaser.Scene): void {
-    // 输入框背景（宽度460）
-    this.inputBox = scene.add.rectangle(-150, 80, 460, 50, UI_COLORS.PANEL_LIGHT, 0.9);
+    // 输入框背景 - 减小宽度与对话区一致
+    const inputWidth = 280;
+    const inputHeight = 40;
+    const inputX = -170;  // 与对话区中心对齐
+    const inputY = 70;
+
+    this.inputBox = scene.add.rectangle(inputX, inputY, inputWidth, inputHeight, UI_COLORS.PANEL_LIGHT, 0.9);
     this.inputBox.setOrigin(0.5);
     this.inputBox.setStrokeStyle(2, UI_COLORS.BORDER_LIGHT);
     this.add(this.inputBox);
 
-    // 输入文本（宽度440）
-    this.inputText = scene.add.text(-372, 58, '', {
-      fontSize: '16px',
+    // 输入文本
+    const textLeft = inputX - inputWidth / 2 + 8;
+    const textTop = inputY - inputHeight / 2 + 5;
+    this.inputText = scene.add.text(textLeft, textTop, '', {
+      fontSize: '14px',
       color: UI_COLOR_STRINGS.TEXT_PRIMARY,
-      wordWrap: { width: 440 }  // 修复：从480改为440
+      wordWrap: { width: 200 }  // 留出按钮空间
     });
     this.add(this.inputText);
 
     // 输入提示
-    this.inputHint = scene.add.text(-372, 58, '输入追问问题...', {
-      fontSize: '16px',
+    this.inputHint = scene.add.text(textLeft, textTop, '输入追问问题...', {
+      fontSize: '14px',
       color: UI_COLOR_STRINGS.TEXT_DISABLED
     });
     this.add(this.inputHint);
 
-    // 发送按钮（位置调整：背景右边界 = -150+230 = 80，按钮在80附近）
-    this.sendButton = scene.add.text(70, 65, '[发送]', {
-      fontSize: '18px',
+    // 发送按钮 - 放在输入框右侧内部
+    this.sendButton = scene.add.text(inputX + inputWidth / 2 - 50, inputY - 8, '[发送]', {
+      fontSize: '14px',
       color: UI_COLOR_STRINGS.ACCENT_SKY,
       backgroundColor: UI_COLOR_STRINGS.PANEL_SECONDARY,
-      padding: { x: 8, y: 4 }
+      padding: { x: 6, y: 3 }
     });
     this.sendButton.setInteractive({ useHandCursor: true });
     this.sendButton.on('pointerdown', () => this.handleSend());
@@ -334,30 +359,31 @@ export class InquiryUI extends Phaser.GameObjects.Container {
 
   /**
    * 创建常用问题按钮
-   * Round 4 布局修复: 按钮间距和位置调整
+   * 布局修复：确保按钮在主面板边界内
    */
   private createQuestionButtons(scene: Phaser.Scene): void {
-    // 修复：调整起始位置和间距，确保在主面板边界内
-    // 主面板宽度640，中心0，左边界-320，右边界320
-    // 6个按钮，每行3个，需要调整间距
-    const startX = -300;  // 修复：从-380改为-300
-    const startY = 140;
-    const spacing = 130;  // 修复：从170改为130
+    // 调整起始位置和间距，确保在主面板边界内
+    const startX = -280;  // 左侧偏移
+    const startY = 120;
+    const spacing = 100;  // 按钮间距
 
     for (let i = 0; i < COMMON_QUESTIONS.length; i++) {
       const question = COMMON_QUESTIONS[i];
       const col = i % 3;
       const row = Math.floor(i / 3);
 
+      const buttonX = startX + col * spacing;
+      const buttonY = startY + row * 25;
+
       const button = scene.add.text(
-        startX + col * spacing,
-        startY + row * 30,
+        buttonX,
+        buttonY,
         `[${question}]`,
         {
-          fontSize: '14px',
+          fontSize: '12px',
           color: '#70a0c0',  // SOFT_BLUE
           backgroundColor: UI_COLOR_STRINGS.PANEL_PRIMARY,
-          padding: { x: 4, y: 2 }
+          padding: { x: 3, y: 2 }
         }
       );
       button.setInteractive({ useHandCursor: true });
@@ -369,18 +395,16 @@ export class InquiryUI extends Phaser.GameObjects.Container {
 
   /**
    * 创建线索追踪区域（使用内凹槽位方案8）
-   * Round 4 布局修复: 位置调整确保在主面板边界内
+   * 布局修复：确保区域在主面板边界内，且有内边距
    */
   private createClueTrackerArea(scene: Phaser.Scene): void {
     // 线索追踪区域位置和尺寸
-    // 修复：trackerY从-100改为-50，确保tracker顶部在主面板内
-    // 主面板边界：y从-210到210
-    // tracker顶部 = trackerY - trackerHeight/2 = -50 - 160 = -210 ✓（与面板顶部对齐）
-    // tracker底部 = trackerY + trackerHeight/2 = -50 + 160 = 110 ✓（在面板底部210内）
-    const trackerX = 220;  // 修复：从280改为220
-    const trackerY = -50;  // 修复：从-100改为-50，使顶部与面板对齐
-    const trackerWidth = 180;
-    const trackerHeight = 320;
+    // 右边界=PANEL_RIGHT-PADDING=310，宽度150，中心x=310-75=235
+    // 顶部=PANEL_TOP+PADDING=-200，高度260，中心y=-200+130=-70
+    const trackerWidth = 150;
+    const trackerHeight = 260;
+    const trackerX = 220;  // 右侧区域
+    const trackerY = -40;  // 调整使顶部有边距
 
     // 创建线索追踪Graphics背景（内凹槽位）
     this.clueTrackerGraphics = scene.add.graphics();
@@ -391,8 +415,8 @@ export class InquiryUI extends Phaser.GameObjects.Container {
     this.add(this.clueTrackerContainer);
 
     // 标题
-    const titleText = scene.add.text(0, -140, '收集进度', {
-      fontSize: '18px',
+    const titleText = scene.add.text(0, -120, '收集进度', {
+      fontSize: '16px',
       color: UI_COLOR_STRINGS.TEXT_PRIMARY,
       fontStyle: 'bold'
     });
@@ -400,61 +424,63 @@ export class InquiryUI extends Phaser.GameObjects.Container {
     this.clueTrackerContainer.add(titleText);
 
     // 必须线索区域
-    const requiredLabel = scene.add.text(-80, -110, '必须线索:', {
-      fontSize: '14px',
+    const requiredLabel = scene.add.text(-70, -95, '必须线索:', {
+      fontSize: '12px',
       color: UI_COLOR_STRINGS.STATUS_WARNING
     });
     this.clueTrackerContainer.add(requiredLabel);
 
     const requiredClues = this.config.clueTracker.getRequiredClueStates();
-    let requiredY = -90;
+    let requiredY = -75;
     for (const clueState of requiredClues) {
-      const checkbox = scene.add.text(-80, requiredY, clueState.collected ? '☑' : '☐', {
-        fontSize: '14px',
+      const checkbox = scene.add.text(-70, requiredY, clueState.collected ? '☑' : '☐', {
+        fontSize: '12px',
         color: clueState.collected ? UI_COLOR_STRINGS.STATUS_SUCCESS : UI_COLOR_STRINGS.TEXT_DISABLED
       });
-      const label = scene.add.text(-60, requiredY, clueState.clueId, {
-        fontSize: '14px',
+      const label = scene.add.text(-50, requiredY, clueState.clueId, {
+        fontSize: '12px',
         color: clueState.collected ? UI_COLOR_STRINGS.TEXT_PRIMARY : UI_COLOR_STRINGS.TEXT_SECONDARY
       });
       this.clueTrackerContainer.add(checkbox);
       this.clueTrackerContainer.add(label);
       this.requiredClueElements.set(clueState.clueId, { checkbox, label });
-      requiredY += 22;
+      requiredY += 18;
     }
 
     // 辅助线索区域
-    const auxiliaryLabel = scene.add.text(-80, requiredY + 10, '辅助线索:', {
-      fontSize: '14px',
+    const auxiliaryLabel = scene.add.text(-70, requiredY + 8, '辅助线索:', {
+      fontSize: '12px',
       color: UI_COLOR_STRINGS.TEXT_SECONDARY
     });
     this.clueTrackerContainer.add(auxiliaryLabel);
 
     const auxiliaryClues = this.config.clueTracker.getAuxiliaryClueStates();
-    let auxiliaryY = requiredY + 30;
+    let auxiliaryY = requiredY + 25;
     for (const clueState of auxiliaryClues) {
-      const checkbox = scene.add.text(-80, auxiliaryY, clueState.collected ? '☑' : '☐', {
-        fontSize: '14px',
+      const checkbox = scene.add.text(-70, auxiliaryY, clueState.collected ? '☑' : '☐', {
+        fontSize: '12px',
         color: clueState.collected ? UI_COLOR_STRINGS.ACCENT_SKY : UI_COLOR_STRINGS.TEXT_DISABLED
       });
-      const label = scene.add.text(-60, auxiliaryY, clueState.clueId, {
-        fontSize: '14px',
+      const label = scene.add.text(-50, auxiliaryY, clueState.clueId, {
+        fontSize: '12px',
         color: clueState.collected ? UI_COLOR_STRINGS.TEXT_PRIMARY : UI_COLOR_STRINGS.TEXT_SECONDARY
       });
       this.clueTrackerContainer.add(checkbox);
       this.clueTrackerContainer.add(label);
       this.auxiliaryClueElements.set(clueState.clueId, { checkbox, label });
-      auxiliaryY += 22;
+      auxiliaryY += 18;
     }
   }
 
   /**
    * 创建按钮区域
+   * 布局修复：确保按钮在主面板边界内
    */
   private createButtonArea(scene: Phaser.Scene): void {
-    // 停止生成按钮
-    this.stopButton = scene.add.text(-380, 210, '[停止生成]', {
-      fontSize: '14px',
+    // 停止生成按钮 - 调整位置使其在边界内
+    // 左边界=-310，按钮位置应该在左侧区域
+    this.stopButton = scene.add.text(-280, 170, '[停止生成]', {
+      fontSize: '12px',
       color: '#c09060'  // SOFT_ORANGE
     });
     this.stopButton.setInteractive({ useHandCursor: true });
@@ -462,12 +488,13 @@ export class InquiryUI extends Phaser.GameObjects.Container {
     this.stopButton.setVisible(false);
     this.add(this.stopButton);
 
-    // 完成问诊按钮
-    this.completeButton = scene.add.text(300, 210, '[完成问诊，进入切脉]', {
-      fontSize: '16px',
+    // 完成问诊按钮 - 调整位置使其在边界内
+    // 底部=PANEL_BOTTOM-PADDING=200
+    this.completeButton = scene.add.text(100, 170, '[完成问诊]', {
+      fontSize: '14px',
       color: UI_COLOR_STRINGS.STATUS_SUCCESS,
       backgroundColor: UI_COLOR_STRINGS.PANEL_PRIMARY,
-      padding: { x: 8, y: 4 }
+      padding: { x: 6, y: 3 }
     });
     this.completeButton.setInteractive({ useHandCursor: true });
     this.completeButton.on('pointerdown', () => this.handleComplete());

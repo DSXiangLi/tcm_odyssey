@@ -73,14 +73,14 @@ export default abstract class BaseUIComponent {
     this.height = height;
     this.depth = depth;
 
-    // 创建容器，位于屏幕中心（使用屏幕坐标而非世界坐标）
-    // 重要：centerX/centerY是相机视口的世界坐标中心，会随相机滚动变化
-    // 对于固定UI(setScrollFactor(0))，需要使用屏幕坐标中心
-    const screenWidth = scene.cameras.main.width;
-    const screenHeight = scene.cameras.main.height;
-    const screenCenterX = screenWidth / 2;
-    const screenCenterY = screenHeight / 2;
-    this.container = scene.add.container(screenCenterX, screenCenterY);
+    // 创建容器，位于屏幕中心（使用相机当前的世界中心坐标）
+    // 重要：当相机跟随玩家滚动时，需要使用 scrollX + width/2 来获取当前屏幕中心的世界坐标
+    // 然后立即设置 setScrollFactor(0) 来锁定容器在屏幕位置
+    const camera = scene.cameras.main;
+    const worldCenterX = camera.scrollX + camera.width / 2;
+    const worldCenterY = camera.scrollY + camera.height / 2;
+    this.container = scene.add.container(worldCenterX, worldCenterY);
+    this.container.setScrollFactor(0);  // 立即锁定，防止相机滚动时移动
 
     // 设置深度
     this.container.setDepth(this.depth);

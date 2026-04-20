@@ -24,6 +24,7 @@ const createMockScene = () => {
     setY: vi.fn().mockReturnThis(),
     setPosition: vi.fn().mockReturnThis(),
     setVisible: vi.fn().mockReturnThis(),
+    setScrollFactor: vi.fn().mockReturnThis(),  // 添加setScrollFactor方法
   };
 
   const mockGraphics = {
@@ -47,6 +48,7 @@ const createMockScene = () => {
     destroy: vi.fn(),
     setText: vi.fn().mockReturnThis(),
     setColor: vi.fn().mockReturnThis(),
+    setBackgroundColor: vi.fn().mockReturnThis(),  // 添加setBackgroundColor方法
   };
 
   const mockKeyboard = {
@@ -67,6 +69,8 @@ const createMockScene = () => {
         centerY: 300,
         width: 800,
         height: 600,
+        scrollX: 0,  // 添加scrollX
+        scrollY: 0,  // 添加scrollY
       },
     },
     scene: { key: 'testScene' },

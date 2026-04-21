@@ -110,6 +110,15 @@ vi.mock('phaser', () => {
           }
         }
       },
+      Display: {
+        Color: {
+          HexStringToColor: vi.fn().mockImplementation((hex: string) => {
+            // Convert hex string like '#ff0000' to number 0xff0000
+            const hexNum = parseInt(hex.replace('#', ''), 16);
+            return { color: hexNum };
+          })
+        }
+      },
       AUTO: 'AUTO'
     }
   };

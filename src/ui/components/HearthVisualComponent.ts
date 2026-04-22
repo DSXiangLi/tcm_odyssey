@@ -41,7 +41,7 @@ export default class HearthVisualComponent {
   protected emberParticles: Phaser.GameObjects.Particles.ParticleEmitter | null = null;
 
   // 颜色常量 (对应设计稿CSS变量)
-  protected static readonly COLORS = {
+  public static readonly COLORS = {
     brickLight: 0x8a5a2a,    // --brick-light
     brickMid: 0x5a3020,      // 中间色
     brickDark: 0x3f2412,     // --brick-dark
@@ -61,6 +61,7 @@ export default class HearthVisualComponent {
 
     // 创建容器 (相对于父容器定位)
     this.container = scene.add.container(0, 0);
+    scene.add.existing(this.container);
 
     // 创建砖墙Graphics对象
     this.brickGraphics = scene.add.graphics();

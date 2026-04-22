@@ -66,9 +66,6 @@ export default class ScrollModalUI extends ModalUI {
   /** 卷轴样式变体 */
   public variant: 'default' | 'dark' | 'light';
 
-  /** 卷轴装饰Graphics */
-  protected scrollGraphics: Phaser.GameObjects.Graphics | null = null;
-
   /** 主印章Graphics */
   protected sealMainGraphics: Phaser.GameObjects.Graphics | null = null;
 
@@ -172,7 +169,7 @@ export default class ScrollModalUI extends ModalUI {
           fontFamily: 'Noto Serif SC',
           color: '#f4dba8',
           fontWeight: '900',
-        }
+        } as any
       );
       sealText.setOrigin(0.5, 0.5);
       sealText.setRotation(-0.07); // 约 -4 度
@@ -203,7 +200,7 @@ export default class ScrollModalUI extends ModalUI {
           fontFamily: 'Noto Serif SC',
           color: '#f4dba8',
           fontWeight: '900',
-        }
+        } as any
       );
       sealText.setOrigin(0.5, 0.5);
       sealText.setRotation(0.05); // 约 3 度
@@ -224,7 +221,7 @@ export default class ScrollModalUI extends ModalUI {
       fontFamily: 'Noto Serif SC',
       color: '#2a1810',
       fontWeight: '900',
-    });
+    } as any);
     this.titleText.setOrigin(0.5, 0.5);
     this.container.add(this.titleText);
 
@@ -262,12 +259,6 @@ export default class ScrollModalUI extends ModalUI {
    * 清理所有Graphics和Text资源
    */
   public destroy(): void {
-    // 销毁卷轴Graphics
-    if (this.scrollGraphics) {
-      this.scrollGraphics.destroy();
-      this.scrollGraphics = null;
-    }
-
     // 销毁印章Graphics
     if (this.sealMainGraphics) {
       this.sealMainGraphics.destroy();

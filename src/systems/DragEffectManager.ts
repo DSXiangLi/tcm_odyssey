@@ -35,7 +35,19 @@ export interface DragEffectConfig {
   };
 }
 
-const DEFAULT_CONFIG: DragEffectConfig = {
+/**
+ * Fully required config type with all nested properties required
+ */
+export interface FullDragEffectConfig {
+  trail: DragEffectTrailConfig;
+  splash: DragEffectSplashConfig;
+  burst: {
+    success: DragEffectBurstSuccessConfig;
+    failure: DragEffectBurstFailureConfig;
+  };
+}
+
+const DEFAULT_CONFIG: FullDragEffectConfig = {
   trail: {
     enabled: true,
     maxCount: 20,
@@ -74,7 +86,7 @@ const EFFECT_COLOR = {
 
 export default class DragEffectManager {
   protected scene: Phaser.Scene;
-  public config: Required<DragEffectConfig>;
+  public config: FullDragEffectConfig;
 
   protected trailParticles: Phaser.GameObjects.Graphics[] = [];
   public isDragging: boolean = false;
@@ -86,15 +98,15 @@ export default class DragEffectManager {
     this.config = this.mergeConfig(config);
   }
 
-  protected mergeConfig(config?: DragEffectConfig): Required<DragEffectConfig> {
+  protected mergeConfig(config?: DragEffectConfig): FullDragEffectConfig {
     return {
-      trail: { ...DEFAULT_CONFIG.trail!, ...config?.trail },
-      splash: { ...DEFAULT_CONFIG.splash!, ...config?.splash },
+      trail: { ...DEFAULT_CONFIG.trail, ...config?.trail },
+      splash: { ...DEFAULT_CONFIG.splash, ...config?.splash },
       burst: {
-        success: { ...DEFAULT_CONFIG.burst!.success!, ...config?.burst?.success },
-        failure: { ...DEFAULT_CONFIG.burst!.failure!, ...config?.burst?.failure },
+        success: { ...DEFAULT_CONFIG.burst.success, ...config?.burst?.success },
+        failure: { ...DEFAULT_CONFIG.burst.failure, ...config?.burst?.failure },
       },
-    } as Required<DragEffectConfig>;
+    };
   }
 
   public startDrag(x: number, y: number): void {

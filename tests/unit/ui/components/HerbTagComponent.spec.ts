@@ -54,6 +54,36 @@ const createMockScene = () => {
 
 describe('HerbTagComponent', () => {
   describe('构造与属性', () => {
+    it('should throw error when grid is missing', () => {
+      const scene = createMockScene();
+      const herb = {
+        id: 'danggui',
+        name: '当归',
+        prop: '补血',
+        count: 6,
+        palette: { a: '#6a8c78', b: '#8ab098' },
+      } as any;
+
+      expect(() => new HerbTagComponent(scene, { herb })).toThrow(
+        'HerbTagComponent: herb.grid and herb.palette are required'
+      );
+    });
+
+    it('should throw error when palette is missing', () => {
+      const scene = createMockScene();
+      const herb = {
+        id: 'danggui',
+        name: '当归',
+        prop: '补血',
+        count: 6,
+        grid: ['aa', 'bb'],
+      } as any;
+
+      expect(() => new HerbTagComponent(scene, { herb })).toThrow(
+        'HerbTagComponent: herb.grid and herb.palette are required'
+      );
+    });
+
     it('should create component with herb data', () => {
       const scene = createMockScene();
       const herb = {

@@ -98,19 +98,19 @@ export default class HerbTagComponent {
   public container: Phaser.GameObjects.Container;
 
   /** 药材数据 */
-  public herb: HerbData;
+  public readonly herb: HerbData;
 
   /** 木牌宽度 */
-  public plankWidth: number;
+  public readonly plankWidth: number;
 
   /** 木牌高度 */
-  public plankHeight: number;
+  public readonly plankHeight: number;
 
   /** 像素尺寸 */
-  public pixelSize: number;
+  public readonly pixelSize: number;
 
   /** 是否可拖拽 */
-  public draggable: boolean;
+  public readonly draggable: boolean;
 
   /** 木牌Graphics */
   protected plankGraphics: Phaser.GameObjects.Graphics | null = null;
@@ -141,6 +141,11 @@ export default class HerbTagComponent {
    * @param y 位置Y，默认0
    */
   constructor(scene: Phaser.Scene, config: HerbTagConfig, x: number = 0, y: number = 0) {
+    // Input validation - check required fields
+    if (!config.herb?.grid || !config.herb?.palette) {
+      throw new Error('HerbTagComponent: herb.grid and herb.palette are required');
+    }
+
     this.scene = scene;
     this.config = config;
 

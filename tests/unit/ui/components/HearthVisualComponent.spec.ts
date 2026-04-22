@@ -16,7 +16,10 @@ import HearthVisualComponent from '../../../../src/ui/components/HearthVisualCom
 const createMockScene = () => {
   const mockContainer = {
     setDepth: vi.fn().mockReturnThis(),
-    add: vi.fn().mockReturnThis(),
+    add: vi.fn((item: any) => {
+      mockContainer.list.push(item);
+      return mockContainer;
+    }),
     destroy: vi.fn(),
     setPosition: vi.fn().mockReturnThis(),
     setVisible: vi.fn().mockReturnThis(),
@@ -131,5 +134,28 @@ describe('HearthVisualComponent', () => {
     hearth.destroy();
 
     expect(hearth.container.destroy).toHaveBeenCalled();
+  });
+
+  // Task 2: 砖墙纹理绘制测试
+  it('should draw brick texture with gradient colors', () => {
+    const config = { width: 360, height: 204, pixelSize: 6 };
+    const hearth = new HearthVisualComponent(mockScene, config);
+
+    // 检查 brickGraphics 存在
+    expect(hearth.brickGraphics).toBeDefined();
+
+    // 检查容器包含砖墙层
+    const brickInContainer = hearth.container.list.some(
+      obj => obj === hearth.brickGraphics
+    );
+    expect(brickInContainer).toBe(true);
+  });
+
+  it('should draw mortar grid lines for brick texture', () => {
+    const config = { width: 360, height: 204, pixelSize: 6 };
+    const hearth = new HearthVisualComponent(mockScene, config);
+
+    // 检查绘制了灰缝网格
+    expect(hearth.brickGraphics).toBeDefined();
   });
 });

@@ -85,8 +85,96 @@ export default class HearthVisualComponent {
     // TODO: Task 2 - 实现地面阴影
   }
   protected drawBrickTexture(): void {
-    // TODO: Task 3 - 实现砖墙纹理
+    // brickGraphics已在构造函数中创建，无需重新创建
+
+    const brickWidth = this.width;       // 60px * 6 = 360
+    const brickHeight = this.height;     // 34px * 6 = 204
+    const px = this.pixelSize;           // 6
+
+    // 计算相对于容器中心的坐标 (容器在炉灶底部)
+    const x = -brickWidth / 2;
+    const y = -brickHeight;
+
+    // Step 1: 绘制砖墙主体渐变 (对应CSS: linear-gradient 180deg)
+    const gradientSteps = 10;
+    const stepHeight = brickHeight / gradientSteps;
+    const gradientColors = [
+      HearthVisualComponent.COLORS.brickLight,  // 0%: #8a5a2a
+      0x7a4a28,                                   // 20%
+      HearthVisualComponent.COLORS.brickMid,     // 50%: #5a3020
+      0x4a2818,                                   // 70%
+      HearthVisualComponent.COLORS.brickDark,    // 100%: #3f2412
+    ];
+
+    for (let i = 0; i < gradientSteps; i++) {
+      const progress = i / gradientSteps;
+      const colorIndex = Math.floor(progress * (gradientColors.length - 1));
+      const nextColorIndex = Math.min(colorIndex + 1, gradientColors.length - 1);
+      const blend = (progress * (gradientColors.length - 1)) - colorIndex;
+
+      const color = this.blendColors(
+        gradientColors[colorIndex],
+        gradientColors[nextColorIndex],
+        blend
+      );
+
+      this.brickGraphics!.fillStyle(color, 1);
+      this.brickGraphics!.fillRect(x, y + i * stepHeight, brickWidth, stepHeight + 1);
+    }
+
+    // Step 2: 绘制灰缝网格
+    const mortarWidth = px * 2;      // 12
+    const mortarSpacing = px * 10;   // 60
+    const mortarHeight = px * 2;     // 12
+
+    // 奇数行灰缝
+    this.brickGraphics!.fillStyle(HearthVisualComponent.COLORS.mortarColor, 1);
+    for (let row = 0; row < 3; row++) {
+      const rowY = y + row * mortarSpacing;
+      for (let col = 0; col <= 6; col++) {
+        const colX = x + col * mortarSpacing;
+        this.brickGraphics!.fillRect(colX, rowY, mortarWidth, mortarHeight);
+      }
+    }
+
+    // 偶数行灰缝 (错开半格)
+    const offset = px * 5;  // 30
+    for (let row = 3; row < 6; row++) {
+      const rowY = y + row * mortarSpacing;
+      for (let col = 0; col <= 5; col++) {
+        const colX = x + offset + col * mortarSpacing;
+        this.brickGraphics!.fillRect(colX, rowY, mortarWidth, mortarHeight);
+      }
+    }
+
+    // Step 3: 绘制外阴影
+    this.brickGraphics!.fillStyle(0x000000, 0.6);
+    this.brickGraphics!.fillRect(x + brickWidth, y + 3, px * 3, brickHeight);
+    this.brickGraphics!.fillRect(x + 3, y + brickHeight, brickWidth, px * 3);
+
+    // Step 4: 绘制内阴影底部
+    this.brickGraphics!.fillStyle(0x000000, 0.4);
+    this.brickGraphics!.fillRect(x, y + brickHeight - px * 3, brickWidth, px * 3);
   }
+
+  /**
+   * 混合两个颜色
+   */
+  protected blendColors(color1: number, color2: number, ratio: number): number {
+    const r1 = (color1 >> 16) & 0xff;
+    const g1 = (color1 >> 8) & 0xff;
+    const b1 = color1 & 0xff;
+    const r2 = (color2 >> 16) & 0xff;
+    const g2 = (color2 >> 8) & 0xff;
+    const b2 = color2 & 0xff;
+
+    const r = Math.round(r1 + (r2 - r1) * ratio);
+    const g = Math.round(g1 + (g2 - g1) * ratio);
+    const b = Math.round(b1 + (b2 - b1) * ratio);
+
+    return (r << 16) | (g << 8) | b;
+  }
+
   protected drawStoveTop(): void {
     // TODO: Task 4 - 实现炉灶顶板
   }

@@ -81,10 +81,24 @@ export default class PixelSpriteComponent {
    */
   constructor(scene: Phaser.Scene, config: PixelSpriteConfig, x: number = 0, y: number = 0) {
     this.scene = scene;
-    this.grid = config.grid;
-    this.palette = config.palette;
+    // Clone data to prevent external mutation
+    this.grid = [...config.grid];
+    this.palette = { ...config.palette };
     this.pixelSize = config.pixelSize ?? 3;
     this.animated = config.animated ?? false;
+
+    // Handle empty grid
+    if (this.grid.length === 0) {
+      this.grid = [''];
+    }
+
+    // Validate grid consistency (warn only)
+    const expectedWidth = this.grid[0]?.length ?? 0;
+    for (const row of this.grid) {
+      if (row.length !== expectedWidth) {
+        console.warn('PixelSpriteComponent: Grid rows have inconsistent lengths');
+      }
+    }
 
     // 计算宽高
     const gridWidth = this.grid[0]?.length ?? 0;

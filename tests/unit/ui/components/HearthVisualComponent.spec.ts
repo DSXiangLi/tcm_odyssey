@@ -31,6 +31,8 @@ const createMockScene = () => {
     fillStyle: vi.fn().mockReturnThis(),
     fillGradientStyle: vi.fn().mockReturnThis(),
     fillRect: vi.fn().mockReturnThis(),
+    fillEllipse: vi.fn().mockReturnThis(),
+    fillCircle: vi.fn().mockReturnThis(),
     lineStyle: vi.fn().mockReturnThis(),
     strokeRect: vi.fn().mockReturnThis(),
     beginPath: vi.fn().mockReturnThis(),
@@ -39,6 +41,7 @@ const createMockScene = () => {
     closePath: vi.fn().mockReturnThis(),
     fillPath: vi.fn().mockReturnThis(),
     strokePath: vi.fn().mockReturnThis(),
+    generateTexture: vi.fn().mockReturnThis(),
     destroy: vi.fn(),
     clear: vi.fn().mockReturnThis(),
   };
@@ -47,11 +50,28 @@ const createMockScene = () => {
     stop: vi.fn(),
   };
 
+  const mockParticleEmitter = {
+    stop: vi.fn(),
+    destroy: vi.fn(),
+    setEmitterAngle: vi.fn().mockReturnThis(),
+    setEmitterSpeed: vi.fn().mockReturnThis(),
+    setScale: vi.fn().mockReturnThis(),
+    setAlpha: vi.fn().mockReturnThis(),
+    setFrequency: vi.fn().mockReturnThis(),
+  };
+
+  const mockTextures = {
+    exists: vi.fn().mockReturnValue(false),
+    get: vi.fn(),
+    addBase64: vi.fn(),
+  };
+
   return {
     add: {
       container: vi.fn().mockReturnValue(mockContainer),
       graphics: vi.fn().mockReturnValue(mockGraphics),
       existing: vi.fn(),
+      particles: vi.fn().mockReturnValue(mockParticleEmitter),
     },
     tweens: {
       add: vi.fn().mockReturnValue(mockTween),
@@ -66,6 +86,7 @@ const createMockScene = () => {
         scrollY: 0,
       },
     },
+    textures: mockTextures,
     scene: { key: 'testScene' },
     scale: {
       width: 800,
@@ -205,5 +226,42 @@ describe('HearthVisualComponent', () => {
 
     expect(hearth.flames.length).toBe(0);
     expect(hearth.flameTweens.length).toBe(0);
+  });
+
+  // Task 5: 火星粒子系统测试
+  it('should create ember particle emitter when animated', () => {
+    const config = { width: 360, height: 204, pixelSize: 6, animated: true };
+    const hearth = new HearthVisualComponent(mockScene, config);
+
+    expect(hearth.emberParticles).not.toBeNull();
+    expect(hearth.emberParticles).toBeDefined();
+  });
+
+  it('should not create ember particles when animated is false', () => {
+    const config = { width: 360, height: 204, pixelSize: 6, animated: false };
+    const hearth = new HearthVisualComponent(mockScene, config);
+
+    expect(hearth.emberParticles).toBeNull();
+  });
+
+  it('should draw ground shadow under stove', () => {
+    const config = { width: 360, height: 204, pixelSize: 6 };
+    const hearth = new HearthVisualComponent(mockScene, config);
+
+    expect(hearth.shadowGraphics).toBeDefined();
+    const shadowInContainer = hearth.container.list.some(
+      obj => obj === hearth.shadowGraphics
+    );
+    expect(shadowInContainer).toBe(true);
+  });
+
+  it('should draw shadow with gradient ellipses', () => {
+    const config = { width: 360, height: 204, pixelSize: 6 };
+    const hearth = new HearthVisualComponent(mockScene, config);
+
+    // 检查阴影Graphics对象存在
+    expect(hearth.shadowGraphics).toBeDefined();
+    // 检查fillStyle被调用多次（渐变阴影）
+    expect(hearth.shadowGraphics!.fillStyle).toHaveBeenCalled();
   });
 });

@@ -167,32 +167,49 @@ export default class PotVisualComponent {
   }
 
   /**
-   * 绘制药液表面 - 水平渐变效果
-   * CSS对应: linear-gradient(90deg, #4a2010 0%, #6a3a1a 50%, #4a2010 100%)
+   * 绘制药液表面 - 水平渐变 + 波纹条纹效果
+   * CSS对应: linear-gradient(180deg), repeating-linear-gradient(条纹)
+   * 动画对应: liquidRipple 3s linear infinite
    */
   protected drawLiquidSurface(): void {
     this.liquidGraphics = this.scene.add.graphics();
     this.container.add(this.liquidGraphics);
 
     const px = this.pixelSize;
-    const liquidWidth = this.width - px * 4;  // 比罐身窄一点
-    const liquidHeight = px * 4;              // 药液厚度
+    const liquidWidth = this.width + px * 2;  // 38px * 6 = 228 (稍窄于罐口)
+    const liquidHeight = px * 5;              // 5px * 6 = 30
     const x = -liquidWidth / 2;
-    const y = -this.height + px * 8;          // 在边缘下方
+    const y = -this.height + px * 12;         // 边缘下方
 
-    // 药液渐变 (对应CSS: linear-gradient 90deg)
-    const gradientSteps = 4;
-    const stepWidth = liquidWidth / gradientSteps;
+    // Step 1: 绘制药液渐变 (对应CSS: linear-gradient 180deg)
     const gradientColors = [
-      PotVisualComponent.COLORS.liquidTop,   // 0%
-      PotVisualComponent.COLORS.liquidBot,   // 50%
-      PotVisualComponent.COLORS.liquidBot,   // 50%
-      PotVisualComponent.COLORS.liquidTop,   // 100%
+      PotVisualComponent.COLORS.liquidTop,   // 顶部暗色
+      PotVisualComponent.COLORS.liquidBot,   // 底部亮色
     ];
 
     gradientColors.forEach((color, i) => {
-      this.liquidGraphics.fillStyle(color, 0.8);
-      this.liquidGraphics.fillRect(x + i * stepWidth, y, stepWidth + 1, liquidHeight);
+      this.liquidGraphics.fillStyle(color, 1);
+      this.liquidGraphics.fillRect(x, y + i * liquidHeight / 2, liquidWidth, liquidHeight / 2 + 1);
+    });
+
+    // Step 2: 波纹条纹效果 (对应CSS: repeating-linear-gradient)
+    this.liquidGraphics.fillStyle(0xffd282, 0.3);
+    for (let i = 0; i < liquidWidth; i += px * 10) {
+      this.liquidGraphics.fillRect(x + i, y, px * 2, liquidHeight);
+    }
+
+    // Step 3: 椭圆形表面光泽
+    this.liquidGraphics.fillStyle(PotVisualComponent.COLORS.liquidTop, 0.8);
+    this.liquidGraphics.fillEllipse(x + liquidWidth / 2, y + liquidHeight / 2, liquidWidth, liquidHeight);
+
+    // Step 4: 波纹动画 (对应CSS: liquidRipple 3s linear infinite)
+    this.liquidTween = this.scene.tweens.add({
+      targets: this.liquidGraphics,
+      x: { from: x, to: x - px * 10 },
+      duration: 3000,
+      ease: 'Linear',
+      yoyo: true,
+      repeat: -1,
     });
   }
 
@@ -226,7 +243,66 @@ export default class PotVisualComponent {
     this.handleGraphics.strokeRect(rightX, handleY, handleWidth, handleHeight);
   }
 
-  protected createSteamParticles(): void {}
+  /**
+   * 创建蒸汽粒子 - 5团蒸汽，各有不同位置和延迟
+   * CSS对应: .steam-puff.s1/s2/s3/s4/s5, steamRise 3.2s ease-out infinite
+   */
+  protected createSteamParticles(): void {
+    if (!this.showSteam) return;
+
+    const px = this.pixelSize;
+
+    // 蒸汽配置 (对应CSS: .steam-puff.s1/s2/s3/s4/s5)
+    const steamConfigs = [
+      { left: -px * 14, delay: 0, dx: px * 15 },      // s1
+      { left: -px * 2, delay: 600, dx: px * 20 },     // s2
+      { left: px * 10, delay: 1200, dx: px * 10 },    // s3
+      { left: -px * 10, delay: 1800, dx: px * 25 },   // s4
+      { left: px * 2, delay: 2400, dx: px * 5 },      // s5
+    ];
+
+    const baseY = -this.height - px * 10;  // 罐口上方
+
+    steamConfigs.forEach(config => {
+      const steamGraphics = this.scene.add.graphics();
+      this.container.add(steamGraphics);
+
+      // 绘制蒸汽团 (对应CSS: radial-gradient circle)
+      const puffRadius = px * 11;  // 22px / 2 * 6 = 66
+
+      // 渐变蒸汽 - 多层同心圆模拟径向渐变
+      const gradientRings = [
+        { radius: puffRadius, color: PotVisualComponent.COLORS.steamColor, alpha: 0.85 },
+        { radius: puffRadius * 0.5, color: PotVisualComponent.COLORS.steamColor, alpha: 0.4 },
+        { radius: puffRadius * 0.2, color: PotVisualComponent.COLORS.steamColor, alpha: 0 },
+      ];
+
+      gradientRings.forEach(ring => {
+        steamGraphics.fillStyle(ring.color, ring.alpha);
+        steamGraphics.fillCircle(config.left, baseY, ring.radius);
+      });
+
+      // 初始状态 (对应CSS: opacity 0, scale 0.4)
+      steamGraphics.setAlpha(0);
+      steamGraphics.setScale(0.4);
+      this.steamPuffs.push(steamGraphics);
+
+      // 蒸汽上升动画 (对应CSS: steamRise 3.2s ease-out infinite)
+      const tween = this.scene.tweens.add({
+        targets: steamGraphics,
+        y: baseY - px * 120,  // 上升120px
+        x: config.left + config.dx,  // 水平漂移
+        scale: 1.8,
+        alpha: { from: 0, to: 0.8 },
+        duration: 3200,
+        delay: config.delay,
+        ease: 'Sine.easeOut',
+        repeat: -1,
+      });
+
+      this.steamTweens.push(tween);
+    });
+  }
   protected createLadle(): void {}
 
   destroy(): void {

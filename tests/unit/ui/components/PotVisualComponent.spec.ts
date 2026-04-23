@@ -24,6 +24,9 @@ const createMockScene = () => {
     setPosition: vi.fn().mockReturnThis(),
     setVisible: vi.fn().mockReturnThis(),
     setScrollFactor: vi.fn().mockReturnThis(),
+    setY: vi.fn().mockReturnThis(),
+    setX: vi.fn().mockReturnThis(),
+    setRotation: vi.fn().mockReturnThis(),
     list: [] as any[],
     scene: null as any,
   };
@@ -378,5 +381,95 @@ describe('PotVisualComponent', () => {
     // 检查边框绘制（lineStyle和strokeRect）
     expect(pot.handleGraphics.lineStyle).toHaveBeenCalled();
     expect(pot.handleGraphics.strokeRect).toHaveBeenCalled();
+  });
+
+  // Task 9: 测试搅拌勺动画
+  it('should create ladle when showLadle is true', () => {
+    const config = { width: 264, height: 168, pixelSize: 6, showLadle: true };
+    const pot = new PotVisualComponent(mockScene, config);
+
+    expect(pot['ladleContainer']).toBeDefined();
+  });
+
+  it('should start stir animation on ladle', () => {
+    const config = { width: 264, height: 168, pixelSize: 6, showLadle: true };
+    const pot = new PotVisualComponent(mockScene, config);
+
+    expect(pot['ladleTween']).toBeDefined();
+    expect(mockScene.tweens.add).toHaveBeenCalled();
+  });
+
+  it('should not create ladle when showLadle is false', () => {
+    const config = { width: 264, height: 168, pixelSize: 6, showLadle: false };
+    const pot = new PotVisualComponent(mockScene, config);
+
+    expect(pot['ladleContainer']).toBeNull();
+    expect(pot['ladleTween']).toBeNull();
+  });
+
+  it('should create ladle with stick and scoop graphics', () => {
+    const config = { width: 264, height: 168, pixelSize: 6, showLadle: true };
+    const pot = new PotVisualComponent(mockScene, config);
+
+    // 检查勺柄和勺头Graphics创建
+    expect(mockScene.add.graphics).toHaveBeenCalled();
+    expect(pot['ladleContainer'].add).toHaveBeenCalled();
+  });
+
+  it('should draw ladle stick with horizontal gradient', () => {
+    const config = { width: 264, height: 168, pixelSize: 6, showLadle: true };
+    const pot = new PotVisualComponent(mockScene, config);
+
+    // 检查勺柄渐变颜色调用
+    const graphicsCalls = mockScene.add.graphics.mock.calls;
+    expect(graphicsCalls.length).toBeGreaterThan(0);
+  });
+
+  it('should draw ladle scoop with vertical gradient', () => {
+    const config = { width: 264, height: 168, pixelSize: 6, showLadle: true };
+    const pot = new PotVisualComponent(mockScene, config);
+
+    // 检查勺头渐变颜色调用
+    const graphicsCalls = mockScene.add.graphics.mock.calls;
+    expect(graphicsCalls.length).toBeGreaterThan(0);
+  });
+
+  it('should create stir tween with correct rotation parameters', () => {
+    const config = { width: 264, height: 168, pixelSize: 6, showLadle: true };
+    const pot = new PotVisualComponent(mockScene, config);
+
+    // 检查搅拌动画参数
+    const tweenCalls = mockScene.tweens.add.mock.calls;
+    const ladleTweenCall = tweenCalls.find(call => {
+      const params = call[0];
+      return params.duration === 2400 && params.repeat === -1;
+    });
+    expect(ladleTweenCall).toBeDefined();
+
+    // 检查rotation参数（-0.14 to 0.14 rad, 约-8deg to +8deg）
+    if (ladleTweenCall) {
+      const params = ladleTweenCall[0];
+      expect(params.targets).toBe(pot['ladleContainer']);
+      expect(params.rotation).toBeDefined();
+    }
+  });
+
+  it('should stop ladle tween on destroy', () => {
+    const config = { width: 264, height: 168, pixelSize: 6, showLadle: true };
+    const pot = new PotVisualComponent(mockScene, config);
+
+    // Capture tween reference before destroy
+    const ladleTween = pot['ladleTween'];
+
+    pot.destroy();
+
+    // Check ladleTween was stopped
+    expect(ladleTween?.stop).toHaveBeenCalled();
+
+    // Check ladleTween reference is nullified after destroy
+    expect(pot['ladleTween']).toBeNull();
+
+    // Check ladleContainer is destroyed and nullified
+    expect(pot['ladleContainer']).toBeNull();
   });
 });

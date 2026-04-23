@@ -85,25 +85,145 @@ export default class PotVisualComponent {
     }
   }
 
-  // 骨架方法 - 后续Task实现
+  /**
+   * 绘制罐身 - 水平渐变效果
+   * CSS对应: linear-gradient(90deg, #3a1a0a 0%, #5a2e18 25%, #7a4422 50%, #5a2e18 75%, #3a1a0a 100%)
+   */
   protected drawPotBody(): void {
     this.bodyGraphics = this.scene.add.graphics();
     this.container.add(this.bodyGraphics);
+
+    const px = this.pixelSize;
+    const bodyWidth = this.width;    // 44px * 6 = 264
+    const bodyHeight = px * 22;      // 22px * 6 = 132
+    const x = -bodyWidth / 2;
+    const y = -bodyHeight;           // 罐身底部在容器中心下方
+
+    // Step 1: 绘制罐身水平渐变 (对应CSS: linear-gradient 90deg)
+    // #3a1a0a → #5a2e18 → #7a4422 → #5a2e18 → #3a1a0a
+    const gradientSteps = 8;
+    const stepWidth = bodyWidth / gradientSteps;
+    const gradientColors = [
+      PotVisualComponent.COLORS.potDark,   // 0%
+      0x4a2410,                            // 12.5%
+      PotVisualComponent.COLORS.potMid,    // 25%
+      0x6a3a1c,                            // 37.5%
+      PotVisualComponent.COLORS.potLight,  // 50%
+      0x6a3a1c,                            // 62.5%
+      PotVisualComponent.COLORS.potMid,    // 75%
+      PotVisualComponent.COLORS.potDark,   // 100%
+    ];
+
+    gradientColors.forEach((color, i) => {
+      this.bodyGraphics.fillStyle(color, 1);
+      this.bodyGraphics.fillRect(x + i * stepWidth, y, stepWidth + 1, bodyHeight);
+    });
+
+    // Step 2: 绘制圆底 (对应CSS: border-radius 0 0 40% 40%)
+    // 使用弧形绘制底部
+    this.bodyGraphics.fillStyle(PotVisualComponent.COLORS.potDark, 1);
+    this.bodyGraphics.fillRoundedRect(
+      x, y + bodyHeight - px * 10,
+      bodyWidth, px * 10,
+      { tl: 0, tr: 0, bl: bodyWidth * 0.4, br: bodyWidth * 0.4 }
+    );
+
+    // Step 3: 绘制内阴影 (对应CSS: inset -4px -4px 0 rgba(0,0,0,.5))
+    this.bodyGraphics.fillStyle(0x000000, 0.5);
+    this.bodyGraphics.fillRect(x + bodyWidth - px * 4, y, px * 4, bodyHeight);
+    this.bodyGraphics.fillRect(x, y + bodyHeight - px * 4, bodyWidth, px * 4);
   }
 
+  /**
+   * 绘制罐口边缘 - 垂直渐变效果
+   * CSS对应: linear-gradient(180deg, #7a4422 0%, #3a1a0a 50%, #5a2e18 100%)
+   */
   protected drawPotRim(): void {
     this.rimGraphics = this.scene.add.graphics();
     this.container.add(this.rimGraphics);
+
+    const px = this.pixelSize;
+    const rimWidth = this.width + px * 8;  // 52px * 6 = 312 (比罐身宽)
+    const rimHeight = px * 8;              // 8px * 6 = 48
+    const x = -rimWidth / 2;
+    const y = -this.height;                // 罐口顶部
+
+    // 绘制边缘渐变 (对应CSS: linear-gradient 180deg)
+    const gradientColors = [
+      PotVisualComponent.COLORS.rimTop,    // 0%: #7a4422
+      PotVisualComponent.COLORS.rimMid,    // 50%: #3a1a0a
+      PotVisualComponent.COLORS.rimBot,    // 100%: #5a2e18
+    ];
+
+    const stepHeight = rimHeight / gradientColors.length;
+    gradientColors.forEach((color, i) => {
+      this.rimGraphics.fillStyle(color, 1);
+      this.rimGraphics.fillRect(x, y + i * stepHeight, rimWidth, stepHeight + 1);
+    });
+
+    // 边缘高光 (对应CSS: inset 0 2px 0 rgba(200,120,60,.4))
+    this.rimGraphics.fillStyle(0xc8783c, 0.4);
+    this.rimGraphics.fillRect(x, y, rimWidth, px * 2);
   }
 
+  /**
+   * 绘制药液表面 - 水平渐变效果
+   * CSS对应: linear-gradient(90deg, #4a2010 0%, #6a3a1a 50%, #4a2010 100%)
+   */
   protected drawLiquidSurface(): void {
     this.liquidGraphics = this.scene.add.graphics();
     this.container.add(this.liquidGraphics);
+
+    const px = this.pixelSize;
+    const liquidWidth = this.width - px * 4;  // 比罐身窄一点
+    const liquidHeight = px * 4;              // 药液厚度
+    const x = -liquidWidth / 2;
+    const y = -this.height + px * 8;          // 在边缘下方
+
+    // 药液渐变 (对应CSS: linear-gradient 90deg)
+    const gradientSteps = 4;
+    const stepWidth = liquidWidth / gradientSteps;
+    const gradientColors = [
+      PotVisualComponent.COLORS.liquidTop,   // 0%
+      PotVisualComponent.COLORS.liquidBot,   // 50%
+      PotVisualComponent.COLORS.liquidBot,   // 50%
+      PotVisualComponent.COLORS.liquidTop,   // 100%
+    ];
+
+    gradientColors.forEach((color, i) => {
+      this.liquidGraphics.fillStyle(color, 0.8);
+      this.liquidGraphics.fillRect(x + i * stepWidth, y, stepWidth + 1, liquidHeight);
+    });
   }
 
+  /**
+   * 绘制把手 - 左右两侧
+   * CSS对应: .pot-handle.l, .pot-handle.r
+   */
   protected drawHandles(): void {
     this.handleGraphics = this.scene.add.graphics();
     this.container.add(this.handleGraphics);
+
+    const px = this.pixelSize;
+    const handleWidth = px * 3;   // 18
+    const handleHeight = px * 4;  // 24
+    const bodyWidth = this.width;
+
+    // 左把手 (对应CSS: .pot-handle.l)
+    const leftX = -bodyWidth / 2 - px * 4;
+    const handleY = -this.height + px * 14;
+
+    this.handleGraphics.fillStyle(PotVisualComponent.COLORS.potDark, 1);
+    this.handleGraphics.fillRect(leftX, handleY, handleWidth, handleHeight);
+    this.handleGraphics.lineStyle(2, 0x2a1408, 1);
+    this.handleGraphics.strokeRect(leftX, handleY, handleWidth, handleHeight);
+
+    // 右把手 (对应CSS: .pot-handle.r)
+    const rightX = bodyWidth / 2 + px * 1;
+    this.handleGraphics.fillStyle(PotVisualComponent.COLORS.potDark, 1);
+    this.handleGraphics.fillRect(rightX, handleY, handleWidth, handleHeight);
+    this.handleGraphics.lineStyle(2, 0x2a1408, 1);
+    this.handleGraphics.strokeRect(rightX, handleY, handleWidth, handleHeight);
   }
 
   protected createSteamParticles(): void {}

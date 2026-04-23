@@ -93,7 +93,32 @@ export default class HearthVisualComponent {
 
   // 后续方法将在后续Task中实现
   protected drawGroundShadow(): void {
-    // TODO: Task 2 - 实现地面阴影
+    // 创建阴影Graphics对象
+    this.shadowGraphics = this.scene.add.graphics();
+    this.container.add(this.shadowGraphics);
+
+    const px = this.pixelSize;
+    const shadowWidth = this.width + px * 4;  // 比砖墙宽 (360 + 24 = 384)
+    const shadowHeight = px * 2;              // 12
+    const x = -shadowWidth / 2;               // 居中
+    const y = px * 2;                         // 炉灶底部下方
+
+    // 绘制椭圆形阴影 (对应CSS: radial-gradient ellipse)
+    const centerX = x + shadowWidth / 2;
+    const centerY = y;
+
+    // 渐变阴影 - 从外到内 (多层叠加模拟径向渐变)
+    const gradientRings = [
+      { radiusX: shadowWidth / 2, radiusY: shadowHeight, color: 0x000000, alpha: 0.5 },
+      { radiusX: shadowWidth / 2 * 0.7, radiusY: shadowHeight * 0.7, color: 0x000000, alpha: 0.3 },
+      { radiusX: shadowWidth / 2 * 0.3, radiusY: shadowHeight * 0.3, color: 0x000000, alpha: 0.1 },
+    ];
+
+    // 绘制多层椭圆阴影
+    gradientRings.forEach(ring => {
+      this.shadowGraphics!.fillStyle(ring.color, ring.alpha);
+      this.shadowGraphics!.fillEllipse(centerX, centerY, ring.radiusX * 2, ring.radiusY * 2);
+    });
   }
   protected drawBrickTexture(): void {
     // brickGraphics已在构造函数中创建，无需重新创建
@@ -420,7 +445,42 @@ export default class HearthVisualComponent {
     graphics.fillPath();
   }
   protected createEmberParticles(): void {
-    // TODO: Task 7 - 实现火星粒子
+    if (!this.animated) return;
+
+    const px = this.pixelSize;
+    const brickHeight = this.height;     // 204
+    const holeWidth = px * 24;           // 144
+    const holeHeight = px * 16;          // 96
+    const holeY = -brickHeight + px * 6; // 火焰开口顶部位置
+    const baseY = holeY + holeHeight;    // 火焰开口底部
+
+    // 创建粒子纹理 (小圆形火星)
+    const particleKey = 'emberParticle';
+    if (!this.scene.textures.exists(particleKey)) {
+      // 创建小圆形粒子纹理
+      const particleGraphics = this.scene.add.graphics();
+      particleGraphics.fillStyle(HearthVisualComponent.COLORS.emberCore, 1);
+      particleGraphics.fillCircle(3, 3, 3);
+      particleGraphics.generateTexture(particleKey, 6, 6);
+      particleGraphics.destroy();
+    }
+
+    // 创建粒子发射器 (对应CSS: emberRise 2.2s linear infinite)
+    // 火星从火焰开口底部升起，向上飘散
+    this.emberParticles = this.scene.add.particles(0, baseY, particleKey, {
+      x: { min: -holeWidth / 2 + px * 2, max: holeWidth / 2 - px * 2 },  // 从火焰开口范围内随机x位置
+      lifespan: 2200,           // 2.2s (对应CSS动画时长)
+      speedY: { min: -60, max: -80 },  // 向上升起速度
+      speedX: { min: -20, max: 20 },   // 左右漂移
+      scale: { start: 0.5, end: 0 },   // 从大到小消失
+      alpha: { start: 1, end: 0 },     // 透明度渐变 (1→0)
+      quantity: 2,                    // 每次发射数量
+      frequency: 300,                 // 发射频率 (每300ms发射)
+      blendMode: 'ADD',               // 发光效果 (叠加混合)
+      tint: HearthVisualComponent.COLORS.emberCore,  // 金色火星
+    });
+
+    this.container.add(this.emberParticles);
   }
 
   destroy(): void {

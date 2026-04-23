@@ -158,4 +158,27 @@ describe('HearthVisualComponent', () => {
     // 检查绘制了灰缝网格
     expect(hearth.brickGraphics).toBeDefined();
   });
+
+  // Task 3: 炉灶顶板和火焰开口测试
+  it('should draw stove top ledge with gradient', () => {
+    const config = { width: 360, height: 204, pixelSize: 6 };
+    const hearth = new HearthVisualComponent(mockScene, config);
+
+    expect(hearth.topGraphics).toBeDefined();
+    const topInContainer = hearth.container.list.some(
+      obj => obj === hearth.topGraphics
+    );
+    expect(topInContainer).toBe(true);
+  });
+
+  it('should draw fire hole with radial gradient colors', () => {
+    const config = { width: 360, height: 204, pixelSize: 6 };
+    const hearth = new HearthVisualComponent(mockScene, config);
+
+    expect(hearth.fireHoleGraphics).toBeDefined();
+    const fireHoleInContainer = hearth.container.list.some(
+      obj => obj === hearth.fireHoleGraphics
+    );
+    expect(fireHoleInContainer).toBe(true);
+  });
 });

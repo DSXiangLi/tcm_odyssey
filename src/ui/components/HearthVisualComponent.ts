@@ -181,10 +181,107 @@ export default class HearthVisualComponent {
   }
 
   protected drawStoveTop(): void {
-    // TODO: Task 4 - 实现炉灶顶板
+    // 创建顶板Graphics对象
+    this.topGraphics = this.scene.add.graphics();
+    this.container.add(this.topGraphics);
+
+    const brickWidth = this.width;       // 360
+    const brickHeight = this.height;     // 204
+    const px = this.pixelSize;           // 6
+
+    // 顶板比砖墙宽8px (左右各4px)
+    const topWidth = brickWidth + px * 8;  // 360 + 48 = 408
+    const topHeight = px * 3;              // 18
+    const x = -topWidth / 2;               // 居中
+    const y = -brickHeight - topHeight;    // 在砖墙上方
+
+    // Step 1: 绘制顶板渐变 (对应CSS: linear-gradient 180deg)
+    // Colors: #4a2818 → #3a2010 → #2a1408
+    const topGradientColors = [
+      HearthVisualComponent.COLORS.brickMid70, // #4a2818 (top)
+      0x3a2010,                                  // 中间过渡色
+      HearthVisualComponent.COLORS.mortarColor, // #2a1408 (bottom)
+    ];
+
+    const gradientSteps = 3;
+    const stepHeight = topHeight / gradientSteps;
+
+    for (let i = 0; i < gradientSteps; i++) {
+      const progress = i / gradientSteps;
+      const colorIndex = Math.floor(progress * (topGradientColors.length - 1));
+      const nextColorIndex = Math.min(colorIndex + 1, topGradientColors.length - 1);
+      const blend = (progress * (topGradientColors.length - 1)) - colorIndex;
+
+      const color = this.blendColors(
+        topGradientColors[colorIndex],
+        topGradientColors[nextColorIndex],
+        blend
+      );
+
+      this.topGraphics!.fillStyle(color, 1);
+      this.topGraphics!.fillRect(x, y + i * stepHeight, topWidth, stepHeight + 1);
+    }
+
+    // Step 2: 绘制顶板边框 (灰缝颜色)
+    this.topGraphics!.lineStyle(px, HearthVisualComponent.COLORS.mortarColor, 1);
+    this.topGraphics!.strokeRect(x, y, topWidth, topHeight);
   }
+
   protected drawFireHole(): void {
-    // TODO: Task 5 - 实现火焰开口
+    // 创建火焰开口Graphics对象
+    this.fireHoleGraphics = this.scene.add.graphics();
+    this.container.add(this.fireHoleGraphics);
+
+    const brickWidth = this.width;       // 360
+    const brickHeight = this.height;     // 204
+    const px = this.pixelSize;           // 6
+
+    // 火焰开口尺寸 (24px宽, 16px高)
+    const holeWidth = px * 24;   // 144
+    const holeHeight = px * 16;  // 96
+    const x = -holeWidth / 2;    // 居中
+    const y = -brickHeight + px * 6;  // 从顶部向下偏移
+
+    // Step 1: 绘制火焰开口背景 (黑色)
+    this.fireHoleGraphics!.fillStyle(0x000000, 1);
+    this.fireHoleGraphics!.fillRect(x, y, holeWidth, holeHeight);
+
+    // Step 2: 绘制径向渐变效果 (同心椭圆)
+    // Colors: black → cinnabar → emberOuter → emberCore
+    const radialColors = [
+      { color: 0x000000, radius: 1.0 },       // 最外层黑色
+      { color: HearthVisualComponent.COLORS.cinnabar, radius: 0.7 }, // 红色层
+      { color: HearthVisualComponent.COLORS.emberOuter, radius: 0.4 }, // 橙色层
+      { color: HearthVisualComponent.COLORS.emberCore, radius: 0.15 }, // 金色核心
+    ];
+
+    // 绘制同心椭圆模拟径向渐变
+    for (let i = radialColors.length - 1; i >= 0; i--) {
+      const layer = radialColors[i];
+      const layerWidth = holeWidth * layer.radius;
+      const layerHeight = holeHeight * layer.radius;
+      const layerX = x + (holeWidth - layerWidth) / 2;
+      const layerY = y + (holeHeight - layerHeight) / 2;
+
+      this.fireHoleGraphics!.fillStyle(layer.color, 1);
+      this.fireHoleGraphics!.fillRect(layerX, layerY, layerWidth, layerHeight);
+    }
+
+    // Step 3: 绘制开口边框 (拱形效果 - 圆角顶部)
+    this.fireHoleGraphics!.lineStyle(px, HearthVisualComponent.COLORS.mortarColor, 1);
+
+    // 拱形边框: 左竖线、顶部弧线、右竖线、底部横线
+    this.fireHoleGraphics!.beginPath();
+    // 左竖线
+    this.fireHoleGraphics!.moveTo(x, y + holeHeight);
+    this.fireHoleGraphics!.lineTo(x, y + px * 2);  // 留出顶部圆角空间
+    // 顶部弧线 (模拟圆角)
+    this.fireHoleGraphics!.lineTo(x + px * 4, y);  // 左圆角
+    this.fireHoleGraphics!.lineTo(x + holeWidth - px * 4, y);  // 顶边
+    this.fireHoleGraphics!.lineTo(x + holeWidth, y + px * 2);  // 右圆角
+    // 右竖线
+    this.fireHoleGraphics!.lineTo(x + holeWidth, y + holeHeight);
+    this.fireHoleGraphics!.strokePath();
   }
   protected createFlames(): void {
     // TODO: Task 6 - 实现火焰动画

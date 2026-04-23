@@ -303,11 +303,78 @@ export default class PotVisualComponent {
       this.steamTweens.push(tween);
     });
   }
-  protected createLadle(): void {}
+  /**
+   * 创建搅拌勺 - 勺柄 + 勺头 + 搅拌动画
+   * CSS对应: .ladle-stick (勺柄), .ladle-scoop (勺头), stir 2.4s ease-in-out infinite
+   */
+  protected createLadle(): void {
+    if (!this.showLadle) return;
+
+    this.ladleContainer = this.scene.add.container(0, 0);
+    this.container.add(this.ladleContainer);
+
+    const px = this.pixelSize;
+
+    // 勺柄 (对应CSS: .ladle-stick)
+    const stickGraphics = this.scene.add.graphics();
+    this.ladleContainer.add(stickGraphics);
+
+    const stickWidth = px * 2;   // 12
+    const stickHeight = px * 18; // 108
+    const stickX = px;           // 勺柄中心
+    const stickY = -this.height - px * 50;  // 罐口上方
+
+    // 勺柄渐变 (对应CSS: linear-gradient 90deg)
+    const gradientColors = [0x6b3e1f, 0xa26a3a, 0x6b3e1f];
+    const stepWidth = stickWidth / gradientColors.length;
+
+    gradientColors.forEach((color, i) => {
+      stickGraphics.fillStyle(color, 1);
+      stickGraphics.fillRect(stickX + i * stepWidth, stickY, stepWidth + 1, stickHeight);
+    });
+
+    stickGraphics.lineStyle(2, 0x2a1408, 1);
+    stickGraphics.strokeRect(stickX, stickY, stickWidth, stickHeight);
+
+    // 勺头 (对应CSS: .ladle-scoop)
+    const scoopGraphics = this.scene.add.graphics();
+    this.ladleContainer.add(scoopGraphics);
+
+    const scoopWidth = px * 6;   // 36
+    const scoopHeight = px * 5;  // 30
+    const scoopX = stickX - px * 2;
+    const scoopY = stickY + px * 14;
+
+    // 勺头渐变 (对应CSS: linear-gradient 180deg)
+    const scoopColors = [0xc8b080, 0x8a6a3a];
+    scoopColors.forEach((color, i) => {
+      scoopGraphics.fillStyle(color, 1);
+      scoopGraphics.fillRect(scoopX, scoopY + i * scoopHeight / 2, scoopWidth, scoopHeight / 2 + 1);
+    });
+
+    scoopGraphics.lineStyle(2, 0x2a1408, 1);
+    scoopGraphics.strokeRect(scoopX, scoopY, scoopWidth, scoopHeight);
+
+    // 设置旋转原点 (对应CSS: transform-origin: 50% 80%)
+    this.ladleContainer.setY(stickY + stickHeight * 0.8);
+
+    // 搅拌动画 (对应CSS: stir 2.4s ease-in-out infinite)
+    this.ladleTween = this.scene.tweens.add({
+      targets: this.ladleContainer,
+      rotation: { from: -0.14, to: 0.14 },  // -8deg to +8deg (rad)
+      duration: 2400,
+      ease: 'Sine.easeInOut',
+      yoyo: true,
+      repeat: -1,
+    });
+  }
 
   destroy(): void {
     this.steamTweens.forEach(t => t.stop());
-    if (this.ladleTween) this.ladleTween.stop();
+    if (this.ladleTween) {
+      this.ladleTween.stop();
+      this.ladleTween = null;
+    }
     if (this.liquidTween) this.liquidTween.stop();
 
     // Explicitly destroy graphics and null out references
@@ -315,6 +382,9 @@ export default class PotVisualComponent {
     if (this.rimGraphics) { this.rimGraphics.destroy(); this.rimGraphics = null; }
     if (this.liquidGraphics) { this.liquidGraphics.destroy(); this.liquidGraphics = null; }
     if (this.handleGraphics) { this.handleGraphics.destroy(); this.handleGraphics = null; }
+
+    // Explicitly destroy ladleContainer
+    if (this.ladleContainer) { this.ladleContainer.destroy(); this.ladleContainer = null; }
 
     this.container.destroy();
   }

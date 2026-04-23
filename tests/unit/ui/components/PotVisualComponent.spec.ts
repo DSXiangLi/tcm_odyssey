@@ -46,6 +46,10 @@ const createMockScene = () => {
     generateTexture: vi.fn().mockReturnThis(),
     destroy: vi.fn(),
     clear: vi.fn().mockReturnThis(),
+    setAlpha: vi.fn().mockReturnThis(),
+    setScale: vi.fn().mockReturnThis(),
+    alpha: 1,
+    scale: 1,
   };
 
   const mockTween = {
@@ -277,6 +281,88 @@ describe('PotVisualComponent', () => {
     // 8步渐变 + 圆底填充 + 内阴影 = 多次fillRect调用
     const fillRectCalls = pot.bodyGraphics.fillRect.mock.calls;
     expect(fillRectCalls.length).toBeGreaterThan(8);
+  });
+
+  // Task 8: 测试药液表面波纹动画
+  it('should draw liquid surface with ripple animation tween', () => {
+    const config = { width: 264, height: 168, pixelSize: 6 };
+    const pot = new PotVisualComponent(mockScene, config);
+
+    // 检查药液Graphics存在
+    expect(pot.liquidGraphics).toBeDefined();
+
+    // 检查波纹动画已创建
+    expect(pot['liquidTween']).toBeDefined();
+    expect(mockScene.tweens.add).toHaveBeenCalled();
+  });
+
+  // Task 8: 测试蒸汽粒子
+  it('should create 5 steam puffs when showSteam is true', () => {
+    const config = { width: 264, height: 168, pixelSize: 6, showSteam: true };
+    const pot = new PotVisualComponent(mockScene, config);
+
+    expect(pot['steamPuffs'].length).toBe(5);
+    expect(pot['steamTweens'].length).toBe(5);
+  });
+
+  it('should not create steam when showSteam is false', () => {
+    const config = { width: 264, height: 168, pixelSize: 6, showSteam: false };
+    const pot = new PotVisualComponent(mockScene, config);
+
+    expect(pot['steamPuffs'].length).toBe(0);
+    expect(pot['steamTweens'].length).toBe(0);
+  });
+
+  it('should use steamColor constant for steam puffs', () => {
+    const config = { width: 264, height: 168, pixelSize: 6, showSteam: true };
+    const pot = new PotVisualComponent(mockScene, config);
+
+    // 检查至少一个蒸汽Graphics使用了fillStyle和fillCircle
+    const steamPuff = pot['steamPuffs'][0];
+    expect(steamPuff.fillStyle).toHaveBeenCalled();
+    expect(steamPuff.fillCircle).toHaveBeenCalled();
+
+    // 检查使用了steamColor常量
+    const fillStyleCalls = steamPuff.fillStyle.mock.calls;
+    const usedColors = fillStyleCalls.map(call => call[0]);
+    expect(usedColors).toContain(PotVisualComponent.COLORS.steamColor);
+  });
+
+  it('should create steam tweens with correct animation parameters', () => {
+    const config = { width: 264, height: 168, pixelSize: 6, showSteam: true };
+    const pot = new PotVisualComponent(mockScene, config);
+
+    // 检查tween参数
+    const tweenCalls = mockScene.tweens.add.mock.calls;
+    // 找到蒸汽相关的tween调用
+    const steamTweenCalls = tweenCalls.filter(call => {
+      const params = call[0];
+      return params.duration === 3200 && params.repeat === -1;
+    });
+    expect(steamTweenCalls.length).toBeGreaterThanOrEqual(5);
+  });
+
+  it('should stop all steam tweens on destroy', () => {
+    const config = { width: 264, height: 168, pixelSize: 6, showSteam: true };
+    const pot = new PotVisualComponent(mockScene, config);
+
+    pot.destroy();
+
+    // 所有蒸汽tween应该被停止
+    const mockTween = mockScene.tweens.add();
+    expect(mockTween.stop).toHaveBeenCalled();
+  });
+
+  it('should draw liquid with COLORS constants', () => {
+    const config = { width: 264, height: 168, pixelSize: 6 };
+    const pot = new PotVisualComponent(mockScene, config);
+
+    const fillStyleCalls = pot.liquidGraphics.fillStyle.mock.calls;
+    const usedColors = fillStyleCalls.map(call => call[0]);
+
+    // 检查使用了liquidTop和liquidBot常量
+    expect(usedColors).toContain(PotVisualComponent.COLORS.liquidTop);
+    expect(usedColors).toContain(PotVisualComponent.COLORS.liquidBot);
   });
 
   it('should draw handles with potDark color and border', () => {

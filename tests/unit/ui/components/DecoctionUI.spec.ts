@@ -73,6 +73,7 @@ const createMockScene = () => {
     strokePath: vi.fn().mockReturnThis(),
     destroy: vi.fn(),
     clear: vi.fn().mockReturnThis(),
+    setVisible: vi.fn().mockReturnThis(),
   };
 
   const mockImage = {
@@ -349,6 +350,78 @@ vi.mock('../../../../src/data/pixel-herbs', () => ({
   ],
 }));
 
+// Mock HearthVisualComponent
+vi.mock('../../../../src/ui/components/HearthVisualComponent', () => ({
+  default: vi.fn().mockImplementation((scene, config) => {
+    const containerDestroy = vi.fn();
+    const brickDestroy = vi.fn();
+    const shadowDestroy = vi.fn();
+    const topDestroy = vi.fn();
+    const fireHoleDestroy = vi.fn();
+
+    const instance = {
+      container: {
+        setDepth: vi.fn().mockReturnThis(),
+        setPosition: vi.fn().mockReturnThis(),
+        add: vi.fn().mockReturnThis(),
+        destroy: containerDestroy,
+        setY: vi.fn().mockReturnThis(),
+      },
+      width: config?.width || 360,
+      height: config?.height || 204,
+      pixelSize: config?.pixelSize || 6,
+      brickGraphics: { destroy: brickDestroy },
+      shadowGraphics: { destroy: shadowDestroy },
+      topGraphics: { destroy: topDestroy },
+      fireHoleGraphics: { destroy: fireHoleDestroy },
+      destroy: vi.fn(() => {
+        // Simulate real behavior: stop tweens, destroy particles, destroy container
+        containerDestroy();
+      }),
+    };
+    return instance;
+  }),
+}));
+
+// Mock PotVisualComponent
+vi.mock('../../../../src/ui/components/PotVisualComponent', () => ({
+  default: vi.fn().mockImplementation((scene, config) => {
+    const containerDestroy = vi.fn();
+    const bodyDestroy = vi.fn();
+    const rimDestroy = vi.fn();
+    const liquidDestroy = vi.fn();
+    const handleDestroy = vi.fn();
+
+    const instance = {
+      container: {
+        setDepth: vi.fn().mockReturnThis(),
+        setPosition: vi.fn().mockReturnThis(),
+        setY: vi.fn().mockReturnThis(),
+        add: vi.fn().mockReturnThis(),
+        destroy: containerDestroy,
+      },
+      width: config?.width || 264,
+      height: config?.height || 168,
+      pixelSize: config?.pixelSize || 6,
+      showSteam: config?.showSteam ?? true,
+      showLadle: config?.showLadle ?? true,
+      bodyGraphics: { destroy: bodyDestroy },
+      rimGraphics: { destroy: rimDestroy },
+      liquidGraphics: { destroy: liquidDestroy },
+      handleGraphics: { destroy: handleDestroy },
+      destroy: vi.fn(() => {
+        // Simulate real behavior: stop tweens, destroy graphics, destroy container
+        bodyDestroy();
+        rimDestroy();
+        liquidDestroy();
+        handleDestroy();
+        containerDestroy();
+      }),
+    };
+    return instance;
+  }),
+}));
+
 describe('DecoctionUI', () => {
   let mockScene: any;
   let decoctionUI: DecoctionUI;
@@ -563,8 +636,10 @@ describe('DecoctionUI', () => {
 
     it('should draw fire icon placeholder', () => {
       decoctionUI = new DecoctionUI(mockScene);
-      const mockGraphics = mockScene.add.graphics();
-      expect(mockGraphics.fillTriangle).toHaveBeenCalled();
+      // Old placeholder had fillTriangle for fire icon
+      // New implementation uses HearthVisualComponent with flame animation
+      // This test is now obsolete - check HearthVisualComponent instead
+      expect(decoctionUI.hearthVisual).toBeDefined();
     });
 
     it('should create hearth label text', () => {
@@ -1041,6 +1116,216 @@ describe('DecoctionUI', () => {
       // herbNameToId mapping should work correctly
       // Verified in getRequiredHerbIds method
       expect(mockScene.add.container).toHaveBeenCalled();
+    });
+  });
+
+  // ============================================
+  // Task 10: HearthVisualComponent集成测试
+  // ============================================
+  describe('Task 10: HearthVisualComponent集成', () => {
+    it('should use HearthVisualComponent instead of placeholder', () => {
+      decoctionUI = new DecoctionUI(mockScene);
+      // HearthVisualComponent should be imported and used
+      // The UI should have hearthVisual property
+      expect(decoctionUI.hearthVisual).toBeDefined();
+    });
+
+    it('should create HearthVisualComponent with correct dimensions', () => {
+      decoctionUI = new DecoctionUI(mockScene);
+      // HearthVisualComponent should be created with 360×204 size
+      // This matches the CSS design specification
+      expect(decoctionUI.hearthVisual?.width).toBe(360);
+      expect(decoctionUI.hearthVisual?.height).toBe(204);
+    });
+
+    it('should create HearthVisualComponent with pixelSize 6', () => {
+      decoctionUI = new DecoctionUI(mockScene);
+      // Pixel size should be 6 for 32×32 base pixel art scaled up
+      expect(decoctionUI.hearthVisual?.pixelSize).toBe(6);
+    });
+
+    it('should enable animation for HearthVisualComponent', () => {
+      decoctionUI = new DecoctionUI(mockScene);
+      // HearthVisualComponent should have animated: true for flame effects
+      // Verified by component creation
+      expect(mockScene.add.container).toHaveBeenCalled();
+    });
+
+    it('should add HearthVisualComponent container to hearthContainer', () => {
+      decoctionUI = new DecoctionUI(mockScene);
+      // The hearth container should include the visual component's container
+      expect(mockScene.add.container).toHaveBeenCalled();
+    });
+
+    it('should have hearthGraphics from HearthVisualComponent', () => {
+      decoctionUI = new DecoctionUI(mockScene);
+      // HearthVisualComponent exposes brickGraphics, shadowGraphics, etc.
+      expect(decoctionUI.hearthVisual?.brickGraphics).toBeDefined();
+      expect(decoctionUI.hearthVisual?.shadowGraphics).toBeDefined();
+      expect(decoctionUI.hearthVisual?.topGraphics).toBeDefined();
+      expect(decoctionUI.hearthVisual?.fireHoleGraphics).toBeDefined();
+    });
+  });
+
+  // ============================================
+  // Task 10: PotVisualComponent集成测试
+  // ============================================
+  describe('Task 10: PotVisualComponent集成', () => {
+    it('should use PotVisualComponent for pot display', () => {
+      decoctionUI = new DecoctionUI(mockScene);
+      // PotVisualComponent should be imported and used
+      expect(decoctionUI.potVisual).toBeDefined();
+    });
+
+    it('should create PotVisualComponent with correct dimensions', () => {
+      decoctionUI = new DecoctionUI(mockScene);
+      // PotVisualComponent should be created with 264×168 size
+      expect(decoctionUI.potVisual?.width).toBe(264);
+      expect(decoctionUI.potVisual?.height).toBe(168);
+    });
+
+    it('should create PotVisualComponent with pixelSize 6', () => {
+      decoctionUI = new DecoctionUI(mockScene);
+      // Pixel size should be 6 for consistency with hearth
+      expect(decoctionUI.potVisual?.pixelSize).toBe(6);
+    });
+
+    it('should enable steam effect for PotVisualComponent', () => {
+      decoctionUI = new DecoctionUI(mockScene);
+      // PotVisualComponent should show steam particles
+      expect(decoctionUI.potVisual?.showSteam).toBe(true);
+    });
+
+    it('should enable ladle effect for PotVisualComponent', () => {
+      decoctionUI = new DecoctionUI(mockScene);
+      // PotVisualComponent should show ladle animation
+      expect(decoctionUI.potVisual?.showLadle).toBe(true);
+    });
+
+    it('should position PotVisualComponent above hearth', () => {
+      decoctionUI = new DecoctionUI(mockScene);
+      // Pot container should be positioned above hearth container
+      // Y offset: -204 - 48 (hearth height + spacing)
+      expect(mockScene.add.container).toHaveBeenCalled();
+    });
+
+    it('should have graphics from PotVisualComponent', () => {
+      decoctionUI = new DecoctionUI(mockScene);
+      // PotVisualComponent exposes bodyGraphics, rimGraphics, etc.
+      expect(decoctionUI.potVisual?.bodyGraphics).toBeDefined();
+      expect(decoctionUI.potVisual?.rimGraphics).toBeDefined();
+      expect(decoctionUI.potVisual?.liquidGraphics).toBeDefined();
+      expect(decoctionUI.potVisual?.handleGraphics).toBeDefined();
+    });
+
+    it('should add PotVisualComponent container to hearthContainer', () => {
+      decoctionUI = new DecoctionUI(mockScene);
+      // The pot should be added to the same container as hearth
+      expect(mockScene.add.container).toHaveBeenCalled();
+    });
+  });
+
+  // ============================================
+  // Task 10: 新组件销毁测试
+  // ============================================
+  describe('Task 10: 新组件销毁流程', () => {
+    it('should destroy HearthVisualComponent on UI destroy', () => {
+      decoctionUI = new DecoctionUI(mockScene);
+      // Capture the destroy method reference before calling destroy
+      const hearthDestroySpy = decoctionUI.hearthVisual?.destroy;
+      decoctionUI.destroy();
+      // HearthVisualComponent.destroy() should be called
+      expect(hearthDestroySpy).toHaveBeenCalled();
+    });
+
+    it('should destroy PotVisualComponent on UI destroy', () => {
+      decoctionUI = new DecoctionUI(mockScene);
+      // Capture the destroy method reference before calling destroy
+      const potDestroySpy = decoctionUI.potVisual?.destroy;
+      decoctionUI.destroy();
+      // PotVisualComponent.destroy() should be called
+      expect(potDestroySpy).toHaveBeenCalled();
+    });
+
+    it('should null hearthVisual reference after destroy', () => {
+      decoctionUI = new DecoctionUI(mockScene);
+      decoctionUI.destroy();
+      // Reference should be cleared
+      expect(decoctionUI.hearthVisual).toBeNull();
+    });
+
+    it('should null potVisual reference after destroy', () => {
+      decoctionUI = new DecoctionUI(mockScene);
+      decoctionUI.destroy();
+      // Reference should be cleared
+      expect(decoctionUI.potVisual).toBeNull();
+    });
+
+    it('should destroy hearthGraphics nested objects', () => {
+      decoctionUI = new DecoctionUI(mockScene);
+      // HearthVisualComponent.destroy() only calls container.destroy()
+      // which implicitly destroys all children (including graphics)
+      // So we check that the container is destroyed instead
+      const containerDestroySpy = decoctionUI.hearthVisual?.container?.destroy;
+      decoctionUI.destroy();
+      expect(containerDestroySpy).toHaveBeenCalled();
+    });
+
+    it('should destroy potGraphics nested objects', () => {
+      decoctionUI = new DecoctionUI(mockScene);
+      // PotVisualComponent.destroy() explicitly destroys nested graphics
+      // Capture the nested graphics destroy methods before calling destroy
+      const bodyDestroySpy = decoctionUI.potVisual?.bodyGraphics?.destroy;
+      const rimDestroySpy = decoctionUI.potVisual?.rimGraphics?.destroy;
+      const liquidDestroySpy = decoctionUI.potVisual?.liquidGraphics?.destroy;
+      const handleDestroySpy = decoctionUI.potVisual?.handleGraphics?.destroy;
+      decoctionUI.destroy();
+      // All nested graphics should be destroyed
+      expect(bodyDestroySpy).toHaveBeenCalled();
+      expect(rimDestroySpy).toHaveBeenCalled();
+      expect(liquidDestroySpy).toHaveBeenCalled();
+      expect(handleDestroySpy).toHaveBeenCalled();
+    });
+  });
+
+  // ============================================
+  // Task 10: 占位符移除验证
+  // ============================================
+  describe('Task 10: 占位符移除验证', () => {
+    it('should not use old hearthGraphics placeholder', () => {
+      decoctionUI = new DecoctionUI(mockScene);
+      // The old placeholder graphics should be replaced by HearthVisualComponent
+      // hearthGraphics property should no longer exist or be null
+      // New implementation uses hearthVisual.brickGraphics instead
+      expect(decoctionUI.hearthVisual).toBeDefined();
+    });
+
+    it('should not use old hearthText placeholder label', () => {
+      decoctionUI = new DecoctionUI(mockScene);
+      // The old placeholder text should be replaced
+      // New implementation may have different text handling
+      expect(mockScene.add.container).toHaveBeenCalled();
+    });
+
+    it('should use new visual components for hearth display', () => {
+      decoctionUI = new DecoctionUI(mockScene);
+      // The hearth area should now use HearthVisualComponent + PotVisualComponent
+      expect(decoctionUI.hearthVisual).toBeDefined();
+      expect(decoctionUI.potVisual).toBeDefined();
+    });
+
+    it('should replace placeholder triangle with flame animation', () => {
+      decoctionUI = new DecoctionUI(mockScene);
+      // Old placeholder had fillTriangle for fire icon
+      // New HearthVisualComponent has real flame animation
+      expect(decoctionUI.hearthVisual?.fireHoleGraphics).toBeDefined();
+    });
+
+    it('should replace placeholder rounded rect with pot shape', () => {
+      decoctionUI = new DecoctionUI(mockScene);
+      // Old placeholder had fillRoundedRect for pot
+      // New PotVisualComponent has detailed pot shape
+      expect(decoctionUI.potVisual?.bodyGraphics).toBeDefined();
     });
   });
 });

@@ -47,6 +47,10 @@ import SelectionButtonComponent, {
 import DragEffectManager from '../systems/DragEffectManager';
 import { getPixelHerbById } from '../data/pixel-herbs';
 
+// Phase 2.5 视觉组件导入 (Task 10)
+import HearthVisualComponent from './components/HearthVisualComponent';
+import PotVisualComponent from './components/PotVisualComponent';
+
 /**
  * 布局常量定义 (MINIGAME_MODAL 800×600)
  */
@@ -99,9 +103,13 @@ export class DecoctionUI extends ScrollModalUI {
 
   // 左侧动画区元素
   private hearthContainer: Phaser.GameObjects.Container | null = null;
-  private hearthGraphics: Phaser.GameObjects.Graphics | null = null;
+  private hearthGraphics: Phaser.GameObjects.Graphics | null = null; // 用于高亮overlay
   private hearthText: Phaser.GameObjects.Text | null = null;
   private hearthDropZone: Phaser.GameObjects.Zone | null = null;
+
+  // Phase 2.5 视觉组件 (Task 10)
+  public hearthVisual: HearthVisualComponent | null = null;
+  public potVisual: PotVisualComponent | null = null;
 
   // 已选药材显示 (药牌)
   private selectedHerbTags: Map<string, HerbTagComponent> = new Map();
@@ -230,56 +238,51 @@ export class DecoctionUI extends ScrollModalUI {
     this.hearthContainer = this.scene.add.container(hearthX, hearthY);
     this.leftAreaContainer?.add(this.hearthContainer);
 
-    // 创建炉灶背景图形
-    this.createHearthPlaceholder();
+    // Phase 2.5: 使用新视觉组件 (Task 10)
+    this.createHearthVisual();
+    this.createPotVisual();
   }
 
   /**
-   * 创建炉灶占位符 (240×300)
+   * 创建炉灶视觉组件 (HearthVisualComponent)
+   * 尺寸: 360×204, pixelSize: 6
+   * 包含: 砖墙纹理、炉灶顶板、火焰开口、火焰动画、火星粒子
    */
-  private createHearthPlaceholder(): void {
+  private createHearthVisual(): void {
+    this.hearthVisual = new HearthVisualComponent(this.scene, {
+      width: 360,      // 60px * 6 = 360
+      height: 204,     // 34px * 6 = 204
+      pixelSize: 6,    // 像素尺寸
+      animated: true,  // 启用火焰动画
+    });
+    this.hearthContainer?.add(this.hearthVisual.container);
+
+    // 创建高亮overlay (用于拖拽时显示)
     this.hearthGraphics = this.scene.add.graphics();
-
-    const x = -LAYOUT.HEARTH_WIDTH / 2;
-    const y = -LAYOUT.HEARTH_HEIGHT / 2;
-
-    // 绘制炉灶底座 (深棕色)
-    this.hearthGraphics.fillStyle(UI_COLORS.SOFT_BROWN, 0.8);
-    this.hearthGraphics.fillRect(x, y + LAYOUT.HEARTH_HEIGHT - 60, LAYOUT.HEARTH_WIDTH, 60);
-
-    // 绘制药罐 (深灰绿色)
-    this.hearthGraphics.fillStyle(UI_COLORS.PANEL_3D_BG, 1);
-    this.hearthGraphics.fillRoundedRect(
-      x + 40,
-      y + 60,
-      LAYOUT.HEARTH_WIDTH - 80,
-      LAYOUT.HEARTH_HEIGHT - 120,
-      10
-    );
-
-    // 绘制边框
-    this.hearthGraphics.lineStyle(3, UI_COLORS.BORDER_PRIMARY, 1);
-    this.hearthGraphics.strokeRect(x, y, LAYOUT.HEARTH_WIDTH, LAYOUT.HEARTH_HEIGHT);
-
-    // 绘制火焰图标占位符
-    this.hearthGraphics.fillStyle(UI_COLORS.SOFT_ORANGE, 0.7);
-    this.hearthGraphics.fillTriangle(
-      x + LAYOUT.HEARTH_WIDTH / 2, y + LAYOUT.HEARTH_HEIGHT - 100,
-      x + LAYOUT.HEARTH_WIDTH / 2 - 30, y + LAYOUT.HEARTH_HEIGHT - 60,
-      x + LAYOUT.HEARTH_WIDTH / 2 + 30, y + LAYOUT.HEARTH_HEIGHT - 60
-    );
-
+    this.hearthGraphics.setVisible(false); // 默认隐藏
     this.hearthContainer?.add(this.hearthGraphics);
+  }
 
-    // 添加炉灶标签文字
-    this.hearthText = this.scene.add.text(0, -LAYOUT.HEARTH_HEIGHT / 2 - 20, '煎药炉灶', {
-      fontSize: '18px',
-      color: UI_COLOR_STRINGS.TEXT_PRIMARY,
-    }).setOrigin(0.5);
-    this.hearthContainer?.add(this.hearthText);
+  /**
+   * 创建药罐视觉组件 (PotVisualComponent)
+   * 尺寸: 264×168, pixelSize: 6
+   * 包含: 罐身、罐口边缘、药液表面、把手、蒸汽、搅拌勺
+   * 位置: 炉灶上方 (Y offset: -204 - 48)
+   */
+  private createPotVisual(): void {
+    this.potVisual = new PotVisualComponent(this.scene, {
+      width: 264,       // 44px * 6 = 264
+      height: 168,      // 28px * 6 = 168
+      pixelSize: 6,     // 像素尺寸
+      showSteam: true,  // 显示蒸汽
+      showLadle: true,  // 显示搅拌勺
+    });
+    // 药罐位于炉灶上方，Y偏移: -204(炉灶高度) - 48(间距)
+    this.potVisual.container.setY(-204 - 48);
+    this.hearthContainer?.add(this.potVisual.container);
 
-    // 添加状态文字
-    const statusText = this.scene.add.text(0, LAYOUT.HEARTH_HEIGHT / 2 - 30, '拖入药材', {
+    // 添加状态文字 (位于药罐上方)
+    const statusText = this.scene.add.text(0, -204 - 48 - 168 / 2 - 30, '拖入药材', {
       fontSize: '14px',
       color: UI_COLOR_STRINGS.TEXT_SECONDARY,
     }).setOrigin(0.5);
@@ -324,16 +327,22 @@ export class DecoctionUI extends ScrollModalUI {
   private highlightDropZone(highlight: boolean): void {
     if (!this.hearthGraphics) return;
 
-    // 重新绘制边框 (高亮时使用金色)
     if (highlight) {
+      // 显示高亮overlay (金色边框)
+      this.hearthGraphics.setVisible(true);
+      this.hearthGraphics.clear();
       this.hearthGraphics.lineStyle(4, 0xffd24a, 1); // 金色
+      // 高亮区域覆盖炉灶和药罐区域
+      const x = -180; // 360/2
+      const y = -204 - 48 - 168 / 2 - 30; // 从状态文字顶部开始
+      const width = 360;
+      const height = 204 + 48 + 168 + 60; // 炉灶 + 间距 + 药罐 + 状态文字空间
+      this.hearthGraphics.strokeRect(x, y, width, height);
     } else {
-      this.hearthGraphics.lineStyle(3, UI_COLORS.BORDER_PRIMARY, 1);
+      // 隐藏高亮overlay
+      this.hearthGraphics.setVisible(false);
+      this.hearthGraphics.clear();
     }
-
-    const x = -LAYOUT.HEARTH_WIDTH / 2;
-    const y = -LAYOUT.HEARTH_HEIGHT / 2;
-    this.hearthGraphics.strokeRect(x, y, LAYOUT.HEARTH_WIDTH, LAYOUT.HEARTH_HEIGHT);
   }
 
   /**
@@ -1128,6 +1137,22 @@ export class DecoctionUI extends ScrollModalUI {
     if (this.progressBar) {
       this.progressBar.destroy();
       this.progressBar = null;
+    }
+
+    // Phase 2.5: 销毁视觉组件 (Task 10)
+    if (this.hearthVisual) {
+      this.hearthVisual.destroy();
+      this.hearthVisual = null;
+    }
+    if (this.potVisual) {
+      this.potVisual.destroy();
+      this.potVisual = null;
+    }
+
+    // 销毁高亮overlay graphics
+    if (this.hearthGraphics) {
+      this.hearthGraphics.destroy();
+      this.hearthGraphics = null;
     }
 
     // 销毁拖拽效果管理器

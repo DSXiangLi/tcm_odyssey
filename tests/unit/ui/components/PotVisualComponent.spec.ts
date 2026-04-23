@@ -32,6 +32,7 @@ const createMockScene = () => {
     fillStyle: vi.fn().mockReturnThis(),
     fillGradientStyle: vi.fn().mockReturnThis(),
     fillRect: vi.fn().mockReturnThis(),
+    fillRoundedRect: vi.fn().mockReturnThis(),
     fillEllipse: vi.fn().mockReturnThis(),
     fillCircle: vi.fn().mockReturnThis(),
     lineStyle: vi.fn().mockReturnThis(),
@@ -184,5 +185,112 @@ describe('PotVisualComponent', () => {
 
     // Each graphics should be added to container
     expect(pot.container.add).toHaveBeenCalled();
+  });
+
+  // Task 7: 测试药罐形状绘制
+  it('should draw pot body with horizontal gradient fillStyle calls', () => {
+    const config = { width: 264, height: 168, pixelSize: 6 };
+    const pot = new PotVisualComponent(mockScene, config);
+
+    // 检查罐身Graphics存在
+    expect(pot.bodyGraphics).toBeDefined();
+    const bodyInContainer = pot.container.list.some(obj => obj === pot.bodyGraphics);
+    expect(bodyInContainer).toBe(true);
+
+    // 检查渐变色调用 - 应使用COLORS常量中的颜色
+    expect(pot.bodyGraphics.fillStyle).toHaveBeenCalled();
+    // 检查填充矩形绘制
+    expect(pot.bodyGraphics.fillRect).toHaveBeenCalled();
+  });
+
+  it('should draw pot rim with vertical gradient', () => {
+    const config = { width: 264, height: 168, pixelSize: 6 };
+    const pot = new PotVisualComponent(mockScene, config);
+
+    expect(pot.rimGraphics).toBeDefined();
+    const rimInContainer = pot.container.list.some(obj => obj === pot.rimGraphics);
+    expect(rimInContainer).toBe(true);
+
+    // 检查边缘渐变绘制
+    expect(pot.rimGraphics.fillStyle).toHaveBeenCalled();
+    expect(pot.rimGraphics.fillRect).toHaveBeenCalled();
+  });
+
+  it('should draw pot handles on both sides with border stroke', () => {
+    const config = { width: 264, height: 168, pixelSize: 6 };
+    const pot = new PotVisualComponent(mockScene, config);
+
+    expect(pot.handleGraphics).toBeDefined();
+    const handleInContainer = pot.container.list.some(obj => obj === pot.handleGraphics);
+    expect(handleInContainer).toBe(true);
+
+    // 检查把手绘制（应包含fillRect和strokeRect）
+    expect(pot.handleGraphics.fillRect).toHaveBeenCalled();
+    expect(pot.handleGraphics.lineStyle).toHaveBeenCalled();
+    expect(pot.handleGraphics.strokeRect).toHaveBeenCalled();
+  });
+
+  it('should draw liquid surface with gradient', () => {
+    const config = { width: 264, height: 168, pixelSize: 6 };
+    const pot = new PotVisualComponent(mockScene, config);
+
+    expect(pot.liquidGraphics).toBeDefined();
+    const liquidInContainer = pot.container.list.some(obj => obj === pot.liquidGraphics);
+    expect(liquidInContainer).toBe(true);
+
+    // 检查药液渐变绘制
+    expect(pot.liquidGraphics.fillStyle).toHaveBeenCalled();
+    expect(pot.liquidGraphics.fillRect).toHaveBeenCalled();
+  });
+
+  it('should use COLORS constants for pot body gradient', () => {
+    const config = { width: 264, height: 168, pixelSize: 6 };
+    const pot = new PotVisualComponent(mockScene, config);
+
+    // 检查fillStyle调用中使用了COLORS.potDark, potMid, potLight
+    const fillStyleCalls = pot.bodyGraphics.fillStyle.mock.calls;
+    const usedColors = fillStyleCalls.map(call => call[0]);
+
+    // 确保使用了关键的渐变色
+    expect(usedColors).toContain(PotVisualComponent.COLORS.potDark);
+    expect(usedColors).toContain(PotVisualComponent.COLORS.potMid);
+    expect(usedColors).toContain(PotVisualComponent.COLORS.potLight);
+  });
+
+  it('should use COLORS constants for rim gradient', () => {
+    const config = { width: 264, height: 168, pixelSize: 6 };
+    const pot = new PotVisualComponent(mockScene, config);
+
+    const fillStyleCalls = pot.rimGraphics.fillStyle.mock.calls;
+    const usedColors = fillStyleCalls.map(call => call[0]);
+
+    // 确保使用了边缘的渐变色
+    expect(usedColors).toContain(PotVisualComponent.COLORS.rimTop);
+    expect(usedColors).toContain(PotVisualComponent.COLORS.rimMid);
+    expect(usedColors).toContain(PotVisualComponent.COLORS.rimBot);
+  });
+
+  it('should draw multiple gradient steps for pot body (8 steps)', () => {
+    const config = { width: 264, height: 168, pixelSize: 6 };
+    const pot = new PotVisualComponent(mockScene, config);
+
+    // 8步渐变 + 圆底填充 + 内阴影 = 多次fillRect调用
+    const fillRectCalls = pot.bodyGraphics.fillRect.mock.calls;
+    expect(fillRectCalls.length).toBeGreaterThan(8);
+  });
+
+  it('should draw handles with potDark color and border', () => {
+    const config = { width: 264, height: 168, pixelSize: 6 };
+    const pot = new PotVisualComponent(mockScene, config);
+
+    const fillStyleCalls = pot.handleGraphics.fillStyle.mock.calls;
+    const usedColors = fillStyleCalls.map(call => call[0]);
+
+    // 把手应使用potDark颜色
+    expect(usedColors).toContain(PotVisualComponent.COLORS.potDark);
+
+    // 检查边框绘制（lineStyle和strokeRect）
+    expect(pot.handleGraphics.lineStyle).toHaveBeenCalled();
+    expect(pot.handleGraphics.strokeRect).toHaveBeenCalled();
   });
 });

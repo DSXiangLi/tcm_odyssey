@@ -43,7 +43,9 @@ export default class HearthVisualComponent {
   // 颜色常量 (对应设计稿CSS变量)
   public static readonly COLORS = {
     brickLight: 0x8a5a2a,    // --brick-light
-    brickMid: 0x5a3020,      // 中间色
+    brickMid20: 0x7a4a28,    // 20% 渐变过渡色
+    brickMid: 0x5a3020,      // 中间色 (50%)
+    brickMid70: 0x4a2818,    // 70% 渐变过渡色
     brickDark: 0x3f2412,     // --brick-dark
     mortarColor: 0x2a1408,   // 灰缝颜色
     emberCore: 0xffd24a,     // --ember-core 金色
@@ -51,6 +53,15 @@ export default class HearthVisualComponent {
     cinnabar: 0xb8322c,      // --cinnabar 红色
     fireCore: 0xfff1a8,      // 火焰核心白黄色
   };
+
+  // 砖墙渐变颜色序列
+  protected static readonly BRICK_GRADIENT_COLORS = [
+    HearthVisualComponent.COLORS.brickLight,   // 0%
+    HearthVisualComponent.COLORS.brickMid20,   // 20%
+    HearthVisualComponent.COLORS.brickMid,     // 50%
+    HearthVisualComponent.COLORS.brickMid70,   // 70%
+    HearthVisualComponent.COLORS.brickDark,    // 100%
+  ];
 
   constructor(scene: Phaser.Scene, config: HearthVisualConfig) {
     this.scene = scene;
@@ -98,13 +109,7 @@ export default class HearthVisualComponent {
     // Step 1: 绘制砖墙主体渐变 (对应CSS: linear-gradient 180deg)
     const gradientSteps = 10;
     const stepHeight = brickHeight / gradientSteps;
-    const gradientColors = [
-      HearthVisualComponent.COLORS.brickLight,  // 0%: #8a5a2a
-      0x7a4a28,                                   // 20%
-      HearthVisualComponent.COLORS.brickMid,     // 50%: #5a3020
-      0x4a2818,                                   // 70%
-      HearthVisualComponent.COLORS.brickDark,    // 100%: #3f2412
-    ];
+    const gradientColors = HearthVisualComponent.BRICK_GRADIENT_COLORS;
 
     for (let i = 0; i < gradientSteps; i++) {
       const progress = i / gradientSteps;

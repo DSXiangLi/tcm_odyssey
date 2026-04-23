@@ -284,7 +284,140 @@ export default class HearthVisualComponent {
     this.fireHoleGraphics!.strokePath();
   }
   protected createFlames(): void {
-    // TODO: Task 6 - 实现火焰动画
+    const brickWidth = this.width;       // 360
+    const brickHeight = this.height;     // 204
+    const px = this.pixelSize;           // 6
+
+    // 火焰开口尺寸 (参考drawFireHole)
+    const holeWidth = px * 24;   // 144
+    const holeHeight = px * 16;  // 96
+    const holeX = -holeWidth / 2;  // 居中 (-72)
+    const holeY = -brickHeight + px * 6;  // 火焰开口顶部位置
+
+    // 4个火焰配置 (不同尺寸、位置、动画延迟)
+    const flameConfigs = [
+      { height: px * 26, width: px * 12, leftPercent: 16, delay: 0 },    // f1: 156×72
+      { height: px * 32, width: px * 14, leftPercent: 38, delay: 150 },  // f2: 192×84 (最高)
+      { height: px * 28, width: px * 12, leftPercent: 58, delay: 300 },  // f3: 168×72
+      { height: px * 22, width: px * 10, leftPercent: 78, delay: 50 },   // f4: 132×60 (最小)
+    ];
+
+    // 创建每个火焰
+    flameConfigs.forEach((config, index) => {
+      const flame = this.scene.add.graphics();
+      this.container.add(flame);
+
+      // 计算火焰位置 (相对于火焰开口底部)
+      const flameX = holeX + holeWidth * config.leftPercent / 100 - config.width / 2;
+      const flameBaseY = holeY + holeHeight;  // 火焰开口底部
+
+      // 绘制火焰 (渐变效果: cinnabar → emberOuter → emberCore → fireCore)
+      this.drawFlame(flame, flameX, flameBaseY, config.width, config.height);
+
+      // 火焰发光效果
+      this.drawFlameGlow(flame, flameX, flameBaseY, config.width, config.height);
+
+      this.flames.push(flame);
+
+      // 创建火焰跳动动画
+      const tween = this.scene.tweens.add({
+        targets: flame,
+        scaleY: 1.15,       // 高度增长15%
+        scaleX: 0.85,       // 宽度收缩15%
+        y: flameBaseY - px * 3,  // 向上移动3个像素单位
+        duration: 800,
+        delay: config.delay,
+        yoyo: true,
+        repeat: -1,
+        ease: 'Sine.easeInOut',
+      });
+
+      this.flameTweens.push(tween);
+    });
+  }
+
+  /**
+   * 绘制单个火焰形状
+   */
+  protected drawFlame(
+    graphics: Phaser.GameObjects.Graphics,
+    x: number,
+    baseY: number,
+    width: number,
+    height: number
+  ): void {
+    const px = this.pixelSize;
+    const COLORS = HearthVisualComponent.COLORS;
+
+    // 火焰形状: 底部宽，顶部尖 (三角形 + 弧线)
+    // 从底部向上绘制渐变层
+
+    // 底层: cinnabar (红色) - 最宽
+    graphics.fillStyle(COLORS.cinnabar, 0.8);
+    graphics.beginPath();
+    graphics.moveTo(x, baseY);
+    graphics.lineTo(x + width, baseY);
+    graphics.lineTo(x + width / 2, baseY - height * 0.6);
+    graphics.closePath();
+    graphics.fillPath();
+
+    // 中层: emberOuter (橙色) - 较窄
+    const midWidth = width * 0.7;
+    const midHeight = height * 0.75;
+    graphics.fillStyle(COLORS.emberOuter, 0.9);
+    graphics.beginPath();
+    graphics.moveTo(x + (width - midWidth) / 2, baseY);
+    graphics.lineTo(x + (width + midWidth) / 2, baseY);
+    graphics.lineTo(x + width / 2, baseY - midHeight);
+    graphics.closePath();
+    graphics.fillPath();
+
+    // 核心: emberCore (金色) - 更窄
+    const coreWidth = width * 0.4;
+    const coreHeight = height * 0.85;
+    graphics.fillStyle(COLORS.emberCore, 1);
+    graphics.beginPath();
+    graphics.moveTo(x + (width - coreWidth) / 2, baseY);
+    graphics.lineTo(x + (width + coreWidth) / 2, baseY);
+    graphics.lineTo(x + width / 2, baseY - coreHeight);
+    graphics.closePath();
+    graphics.fillPath();
+
+    // 最内层: fireCore (白黄色) - 最亮
+    const innerWidth = width * 0.2;
+    const innerHeight = height * 0.95;
+    graphics.fillStyle(COLORS.fireCore, 1);
+    graphics.beginPath();
+    graphics.moveTo(x + (width - innerWidth) / 2, baseY);
+    graphics.lineTo(x + (width + innerWidth) / 2, baseY);
+    graphics.lineTo(x + width / 2, baseY - innerHeight);
+    graphics.closePath();
+    graphics.fillPath();
+  }
+
+  /**
+   * 绘制火焰发光效果 (模拟发光阴影)
+   */
+  protected drawFlameGlow(
+    graphics: Phaser.GameObjects.Graphics,
+    x: number,
+    baseY: number,
+    width: number,
+    height: number
+  ): void {
+    const COLORS = HearthVisualComponent.COLORS;
+
+    // 发光效果: 在火焰周围绘制半透明的橙色光晕
+    graphics.fillStyle(COLORS.emberOuter, 0.3);
+    graphics.beginPath();
+    // 比火焰本体宽一些
+    const glowWidth = width * 1.3;
+    const glowHeight = height * 0.5;
+    graphics.moveTo(x - (glowWidth - width) / 2, baseY);
+    graphics.lineTo(x + width + (glowWidth - width) / 2, baseY);
+    graphics.lineTo(x + width / 2, baseY - glowHeight);
+    graphics.closePath();
+    graphics.fillPath();
   }
   protected createEmberParticles(): void {
     // TODO: Task 7 - 实现火星粒子

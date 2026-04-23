@@ -36,6 +36,8 @@ const createMockScene = () => {
     beginPath: vi.fn().mockReturnThis(),
     moveTo: vi.fn().mockReturnThis(),
     lineTo: vi.fn().mockReturnThis(),
+    closePath: vi.fn().mockReturnThis(),
+    fillPath: vi.fn().mockReturnThis(),
     strokePath: vi.fn().mockReturnThis(),
     destroy: vi.fn(),
     clear: vi.fn().mockReturnThis(),
@@ -180,5 +182,28 @@ describe('HearthVisualComponent', () => {
       obj => obj === hearth.fireHoleGraphics
     );
     expect(fireHoleInContainer).toBe(true);
+  });
+
+  // Task 4: 火焰动画测试
+  it('should create 4 flame objects with different sizes', () => {
+    const config = { width: 360, height: 204, pixelSize: 6, animated: true };
+    const hearth = new HearthVisualComponent(mockScene, config);
+
+    expect(hearth.flames.length).toBe(4);
+  });
+
+  it('should start flame dance animation with different delays', () => {
+    const config = { width: 360, height: 204, pixelSize: 6, animated: true };
+    const hearth = new HearthVisualComponent(mockScene, config);
+
+    expect(hearth.flameTweens.length).toBe(4);
+  });
+
+  it('should not create flames when animated is false', () => {
+    const config = { width: 360, height: 204, pixelSize: 6, animated: false };
+    const hearth = new HearthVisualComponent(mockScene, config);
+
+    expect(hearth.flames.length).toBe(0);
+    expect(hearth.flameTweens.length).toBe(0);
   });
 });

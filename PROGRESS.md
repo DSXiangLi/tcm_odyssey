@@ -1,11 +1,56 @@
 # 药灵山谷 - 当前任务跟踪
 
-**最后更新**: 2026-04-22 10:30
-**当前状态**: Phase 2.5 煎药小游戏 UI 重构已完成 ✅
+**最后更新**: 2026-04-23
+**当前状态**: Phase 2.5 煎药小游戏 UI 视觉优化已完成
 
 ---
 
-## Phase 2.5: 煎药小游戏 UI 重构 ✅
+## Phase 2.5: 煎药小游戏 UI 视觉优化 ✅ (已完成)
+
+**状态**: 完成 (Task 1-11 全部完成)
+**开始日期**: 2026-04-23
+**完成日期**: 2026-04-23
+**设计文档**: [视觉差距分析](docs/superpowers/specs/phase2-5/2026-04-23-decoction-ui-visual-gap-analysis.md)
+**实现计划**: [视觉优化计划](docs/superpowers/plans/phase2-5/2026-04-23-decoction-ui-visual-optimization-plan.md)
+
+### 完成任务汇总
+
+| Task | 描述 | 提交 | 测试 |
+|------|------|------|------|
+| Task 1 | HearthVisualComponent 骨架 + COLORS 常量 | 2d16ecc, 67d256b | 17 tests ✅ |
+| Task 2 | 砖墙纹理绘制 (渐变+灰缝网格) | 1826107, 7445eae | base ✅ |
+| Task 3 | 炉灶顶板和火焰开口 | 74cbbf4 | base ✅ |
+| Task 4 | 火焰动画系统 (4火焰+舞动) | 9a64496 | base ✅ |
+| Task 5 | 火星粒子 + 地面阴影 | a828ce3 | base ✅ |
+| Task 6 | PotVisualComponent 骨架 | d6405c3 | 21 tests ✅ |
+| Task 7 | 药罐形状绘制 (罐身+边缘+把手) | 33654e9 | 21 tests ✅ |
+| Task 8 | 药液表面 + 蒸汽效果 | 3dbcb39 | 28 tests ✅ |
+| Task 9 | 搅拌勺动画 | 765645b | 36 tests ✅ |
+| Task 10 | DecoctionUI 集成重构 | 29b2cca | 127 tests ✅ |
+| Task 11 | 文档更新 | (本次) | docs ✅ |
+
+### 新增视觉组件详情
+
+**HearthVisualComponent** - 炉灶视觉组件 (`src/ui/components/HearthVisualComponent.ts`)
+- 尺寸: 360×204 (60px × 34px, pixelSize=6)
+- 砖墙纹理 (8阶渐变 + 灰缝网格)
+- 火焰开口 (椭圆拱形 + radial-gradient模拟)
+- 4个动态火焰 (舞动动画, scaleX/scaleY/yoyo)
+- 火星粒子系统 (上升180px + 漂移 + blendMode ADD)
+- 地面阴影 (椭圆形渐变)
+
+**PotVisualComponent** - 药罐视觉组件 (`src/ui/components/PotVisualComponent.ts`)
+- 尺寸: 264×168 (44px × 28px, pixelSize=6)
+- 罐身 (圆底形状 + 8阶水平渐变 + 内阴影)
+- 罐口边缘 (3阶垂直渐变 + 高光)
+- 药液表面 (渐变 + 波纹条纹 + 椭圆形 + ripple动画)
+- 双把手 (左/右 + 边框效果)
+- 5个蒸汽团 (staggered delays + 上升动画)
+- 搅拌勺 (勺柄+勺头渐变 + stir摆动动画)
+
+---
+
+## Phase 2.5: 煎药小游戏 UI 重构 ✅ (已完成)
 
 **状态**: 完成 (Task 1-7 全部完成)
 **开始日期**: 2026-04-22
@@ -77,11 +122,11 @@
 
 ## 下一步
 
-Phase 2.5 煎药小游戏 UI 重构已全部完成。可继续开发：
+Phase 2.5 煎药小游戏 UI 视觉优化已全部完成。可继续开发：
 - Phase 2.5 种植小游戏优化
 - Phase 2.5 辨证选方小游戏开发
 - Phase 3 学习系统开发
 
 ---
 
-*本文档由 Claude Code 维护，更新于 2026-04-22*
+*本文档由 Claude Code 维护，更新于 2026-04-23*

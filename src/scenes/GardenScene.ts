@@ -19,6 +19,9 @@ import { EventBus, GameEvents } from '../systems/EventBus';
 import { GameStateBridge } from '../utils/GameStateBridge';
 import { TutorialManager } from '../systems/TutorialManager';  // S13.4
 import { createSceneTipUI, TutorialUI } from '../ui/TutorialUI';  // S13.4
+// Phase 2.5 全局背包系统
+import { InventoryManager, createInventoryManager } from '../systems/InventoryManager';
+import { InventoryUI, createInventoryUI } from '../ui/InventoryUI';
 
 interface MapData {
   width: number;
@@ -31,17 +34,27 @@ export class GardenScene extends Phaser.Scene {
   private cursors!: Phaser.Types.Input.Keyboard.CursorKeys;
   private spaceKey!: Phaser.Input.Keyboard.Key;
   private gKey!: Phaser.Input.Keyboard.Key;  // S11.4: 种植快捷键
+  private pKey!: Phaser.Input.Keyboard.Key;  // S10: 炮制快捷键
   private isTransitioning: boolean = false;
   private eventBus!: EventBus;
   private gameStateBridge!: GameStateBridge;
   private mapData!: MapData;
   private background!: Phaser.GameObjects.Image;
+  // 地图居中偏移量（当视口 > 地图时）
+  private mapOffsetX: number = 0;
+  private mapOffsetY: number = 0;
   // S11.4: PlantingScene自己获取PlantingManager单例，无需在此声明
   private tutorialManager!: TutorialManager;  // S13.4: 新手引导管理器
   private sceneTipUI: TutorialUI | null = null;  // S13.4: 场景提示UI
+  // Phase 2.5 全局背包系统
+  private inventoryKey!: Phaser.Input.Keyboard.Key;
+  private inventoryUI: InventoryUI | null = null;
+  private inventoryManager!: InventoryManager;
 
   constructor() {
     super({ key: SCENES.GARDEN });
+    // 初始化背包管理器（单例）
+    this.inventoryManager = createInventoryManager('player_001');
   }
 
   create(): void {
@@ -100,7 +113,7 @@ export class GardenScene extends Phaser.Scene {
       padding: { x: 8, y: 4 }
     }).setScrollFactor(0);
 
-    this.add.text(10, 40, '按空格键返回室外 | 按G键种植', {
+    this.add.text(10, 40, '按空格键返回室外 | 按G键种植 | 按P键炮制', {
       fontSize: '12px',
       color: '#aaaaaa'
     }).setScrollFactor(0);
@@ -111,21 +124,33 @@ export class GardenScene extends Phaser.Scene {
 
   /**
    * Phase 1.5: 加载背景图
+   * 当视口 > 地图时，背景居中显示
    */
   private createBackground(): void {
     const config = GARDEN_CONFIG;
     const mapPixelWidth = config.width * TILE_SIZE;
     const mapPixelHeight = config.height * TILE_SIZE;
 
+    // 计算视口中地图居中的偏移量
+    const gameWidth = this.scale.width;
+    const gameHeight = this.scale.height;
+    const offsetX = Math.max(0, (gameWidth - mapPixelWidth) / 2);
+    const offsetY = Math.max(0, (gameHeight - mapPixelHeight) / 2);
+
+    // 背景放在视口中心
     this.background = this.add.image(
-      mapPixelWidth / 2,
-      mapPixelHeight / 2,
+      offsetX + mapPixelWidth / 2,
+      offsetY + mapPixelHeight / 2,
       'garden_background'
     );
 
     this.background.setDisplaySize(mapPixelWidth, mapPixelHeight);
     this.background.setOrigin(0.5);
     this.background.setDepth(0);
+
+    // 存储偏移量供后续使用
+    this.mapOffsetX = offsetX;
+    this.mapOffsetY = offsetY;
   }
 
   private createPlayer(): void {
@@ -143,15 +168,16 @@ export class GardenScene extends Phaser.Scene {
       spawnY = configSpawn.y * TILE_SIZE + TILE_SIZE / 2;
     }
 
-    // 更新物理世界边界
+    // 更新物理世界边界（相对于偏移量）
     const mapPixelWidth = this.mapData.width * TILE_SIZE;
     const mapPixelHeight = this.mapData.height * TILE_SIZE;
-    this.physics.world.setBounds(0, 0, mapPixelWidth, mapPixelHeight);
+    this.physics.world.setBounds(this.mapOffsetX, this.mapOffsetY, mapPixelWidth, mapPixelHeight);
 
+    // 玩家位置加上偏移量（地图居中时）
     this.player = new Player({
       scene: this,
-      x: spawnX,
-      y: spawnY
+      x: spawnX + this.mapOffsetX,
+      y: spawnY + this.mapOffsetY
     });
     this.player.setDepth(10);
 
@@ -162,8 +188,8 @@ export class GardenScene extends Phaser.Scene {
     this.gameStateBridge.updatePlayerState({
       x: this.player.x,
       y: this.player.y,
-      tileX: Math.floor(this.player.x / TILE_SIZE),
-      tileY: Math.floor(this.player.y / TILE_SIZE),
+      tileX: Math.floor((this.player.x - this.mapOffsetX) / TILE_SIZE),
+      tileY: Math.floor((this.player.y - this.mapOffsetY) / TILE_SIZE),
       speed: this.player.speed,
       velocity: { x: 0, y: 0 }
     });
@@ -173,15 +199,35 @@ export class GardenScene extends Phaser.Scene {
     const mapPixelWidth = this.mapData.width * TILE_SIZE;
     const mapPixelHeight = this.mapData.height * TILE_SIZE;
 
-    this.cameras.main.setBounds(0, 0, mapPixelWidth, mapPixelHeight);
-    this.cameras.main.startFollow(this.player, true, 0.1, 0.1);
+    // 当视口 > 地图时，地图居中显示
+    const gameWidth = this.scale.width;
+    const gameHeight = this.scale.height;
+
+    if (gameWidth > mapPixelWidth || gameHeight > mapPixelHeight) {
+      // 计算地图居中的偏移量
+      const offsetX = (gameWidth - mapPixelWidth) / 2;
+      const offsetY = (gameHeight - mapPixelHeight) / 2;
+
+      // 相机边界：以地图居中位置为基准
+      this.cameras.main.setBounds(offsetX, offsetY, mapPixelWidth, mapPixelHeight);
+
+      // 相机居中在地图中心，不跟随玩家
+      this.cameras.main.centerOn(offsetX + mapPixelWidth / 2, offsetY + mapPixelHeight / 2);
+    } else {
+      // 视口 <= 地图，正常边界和跟随
+      this.cameras.main.setBounds(0, 0, mapPixelWidth, mapPixelHeight);
+      this.cameras.main.startFollow(this.player, true, 0.1, 0.1);
+    }
   }
 
   private setupInput(): void {
     if (this.input.keyboard) {
       this.cursors = this.input.keyboard.createCursorKeys();
       this.spaceKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE);
-      this.gKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.G);  // S11.4
+      this.gKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.G);  // S11.4: 种植
+      this.pKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.P);  // S10: 炮制
+      // Phase 2.5 全局背包系统: B键打开背包
+      this.inventoryKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.B);
       this.input.keyboard.addKeys('W,A,S,D');
     }
   }
@@ -190,8 +236,9 @@ export class GardenScene extends Phaser.Scene {
    * 检查目标位置是否可行走
    */
   private canMoveTo(x: number, y: number): boolean {
-    const tileX = Math.floor(x / TILE_SIZE);
-    const tileY = Math.floor(y / TILE_SIZE);
+    // 减去偏移量得到地图内的相对坐标
+    const tileX = Math.floor((x - this.mapOffsetX) / TILE_SIZE);
+    const tileY = Math.floor((y - this.mapOffsetY) / TILE_SIZE);
     return this.mapData.walkableTiles.has(`${tileX},${tileY}`);
   }
 
@@ -199,8 +246,8 @@ export class GardenScene extends Phaser.Scene {
    * 确保玩家位置在可行走区域
    */
   private enforceWalkablePosition(): void {
-    const currentTileX = Math.floor(this.player.x / TILE_SIZE);
-    const currentTileY = Math.floor(this.player.y / TILE_SIZE);
+    const currentTileX = Math.floor((this.player.x - this.mapOffsetX) / TILE_SIZE);
+    const currentTileY = Math.floor((this.player.y - this.mapOffsetY) / TILE_SIZE);
     const currentKey = `${currentTileX},${currentTileY}`;
 
     if (!this.mapData.walkableTiles.has(currentKey)) {
@@ -316,6 +363,17 @@ export class GardenScene extends Phaser.Scene {
     if (Phaser.Input.Keyboard.JustDown(this.gKey) && !this.isTransitioning) {
       this.togglePlanting();
     }
+
+    // S10: P键进入炮制游戏
+    if (this.pKey && Phaser.Input.Keyboard.JustDown(this.pKey) && !this.isTransitioning) {
+      console.log('[GardenScene] P键触发，准备进入炮制场景');
+      this.startProcessing();
+    }
+
+    // Phase 2.5 全局背包系统: B键打开背包
+    if (Phaser.Input.Keyboard.JustDown(this.inventoryKey)) {
+      this.toggleInventory();
+    }
   }
 
   /**
@@ -332,6 +390,21 @@ export class GardenScene extends Phaser.Scene {
     this.scene.pause();
   }
 
+  /**
+   * S10: 进入炮制游戏
+   */
+  private startProcessing(): void {
+    this.eventBus.emit(GameEvents.SCENE_SWITCH, {
+      from: SCENES.GARDEN,
+      to: SCENES.PROCESSING
+    });
+
+    console.log('[GardenScene] Starting processing...');
+
+    // 切换到炮制场景
+    this.scene.start(SCENES.PROCESSING, {});
+  }
+
   shutdown(): void {
     // ⭐ 关键修复：重置 isTransitioning 状态
     this.isTransitioning = false;
@@ -340,6 +413,12 @@ export class GardenScene extends Phaser.Scene {
     if (this.sceneTipUI) {
       this.sceneTipUI.destroy();
       this.sceneTipUI = null;
+    }
+
+    // Phase 2.5 全局背包系统: 清理背包UI
+    if (this.inventoryUI) {
+      this.inventoryUI.destroy();
+      this.inventoryUI = null;
     }
 
     this.eventBus.emit(GameEvents.SCENE_DESTROY, { sceneName: SCENES.GARDEN });
@@ -377,6 +456,26 @@ export class GardenScene extends Phaser.Scene {
           }
         );
       }
+    }
+  }
+
+  /**
+   * Phase 2.5 全局背包系统: 切换背包显示
+   */
+  private toggleInventory(): void {
+    if (!this.inventoryUI) {
+      // 创建背包UI
+      this.inventoryUI = createInventoryUI(this, () => {
+        console.log('[GardenScene] Inventory closed');
+      });
+      this.inventoryManager.exposeToWindow();
+      console.log('[GardenScene] Inventory UI created');
+    }
+
+    if (this.inventoryUI.isShowing()) {
+      this.inventoryUI.hide();
+    } else {
+      this.inventoryUI.show();
     }
   }
 }

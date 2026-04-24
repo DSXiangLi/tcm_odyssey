@@ -11,12 +11,12 @@ import {
 
 describe('Game Constants', () => {
   describe('Game Dimensions', () => {
-    test('Game width is 800 pixels', () => {
-      expect(GAME_WIDTH).toBe(800);
+    test('Game width is 1280 pixels (16:9 720p)', () => {
+      expect(GAME_WIDTH).toBe(1280);
     });
 
-    test('Game height is 600 pixels', () => {
-      expect(GAME_HEIGHT).toBe(600);
+    test('Game height is 720 pixels (16:9 720p)', () => {
+      expect(GAME_HEIGHT).toBe(720);
     });
 
     test('Tile size is 32 pixels', () => {

@@ -1,0 +1,69 @@
+{
+  "skill_name": "herb-specimen-generator",
+  "evals": [
+    {
+      "id": 1,
+      "name": "single-herb-generation",
+      "prompt": "生成一张人参的植物标本图",
+      "expected_output": "生成单个4096×4096图片文件，无需切分，AI识别命名为人参.png",
+      "files": [],
+      "herb_count": 1,
+      "herbs": ["人参"]
+    },
+    {
+      "id": 2,
+      "name": "four-herbs-standard-grid",
+      "prompt": "生成葱白、薄荷叶、牛蒡子、蝉蜕这4种中药材的标本图",
+      "expected_output": "生成2×2四宫格复合图片(4096×4096)，切分为4张2048×2048正方形图片，AI识别命名为葱白.png、薄荷叶.png、牛蒡子.png、蝉蜕.png",
+      "files": [],
+      "herb_count": 4,
+      "herbs": ["葱白", "薄荷叶", "牛蒡子", "蝉蜕"]
+    },
+    {
+      "id": 3,
+      "name": "nine-herbs-3x3-grid",
+      "prompt": "绘制9种解表药的标本图：麻黄、桂枝、紫苏叶、生姜、荆芥、防风、白芷、细辛、苍耳子",
+      "expected_output": "生成3×3九宫格复合图片(4096×4096)，切分为9张1365×1365正方形图片，AI识别命名为麻黄.png、桂枝.png等",
+      "files": [],
+      "herb_count": 9,
+      "herbs": ["麻黄", "桂枝", "紫苏叶", "生姜", "荆芥", "防风", "白芷", "细辛", "苍耳子"]
+    },
+    {
+      "id": 4,
+      "name": "invalid-count-two-herbs",
+      "prompt": "绘制薄荷和牛蒡子的药材图鉴",
+      "expected_output": "技能应拒绝生成，提示'药材数量必须为1、4或9种。当前2种无法生成正方形切分图。请调整为4种，或增加到9种药材'",
+      "files": [],
+      "herb_count": 2,
+      "herbs": ["薄荷", "牛蒡子"],
+      "should_fail": true
+    },
+    {
+      "id": 5,
+      "name": "invalid-count-six-herbs",
+      "prompt": "绘制6种解表药：麻黄、桂枝、紫苏叶、生姜、荆芥、防风",
+      "expected_output": "技能应建议分批生成或调整数量，提示'药材数量6种无法组成正方形批次组合'",
+      "files": [],
+      "herb_count": 6,
+      "herbs": ["麻黄", "桂枝", "紫苏叶", "生姜", "荆芥", "防风"],
+      "should_fail": true
+    },
+    {
+      "id": 6,
+      "name": "batch-generation-13-herbs",
+      "prompt": "生成13种中药材的标本图：麻黄、桂枝、紫苏叶、生姜、荆芥、防风、白芷、细辛、苍耳子、辛夷、桑叶、菊花、蔓荆子",
+      "expected_output": "自动建议分2批：第1批9种，第2批4种。生成2张复合图片，最终输出13张正方形药材图片",
+      "files": [],
+      "herb_count": 13,
+      "herbs": ["麻黄", "桂枝", "紫苏叶", "生姜", "荆芥", "防风", "白芷", "细辛", "苍耳子", "辛夷", "桑叶", "菊花", "蔓荆子"]
+    },
+    {
+      "id": 7,
+      "name": "existing-image-processing",
+      "prompt": "处理tests/assets/herb_raw目录下已有的药材图片，进行切分和识别命名",
+      "expected_output": "跳过生图步骤，直接切分现有图片并AI识别命名，输出正方形药材图片",
+      "files": [],
+      "skip_generation": true
+    }
+  ]
+}

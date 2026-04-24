@@ -35,6 +35,7 @@ export interface HerbData {
   properties: HerbProperties;
   description: string; // 简要描述
   source?: string;     // 获取来源: "planting"(种植), "npc_gift"(NPC赠送)
+  icon?: string;       // 图标路径: "assets/herbs/1_麻黄.png"
 }
 
 /**
@@ -113,7 +114,7 @@ export interface KnowledgeCardData {
 // ===== 一期药材数据 =====
 
 export const HERBS_DATA: HerbData[] = [
-  // 解表药
+  // 解表药 - 辛温解表
   {
     id: 'mahuang',
     name: '麻黄',
@@ -121,7 +122,8 @@ export const HERBS_DATA: HerbData[] = [
     bag_id: 'jiebiao_bag',
     properties: { nature: '温', flavor: '辛', meridian: '肺' },
     description: '宣肺解表，发汗散寒，利水消肿',
-    source: 'planting'
+    source: 'planting',
+    icon: 'herbs/mahuang'
   },
   {
     id: 'guizhi',
@@ -130,7 +132,8 @@ export const HERBS_DATA: HerbData[] = [
     bag_id: 'jiebiao_bag',
     properties: { nature: '温', flavor: '辛甘', meridian: '心、肺' },
     description: '解肌发表，温通经脉，助阳化气',
-    source: 'planting'
+    source: 'planting',
+    icon: 'herbs/guizhi'
   },
   {
     id: 'jingjie',
@@ -139,8 +142,101 @@ export const HERBS_DATA: HerbData[] = [
     bag_id: 'jiebiao_bag',
     properties: { nature: '温', flavor: '辛', meridian: '肺、肝' },
     description: '祛风解表，透疹止痒',
-    source: 'planting'
+    source: 'planting',
+    icon: 'herbs/jingjie'
   },
+  {
+    id: 'shengjiang',
+    name: '生姜',
+    category: 'jiebiao',
+    bag_id: 'jiebiao_bag',
+    properties: { nature: '温', flavor: '辛', meridian: '肺、脾、胃' },
+    description: '解表散寒，温中止呕，化痰止咳',
+    source: 'planting',
+    icon: 'herbs/shengjiang'
+  },
+  {
+    id: 'zisuye',
+    name: '紫苏叶',
+    category: 'jiebiao',
+    bag_id: 'jiebiao_bag',
+    properties: { nature: '温', flavor: '辛', meridian: '肺、脾' },
+    description: '解表散寒，行气和胃',
+    source: 'planting',
+    icon: 'herbs/zisuye'
+  },
+  {
+    id: 'baizhi',
+    name: '白芷',
+    category: 'jiebiao',
+    bag_id: 'jiebiao_bag',
+    properties: { nature: '温', flavor: '辛', meridian: '肺、胃' },
+    description: '祛风散寒，通窍止痛，燥湿止带',
+    source: 'planting',
+    icon: 'herbs/baizhi'
+  },
+  {
+    id: 'xixin',
+    name: '细辛',
+    category: 'jiebiao',
+    bag_id: 'jiebiao_bag',
+    properties: { nature: '温', flavor: '辛', meridian: '肺、肾' },
+    description: '祛风散寒，通窍止痛，温肺化饮',
+    source: 'planting',
+    icon: 'herbs/xixin'
+  },
+  {
+    id: 'xinyi',
+    name: '辛夷',
+    category: 'jiebiao',
+    bag_id: 'jiebiao_bag',
+    properties: { nature: '温', flavor: '辛', meridian: '肺、胃' },
+    description: '散风寒，通鼻窍',
+    source: 'planting',
+    icon: 'herbs/xinyi'
+  },
+  {
+    id: 'cangerzi',
+    name: '苍耳子',
+    category: 'jiebiao',
+    bag_id: 'jiebiao_bag',
+    properties: { nature: '温', flavor: '辛苦', meridian: '肺' },
+    description: '散风寒，通鼻窍，祛风湿',
+    source: 'planting',
+    icon: 'herbs/cangerzi'
+  },
+  {
+    id: 'fangfeng',
+    name: '防风',
+    category: 'jiebiao',
+    bag_id: 'jiebiao_bag',
+    properties: { nature: '温', flavor: '辛甘', meridian: '膀胱、肝、脾' },
+    description: '祛风解表，胜湿止痛',
+    source: 'planting',
+    icon: 'herbs/fangfeng'
+  },
+  {
+    id: 'qianghuo',
+    name: '羌活',
+    category: 'jiebiao',
+    bag_id: 'jiebiao_bag',
+    properties: { nature: '温', flavor: '辛苦', meridian: '膀胱、肾' },
+    description: '解表散寒，祛风胜湿，止痛',
+    source: 'planting',
+    icon: 'herbs/qianghuo'
+  },
+  {
+    id: 'xiangru',
+    name: '香薷',
+    category: 'jiebiao',
+    bag_id: 'jiebiao_bag',
+    properties: { nature: '温', flavor: '辛', meridian: '肺、胃' },
+    description: '发汗解表，化湿和中，利水消肿',
+    source: 'planting',
+    icon: 'herbs/xiangru'
+  },
+
+  // 解表药 - 辛凉解表
   {
     id: 'bohe',
     name: '薄荷',
@@ -148,7 +244,8 @@ export const HERBS_DATA: HerbData[] = [
     bag_id: 'jiebiao_bag',
     properties: { nature: '凉', flavor: '辛', meridian: '肺、肝' },
     description: '疏散风热，清利头目，利咽透疹',
-    source: 'planting'
+    source: 'planting',
+    icon: 'herbs/bohe'
   },
   {
     id: 'sangye',
@@ -157,7 +254,8 @@ export const HERBS_DATA: HerbData[] = [
     bag_id: 'jiebiao_bag',
     properties: { nature: '寒', flavor: '苦甘', meridian: '肺、肝' },
     description: '疏散风热，清肺润燥，平肝明目',
-    source: 'planting'
+    source: 'planting',
+    icon: 'herbs/sangye'
   },
   {
     id: 'juhua',
@@ -166,7 +264,38 @@ export const HERBS_DATA: HerbData[] = [
     bag_id: 'jiebiao_bag',
     properties: { nature: '微寒', flavor: '辛甘苦', meridian: '肺、肝' },
     description: '疏散风热，清肝明目，清热解毒',
-    source: 'planting'
+    source: 'planting',
+    icon: 'herbs/juhua'
+  },
+  {
+    id: 'niubangzi',
+    name: '牛蒡子',
+    category: 'jiebiao',
+    bag_id: 'jiebiao_bag',
+    properties: { nature: '寒', flavor: '辛苦', meridian: '肺、胃' },
+    description: '疏散风热，宣肺利咽，解毒透疹',
+    source: 'npc_gift',
+    icon: 'herbs/niubangzi'
+  },
+  {
+    id: 'chantui',
+    name: '蝉蜕',
+    category: 'jiebiao',
+    bag_id: 'jiebiao_bag',
+    properties: { nature: '寒', flavor: '甘', meridian: '肺、肝' },
+    description: '疏散风热，透疹止痒，明目退翳',
+    source: 'planting',
+    icon: 'herbs/chantui'
+  },
+  {
+    id: 'congbai',
+    name: '葱白',
+    category: 'jiebiao',
+    bag_id: 'jiebiao_bag',
+    properties: { nature: '温', flavor: '辛', meridian: '肺、胃' },
+    description: '发散风寒，通阳止痛',
+    source: 'planting',
+    icon: 'herbs/congbai'
   },
   {
     id: 'douchi',
@@ -175,7 +304,60 @@ export const HERBS_DATA: HerbData[] = [
     bag_id: 'jiebiao_bag',
     properties: { nature: '凉', flavor: '辛', meridian: '肺、胃' },
     description: '解表除烦，宣发郁热',
-    source: 'npc_gift'
+    source: 'npc_gift',
+    icon: 'herbs/douchi'
+  },
+  {
+    id: 'manjingzi',
+    name: '蔓荆子',
+    category: 'jiebiao',
+    bag_id: 'jiebiao_bag',
+    properties: { nature: '寒', flavor: '辛苦', meridian: '膀胱、肝、胃' },
+    description: '疏散风热，清利头目',
+    source: 'planting',
+    icon: 'herbs/manjingzi'
+  },
+
+  // 解表药 - 其他解表
+  {
+    id: 'chaihu',
+    name: '柴胡',
+    category: 'jiebiao',
+    bag_id: 'jiebiao_bag',
+    properties: { nature: '寒', flavor: '辛苦', meridian: '肝、胆' },
+    description: '疏散退热，疏肝解郁，升举阳气',
+    source: 'planting',
+    icon: 'herbs/chaihu'
+  },
+  {
+    id: 'gegen',
+    name: '葛根',
+    category: 'jiebiao',
+    bag_id: 'jiebiao_bag',
+    properties: { nature: '凉', flavor: '辛甘', meridian: '脾、胃' },
+    description: '解肌退热，透疹，生津止渴',
+    source: 'planting',
+    icon: 'herbs/gegen'
+  },
+  {
+    id: 'shengma',
+    name: '升麻',
+    category: 'jiebiao',
+    bag_id: 'jiebiao_bag',
+    properties: { nature: '寒', flavor: '辛甘', meridian: '肺、脾、胃' },
+    description: '发表透疹，清热解毒，升举阳气',
+    source: 'planting',
+    icon: 'herbs/shengma'
+  },
+  {
+    id: 'jianghuang',
+    name: '姜黄',
+    category: 'jiebiao',
+    bag_id: 'jiebiao_bag',
+    properties: { nature: '温', flavor: '辛苦', meridian: '脾、肝' },
+    description: '活血行气，通经止痛',
+    source: 'planting',
+    icon: 'herbs/jianghuang'
   },
 
   // 清热药
@@ -235,15 +417,6 @@ export const HERBS_DATA: HerbData[] = [
     description: '宣肺利咽，祛痰排脓',
     source: 'planting'
   },
-  {
-    id: 'niubangzi',
-    name: '牛蒡子',
-    category: 'zhike',
-    bag_id: 'zhike_bag',
-    properties: { nature: '寒', flavor: '辛苦', meridian: '肺、胃' },
-    description: '疏散风热，宣肺利咽，解毒透疹',
-    source: 'npc_gift'
-  },
 
   // 补益调和药
   {
@@ -265,15 +438,6 @@ export const HERBS_DATA: HerbData[] = [
     source: 'planting'
   },
   {
-    id: 'shengjiang',
-    name: '生姜',
-    category: 'buyi',
-    bag_id: 'buyi_bag',
-    properties: { nature: '温', flavor: '辛', meridian: '肺、脾、胃' },
-    description: '解表散寒，温中止呕，化痰止咳',
-    source: 'planting'
-  },
-  {
     id: 'dazao',
     name: '大枣',
     category: 'buyi',
@@ -292,7 +456,14 @@ export const HERB_BAGS: HerbBag[] = [
     name: '解表袋',
     category: 'jiebiao',
     description: '发散风寒、风热，解除表证',
-    herbs: ['mahuang', 'guizhi', 'jingjie', 'bohe', 'sangye', 'juhua', 'douchi'],
+    herbs: [
+      // 辛温解表
+      'mahuang', 'guizhi', 'jingjie', 'shengjiang', 'zisuye', 'baizhi', 'xixin', 'xinyi', 'cangerzi', 'fangfeng', 'qianghuo', 'xiangru',
+      // 辛凉解表
+      'bohe', 'sangye', 'juhua', 'niubangzi', 'chantui', 'congbai', 'douchi', 'manjingzi',
+      // 其他解表
+      'chaihu', 'gegen', 'shengma', 'jianghuang'
+    ],
     color: '#4CAF50'  // 绿色
   },
   {

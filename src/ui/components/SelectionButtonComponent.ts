@@ -333,14 +333,16 @@ export default class SelectionButtonComponent {
 
   /**
    * 选中按钮
+   * @param silent 是否静默选中（不触发回调），用于父组件状态同步
    */
-  public select(): void {
+  public select(silent: boolean = false): void {
     this.state = SelectionButtonState.SELECTED;
     this.drawBorder();
     this.updateText();
 
-    // 触发回调
-    if (this.config.onSelect) {
+    // 只有用户点击触发的select才调用回调，程序调用不触发
+    // 防止无限循环：parent.updateButtonStates() → select() → onSelect → parent.handler → updateButtonStates()
+    if (!silent && this.config.onSelect) {
       this.config.onSelect(this.content.value);
     }
   }
@@ -353,10 +355,8 @@ export default class SelectionButtonComponent {
     this.drawBorder();
     this.updateText();
 
-    // 触发回调
-    if (this.config.onSelect) {
-      this.config.onSelect(this.content.value);
-    }
+    // 注意：取消选中不触发onSelect回调，避免循环调用
+    // 父组件通过updateButtonStates()统一管理状态
   }
 
   /**

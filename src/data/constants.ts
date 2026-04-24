@@ -1,6 +1,7 @@
-// 游戏尺寸
-export const GAME_WIDTH = 800;
-export const GAME_HEIGHT = 600;
+// 游戏尺寸 - 16:9宽屏视口 (720p标准)
+// 室外地图 2752×1536 > 视口，室内地图 1408×768 ≈ 视口
+export const GAME_WIDTH = 1280;
+export const GAME_HEIGHT = 720;
 
 // 瓦片尺寸
 export const TILE_SIZE = 32;

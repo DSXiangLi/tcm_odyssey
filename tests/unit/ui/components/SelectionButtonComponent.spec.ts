@@ -359,7 +359,9 @@ describe('SelectionButtonComponent', () => {
       expect(onSelect).toHaveBeenCalledWith('mai_fu');
     });
 
-    it('should call onSelect callback when state changes to UNSELECTED', () => {
+    it('should NOT call onSelect callback when state changes via deselect() (prevents infinite loops)', () => {
+      // Design decision: deselect() does not trigger callback
+      // This prevents infinite loops when parent components call deselect() on all buttons
       const onSelect = vi.fn();
       const content: SelectionButtonContent = { label: '脉浮', value: 'mai_fu' };
       const config: SelectionButtonConfig = { selected: true, onSelect };
@@ -367,20 +369,25 @@ describe('SelectionButtonComponent', () => {
 
       button.deselect();
 
-      expect(onSelect).toHaveBeenCalledWith('mai_fu');
+      // deselect() no longer triggers onSelect callback
+      expect(onSelect).not.toHaveBeenCalled();
+      // But state should be UNSELECTED
+      expect(button.isSelected()).toBe(false);
     });
 
-    it('should NOT call onSelect when clicking already selected button (single select)', () => {
-      // In single select mode, clicking a selected button deselects it
-      // The callback should still be called with the value
+    it('should call onSelect callback when clicking selected button to deselect via handleClick', () => {
+      // handleClick() calls deselect() internally, which now does NOT trigger callback
+      // This test verifies the new behavior
       const onSelect = vi.fn();
       const content: SelectionButtonContent = { label: '脉浮', value: 'mai_fu' };
       const config: SelectionButtonConfig = { selected: true, onSelect };
       const button = new SelectionButtonComponent(mockScene, content, config);
 
-      button.handleClick(); // Deselect
+      button.handleClick(); // Calls deselect() internally
 
-      expect(onSelect).toHaveBeenCalled();
+      // handleClick -> deselect() -> no callback trigger
+      // Note: Parent components should use updateButtonStates() for state management
+      expect(button.isSelected()).toBe(false);
     });
   });
 

@@ -101,6 +101,9 @@ export default class ItemSlotComponent {
   /** 物品图标 */
   protected itemIcon: Phaser.GameObjects.Image | null = null;
 
+  /** 物品名称文字（无图片时的占位符） */
+  protected itemNameText: Phaser.GameObjects.Text | null = null;
+
   /** 交互区域 */
   protected hitArea: Phaser.GameObjects.Zone | null = null;
 
@@ -296,9 +299,19 @@ export default class ItemSlotComponent {
     // 更新数量角标
     this.updateQuantityBadge();
 
-    // 更新图标（如果提供）
+    // 更新图标或名称文字
     if (content.icon) {
+      // 有图片：显示图片，隐藏名称文字
       this.updateIcon(content.icon);
+      if (this.itemNameText) {
+        this.itemNameText.setVisible(false);
+      }
+    } else {
+      // 无图片：显示名称文字作为占位符
+      this.updateNameText(content.name);
+      if (this.itemIcon) {
+        this.itemIcon.setVisible(false);
+      }
     }
 
     // 重绘边框
@@ -320,6 +333,11 @@ export default class ItemSlotComponent {
     // 清除图标
     if (this.itemIcon) {
       this.itemIcon.setVisible(false);
+    }
+
+    // 清除名称文字
+    if (this.itemNameText) {
+      this.itemNameText.setVisible(false);
     }
 
     // 重绘边框
@@ -360,7 +378,7 @@ export default class ItemSlotComponent {
 
   /**
    * 更新图标
-   * @param iconPath 图标路径
+   * @param iconPath 图标路径（Phaser texture key）
    */
   protected updateIcon(iconPath: string): void {
     const iconSize = ItemSlotComponent.ICON_SIZE;
@@ -373,6 +391,28 @@ export default class ItemSlotComponent {
       this.itemIcon.setTexture(iconPath);
       this.itemIcon.setDisplaySize(iconSize, iconSize);
       this.itemIcon.setVisible(true);
+    }
+  }
+
+  /**
+   * 更新名称文字（无图片时的占位符）
+   * @param name 物品名称
+   */
+  protected updateNameText(name: string): void {
+    // 显示名称的前2个字符作为缩写
+    const displayName = name.length > 2 ? name.substring(0, 2) : name;
+
+    if (!this.itemNameText) {
+      this.itemNameText = this.scene.add.text(0, 0, displayName, {
+        fontSize: '14px',
+        color: UI_COLOR_STRINGS.TEXT_PRIMARY,
+        fontStyle: 'bold',
+      });
+      this.itemNameText.setOrigin(0.5, 0.5);
+      this.container.add(this.itemNameText);
+    } else {
+      this.itemNameText.setText(displayName);
+      this.itemNameText.setVisible(true);
     }
   }
 
@@ -532,6 +572,12 @@ export default class ItemSlotComponent {
     if (this.itemIcon) {
       this.itemIcon.destroy();
       this.itemIcon = null;
+    }
+
+    // 销毁名称文字
+    if (this.itemNameText) {
+      this.itemNameText.destroy();
+      this.itemNameText = null;
     }
 
     // 销毁交互区域

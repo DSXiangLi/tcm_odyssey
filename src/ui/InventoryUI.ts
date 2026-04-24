@@ -21,7 +21,8 @@ import {
   INVENTORY_TYPES,
   HERB_BAGS,
   HerbBag,
-  InventoryTypeConfig
+  InventoryTypeConfig,
+  getHerbById
 } from '../data/inventory-data';
 import { UI_COLORS, UI_COLOR_STRINGS } from '../data/ui-color-theme';
 import ItemSlotComponent, { ItemSlotContent } from './components/ItemSlotComponent';
@@ -601,7 +602,11 @@ export class InventoryUI {
       const xPos = col * (slotSize + spacing);
       const yPos = row * (slotSize + spacing);
 
-      this.createItemSlot(item.herb.id, item.herb.name, item.quantity, xPos, yPos);
+      // 获取药材的icon字段
+      const herbData = getHerbById(item.herb.id);
+      const iconPath = herbData?.icon;
+
+      this.createItemSlot(item.herb.id, item.herb.name, item.quantity, xPos, yPos, true, iconPath);
     });
   }
 
@@ -707,7 +712,8 @@ export class InventoryUI {
     quantity: number,
     x: number,
     y: number,
-    showQuantity: boolean = true
+    showQuantity: boolean = true,
+    icon?: string
   ): void {
     // ItemSlotComponent使用中心定位（origin 0.5），需要调整位置
     const slotSize = ItemSlotComponent.SLOT_SIZE;
@@ -724,7 +730,8 @@ export class InventoryUI {
     const content: ItemSlotContent = {
       itemId: itemId,
       name: itemName,
-      quantity: showQuantity ? quantity : undefined
+      quantity: showQuantity ? quantity : undefined,
+      icon: icon  // 传递icon路径
     };
     slot.setContent(content);
 

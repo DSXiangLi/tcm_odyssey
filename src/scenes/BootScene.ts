@@ -15,6 +15,7 @@ import { GameStateBridge } from '../utils/GameStateBridge';
 import { PlantingManager } from '../systems/PlantingManager';
 import { ExperienceManager } from '../systems/ExperienceManager';
 import { UI_COLORS } from '../data/ui-color-theme';
+import { HERBS_DATA } from '../data/inventory-data';
 
 // 玩家sprite配置 - user2素材（正确配置）
 // 源图896x1195，布局4行×3列，每帧298x298
@@ -64,6 +65,25 @@ export class BootScene extends Phaser.Scene {
       frameWidth: PLAYER_FRAME_WIDTH,
       frameHeight: PLAYER_FRAME_HEIGHT
     });
+
+    // Phase 2.5: 加载药材图片素材
+    this.loadHerbImages();
+  }
+
+  /**
+   * Phase 2.5: 加载药材图片素材
+   */
+  private loadHerbImages(): void {
+    // 遍历所有药材数据，加载有icon字段的图片
+    HERBS_DATA.forEach(herb => {
+      if (herb.icon) {
+        // icon格式为 "herbs/1_麻黄"，实际路径为 "assets/herbs/1_麻黄.png"
+        const imagePath = `assets/${herb.icon}.png`;
+        this.load.image(herb.icon, imagePath);
+        console.log(`[BootScene] Loading herb image: ${herb.icon} -> ${imagePath}`);
+      }
+    });
+    console.log(`[BootScene] Total herb images to load: ${HERBS_DATA.filter(h => h.icon).length}`);
   }
 
   private createLoadingUI(): void {

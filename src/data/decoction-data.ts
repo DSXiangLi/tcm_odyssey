@@ -210,9 +210,14 @@ export const DECOCTION_PARAMS: PrescriptionDecoctionParams[] = [
 // ===== 评分规则 =====
 
 /**
- * 评分维度
+ * 评分维度 (Phase 2.5 简化版)
+ *
+ * 简化为三个维度:
+ * - composition: 组成 (50%)
+ * - fire: 火候 (30%)
+ * - time: 时间 (20%)
  */
-export type ScoreDimension = 'compatibility' | 'composition' | 'order' | 'fire' | 'time';
+export type ScoreDimension = 'composition' | 'fire' | 'time';
 
 /**
  * 评分规则配置
@@ -226,41 +231,32 @@ export interface ScoreRuleConfig {
 }
 
 /**
- * 煎药评分规则
+ * 煎药评分规则 (Phase 2.5 简化版)
+ *
+ * 简化评分维度，去掉君臣佐使配伍和顺序评分:
+ * - 组成 50%: 药材是否齐全且正确
+ * - 火候 30%: 武火/文火选择是否正确
+ * - 时间 20%: 煎煮时间是否在合理范围
  */
 export const DECOCTION_SCORE_RULES: ScoreRuleConfig[] = [
   {
-    dimension: 'compatibility',
-    name: '配伍正确',
-    weight: 40,
-    description: '药材放置在正确的君臣佐使位置',
-    scoring_criteria: '每味药材角色正确得满分，错误得0分'
-  },
-  {
     dimension: 'composition',
     name: '组成正确',
-    weight: 20,
+    weight: 50,
     description: '选择的药材与方剂组成一致',
     scoring_criteria: '药材数量正确且无多余/缺失'
   },
   {
-    dimension: 'order',
-    name: '顺序正确',
-    weight: 20,
-    description: '药材煎煮顺序符合要求',
-    scoring_criteria: '先煎/后下等顺序安排正确'
-  },
-  {
     dimension: 'fire',
     name: '火候正确',
-    weight: 10,
+    weight: 30,
     description: '煎煮火候符合方剂要求',
     scoring_criteria: '火候选择与建议一致'
   },
   {
     dimension: 'time',
     name: '时间正确',
-    weight: 10,
+    weight: 20,
     description: '煎煮时间符合方剂要求',
     scoring_criteria: '时间在要求范围内(±30秒)'
   }
@@ -308,12 +304,17 @@ export interface DecoctionScoreResult {
 }
 
 /**
- * 药材错误详情
+ * 药材错误详情 (Phase 2.5 简化版)
+ *
+ * 简化错误类型:
+ * - missing: 缺少药材
+ * - extra: 多余药材
+ * - fire_wrong: 火候错误
  */
 export interface HerbError {
   herb_id: string;
   herb_name: string;
-  error_type: 'missing' | 'extra' | 'role_wrong' | 'order_wrong' | 'fire_wrong';
+  error_type: 'missing' | 'extra' | 'fire_wrong';
   expected?: string;
   actual?: string;
 }
@@ -410,27 +411,29 @@ export function getPrescriptionRoles(prescriptionId: string): Record<string, str
 }
 
 /**
- * 计算煎药评分
+ * 计算煎药评分 (Phase 2.5 简化版)
+ *
+ * 简化评分维度:
+ * - 组成 50%: 药材是否齐全且正确
+ * - 火候 30%: 武火/文火选择是否正确
+ * - 时间 20%: 煎煮时间是否在合理范围
  */
 export function calculateDecoctionScore(
   prescriptionId: string,
   selectedHerbs: string[],
-  compatibilityPlacement: Record<string, string>,
-  orderSettings: Record<string, DecoctionOrderType>,
+  _compatibilityPlacement: Record<string, string>, // 保留参数兼容性，但不参与评分
+  _orderSettings: Record<string, DecoctionOrderType>, // 保留参数兼容性，但不参与评分
   fireLevel: FireLevel,
   decoctionTime: number
 ): DecoctionScoreResult {
   const params = getDecoctionParams(prescriptionId);
   const prescriptionHerbs = getPrescriptionHerbs(prescriptionId);
-  const correctRoles = getPrescriptionRoles(prescriptionId);
 
   if (!params) {
     return {
       total_score: 0,
       dimension_scores: {
-        compatibility: 0,
         composition: 0,
-        order: 0,
         fire: 0,
         time: 0
       },
@@ -441,22 +444,20 @@ export function calculateDecoctionScore(
 
   const errors: HerbError[] = [];
   const dimensionScores: Record<ScoreDimension, number> = {
-    compatibility: 0,
     composition: 0,
-    order: 0,
     fire: 0,
     time: 0
   };
 
-  // 1. 组成评分 (20%)
+  // 1. 组成评分 (50%)
   const missingHerbs = prescriptionHerbs.filter(h => !selectedHerbs.includes(h));
   const extraHerbs = selectedHerbs.filter(h => !prescriptionHerbs.includes(h));
 
   if (missingHerbs.length === 0 && extraHerbs.length === 0) {
-    dimensionScores.composition = 20;
+    dimensionScores.composition = 50;
   } else {
     const correctCount = selectedHerbs.filter(h => prescriptionHerbs.includes(h)).length;
-    dimensionScores.composition = (correctCount / prescriptionHerbs.length) * 20;
+    dimensionScores.composition = (correctCount / prescriptionHerbs.length) * 50;
 
     missingHerbs.forEach(h => {
       const herbData = getHerbById(h);
@@ -479,58 +480,9 @@ export function calculateDecoctionScore(
     });
   }
 
-  // 2. 配伍评分 (40%)
-  let correctRoleCount = 0;
-  const herbsToCheck = selectedHerbs.filter(h => prescriptionHerbs.includes(h));
-
-  herbsToCheck.forEach(herbId => {
-    const expectedRole = correctRoles[herbId];
-    const actualRole = compatibilityPlacement[herbId];
-
-    if (actualRole === expectedRole) {
-      correctRoleCount++;
-    } else {
-      const herbData = getHerbById(herbId);
-      errors.push({
-        herb_id: herbId,
-        herb_name: herbData?.name || herbId,
-        error_type: 'role_wrong',
-        expected: expectedRole,
-        actual: actualRole || '未放置'
-      });
-    }
-  });
-
-  dimensionScores.compatibility = (correctRoleCount / prescriptionHerbs.length) * 40;
-
-  // 3. 顺序评分 (20%)
-  let correctOrderCount = 0;
-
-  herbsToCheck.forEach(herbId => {
-    const herbParam = params.herb_params.find(p => p.herb_id === herbId);
-    const expectedOrder = herbParam?.order || 'normal';
-    const actualOrder = orderSettings[herbId] || 'normal';
-
-    if (actualOrder === expectedOrder) {
-      correctOrderCount++;
-    } else {
-      const herbData = getHerbById(herbId);
-      const orderConfig = getDecoctionOrderConfig(expectedOrder);
-      errors.push({
-        herb_id: herbId,
-        herb_name: herbData?.name || herbId,
-        error_type: 'order_wrong',
-        expected: orderConfig?.name || expectedOrder,
-        actual: getDecoctionOrderConfig(actualOrder)?.name || actualOrder
-      });
-    }
-  });
-
-  dimensionScores.order = (correctOrderCount / prescriptionHerbs.length) * 20;
-
-  // 4. 火候评分 (10%)
+  // 2. 火候评分 (30%)
   if (fireLevel === params.default_fire) {
-    dimensionScores.fire = 10;
+    dimensionScores.fire = 30;
   } else {
     errors.push({
       herb_id: '',
@@ -542,14 +494,14 @@ export function calculateDecoctionScore(
     dimensionScores.fire = 0;
   }
 
-  // 5. 时间评分 (10%)
+  // 3. 时间评分 (20%)
   const timeDiff = Math.abs(decoctionTime - params.total_time);
   const tolerance = 30; // ±30秒容差
 
   if (timeDiff <= tolerance) {
-    dimensionScores.time = 10;
+    dimensionScores.time = 20;
   } else if (timeDiff <= tolerance * 2) {
-    dimensionScores.time = 5;
+    dimensionScores.time = 10;
   } else {
     dimensionScores.time = 0;
   }
@@ -567,7 +519,7 @@ export function calculateDecoctionScore(
   } else if (totalScore >= 60) {
     feedback = '良好，基本掌握煎药方法，但有部分细节需要注意。';
   } else if (totalScore >= 40) {
-    feedback = '还需加强练习，重点关注配伍和顺序的处理。';
+    feedback = '还需加强练习，重点关注药材组成和火候的处理。';
   } else {
     feedback = '煎药方法掌握不足，建议重新学习方剂煎煮要求。';
   }

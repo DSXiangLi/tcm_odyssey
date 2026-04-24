@@ -20,6 +20,9 @@ import { EventBus, GameEvents } from '../systems/EventBus';
 import { GameStateBridge } from '../utils/GameStateBridge';
 import { TutorialManager } from '../systems/TutorialManager';  // S13.4
 import { createSceneTipUI, TutorialUI } from '../ui/TutorialUI';  // S13.4
+// Phase 2.5 全局背包系统
+import { InventoryManager, createInventoryManager } from '../systems/InventoryManager';
+import { InventoryUI, createInventoryUI } from '../ui/InventoryUI';
 
 // 简化的地图数据结构（Phase 1.5不再使用瓦片渲染）
 interface MapData {
@@ -42,9 +45,15 @@ export class TownOutdoorScene extends Phaser.Scene {
   private background!: Phaser.GameObjects.Image;
   private tutorialManager!: TutorialManager;  // S13.4: 新手引导管理器
   private sceneTipUI: TutorialUI | null = null;  // S13.4: 场景提示UI
+  // Phase 2.5 全局背包系统
+  private inventoryKey!: Phaser.Input.Keyboard.Key;
+  private inventoryUI: InventoryUI | null = null;
+  private inventoryManager!: InventoryManager;
 
   constructor() {
     super({ key: SCENES.TOWN_OUTDOOR });
+    // 初始化背包管理器（单例）
+    this.inventoryManager = createInventoryManager('player_001');
   }
 
   create(): void {
@@ -337,6 +346,8 @@ export class TownOutdoorScene extends Phaser.Scene {
     if (this.input.keyboard) {
       this.cursors = this.input.keyboard.createCursorKeys();
       this.spaceKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE);
+      // Phase 2.5 全局背包系统: B键打开背包
+      this.inventoryKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.B);
       this.input.keyboard.addKeys('W,A,S,D');
     }
   }
@@ -431,6 +442,11 @@ export class TownOutdoorScene extends Phaser.Scene {
         this.sceneManager.changeScene(doorInfo.targetScene, doorInfo.indoorSpawnPoint);
       }
     }
+
+    // Phase 2.5 全局背包系统: B键打开背包
+    if (Phaser.Input.Keyboard.JustDown(this.inventoryKey)) {
+      this.toggleInventory();
+    }
   }
 
   shutdown(): void {
@@ -441,6 +457,12 @@ export class TownOutdoorScene extends Phaser.Scene {
     if (this.sceneTipUI) {
       this.sceneTipUI.destroy();
       this.sceneTipUI = null;
+    }
+
+    // Phase 2.5 全局背包系统: 清理背包UI
+    if (this.inventoryUI) {
+      this.inventoryUI.destroy();
+      this.inventoryUI = null;
     }
 
     this.eventBus.emit(GameEvents.SCENE_DESTROY, { sceneName: SCENES.TOWN_OUTDOOR });
@@ -480,6 +502,26 @@ export class TownOutdoorScene extends Phaser.Scene {
           }
         );
       }
+    }
+  }
+
+  /**
+   * Phase 2.5 全局背包系统: 切换背包显示
+   */
+  private toggleInventory(): void {
+    if (!this.inventoryUI) {
+      // 创建背包UI
+      this.inventoryUI = createInventoryUI(this, () => {
+        console.log('[TownOutdoorScene] Inventory closed');
+      });
+      this.inventoryManager.exposeToWindow();
+      console.log('[TownOutdoorScene] Inventory UI created');
+    }
+
+    if (this.inventoryUI.isShowing()) {
+      this.inventoryUI.hide();
+    } else {
+      this.inventoryUI.show();
     }
   }
 }

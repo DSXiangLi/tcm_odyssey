@@ -3,6 +3,7 @@
  * 煎药数据结构单元测试
  *
  * Phase 2 S9.1 实现
+ * Phase 2.5 简化评分系统
  */
 
 import { describe, it, expect } from 'vitest';
@@ -149,35 +150,27 @@ describe('S9.1: 煎药数据结构', () => {
     });
   });
 
-  describe('DECOCTION_SCORE_RULES - 评分规则', () => {
-    it('should have 5 score dimensions', () => {
-      expect(DECOCTION_SCORE_RULES.length).toBe(5);
+  describe('DECOCTION_SCORE_RULES - 评分规则 (Phase 2.5 简化版)', () => {
+    it('should have 3 score dimensions (simplified)', () => {
+      expect(DECOCTION_SCORE_RULES.length).toBe(3);
     });
 
-    it('should include 配伍正确 with weight 40', () => {
-      const compatibilityRule = DECOCTION_SCORE_RULES.find(r => r.dimension === 'compatibility');
-      expect(compatibilityRule?.weight).toBe(40);
-      expect(compatibilityRule?.name).toBe('配伍正确');
-    });
-
-    it('should include 组成正确 with weight 20', () => {
+    it('should include 组成正确 with weight 50', () => {
       const compositionRule = DECOCTION_SCORE_RULES.find(r => r.dimension === 'composition');
-      expect(compositionRule?.weight).toBe(20);
+      expect(compositionRule?.weight).toBe(50);
+      expect(compositionRule?.name).toBe('组成正确');
     });
 
-    it('should include 顺序正确 with weight 20', () => {
-      const orderRule = DECOCTION_SCORE_RULES.find(r => r.dimension === 'order');
-      expect(orderRule?.weight).toBe(20);
-    });
-
-    it('should include 火候正确 with weight 10', () => {
+    it('should include 火候正确 with weight 30', () => {
       const fireRule = DECOCTION_SCORE_RULES.find(r => r.dimension === 'fire');
-      expect(fireRule?.weight).toBe(10);
+      expect(fireRule?.weight).toBe(30);
+      expect(fireRule?.name).toBe('火候正确');
     });
 
-    it('should include 时间正确 with weight 10', () => {
+    it('should include 时间正确 with weight 20', () => {
       const timeRule = DECOCTION_SCORE_RULES.find(r => r.dimension === 'time');
-      expect(timeRule?.weight).toBe(10);
+      expect(timeRule?.weight).toBe(20);
+      expect(timeRule?.name).toBe('时间正确');
     });
 
     it('total weights should be 100', () => {
@@ -233,24 +226,22 @@ describe('S9.1: 煎药数据结构', () => {
     });
   });
 
-  describe('calculateDecoctionScore - 评分计算', () => {
+  describe('calculateDecoctionScore - 评分计算 (Phase 2.5 简化版)', () => {
     it('should return perfect score for correct 麻黄汤', () => {
       const result = calculateDecoctionScore(
         'mahuang-tang',
         ['mahuang', 'guizhi', 'xingren', 'gancao'],
-        { mahuang: '君', guizhi: '臣', xingren: '佐', gancao: '使' },
-        { mahuang: 'first', guizhi: 'normal', xingren: 'normal', gancao: 'normal' },
+        {}, // compatibilityPlacement - 简化版不再参与评分
+        {}, // orderSettings - 简化版不再参与评分
         'wu',
         600
       );
 
       expect(result.total_score).toBe(100);
       expect(result.passed).toBe(true);
-      expect(result.dimension_scores.compatibility).toBe(40);
-      expect(result.dimension_scores.composition).toBe(20);
-      expect(result.dimension_scores.order).toBe(20);
-      expect(result.dimension_scores.fire).toBe(10);
-      expect(result.dimension_scores.time).toBe(10);
+      expect(result.dimension_scores.composition).toBe(50);
+      expect(result.dimension_scores.fire).toBe(30);
+      expect(result.dimension_scores.time).toBe(20);
       expect(result.herb_errors?.length).toBe(0);
     });
 
@@ -269,70 +260,43 @@ describe('S9.1: 煎药数据结构', () => {
       expect(result.dimension_scores.composition).toBe(0);
     });
 
-    it('should penalize wrong role placement', () => {
-      const result = calculateDecoctionScore(
-        'mahuang-tang',
-        ['mahuang', 'guizhi', 'xingren', 'gancao'],
-        { mahuang: '臣', guizhi: '君', xingren: '佐', gancao: '使' }, // 麻黄和桂枝角色错误
-        { mahuang: 'first', guizhi: 'normal', xingren: 'normal', gancao: 'normal' },
-        'wu',
-        600
-      );
-
-      expect(result.total_score).toBeLessThan(100);
-      expect(result.dimension_scores.compatibility).toBe(20); // 只有2个正确
-      expect(result.herb_errors?.length).toBeGreaterThan(0);
-    });
-
-    it('should penalize wrong order', () => {
-      const result = calculateDecoctionScore(
-        'mahuang-tang',
-        ['mahuang', 'guizhi', 'xingren', 'gancao'],
-        { mahuang: '君', guizhi: '臣', xingren: '佐', gancao: '使' },
-        { mahuang: 'normal', guizhi: 'normal', xingren: 'normal', gancao: 'normal' }, // 麻黄应该先煎
-        'wu',
-        600
-      );
-
-      expect(result.dimension_scores.order).toBe(15); // 3/4正确
-    });
-
     it('should penalize wrong fire level', () => {
       const result = calculateDecoctionScore(
         'mahuang-tang',
         ['mahuang', 'guizhi', 'xingren', 'gancao'],
-        { mahuang: '君', guizhi: '臣', xingren: '佐', gancao: '使' },
-        { mahuang: 'first', guizhi: 'normal', xingren: 'normal', gancao: 'normal' },
+        {},
+        {},
         'wen', // 麻黄汤应该用武火
         600
       );
 
       expect(result.dimension_scores.fire).toBe(0);
+      expect(result.total_score).toBe(70); // 50+0+20
     });
 
-    it('should give partial time score for close time', () => {
+    it('should give full time score for close time', () => {
       const result = calculateDecoctionScore(
         'mahuang-tang',
         ['mahuang', 'guizhi', 'xingren', 'gancao'],
-        { mahuang: '君', guizhi: '臣', xingren: '佐', gancao: '使' },
-        { mahuang: 'first', guizhi: 'normal', xingren: 'normal', gancao: 'normal' },
+        {},
+        {},
         'wu',
         620 // 20秒偏差，在30秒容差内
       );
 
-      expect(result.dimension_scores.time).toBe(10);
+      expect(result.dimension_scores.time).toBe(20);
 
-      // 45秒偏差，在30-60秒范围
+      // 45秒偏差，在30-60秒范围，得部分分数
       const result2 = calculateDecoctionScore(
         'mahuang-tang',
         ['mahuang', 'guizhi', 'xingren', 'gancao'],
-        { mahuang: '君', guizhi: '臣', xingren: '佐', gancao: '使' },
-        { mahuang: 'first', guizhi: 'normal', xingren: 'normal', gancao: 'normal' },
+        {},
+        {},
         'wu',
         645
       );
 
-      expect(result2.dimension_scores.time).toBe(5);
+      expect(result2.dimension_scores.time).toBe(10);
     });
 
     it('should return zero for invalid prescription', () => {
@@ -353,8 +317,8 @@ describe('S9.1: 煎药数据结构', () => {
       const result = calculateDecoctionScore(
         'mahuang-tang',
         ['mahuang', 'guizhi', 'xingren'], // 缺少甘草
-        { mahuang: '君', guizhi: '臣', xingren: '佐' },
-        { mahuang: 'first', guizhi: 'normal', xingren: 'normal' },
+        {},
+        {},
         'wu',
         600
       );
@@ -368,8 +332,8 @@ describe('S9.1: 煎药数据结构', () => {
       const result = calculateDecoctionScore(
         'mahuang-tang',
         ['mahuang', 'guizhi', 'xingren', 'gancao', 'jinyinhua'], // 多了金银花
-        { mahuang: '君', guizhi: '臣', xingren: '佐', gancao: '使', jinyinhua: '君' },
-        { mahuang: 'first', guizhi: 'normal', xingren: 'normal', gancao: 'normal', jinyinhua: 'normal' },
+        {},
+        {},
         'wu',
         600
       );
@@ -384,34 +348,49 @@ describe('S9.1: 煎药数据结构', () => {
       const excellent = calculateDecoctionScore(
         'mahuang-tang',
         ['mahuang', 'guizhi', 'xingren', 'gancao'],
-        { mahuang: '君', guizhi: '臣', xingren: '佐', gancao: '使' },
-        { mahuang: 'first', guizhi: 'normal', xingren: 'normal', gancao: 'normal' },
+        {},
+        {},
         'wu',
         600
       );
       expect(excellent.feedback).toContain('优秀');
 
-      // 良好
+      // 良好 (火候错误)
       const good = calculateDecoctionScore(
         'mahuang-tang',
         ['mahuang', 'guizhi', 'xingren', 'gancao'],
-        { mahuang: '君', guizhi: '臣', xingren: '佐', gancao: '使' },
-        { mahuang: 'first', guizhi: 'normal', xingren: 'normal', gancao: 'normal' },
-        'wen', // 火候错误
+        {},
+        {},
+        'wen',
         600
       );
       expect(good.feedback).toContain('良好');
 
-      // 较差
+      // 较差 (只选了一个药材)
       const poor = calculateDecoctionScore(
         'mahuang-tang',
-        ['mahuang'], // 只选了一个
-        { mahuang: '臣' }, // 角色错误
-        { mahuang: 'normal' }, // 顺序错误
+        ['mahuang'],
+        {},
+        {},
         'wen',
         100
       );
       expect(poor.feedback).toContain('掌握不足');
+    });
+
+    it('should give partial composition score for partial herbs', () => {
+      // 选了3个药材，缺1个
+      const result = calculateDecoctionScore(
+        'mahuang-tang',
+        ['mahuang', 'guizhi', 'xingren'], // 缺少甘草
+        {},
+        {},
+        'wu',
+        600
+      );
+
+      // 3/4 * 50 = 37.5
+      expect(result.dimension_scores.composition).toBe(37.5);
     });
   });
 });

@@ -212,11 +212,12 @@ export class InquiryUI extends Phaser.GameObjects.Container {
    * 布局修复：确保按钮在主面板边界内
    */
   private createExitButton(): Phaser.GameObjects.Text {
-    // 右上角位置：PANEL_RIGHT - PADDING - 按钮宽度 ≈ 290
-    // 顶部位置：PANEL_TOP + PADDING + 按钮高度 ≈ -185
+    // 右上角位置：严格在主面板边界内
+    // 主面板右边界=320，按钮宽度≈72，中心最大=320-36-10=274
+    // 主面板顶边界=-210，按钮高度≈30，中心最小=-210+15+10=-185
     const exitButton = this.scene.add.text(
-      280,  // 右侧，留出边距
-      -185,  // 顶部，留出边距
+      270,  // 右侧，留出足够边距(按钮半宽36+边距10+外边框4=50)
+      -185,  // 顶部，留出足够边距
       '[退出]',
       {
         fontSize: '14px',
@@ -398,13 +399,13 @@ export class InquiryUI extends Phaser.GameObjects.Container {
    * 布局修复：确保区域在主面板边界内，且有内边距
    */
   private createClueTrackerArea(scene: Phaser.Scene): void {
-    // 线索追踪区域位置和尺寸
-    // 右边界=PANEL_RIGHT-PADDING=310，宽度150，中心x=310-75=235
-    // 顶部=PANEL_TOP+PADDING=-200，高度260，中心y=-200+130=-70
+    // 线索追踪区域位置和尺寸 - 严格在主面板边界内
+    // 主面板右边界=320，内边距10，宽度150，中心最大=320-10-75=235
+    // 调整为trackerX=210以确保足够边距
     const trackerWidth = 150;
     const trackerHeight = 260;
-    const trackerX = 220;  // 右侧区域
-    const trackerY = -40;  // 调整使顶部有边距
+    const trackerX = 210;  // 右侧区域，确保右边界(210+75=285)不超出320
+    const trackerY = -40;  // 顶部有足够边距
 
     // 创建线索追踪Graphics背景（内凹槽位）
     this.clueTrackerGraphics = scene.add.graphics();

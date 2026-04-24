@@ -136,11 +136,8 @@ export class ProcessingScene extends Phaser.Scene {
    * 创建ProcessingUI
    */
   private createProcessingUI(): void {
-    this.processingUI = new ProcessingUI({
-      scene: this,
-      width: this.cameras.main.width,
-      height: this.cameras.main.height
-    });
+    // Phase 2.5: ProcessingUI inherits from ModalUI with MINIGAME_MODAL size
+    this.processingUI = new ProcessingUI(this);
   }
 
   /**
@@ -175,19 +172,20 @@ export class ProcessingScene extends Phaser.Scene {
   }
 
   /**
-   * 返回诊所场景
+   * 返回药园场景
+   * 炮制游戏应在药园中进行，完成后返回药园
    */
-  returnToClinic(): void {
+  returnToGarden(): void {
     this.eventBus.emit(GameEvents.SCENE_SWITCH, {
       from: SCENES.PROCESSING,
-      to: SCENES.CLINIC
+      to: SCENES.GARDEN
     });
 
     // 重置管理器
     this.processingManager.reset();
 
     // 切换场景
-    this.scene.start(SCENES.CLINIC);
+    this.scene.start(SCENES.GARDEN);
   }
 
   update(): void {

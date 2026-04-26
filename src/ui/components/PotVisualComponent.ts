@@ -115,8 +115,8 @@ export default class PotVisualComponent {
     ];
 
     gradientColors.forEach((color, i) => {
-      this.bodyGraphics.fillStyle(color, 1);
-      this.bodyGraphics.fillRect(x + i * stepWidth, y, stepWidth + 1, bodyHeight);
+      this.bodyGraphics!.fillStyle(color, 1);
+      this.bodyGraphics!.fillRect(x + i * stepWidth, y, stepWidth + 1, bodyHeight);
     });
 
     // Step 2: 绘制圆底 (对应CSS: border-radius 0 0 40% 40%)
@@ -157,13 +157,13 @@ export default class PotVisualComponent {
 
     const stepHeight = rimHeight / gradientColors.length;
     gradientColors.forEach((color, i) => {
-      this.rimGraphics.fillStyle(color, 1);
-      this.rimGraphics.fillRect(x, y + i * stepHeight, rimWidth, stepHeight + 1);
+      this.rimGraphics!.fillStyle(color, 1);
+      this.rimGraphics!.fillRect(x, y + i * stepHeight, rimWidth, stepHeight + 1);
     });
 
     // 边缘高光 (对应CSS: inset 0 2px 0 rgba(200,120,60,.4))
-    this.rimGraphics.fillStyle(0xc8783c, 0.4);
-    this.rimGraphics.fillRect(x, y, rimWidth, px * 2);
+    this.rimGraphics!.fillStyle(0xc8783c, 0.4);
+    this.rimGraphics!.fillRect(x, y, rimWidth, px * 2);
   }
 
   /**
@@ -188,14 +188,14 @@ export default class PotVisualComponent {
     ];
 
     gradientColors.forEach((color, i) => {
-      this.liquidGraphics.fillStyle(color, 1);
-      this.liquidGraphics.fillRect(x, y + i * liquidHeight / 2, liquidWidth, liquidHeight / 2 + 1);
+      this.liquidGraphics!.fillStyle(color, 1);
+      this.liquidGraphics!.fillRect(x, y + i * liquidHeight / 2, liquidWidth, liquidHeight / 2 + 1);
     });
 
     // Step 2: 波纹条纹效果 (对应CSS: repeating-linear-gradient)
-    this.liquidGraphics.fillStyle(0xffd282, 0.3);
+    this.liquidGraphics!.fillStyle(0xffd282, 0.3);
     for (let i = 0; i < liquidWidth; i += px * 10) {
-      this.liquidGraphics.fillRect(x + i, y, px * 2, liquidHeight);
+      this.liquidGraphics!.fillRect(x + i, y, px * 2, liquidHeight);
     }
 
     // Step 3: 椭圆形表面光泽

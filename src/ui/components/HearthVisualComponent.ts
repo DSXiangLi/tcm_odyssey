@@ -257,7 +257,6 @@ export default class HearthVisualComponent {
     this.fireHoleGraphics = this.scene.add.graphics();
     this.container.add(this.fireHoleGraphics);
 
-    const brickWidth = this.width;       // 360
     const brickHeight = this.height;     // 204
     const px = this.pixelSize;           // 6
 
@@ -309,7 +308,6 @@ export default class HearthVisualComponent {
     this.fireHoleGraphics!.strokePath();
   }
   protected createFlames(): void {
-    const brickWidth = this.width;       // 360
     const brickHeight = this.height;     // 204
     const px = this.pixelSize;           // 6
 
@@ -328,7 +326,7 @@ export default class HearthVisualComponent {
     ];
 
     // 创建每个火焰
-    flameConfigs.forEach((config, index) => {
+    flameConfigs.forEach((config) => {
       const flame = this.scene.add.graphics();
       this.container.add(flame);
 
@@ -371,7 +369,6 @@ export default class HearthVisualComponent {
     width: number,
     height: number
   ): void {
-    const px = this.pixelSize;
     const COLORS = HearthVisualComponent.COLORS;
 
     // 火焰形状: 底部宽，顶部尖 (三角形 + 弧线)

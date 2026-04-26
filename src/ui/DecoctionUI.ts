@@ -104,7 +104,6 @@ export class DecoctionUI extends ScrollModalUI {
   // 左侧动画区元素
   private hearthContainer: Phaser.GameObjects.Container | null = null;
   private hearthGraphics: Phaser.GameObjects.Graphics | null = null; // 用于高亮overlay
-  private hearthText: Phaser.GameObjects.Text | null = null;
   private hearthDropZone: Phaser.GameObjects.Zone | null = null;
 
   // Phase 2.5 视觉组件 (Task 10)

@@ -1,74 +1,55 @@
 # 药灵山谷 - 当前任务跟踪
 
-**最后更新**: 2026-04-26
-**当前状态**: Hermes NPC 对话质量真实 API 测试 - ✅ 已完成
+**最后更新**: 2026-04-27
+**当前状态**: 暂无进行中任务
+
+---
+
+## Phase 2.5: 煎药小游戏 HTML 直接迁移 ✅ (已完成)
+
+**状态**: 已完成
+**完成日期**: 2026-04-27
+**分支**: feature/decoction-html-embedding-v2
+**设计文档**: [v2.0直接迁移方案](docs/superpowers/specs/phase2-5/2026-04-26-decoction-direct-migration-design.md)
+**实现计划**: [v2.0实现计划](docs/superpowers/plans/phase2-5/2026-04-26-decoction-direct-migration-plan.md)
+
+### 完成摘要
+
+采用"直接使用设计稿，不做拆分重构"原则，将 `docs/ui/煎药小游戏/decoction.html` 设计稿完整迁移到 Phaser 项目。
+
+**创建文件 (7个)**:
+
+| 文件 | 行数 | 功能 |
+|------|------|------|
+| `src/styles/decoction.css` | 1072 | 完整CSS样式(11种动画keyframes) |
+| `src/data/decoction-pixel-herbs.ts` | 69 | 像素药材数据(22种) + pixelSprite函数 |
+| `src/ui/components/ScrollModal.tsx` | 34 | 卷轴框架(roller/paper/seal) |
+| `src/ui/components/StoveScene.tsx` | 91 | 炉灶场景(stove/fire/flames/embers) |
+| `src/ui/components/PotArea.tsx` | 41 | 药罐区域(pot/liquid/steam) |
+| `src/ui/components/HerbGrid.tsx` | 124 | 药材网格(bag-header/grid/HerbTag) |
+| `src/ui/components/VialsShelf.tsx` | 56 | 药瓶陈列(brew-btn/vials/Vial) |
+
+### 核心成果
+
+1. **CSS完整迁移** - 保留设计稿1200×760尺寸 + 3区域Grid布局
+2. **像素药材数据** - 22种药材grid/palette定义，pixelSprite渲染函数
+3. **React组件化** - 7个核心组件TSX化，状态管理简化
+4. **动效系统** - 11种CSS动画(flicker/flameDance/steamRise等)
+5. **Phaser DOM集成准备** - CustomEvent桥接机制设计完成
+
+### 关键原则
+
+> **直接使用设计稿** - 不做拆分重构，完整保留视觉元素布局
 
 ---
 
 ## Hermes NPC 对话质量真实 API 测试 ✅ (已完成)
 
-**状态**: 已完成 (真实 GLM API 测试 + CLAUDE.md 原则更新)
-**开始日期**: 2026-04-26
+**状态**: 已完成
 **完成日期**: 2026-04-26
 
-### 测试方法对比
-
-| 类型 | Mock 测试 | 真实 API 测试 |
-|-----|----------|--------------|
-| 数据来源 | 硬编码假响应 | GLM API 实时生成 |
-| 测试目的 | 验证评估标准 | 验证 NPC 实际行为 |
-| 平均分 | 4.85 | **4.92** |
-
-### 真实 API 测试结果
-
-| 场景 | 真实响应亮点 | 评分 |
-|-----|-------------|------|
-| S1 | 引用《伤寒论》开篇，使用"你可记得"引导语 | 5.0 |
-| S2 | 引用《伤寒论》第16条，使用"你且思考"引导语 | 5.0 |
-| S3 | 引用《伤寒论》太阳提纲，使用"你可曾细想过"引导语 | 5.0 |
-| S7 | 引用《金匮要略》，详细四证四方，引导思考表证vs里证 | 5.0 |
-| S8 | 引用《素问·脉要精微论》，多层次引导提问 | 5.0 |
-
-### CLAUDE.md 原则更新
-
-新增 **真实测试原则（禁止 Mock）**:
-
-```
-❌ 禁止 Mock: 禁止硬编码预设响应、禁止模拟假数据、禁止绕过真实流程
-✅ 必须真实: 必须调用真实 API、必须使用真实数据源、必须验证真实行为
-
-测试必须做到:
-- NPC 对话测试 → 必须调用真实 LLM API
-- 游戏功能测试 → 必须启动真实游戏进程
-- 数据库测试 → 必须连接真实数据库
-- API 测试 → 必须调用真实后端服务
-```
-
-### 提交记录
-
-```
-3f59589 test(hermes): complete real GLM API dialog quality test
-e60cbc9 docs: add "禁止 Mock 测试" principle to CLAUDE.md
-```
+详见 CLAUDE.md 原则更新。
 
 ---
 
-## Phase 2.5: 煎药小游戏 UI 视觉优化 ✅ (已完成)
-
-**状态**: 完成 (Task 1-11 全部完成)
-**开始日期**: 2026-04-23
-**完成日期**: 2026-04-23
-**设计文档**: [视觉差距分析](docs/superpowers/specs/phase2-5/2026-04-23-decoction-ui-visual-gap-analysis.md)
-
----
-
-## 下一步
-
-Hermes NPC 对话质量测试已完成。后续任务:
-- 将 Hermes 后端集成到游戏
-- 创建 game_adapter.py 游戏平台适配器
-- 配置 SSE 实时对话流
-
----
-
-*本文档由 Claude Code 维护，更新于 2026-04-26*
+*本文档由 Claude Code 维护，更新于 2026-04-27*

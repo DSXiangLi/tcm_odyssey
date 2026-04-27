@@ -1,7 +1,7 @@
 # 药灵山谷 (Yaoling Shangu) - 项目文档
 
-**版本**: v3.3 - Phase 2.5 煎药小游戏 UI 重构完成
-**最后更新**: 2026-04-22
+**版本**: v3.4 - Phase 2.5 煎药小游戏 HTML 直接迁移完成
+**最后更新**: 2026-04-27
 **技术栈**: Phaser 3 + TypeScript + Vite + Hermes-Agent
 
 
@@ -44,6 +44,7 @@
 | 小游戏设计优化 | ✅ 完成   | 种植考题/脉诊正常脉象/舌诊补充说明/辨证选方合并 |
 | **Phase 2.5 煎药/炮制** | ✅ 完成   | 统一场景布局、E2E测试、场景关联修复            |
 | **Phase 2.5 煎药UI重构** | ✅ 完成 | 卷轴风格UI、药牌组件、拖拽动效、像素药材数据 |
+| **Phase 2.5 煎药HTML直接迁移** | ✅ 完成 | 直接使用设计稿HTML，CSS/像素数据/React组件迁移 (2026-04-27) |
 | **Phase 2.5 种植/选方** | ⏳ 待开发 | 种植小游戏已入口，选方待开发                  |
 | **全局背包系统** | ✅ 完成 | 背包支持任意场景B键打开，详见[设计文档](docs/superpowers/specs/phase2-5/2026-04-21-global-inventory-design.md) |
 
@@ -141,6 +142,49 @@
 - 煎药(D) → 应在诊所 ✅
 - 炮制(P) → 应在药园 ✅ (从诊所移除，添加到药园)
 - 种植(G) → 应在药园 ✅
+
+---
+
+### Phase 2.5: 煎药小游戏 HTML 直接迁移 ✅ (2026-04-27)
+
+**核心原则**: 直接使用设计稿HTML，不做拆分重构，完整保留视觉元素布局。
+
+**设计文档**: [v2.0直接迁移方案](docs/superpowers/specs/phase2-5/2026-04-26-decoction-direct-migration-design.md)
+**实现计划**: [v2.0实现计划](docs/superpowers/plans/phase2-5/2026-04-26-decoction-direct-migration-plan.md)
+
+**创建文件 (7个)**:
+
+| 文件 | 行数 | 功能 |
+|------|------|------|
+| `src/styles/decoction.css` | 1072 | 完整CSS样式(11种动画keyframes) |
+| `src/data/decoction-pixel-herbs.ts` | 69 | 像素药材数据(22种) + pixelSprite函数 |
+| `src/ui/components/ScrollModal.tsx` | 34 | 卷轴框架(roller/paper/seal) |
+| `src/ui/components/StoveScene.tsx` | 91 | 炉灶场景(stove/fire/flames/embers) |
+| `src/ui/components/PotArea.tsx` | 41 | 药罐区域(pot/liquid/steam) |
+| `src/ui/components/HerbGrid.tsx` | 124 | 药材网格(bag-header/grid/HerbTag) |
+| `src/ui/components/VialsShelf.tsx` | 56 | 药瓶陈列(brew-btn/vials/Vial) |
+
+**核心成果**:
+- CSS完整迁移 - 保留设计稿1200×760尺寸 + 3区域Grid布局
+- 像素药材数据 - 22种药材grid/palette定义，pixelSprite渲染函数
+- React组件化 - 7个核心组件TSX化，状态管理简化
+- 动效系统 - 11种CSS动画(flicker/flameDance/steamRise等)
+
+**CSS动画列表 (11种)**:
+
+| 动画名 | 用途 | 时长 |
+|--------|------|------|
+| `flicker` | 背景光效 | 4s |
+| `flameDance` | 火焰舞动 | 0.9s |
+| `emberRise` | 火星上升 | 1.6s |
+| `stir` | 搅拌勺摆动 | 2.4s |
+| `steamRise` | 蒸汽上升 | 3.2s |
+| `scrollBob` | 卷轴悬浮 | 3.8s |
+| `goldPulse` | 金色脉冲 | 2.5s |
+| `stampIn` | 印章盖入 | 0.8s |
+| `crossShake` | 错误抖动 | 0.5s |
+| `potCheer/potAngry` | 药罐反馈 | 0.5-0.6s |
+| `splashFly` | 水花溅射 | 0.9s |
 
 ---
 
@@ -562,4 +606,4 @@ docs/superpowers/
 
 ---
 
-*本文档由 Claude Code 维护，更新于 2026-04-22*
+*本文档由 Claude Code 维护，更新于 2026-04-27*

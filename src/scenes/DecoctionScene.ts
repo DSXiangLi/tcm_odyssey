@@ -3,9 +3,10 @@
  * 煎药场景
  *
  * Phase 2 S9.4 实现
+ * Phase 2.5 煎药小游戏 UI 重构 Task 7 - 集成 React UI
  *
  * 功能:
- * - 集成DecoctionManager和DecoctionUI
+ * - 集成DecoctionManager和React DecoctionUI
  * - 煎药游戏流程控制
  * - 从ClinicScene进入，完成后返回
  *
@@ -16,11 +17,19 @@
  */
 
 import Phaser from 'phaser';
+import type { Root } from 'react-dom/client';
 import { SCENES } from '../data/constants';
 import { EventBus, GameEvents } from '../systems/EventBus';
 import { GameStateBridge } from '../utils/GameStateBridge';
 import { DecoctionManager, DecoctionManagerConfig } from '../systems/DecoctionManager';
-import { DecoctionUI } from '../ui/DecoctionUI';
+
+// React UI imports (Phase 2.5 Task 7)
+import { mountDecoctionUI, unmountDecoctionUI, DECOCTION_EVENTS } from '../ui/html/decoction-entry';
+import { DecoctionUIProps } from '../ui/html/types/index';
+import { ScoreResultData, HerbResultData } from '../ui/html/bridge/types';
+import { HERB_PIXELS, FORMULAS } from '../ui/html/data/herb-pixels';
+import type { FireLevel } from '../data/decoction-data';
+import prescriptionsData from '../data/prescriptions.json';
 
 export interface DecoctionSceneConfig {
   prescriptionId?: string;  // 可选：预设方剂ID
@@ -32,8 +41,9 @@ export class DecoctionScene extends Phaser.Scene {
   private gameStateBridge!: GameStateBridge;
   private decoctionManager!: DecoctionManager;
 
-  // UI组件
-  private decoctionUI!: DecoctionUI;
+  // React UI (Phase 2.5 Task 7)
+  private reactRoot: Root | null = null;
+  private domContainer: HTMLElement | null = null;
 
   // 数据
   private prescriptionId: string | null = null;
@@ -63,8 +73,8 @@ export class DecoctionScene extends Phaser.Scene {
     // 创建DecoctionManager
     this.createDecoctionManager();
 
-    // 创建DecoctionUI
-    this.createDecoctionUI();
+    // 创建React UI (Phase 2.5 Task 7)
+    this.createReactUI();
 
     // 更新状态桥接器
     this.gameStateBridge.updateCurrentScene(SCENES.DECOCTION);
@@ -78,7 +88,7 @@ export class DecoctionScene extends Phaser.Scene {
     this.isInitialized = true;
 
     // 添加提示
-    this.add.text(10, 10, '煎药环节 (Phase 2 S9)', {
+    this.add.text(10, 10, '煎药环节 (Phase 2 S9) - React UI', {
       fontSize: '16px',
       color: '#ffffff',
       backgroundColor: '#000000aa',
@@ -132,10 +142,151 @@ export class DecoctionScene extends Phaser.Scene {
   }
 
   /**
-   * 创建DecoctionUI
+   * 创建React UI (Phase 2.5 Task 7)
+   * 使用 DOM Element 方式挂载 React UI
    */
-  private createDecoctionUI(): void {
-    this.decoctionUI = new DecoctionUI(this);
+  private createReactUI(): void {
+    // 创建 DOM 容器
+    this.domContainer = document.createElement('div');
+    this.domContainer.id = 'decoction-react-root';
+    this.domContainer.style.position = 'absolute';
+    this.domContainer.style.top = '0';
+    this.domContainer.style.left = '0';
+    this.domContainer.style.width = '100%';
+    this.domContainer.style.height = '100%';
+    this.domContainer.style.zIndex = '10';
+
+    // 添加到 body
+    document.body.appendChild(this.domContainer);
+
+    // 准备 UI props
+    const uiProps: DecoctionUIProps = {
+      herbs: HERB_PIXELS,
+      targetFormula: FORMULAS[0],  // 默认第一个方剂
+      completedVials: [null, null, null, null, null],  // 5个空槽位
+      onHerbDrop: (herbId: string) => this.handleHerbDropFromUI(herbId),
+      onFireSelect: (type: 'martial' | 'civil' | 'gentle') => this.handleFireSelectFromUI(type),
+      onComplete: (herbs: string[], fireType: string) => this.handleCompleteFromUI(herbs, fireType),
+      onClose: () => this.returnToClinic(),
+    };
+
+    // 挂载 React UI
+    this.reactRoot = mountDecoctionUI(this.domContainer, uiProps);
+
+    // 设置桥接事件监听
+    this.setupBridgeEventListeners();
+  }
+
+  /**
+   * 设置桥接事件监听 (React UI → Phaser)
+   */
+  private setupBridgeEventListeners(): void {
+    // 监听药材拖放事件
+    window.addEventListener(DECOCTION_EVENTS.HERB_DROP, ((e: CustomEvent) => {
+      const data = e.detail as { herbId: string; success: boolean };
+      this.handleHerbDropEvent(data.herbId, data.success);
+    }) as EventListener);
+
+    // 监听完成事件
+    window.addEventListener(DECOCTION_EVENTS.COMPLETE, ((e: CustomEvent) => {
+      const data = e.detail as { herbs: string[]; fireType: string };
+      this.handleCompleteEvent(data.herbs, data.fireType);
+    }) as EventListener);
+
+    // 监听关闭事件
+    window.addEventListener(DECOCTION_EVENTS.CLOSE, (() => {
+      this.returnToClinic();
+    }) as EventListener);
+  }
+
+  /**
+   * 处理药材拖放事件 (从 React UI)
+   */
+  private handleHerbDropEvent(herbId: string, success: boolean): void {
+    // 发送结果回 React UI
+    const result: HerbResultData = {
+      success,
+      herbId,
+      message: success ? '药材正确' : '药材不正确或已添加'
+    };
+    window.dispatchEvent(new CustomEvent(DECOCTION_EVENTS.HERB_RESULT, { detail: result }));
+  }
+
+  /**
+   * 处理药材拖放回调 (从 props.onHerbDrop)
+   */
+  private handleHerbDropFromUI(herbId: string): void {
+    // 调用 DecoctionManager 添加药材
+    try {
+      this.decoctionManager.addHerb(herbId);
+    } catch (error) {
+      // 药材添加失败（可能是重复添加或不在配方中）
+      console.warn('Herb drop failed:', error);
+    }
+  }
+
+  /**
+   * 处理火候选择回调 (从 props.onFireSelect)
+   */
+  private handleFireSelectFromUI(type: 'martial' | 'civil' | 'gentle'): void {
+    // 映射火候类型到 DecoctionManager 的 FireLevel ('wu' | 'wen' | 'slow')
+    const fireLevelMap: Record<string, FireLevel> = {
+      'martial': 'wu',
+      'civil': 'wen',
+      'gentle': 'slow'
+    };
+    this.decoctionManager.setFireLevel(fireLevelMap[type] || 'wu');
+  }
+
+  /**
+   * 处理完成回调 (从 props.onComplete)
+   */
+  private handleCompleteFromUI(_herbs: string[], _fireType: string): ScoreResultData {
+    // 调用 DecoctionManager 完成煎药
+    this.decoctionManager.completeDecoction();
+    const result = this.decoctionManager.evaluate();
+
+    if (!result) {
+      // 返回失败结果
+      const failResult: ScoreResultData = {
+        score: 0,
+        breakdown: { composition: 0, fire: 0, time: 0 },
+        passed: false,
+        prescriptionName: undefined
+      };
+      window.dispatchEvent(new CustomEvent(DECOCTION_EVENTS.SCORE_RESULT, { detail: failResult }));
+      return failResult;
+    }
+
+    // 获取方剂名称
+    const state = this.decoctionManager.getState();
+    const prescription = prescriptionsData.prescriptions.find(p => p.id === state.prescription_id);
+    const prescriptionName = prescription?.name || undefined;
+
+    // 转换结果格式
+    const scoreResult: ScoreResultData = {
+      score: result.total_score,
+      breakdown: {
+        composition: result.dimension_scores.composition,
+        fire: result.dimension_scores.fire,
+        time: result.dimension_scores.time
+      },
+      passed: result.passed,
+      prescriptionName
+    };
+
+    // 发送结果回 React UI
+    window.dispatchEvent(new CustomEvent(DECOCTION_EVENTS.SCORE_RESULT, { detail: scoreResult }));
+
+    return scoreResult;
+  }
+
+  /**
+   * 处理完成事件 (从 CustomEvent)
+   */
+  private handleCompleteEvent(_herbs: string[], _fireType: string): void {
+    // 已通过 handleCompleteFromUI 处理
+    // This method is for event-based communication if needed
   }
 
   /**
@@ -147,7 +298,8 @@ export class DecoctionScene extends Phaser.Scene {
         isInitialized: this.isInitialized,
         prescriptionId: this.prescriptionId,
         phase: this.decoctionManager.getPhase(),
-        state: this.decoctionManager.getState()
+        state: this.decoctionManager.getState(),
+        hasReactUI: !!this.reactRoot,
       };
 
       // 暴露完整的管理器实例
@@ -186,14 +338,24 @@ export class DecoctionScene extends Phaser.Scene {
   }
 
   update(): void {
-    // DecoctionUI通过事件系统更新，不需要额外的update逻辑
+    // React UI 自行管理更新，不需要额外的 update 逻辑
   }
 
   shutdown(): void {
-    // 清理UI组件
-    if (this.decoctionUI) {
-      this.decoctionUI.destroy();
+    // 清理 React UI (Phase 2.5 Task 7)
+    if (this.reactRoot) {
+      unmountDecoctionUI(this.reactRoot);
+      this.reactRoot = null;
     }
+    if (this.domContainer) {
+      this.domContainer.remove();
+      this.domContainer = null;
+    }
+
+    // 移除桥接事件监听
+    window.removeEventListener(DECOCTION_EVENTS.HERB_DROP, (() => {}) as EventListener);
+    window.removeEventListener(DECOCTION_EVENTS.COMPLETE, (() => {}) as EventListener);
+    window.removeEventListener(DECOCTION_EVENTS.CLOSE, (() => {}) as EventListener);
 
     // 清理管理器
     if (this.decoctionManager) {

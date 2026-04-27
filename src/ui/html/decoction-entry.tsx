@@ -34,5 +34,5 @@ export function unmountDecoctionUI(root: Root): void {
 }
 
 // 导出类型供外部使用
-export { DecoctionUIProps, HerbPixelData, FormulaData, VialData } from './types/index';
+export type { DecoctionUIProps, HerbPixelData, FormulaData, VialData } from './types/index';
 export { DECOCTION_EVENTS } from './bridge/events';

@@ -8,10 +8,10 @@
  */
 
 import React, { useState, useEffect, useCallback } from 'react';
-import { HerbPixelData, FormulaData, VialData } from './types/index';
+import { HerbPixelData, FormulaData, VialData, DecoctionUIProps } from './types/index';
 import { DECOCTION_EVENTS } from './bridge/events';
 import { HerbResultData, ScoreResultData, StateUpdateData } from './bridge/types';
-import { pixelSprite, HERB_PIXELS, FORMULAS } from './data/herb-pixels';
+import { pixelSprite } from './data/herb-pixels';
 import './decoction.css';
 
 // ============================================================================
@@ -344,22 +344,29 @@ function DropBurst({ kind, x, y }: DropBurstProps): React.ReactElement {
 
 /**
  * 煎药小游戏主组件
+ *
+ * Props-driven design:
+ * - herbs: from DecoctionScene via props
+ * - targetFormula: from DecoctionScene via props
+ * - completedVials: from DecoctionScene via props
+ * - callbacks: bridge events to DecoctionManager via props
  */
-export function DecoctionUI(): React.ReactElement {
+export function DecoctionUI(props: DecoctionUIProps): React.ReactElement {
   // State management
   const [_frame] = useState('default');
   const [progress, setProgress] = useState(0);
   const [state, setStateVal] = useState<'idle' | 'selecting' | 'brewing' | 'done'>('selecting');
-  const herbs = HERB_PIXELS;
-  const [target, setTarget] = useState<FormulaData>(FORMULAS[0]);
+
+  // Use props for data (from DecoctionScene)
+  const herbs = props.herbs;
+  const target = props.targetFormula;
+  const initialVials = props.completedVials;
+
+  // Internal state for UI interaction
   const [inPot, setInPot] = useState<HerbPixelData[]>([]);
   const [bursts, setBursts] = useState<BurstData[]>([]);
   const [potShake, setPotShake] = useState<'ok' | 'bad' | null>(null);
-  const [finishedVials, setFinishedVials] = useState<(VialData | null)[]>([
-    { name: '四君子汤', color: '#c89550' },
-    { name: '银翘散', color: '#6a8c78' },
-    null, null, null,
-  ]);
+  const [finishedVials, setFinishedVials] = useState<(VialData | null)[]>(initialVials);
   const [dragging, setDragging] = useState<HerbPixelData | null>(null);
   const [dragPos, setDragPos] = useState({ x: 0, y: 0 });
   const [trails, setTrails] = useState<TrailData[]>([]);
@@ -497,7 +504,8 @@ export function DecoctionUI(): React.ReactElement {
       setTimeout(() => setPotShake(null), 600);
       setDragging(null);
 
-      // Bridge to Phaser (wrong herb)
+      // Call props callback and bridge to Phaser (wrong herb)
+      props.onHerbDrop(dragging.id);
       bridgeToPhaser(DECOCTION_EVENTS.HERB_DROP, {
         herbId: dragging.id,
         success: false
@@ -526,12 +534,13 @@ export function DecoctionUI(): React.ReactElement {
     setInPot(p => [...p, dragging]);
     setDragging(null);
 
-    // Bridge to Phaser (correct herb)
+    // Call props callback and bridge to Phaser (correct herb)
+    props.onHerbDrop(dragging.id);
     bridgeToPhaser(DECOCTION_EVENTS.HERB_DROP, {
       herbId: dragging.id,
       success: true
     });
-  }, [dragging, target, inPot]);
+  }, [dragging, target, inPot, props]);
 
   // ============================================================================
   // Brew/Complete Handler
@@ -556,19 +565,22 @@ export function DecoctionUI(): React.ReactElement {
       return copy;
     });
 
-    // Bridge to Phaser (complete)
+    // Call onComplete callback from props to get score result
+    const scoreResult = props.onComplete(inPot.map(h => h.id), 'martial');
+
+    // Bridge to Phaser (complete) - also dispatch event for backwards compatibility
     bridgeToPhaser(DECOCTION_EVENTS.COMPLETE, {
       herbs: inPot.map(h => h.id),
-      fireType: 'martial' // Default fire type
+      fireType: 'martial',
+      scoreResult
     });
 
     setTimeout(() => {
       setInPot([]);
       setProgress(0);
-      setTarget(FORMULAS[Math.floor(Math.random() * FORMULAS.length)]);
       setStateVal('brewing');
     }, 2600);
-  }, [inPot, target]);
+  }, [inPot, target, props]);
 
   // ============================================================================
   // Derived Values
@@ -611,7 +623,7 @@ export function DecoctionUI(): React.ReactElement {
             <div className="deco" />
           </div>
 
-          <button className="close-btn">×</button>
+          <button className="close-btn" onClick={() => props.onClose()}>×</button>
 
           <div className="content">
             <div className="region region-stove">

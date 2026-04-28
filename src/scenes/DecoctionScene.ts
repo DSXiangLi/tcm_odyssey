@@ -149,12 +149,8 @@ export class DecoctionScene extends Phaser.Scene {
     // 创建 DOM 容器
     this.domContainer = document.createElement('div');
     this.domContainer.id = 'decoction-react-root';
-    this.domContainer.style.position = 'absolute';
-    this.domContainer.style.top = '0';
-    this.domContainer.style.left = '0';
-    this.domContainer.style.width = '100%';
-    this.domContainer.style.height = '100%';
-    this.domContainer.style.zIndex = '10';
+    // 不设置内联样式，让 CSS 文件完全控制布局和 z-index
+    // CSS 中定义了 position:fixed, z-index:1000, pointer-events:auto
 
     // 添加到 body
     document.body.appendChild(this.domContainer);
@@ -325,6 +321,11 @@ export class DecoctionScene extends Phaser.Scene {
    * 返回诊所场景
    */
   returnToClinic(): void {
+    // ===== 显式清理 React UI（不依赖 Phaser shutdown） =====
+    // Phaser 的 shutdown() 不一定在 scene.start() 后立即调用
+    // 所以必须在切换场景前手动清理
+    this.cleanupReactUI();
+
     this.eventBus.emit(GameEvents.SCENE_SWITCH, {
       from: SCENES.DECOCTION,
       to: SCENES.CLINIC
@@ -337,16 +338,16 @@ export class DecoctionScene extends Phaser.Scene {
     this.scene.start(SCENES.CLINIC);
   }
 
-  update(): void {
-    // React UI 自行管理更新，不需要额外的 update 逻辑
-  }
-
-  shutdown(): void {
-    // 清理 React UI (Phase 2.5 Task 7)
+  /**
+   * 清理 React UI（从 returnToClinic 和 shutdown 调用）
+   */
+  private cleanupReactUI(): void {
+    // 清理 React Root
     if (this.reactRoot) {
       unmountDecoctionUI(this.reactRoot);
       this.reactRoot = null;
     }
+    // 移除 DOM 容器
     if (this.domContainer) {
       this.domContainer.remove();
       this.domContainer = null;
@@ -356,6 +357,15 @@ export class DecoctionScene extends Phaser.Scene {
     window.removeEventListener(DECOCTION_EVENTS.HERB_DROP, (() => {}) as EventListener);
     window.removeEventListener(DECOCTION_EVENTS.COMPLETE, (() => {}) as EventListener);
     window.removeEventListener(DECOCTION_EVENTS.CLOSE, (() => {}) as EventListener);
+  }
+
+  update(): void {
+    // React UI 自行管理更新，不需要额外的 update 逻辑
+  }
+
+  shutdown(): void {
+    // 清理 React UI（调用公共方法）
+    this.cleanupReactUI();
 
     // 清理管理器
     if (this.decoctionManager) {

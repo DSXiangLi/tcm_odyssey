@@ -26,7 +26,9 @@ export const SCENES = {
   // Phase 2 S10: 炮制场景
   PROCESSING: 'ProcessingScene',
   // Phase 2 S11: 种植场景
-  PLANTING: 'PlantingScene'
+  PLANTING: 'PlantingScene',
+  // Phase 2.5: 诊断场景（HTML 直接迁移）
+  DIAGNOSIS: 'DiagnosisScene'
 } as const;
 
 // 玩家移动速度

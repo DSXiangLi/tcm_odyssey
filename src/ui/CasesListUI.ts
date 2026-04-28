@@ -158,6 +158,9 @@ export class CasesListUI extends ModalUI {
       scrollHint.setOrigin(0.5);
       this.container.add(scrollHint);
     }
+
+    // Phase 2.5: 添加诊断练习按钮
+    this.createDiagnosisPracticeButton();
   }
 
   /**
@@ -418,6 +421,50 @@ export class CasesListUI extends ModalUI {
       closeBtn.destroy();
     });
     this.container.add(closeBtn);
+  }
+
+  /**
+   * Phase 2.5: 创建诊断练习按钮
+   * 提供入口进入新的诊断游戏（HTML直接迁移版本）
+   */
+  private createDiagnosisPracticeButton(): void {
+    const buttonY = 220;  // 位于滚动提示下方
+
+    const buttonBg = this.scene.add.rectangle(0, buttonY, 200, 30, UI_COLORS.PANEL_LIGHT, 0.85);
+    buttonBg.setOrigin(0.5);
+    buttonBg.setInteractive({ useHandCursor: true });
+    this.container.add(buttonBg);
+
+    const button = this.scene.add.text(0, buttonY, '【诊断练习】', {
+      fontSize: '14px',
+      color: '#80c0a0',  // 青绿色
+      fontStyle: 'bold'
+    });
+    button.setOrigin(0.5);
+    button.setInteractive({ useHandCursor: true });
+    this.container.add(button);
+
+    // 点击事件 - 发送 diagnosis:start 事件
+    const handleClick = () => {
+      console.log('[CasesListUI] Diagnosis practice button clicked');
+      // 发送 CustomEvent，ClinicScene 会监听并切换场景
+      window.dispatchEvent(new CustomEvent('diagnosis:start', {
+        detail: { caseId: 'case-001' }
+      }));
+      // 关闭病案列表
+      this.destroy();
+    };
+
+    buttonBg.on('pointerdown', handleClick);
+    button.on('pointerdown', handleClick);
+
+    // 鼠标悬停效果
+    buttonBg.on('pointerover', () => {
+      buttonBg.setFillStyle(UI_COLORS.ACCENT_SKY, 0.9);
+    });
+    buttonBg.on('pointerout', () => {
+      buttonBg.setFillStyle(UI_COLORS.PANEL_LIGHT, 0.85);
+    });
   }
 
   /**

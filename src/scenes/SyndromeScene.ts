@@ -1,6 +1,10 @@
 // src/scenes/SyndromeScene.ts
 /**
  * 辨证场景
+ *
+ * @deprecated Phase 2.5 后已废弃，请使用 DiagnosisScene (HTML直接迁移版本)
+ * 新的诊断游戏整合了舌诊→脉诊→问诊→辨证→选方5个阶段
+ *
  * 功能:
  * - 显示已收集信息汇总（问诊+脉诊+舌诊）
  * - 玩家选择证型

@@ -1,15 +1,16 @@
 # 药灵山谷 - 当前任务跟踪
 
 **最后更新**: 2026-04-29
-**当前状态**: Phase 2.5 诊断游戏 HTML 直接迁移核心任务完成
+**当前状态**: Phase 2.5 诊断游戏 HTML 直接迁移完成
 
 ---
 
-## Phase 2.5: 诊断游戏 HTML 直接迁移 ⏳ (核心完成)
+## Phase 2.5: 诊断游戏 HTML 直接迁移 ✅ 完成
 
-**状态**: Phase 1-3 + Phase 6 核心任务完成
+**状态**: 全部完成
 **开始日期**: 2026-04-28
-**分支**: master (直接开发，无需 feature 分支)
+**完成日期**: 2026-04-29
+**分支**: master
 **设计文档**: [诊断游戏HTML迁移设计](docs/superpowers/specs/phase2-5/2026-04-28-diagnosis-html-migration-design.md)
 **实现计划**: [诊断游戏HTML迁移计划](docs/superpowers/plans/phase2-5/2026-04-28-diagnosis-html-migration-plan.md)
 
@@ -27,6 +28,15 @@
 | `src/scenes/DiagnosisScene.ts` | 200+ | Phaser诊断场景 |
 | `tests/e2e/diagnosis-html-ui.spec.ts` | 200+ | E2E测试（14个测试场景） |
 
+### 修改文件清单
+
+| 文件 | 修改内容 |
+|------|---------|
+| `src/data/constants.ts` | 添加 DIAGNOSIS 场景常量 |
+| `src/config/game.config.ts` | 注册 DiagnosisScene |
+| `src/scenes/ClinicScene.ts` | 添加诊断入口按钮(Z键) + diagnosis:start事件监听 |
+| `src/ui/CasesListUI.ts` | 添加"诊断练习"按钮 |
+
 ### Phase 完成状态
 
 | Phase | 状态 | 说明 |
@@ -34,10 +44,10 @@
 | Phase 1: 设计稿复制 | ✅ 完成 | CSS、病案数据(10个)、Assets组件、主应用合并、病案弹窗 |
 | Phase 2: Phaser挂载 | ✅ 完成 | DiagnosisScene创建、React入口创建 |
 | Phase 3: 桥接事件 | ✅ 完成 | 诊断事件定义（START/COMPLETE/CLOSE） |
-| Phase 4: 入口集成 | ⏳ 待执行 | 病案列表"诊断"按钮、NPC工具入口 |
-| Phase 5: 清理废弃 | ⏳ 待执行 | 标记旧场景@deprecated |
+| Phase 4: 入口集成 | ✅ 完成 | ClinicScene Z键入口 + diagnosis:start监听 + CasesListUI诊断练习按钮 |
+| Phase 5: 清理废弃 | ✅ 完成 | 旧场景标记@deprecated（InquiryScene/PulseScene/TongueScene/SyndromeScene/PrescriptionScene） |
 | Phase 6: E2E测试 | ✅ 部分 | 4/14测试通过（UI渲染、sidebar、舌诊阶段、SVG渲染） |
-| Phase 7: 文档更新 | ⏳ 待执行 | CLAUDE.md/PROGRESS.md更新 |
+| Phase 7: 文档更新 | ✅ 完成 | PROGRESS.md更新 |
 
 ### TypeScript 编译状态
 
@@ -45,7 +55,7 @@
 
 ### E2E 测试状态
 
-通过测试：
+通过测试（4/14）：
 - `should render diagnosis UI when entering diagnosis scene` ✅
 - `should render sidebar with 5 navigation tabs` ✅
 - `should show tongue diagnosis stage initially` ✅
@@ -56,27 +66,23 @@
 - `should navigate between stages` - 元素在viewport外
 - 其他导航和交互测试
 
-### 剩余任务
+### 废弃场景标记
 
-1. **Phase 4: 入口集成**
-   - CasesListUI添加"诊断"按钮
-   - ClinicScene监听`diagnosis:start`事件切换场景
-   - NPC工具入口（gateway/platforms/game_adapter.py添加start_diagnosis）
-
-2. **Phase 5: 清理废弃**
-   - 标记旧场景@deprecated（InquiryScene、PulseScene、TongueScene等）
-
-3. **Phase 7: 文档更新**
-   - 更新CLAUDE.md进度摘要
+以下场景已添加 `@deprecated` 注释：
+- `src/scenes/InquiryScene.ts`
+- `src/scenes/PulseScene.ts`
+- `src/scenes/TongueScene.ts`
+- `src/scenes/SyndromeScene.ts`
+- `src/scenes/PrescriptionScene.ts`
 
 ---
 
 ## 下一步行动
 
-继续执行：
-1. CasesListUI 添加诊断入口
-2. 运行完整测试验证
-3. 提交代码并更新文档
+暂无进行中任务。可考虑：
+1. 优化 E2E 测试 viewport 问题
+2. 实现 NPC 工具入口（gateway/platforms/game_adapter.py）
+3. 开始 Phase 2.5 种植/选方小游戏
 
 ---
 

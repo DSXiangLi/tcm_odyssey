@@ -79,6 +79,9 @@ export class ClinicScene extends Phaser.Scene {
   // Phase 2 S9: 煎药系统
   private decoctionButton!: Phaser.GameObjects.Text;
   private decoctionKey!: Phaser.Input.Keyboard.Key;
+  // Phase 2.5: 诊断系统
+  private diagnosisButton!: Phaser.GameObjects.Text;
+  private diagnosisKey!: Phaser.Input.Keyboard.Key;
   // Phase 2 S13.4: 新手引导系统
   private tutorialManager!: TutorialManager;
   private sceneTipUI: TutorialUI | null = null;
@@ -165,6 +168,12 @@ export class ClinicScene extends Phaser.Scene {
 
     // Phase 2 S9: 创建煎药入口按钮
     this.createDecoctionButton();
+
+    // Phase 2.5: 创建诊断入口按钮
+    this.createDiagnosisButton();
+
+    // Phase 2.5: 监听诊断开始事件
+    this.setupDiagnosisEventListener();
 
     // Phase 2 S5: 初始化病案管理器
     this.initializeCaseManager();
@@ -518,6 +527,57 @@ export class ClinicScene extends Phaser.Scene {
   }
 
   /**
+   * Phase 2.5: 创建诊断入口按钮
+   */
+  private createDiagnosisButton(): void {
+    this.diagnosisButton = this.add.text(10, 190, '[按 Z 开始诊断]', {
+      fontSize: '14px',
+      color: '#80c0a0',  // 青绿色
+      backgroundColor: '#333333aa',
+      padding: { x: 8, y: 4 }
+    });
+    this.diagnosisButton.setScrollFactor(0);
+    this.diagnosisButton.setInteractive({ useHandCursor: true });
+    this.diagnosisButton.on('pointerdown', () => this.startDiagnosis('case-001'));
+
+    // 设置快捷键
+    this.diagnosisKey = this.input.keyboard!.addKey(Phaser.Input.Keyboard.KeyCodes.Z);
+  }
+
+  /**
+   * Phase 2.5: 监听诊断开始事件
+   */
+  private setupDiagnosisEventListener(): void {
+    // 监听 diagnosis:start 事件（来自 CasesListUI 或 NPC 系统）
+    window.addEventListener('diagnosis:start', ((e: CustomEvent) => {
+      const caseId = e.detail?.caseId || 'case-001';
+      console.log('[ClinicScene] Received diagnosis:start event, caseId:', caseId);
+      this.startDiagnosis(caseId);
+    }) as EventListener);
+  }
+
+  /**
+   * Phase 2.5: 开始诊断
+   */
+  private startDiagnosis(caseId: string): void {
+    if (this.isTransitioning) return;
+
+    console.log('[ClinicScene] Starting diagnosis with case:', caseId);
+
+    // 发送事件
+    this.eventBus.emit(GameEvents.SCENE_SWITCH, {
+      from: SCENES.CLINIC,
+      to: SCENES.DIAGNOSIS,
+      data: { caseId }
+    });
+
+    this.isTransitioning = true;
+
+    // 切换到诊断场景
+    this.scene.start(SCENES.DIAGNOSIS, { caseId, returnScene: SCENES.CLINIC });
+  }
+
+  /**
    * Phase 2 S5: 初始化病案管理器
    */
   private async initializeCaseManager(): Promise<void> {
@@ -861,6 +921,11 @@ export class ClinicScene extends Phaser.Scene {
     // Phase 2 S9: D键开始煎药
     if (Phaser.Input.Keyboard.JustDown(this.decoctionKey) && !this.isTransitioning) {
       this.startDecoction();
+    }
+
+    // Phase 2.5: Z键开始诊断
+    if (Phaser.Input.Keyboard.JustDown(this.diagnosisKey) && !this.isTransitioning) {
+      this.startDiagnosis('case-001');
     }
   }
 

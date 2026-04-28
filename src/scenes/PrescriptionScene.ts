@@ -1,6 +1,10 @@
 // src/scenes/PrescriptionScene.ts
 /**
  * 选方场景
+ *
+ * @deprecated Phase 2.5 后已废弃，请使用 DiagnosisScene (HTML直接迁移版本)
+ * 新的诊断游戏整合了舌诊→脉诊→问诊→辨证→选方5个阶段
+ *
  * 功能:
  * - 显示方剂列表（麻黄汤/桂枝汤/银翘散/桑菊饮）
  * - 显示方剂详情

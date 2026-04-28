@@ -1,6 +1,10 @@
 // src/scenes/PulseScene.ts
 /**
  * 脉诊场景
+ *
+ * @deprecated Phase 2.5 后已废弃，请使用 DiagnosisScene (HTML直接迁移版本)
+ * 新的诊断游戏整合了舌诊→脉诊→问诊→辨证→选方5个阶段
+ *
  * 功能:
  * - 显示古文脉象描述（《脉经》原文）
  * - 玩家选择脉位和脉势

@@ -45,7 +45,7 @@
 | **Phase 2.5 煎药/炮制** | ✅ 完成   | 统一场景布局、E2E测试、场景关联修复            |
 | **Phase 2.5 煎药UI重构** | ✅ 完成 | 卷轴风格UI、药牌组件、拖拽动效、像素药材数据 |
 | **Phase 2.5 煎药HTML直接迁移** | ✅ 完成+验收 | 直接使用设计稿HTML + AI验收86.5分 (2026-04-28) |
-| **Phase 2.5 诊断HTML直接迁移** | ⏳ 进行中 | 直接使用设计稿HTML + 10病案 + Phaser桥接 (2026-04-28) |
+| **Phase 2.5 诊断HTML直接迁移** | ✅ 完成 | 直接使用设计稿HTML + 10病案 + Phaser桥接 + Z键入口 (2026-04-29) |
 | **Phase 2.5 种植/选方** | ⏳ 待开发 | 种植小游戏已入口，选方合并入诊断游戏 |
 | **全局背包系统** | ✅ 完成 | 背包支持任意场景B键打开，详见[设计文档](docs/superpowers/specs/phase2-5/2026-04-21-global-inventory-design.md) |
 
@@ -186,6 +186,56 @@
 | `crossShake` | 错误抖动 | 0.5s |
 | `potCheer/potAngry` | 药罐反馈 | 0.5-0.6s |
 | `splashFly` | 水花溅射 | 0.9s |
+
+---
+
+### Phase 2.5: 诊断游戏 HTML 直接迁移 ✅ (2026-04-29)
+
+**核心原则**: 直接使用设计稿HTML，保持原样，只做桥接。
+
+**设计文档**: [诊断HTML迁移设计](docs/superpowers/specs/phase2-5/2026-04-28-diagnosis-html-migration-design.md)
+**实现计划**: [诊断HTML迁移计划](docs/superpowers/plans/phase2-5/2026-04-28-diagnosis-html-migration-plan.md)
+
+**创建文件 (9个)**:
+
+| 文件 | 行数 | 功能 |
+|------|------|------|
+| `src/ui/html/diagnosis.css` | 350+ | 主样式系统（古朴典雅水墨风格） |
+| `src/ui/html/data/diagnosis-cases.ts` | 800+ | 病案数据（10个外感类内科病案） |
+| `src/ui/html/components/DiagnosisAssets.tsx` | 200+ | SVG资产组件（舌象、患者立绘、印章） |
+| `src/ui/html/DiagnosisUI.tsx` | 1000+ | 主应用组件（5阶段Tab导航） |
+| `src/ui/html/CaseIntroModal.tsx` | 150+ | 病案简介弹窗组件 |
+| `src/ui/html/diagnosis-entry.tsx` | 50+ | React入口函数 |
+| `src/ui/html/bridge/diagnosis-events.ts` | 20+ | 桥接事件常量 |
+| `src/scenes/DiagnosisScene.ts` | 200+ | Phaser诊断场景 |
+| `tests/e2e/diagnosis-html-ui.spec.ts` | 200+ | E2E测试（14个测试场景） |
+
+**修改文件**:
+- `src/data/constants.ts`: 添加 DIAGNOSIS 场景常量
+- `src/config/game.config.ts`: 注册 DiagnosisScene
+- `src/scenes/ClinicScene.ts`: Z键入口 + diagnosis:start事件监听
+- `src/ui/CasesListUI.ts`: 添加"诊断练习"按钮
+
+**核心成果**:
+- 5阶段诊断流程: 舌诊→脉诊→问诊→辨证→选方
+- 10个病案: 湿阻中焦、风寒感冒、风热感冒、咳嗽等外感类内科病案
+- React UI通过DOM容器挂载到Phaser场景
+- CustomEvent桥接实现React↔Phaser双向通信
+- 废弃旧场景标记: InquiryScene/PulseScene/TongueScene/SyndromeScene/PrescriptionScene
+
+**病案列表 (10个)**:
+| ID | 病案 | 证型 | 方剂 |
+|----|------|------|------|
+| case-001 | 李秀梅(茶商) | 湿阻中焦 | 平胃散 |
+| case-002 | 张大山(农夫) | 风寒感冒 | 麻黄汤 |
+| case-003 | 王小芳(织女) | 风热感冒 | 银翘散 |
+| case-004 | 刘老汉(渔夫) | 寒湿咳嗽 | 止嗽散 |
+| case-005 | 陈掌柜(商人) | 风热咳嗽 | 桑菊饮 |
+| case-006 | 赵秀才(书生) | 风寒犯肺 | 华盖散 |
+| case-007 | 孙婆婆(农妇) | 暑湿感冒 | 新加香薷饮 |
+| case-008 | 吴郎中(医者) | 气虚感冒 | 参苏饮 |
+| case-009 | 钱小妹(绣娘) | 阴虚咳嗽 | 沙参麦冬汤 |
+| case-010 | 李公子(富商之子) | 痰热咳嗽 | 清金化痰汤 |
 
 ---
 

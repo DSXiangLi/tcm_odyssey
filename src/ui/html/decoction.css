@@ -721,13 +721,13 @@
   }
   .vial-empty .vial-cap{background:repeating-linear-gradient(90deg,#8a5028 0 2px, #6b3e1f 2px 4px);}
 
-  /* glow when finished */
+  /* glow when finished - 缩小范围避免溢出 */
   .vial.gold-glow{
     animation: goldPulse 1.6s ease-in-out infinite;
   }
   @keyframes goldPulse{
-    0%,100%{filter: drop-shadow(0 0 4px #ffd24a);}
-    50%{filter: drop-shadow(0 0 14px #fff1a8) drop-shadow(0 0 4px #ffae2a);}
+    0%,100%{filter: drop-shadow(0 0 2px #ffd24a);}
+    50%{filter: drop-shadow(0 0 6px #fff1a8);}
   }
 
   /* ===================== Drag feedback ===================== */
@@ -1029,19 +1029,23 @@
   .gold-burst{
     position:absolute;left:var(--x);top:var(--y);width:0;height:0;
     pointer-events:none;z-index:15;
+    /* 限制爆发范围在药剂架区域内 */
+    overflow: hidden;
+    max-width: 60px;
+    max-height: 60px;
   }
   .gold-burst::before{
     content:"";position:absolute;left:50%;top:50%;
     width:40px;height:40px;transform:translate(-50%,-50%);
     border-radius:50%;
     background:radial-gradient(circle,#fff3c0 0%,#ffd24a 40%,#ff7a1a 70%,transparent 90%);
-    animation: goldPulse 2.5s ease-out forwards;
-    box-shadow: 0 0 40px #ffd24a, 0 0 80px #ffae2a;
+    animation: goldBurst 1.2s ease-out forwards;
+    box-shadow: 0 0 20px #ffd24a;
   }
-  @keyframes goldPulse{
-    0%{width:20px;height:20px;opacity:0;}
-    20%{opacity:1;width:80px;height:80px;}
-    100%{opacity:0;width:280px;height:280px;}
+  @keyframes goldBurst{
+    0%{width:10px;height:10px;opacity:0;}
+    20%{opacity:1;width:40px;height:40px;}
+    100%{opacity:0;width:60px;height:60px;}
   }
 
   /* ==== Formula slots under pot (two rows, full names) ==== */
@@ -1183,13 +1187,69 @@
 /* React UI 容器隔离 - 确保 React 组件在 Phaser 场景中正确渲染 */
 #decoction-react-root {
   position: fixed !important;
-  top: 50% !important;
-  left: 50% !important;
-  transform: translate(-50%, -50%) !important;
-  width: 1200px !important;
-  height: 760px !important;
+  top: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  bottom: 0 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
   overflow: hidden !important;
   z-index: 1000 !important;
   pointer-events: auto !important;
   font-family: "ZCOOL XiaoWei", "Noto Serif SC", serif;
+}
+
+/* 遮罩层 - 让弹窗看起来像弹窗，点击可关闭 */
+.decoction-backdrop {
+  position: fixed !important;
+  inset: 0 !important;
+  background: radial-gradient(ellipse at 50% 40%, rgba(74,40,24,0.92) 0%, rgba(26,15,8,0.97) 70%);
+  z-index: 999 !important;
+  /* 点击遮罩层可以关闭弹窗 */
+  pointer-events: auto !important;
+  cursor: pointer;
+}
+
+/* 弹窗容器 - 在遮罩层之上居中显示，阻止点击穿透到遮罩层 */
+.scroll-modal {
+  position: fixed !important;
+  top: 50% !important;
+  left: 50% !important;
+  transform-origin: center center;
+  transform: translate(-50%, -50%) scale(0.85);
+  z-index: 1001 !important;
+  /* 阻止点击穿透到遮罩层 - 弹窗内部所有点击都不会触发遮罩层的onClick */
+  pointer-events: auto !important;
+}
+
+/* 关闭按钮确保可点击 */
+.scroll-modal .close-btn {
+  z-index: 1010 !important;
+  pointer-events: auto !important;
+  cursor: pointer;
+}
+
+/* 金光动画 - 缩小范围避免溢出（已在上方定义 goldPulse） */
+.vials-shelf {
+  overflow: hidden;
+}
+
+/* 药剂瓶限制溢出 */
+.vial {
+  overflow: hidden;
+}
+
+/* 在较大视窗上使用更小的缩放 */
+@media (min-width: 1400px) {
+  .scroll-modal {
+    transform: translate(-50%, -50%) scale(0.75);
+  }
+}
+
+/* 在较小视窗上使用更大的缩放 */
+@media (max-width: 1200px) {
+  .scroll-modal {
+    transform: translate(-50%, -50%) scale(0.65);
+  }
 }

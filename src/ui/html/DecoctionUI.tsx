@@ -548,39 +548,64 @@ export function DecoctionUI(props: DecoctionUIProps): React.ReactElement {
 
   const brew = useCallback(() => {
     if (inPot.length === 0) return;
-    setStateVal('done');
 
-    // Create vial from current herbs
-    const colors = inPot.map(h => h.pal[Object.keys(h.pal)[1]] || '#8a5028');
-    const mix = mixColors(colors);
-    const vial: VialData = {
-      name: target.name,
-      color: `rgb(${mix.r},${mix.g},${mix.b})`
-    };
+    // Start brewing process - show progress bar animation
+    setStateVal('brewing');
+    setProgress(0);
 
-    setFinishedVials(vs => {
-      const copy = [...vs];
-      const emptyIdx = copy.findIndex(v => v === null);
-      if (emptyIdx >= 0) copy[emptyIdx] = vial;
-      return copy;
+    // Bridge to Phaser - brewing started
+    bridgeToPhaser(DECOCTION_EVENTS.STATE_UPDATE, {
+      phase: 'brewing',
+      progress: 0
     });
+  }, [inPot]);
 
-    // Call onComplete callback from props to get score result
-    const scoreResult = props.onComplete(inPot.map(h => h.id), 'martial');
+  // Auto-complete when progress reaches 100
+  useEffect(() => {
+    if (state !== 'brewing') return;
+    if (progress >= 100) {
+      // Brewing complete
+      setStateVal('done');
 
-    // Bridge to Phaser (complete) - also dispatch event for backwards compatibility
-    bridgeToPhaser(DECOCTION_EVENTS.COMPLETE, {
-      herbs: inPot.map(h => h.id),
-      fireType: 'martial',
-      scoreResult
-    });
+      // Create vial from current herbs
+      const colors = inPot.map(h => h.pal[Object.keys(h.pal)[1]] || '#8a5028');
+      const mix = mixColors(colors);
+      const vial: VialData = {
+        name: target.name,
+        color: `rgb(${mix.r},${mix.g},${mix.b})`
+      };
 
-    setTimeout(() => {
-      setInPot([]);
-      setProgress(0);
-      setStateVal('brewing');
-    }, 2600);
-  }, [inPot, target, props]);
+      setFinishedVials(vs => {
+        const copy = [...vs];
+        const emptyIdx = copy.findIndex(v => v === null);
+        if (emptyIdx >= 0) copy[emptyIdx] = vial;
+        return copy;
+      });
+
+      // Call onComplete callback from props to get score result
+      const scoreResult = props.onComplete(inPot.map(h => h.id), 'martial');
+
+      // Bridge to Phaser (complete)
+      bridgeToPhaser(DECOCTION_EVENTS.COMPLETE, {
+        herbs: inPot.map(h => h.id),
+        fireType: 'martial',
+        scoreResult
+      });
+
+      // Bridge state update
+      bridgeToPhaser(DECOCTION_EVENTS.STATE_UPDATE, {
+        phase: 'done',
+        progress: 100
+      });
+
+      // Reset after animation delay
+      setTimeout(() => {
+        setInPot([]);
+        setProgress(0);
+        setStateVal('selecting');
+      }, 2600);
+    }
+  }, [state, progress, inPot, target, props]);
 
   // ============================================================================
   // Derived Values
@@ -601,6 +626,9 @@ export function DecoctionUI(props: DecoctionUIProps): React.ReactElement {
 
   return (
     <>
+      {/* 遮罩层 - 让弹窗看起来像弹窗而非全屏 */}
+      <div className="decoction-backdrop" onClick={() => props.onClose()} />
+
       <div className={`scroll-modal variant-${_frame}`}>
         <div className="roller top" />
         <div className="roller bottom" />
@@ -709,8 +737,16 @@ export function DecoctionUI(props: DecoctionUIProps): React.ReactElement {
             </div>
 
             <div className="region region-vials">
-              <button className="brew-btn" onClick={brew} disabled={!inPot.length}>
-                {finished ? '煎成' : '起 锅'}
+              <button
+                className="brew-btn"
+                onClick={brew}
+                disabled={!inPot.length || state === 'brewing'}
+              >
+                {state === 'brewing'
+                  ? '煎煮中...'
+                  : finished
+                    ? '煎成'
+                    : '起 锅'}
               </button>
               <div className="vials-area">
                 <div className="vials-header">

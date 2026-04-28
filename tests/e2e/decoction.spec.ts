@@ -559,14 +559,13 @@ test.describe('Decoction System Logic Tests (S9-L001~L003)', () => {
       manager.addHerb('gancao');
       manager.proceedToNextPhase();
 
-      // 正确放置角色
+      // Phase 2.5 简化版：配伍和顺序阶段仍可调用，但不参与评分
       manager.placeRole('mahuang', '君');
       manager.placeRole('guizhi', '臣');
       manager.placeRole('xingren', '佐');
       manager.placeRole('gancao', '使');
       manager.proceedToNextPhase();
 
-      // 正确设置顺序
       manager.setOrder('mahuang', 'first');
       manager.setOrder('guizhi', 'normal');
       manager.setOrder('xingren', 'normal');
@@ -586,17 +585,18 @@ test.describe('Decoction System Logic Tests (S9-L001~L003)', () => {
 
     expect(scoreResult).not.toBeNull();
 
-    // 验证评分维度权重
-    // 配伍40%, 组成20%, 顺序20%, 火候10%, 时间10%
+    // Phase 2.5 简化版评分权重：组成50%、火候30%、时间20%
     const expectedMaxScore = 100;
     expect(scoreResult?.total_score).toBeLessThanOrEqual(expectedMaxScore);
 
-    // 验证维度分数结构
-    expect(scoreResult?.dimension_scores?.compatibility).toBeDefined();
+    // 验证简化版维度分数结构（只有 composition、fire、time）
     expect(scoreResult?.dimension_scores?.composition).toBeDefined();
-    expect(scoreResult?.dimension_scores?.order).toBeDefined();
     expect(scoreResult?.dimension_scores?.fire).toBeDefined();
     expect(scoreResult?.dimension_scores?.time).toBeDefined();
+
+    // 验证不再存在的维度（Phase 2.5 已废弃）
+    expect(scoreResult?.dimension_scores?.compatibility).toBeUndefined();
+    expect(scoreResult?.dimension_scores?.order).toBeUndefined();
   });
 
   test('S9-L003: 重置功能正确', async ({ page }) => {

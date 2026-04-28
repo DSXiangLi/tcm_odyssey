@@ -19,6 +19,8 @@ import { DecoctionScene } from '../scenes/DecoctionScene';
 import { ProcessingScene } from '../scenes/ProcessingScene';
 // Phase 2 S11: 种植场景
 import { PlantingScene } from '../scenes/PlantingScene';
+// Phase 2.5: 诊断场景（HTML 直接迁移）
+import { DiagnosisScene } from '../scenes/DiagnosisScene';
 
 export const gameConfig: Phaser.Types.Core.GameConfig = {
   type: Phaser.AUTO,
@@ -55,7 +57,9 @@ export const gameConfig: Phaser.Types.Core.GameConfig = {
     // Phase 2 S10: 炮制场景
     ProcessingScene,
     // Phase 2 S11: 种植场景
-    PlantingScene
+    PlantingScene,
+    // Phase 2.5: 诊断场景（HTML 直接迁移）
+    DiagnosisScene
   ],
   scale: {
     mode: Phaser.Scale.FIT,

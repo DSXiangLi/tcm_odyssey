@@ -69,11 +69,11 @@ html, body {
 /* ============ App 容器 ============ */
 /* 与煎药游戏一致的布局：backdrop + stage居中 + 固定尺寸弹窗 */
 
-/* 背景层 - 与煎药游戏 .backdrop 对应 */
+/* 背景层 - 透明，显示下面的游戏场景 */
 .diagnosis-backdrop {
   position: fixed;
   inset: 0;
-  background: radial-gradient(ellipse at 50% 40%, #3a2818 0%, #1a0f08 70%);
+  background: transparent;
   overflow: hidden;
 }
 

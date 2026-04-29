@@ -246,7 +246,7 @@ export class ClinicScene extends Phaser.Scene {
     const dialogConfig: DialogUIConfig = {
       npcId: 'qingmu',
       npcName: '青木先生',
-      npcAvatarKey: 'avatar_qingmu',
+      npcSpriteKey: 'avatar_qingmu',  // Renamed from npcAvatarKey
       playerId: 'player_001',
       onComplete: () => {
         console.log('[ClinicScene] Welcome dialog complete');

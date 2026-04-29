@@ -12,10 +12,24 @@ export interface SSEOptions {
   onError: (error: Error) => void;
 }
 
+/**
+ * Tool call callback interface for handling NPC tool invocations
+ */
+export interface ToolCallCallback {
+  (name: string, args: object): void;
+}
+
+/**
+ * Extended chat request with optional context for scene-aware conversations
+ */
 export interface ChatRequest {
   npc_id: string;
   player_id: string;
   user_message: string;
+  context?: {
+    scene_id?: string;
+    recent_history?: Array<{role: string; content: string}>;
+  };
 }
 
 export class SSEClient {
@@ -28,12 +42,18 @@ export class SSEClient {
 
   /**
    * 发送聊天请求，流式接收响应
+   * @param request 聊天请求参数
+   * @param onChunk 文本块回调
+   * @param onComplete 完成回调
+   * @param onError 错误回调
+   * @param onToolCall 工具调用回调（可选）
    */
   async chatStream(
     request: ChatRequest,
     onChunk: (text: string) => void,
     onComplete: (fullResponse: string) => void,
-    onError: (error: Error) => void
+    onError: (error: Error) => void,
+    onToolCall?: ToolCallCallback
   ): Promise<void> {
     this.abortController = new AbortController();
 
@@ -77,9 +97,27 @@ export class SSEClient {
             }
             try {
               const parsed = JSON.parse(data);
+
+              // Handle text chunks (legacy format: parsed.text)
               if (parsed.text) {
                 fullResponse += parsed.text;
                 onChunk(parsed.text);
+              }
+
+              // Handle text chunks (new format: parsed.type === 'text')
+              if (parsed.type === 'text' && parsed.content) {
+                fullResponse += parsed.content;
+                onChunk(parsed.content);
+              }
+
+              // NEW: Handle tool calls
+              if (parsed.type === 'tool_call' && onToolCall) {
+                onToolCall(parsed.name, parsed.args || {});
+              }
+
+              // NEW: Log tool results (optional display)
+              if (parsed.type === 'tool_result') {
+                console.log('[SSEClient] Tool result:', parsed.result);
               }
             } catch {
               // 非JSON格式，直接作为文本

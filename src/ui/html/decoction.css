@@ -60,9 +60,10 @@
   }
 
   /* ============== Scroll modal frame ================= */
+  /* 统一弹窗尺寸：游戏视窗1280x720，弹窗1020x640留边距 */
   .scroll-modal{
     position:relative;
-    width:1200px;height:760px;
+    width:1020px;height:640px;
     image-rendering:pixelated;
     filter: drop-shadow(0 20px 40px rgba(0,0,0,.7));
   }

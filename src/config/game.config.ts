@@ -6,21 +6,20 @@ import { TownOutdoorScene } from '../scenes/TownOutdoorScene';
 import { ClinicScene } from '../scenes/ClinicScene';
 import { GardenScene } from '../scenes/GardenScene';
 import { HomeScene } from '../scenes/HomeScene';
-// Phase 2 S4: 问诊场景
-import { InquiryScene } from '../scenes/InquiryScene';
-// Phase 2 S6: 诊治场景
-import { PulseScene } from '../scenes/PulseScene';
-import { TongueScene } from '../scenes/TongueScene';
-import { SyndromeScene } from '../scenes/SyndromeScene';
-import { PrescriptionScene } from '../scenes/PrescriptionScene';
 // Phase 2 S9: 煎药场景
 import { DecoctionScene } from '../scenes/DecoctionScene';
-// Phase 2 S10: 炮制场景
+// Phase 2 S10: 炎制场景
 import { ProcessingScene } from '../scenes/ProcessingScene';
 // Phase 2 S11: 种植场景
 import { PlantingScene } from '../scenes/PlantingScene';
-// Phase 2.5: 诊断场景（HTML 直接迁移）
+// Phase 2.5: 诊断场景（HTML 直接迁移，整合舌诊/脉诊/问诊/辨证/选方）
 import { DiagnosisScene } from '../scenes/DiagnosisScene';
+// 以下场景已废弃，由 DiagnosisScene 整合：
+// - InquiryScene (问诊) - 已合并到 DiagnosisScene.wenzhen 阶段
+// - PulseScene (脉诊) - 已合并到 DiagnosisScene.pulse 阶段
+// - TongueScene (舌诊) - 已合并到 DiagnosisScene.tongue 阶段
+// - SyndromeScene (辨证) - 已合并到 DiagnosisScene.bianzheng 阶段
+// - PrescriptionScene (选方) - 已合并到 DiagnosisScene.xuanfang 阶段
 
 export const gameConfig: Phaser.Types.Core.GameConfig = {
   type: Phaser.AUTO,
@@ -46,12 +45,6 @@ export const gameConfig: Phaser.Types.Core.GameConfig = {
     ClinicScene,
     GardenScene,
     HomeScene,
-    InquiryScene,
-    // Phase 2 S6: 诊治场景
-    PulseScene,
-    TongueScene,
-    SyndromeScene,
-    PrescriptionScene,
     // Phase 2 S9: 煎药场景
     DecoctionScene,
     // Phase 2 S10: 炮制场景

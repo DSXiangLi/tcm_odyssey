@@ -103,30 +103,11 @@ export class DecoctionScene extends Phaser.Scene {
   }
 
   /**
-   * 创建背景
+   * 创建背景 - 不创建Phaser背景，让场景透明显示下面的游戏
    */
   private createBackground(): void {
-    // 深色背景 - 药炉氛围
-    const bg = this.add.rectangle(
-      this.cameras.main.width / 2,
-      this.cameras.main.height / 2,
-      this.cameras.main.width,
-      this.cameras.main.height,
-      0x2d1f1f  // 深棕色（药炉色调）
-    );
-    bg.setDepth(0);
-
-    // 添加标题
-    this.add.text(this.cameras.main.width / 2, 30, '煎药', {
-      fontSize: '28px',
-      color: '#d4a574',  // 古朴金色
-      fontStyle: 'bold'
-    }).setOrigin(0.5).setDepth(1);
-
-    // 添加装饰元素（简化的药炉图标）
-    this.add.text(this.cameras.main.width / 2, 70, '🔥', {
-      fontSize: '32px'
-    }).setOrigin(0.5).setDepth(1);
+    // 透明背景，React UI自己有样式，玩家能看到下面的诊所场景
+    // 不添加任何Phaser背景元素（标题等由React UI处理）
   }
 
   /**

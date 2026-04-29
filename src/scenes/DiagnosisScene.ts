@@ -104,18 +104,11 @@ export class DiagnosisScene extends Phaser.Scene {
   }
 
   /**
-   * 创建背景
+   * 创建背景 - 不创建Phaser背景，让场景透明显示下面的游戏
    */
   private createBackground(): void {
-    // 古朴宣纸色调背景
-    const bg = this.add.rectangle(
-      this.cameras.main.width / 2,
-      this.cameras.main.height / 2,
-      this.cameras.main.width,
-      this.cameras.main.height,
-      0xf1e6cc  // 宣纸色
-    );
-    bg.setDepth(0);
+    // 透明背景，React UI自己有样式，玩家能看到下面的诊所场景
+    // 不添加任何Phaser背景元素
   }
 
   /**

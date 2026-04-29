@@ -6,7 +6,7 @@
  * Phase 2 S3 实现
  */
 
-import { SSEClient } from '../utils/sseClient';
+import { SSEClient, ToolCallCallback } from '../utils/sseClient';
 
 export interface NPCConfig {
   id: string;
@@ -29,6 +29,7 @@ export class NPCInteractionSystem {
   private playerId: string;
   private eventHistory: NPCInteractionEvent[] = [];
   private currentDialogNpcId: string | null = null;
+  private nearbyNpc: NPCConfig | null = null;
 
   constructor(playerId: string) {
     this.playerId = playerId;
@@ -76,6 +77,48 @@ export class NPCInteractionSystem {
   }
 
   /**
+   * 检查附近NPC触发（用于提示显示）
+   */
+  checkNearbyTrigger(
+    playerPosition: { x: number; y: number },
+    currentScene: string
+  ): NPCConfig | null {
+    this.nearbyNpc = null;
+
+    for (const npc of this.npcs.values()) {
+      if (npc.sceneId !== currentScene) continue;
+
+      const distance = Math.sqrt(
+        Math.pow(playerPosition.x - npc.position.x, 2) +
+        Math.pow(playerPosition.y - npc.position.y, 2)
+      );
+
+      if (distance <= npc.triggerDistance) {
+        this.nearbyNpc = npc;
+        return npc;
+      }
+    }
+
+    return null;
+  }
+
+  /**
+   * 获取附近NPC
+   */
+  getNearbyNPC(): NPCConfig | null {
+    return this.nearbyNpc;
+  }
+
+  /**
+   * 获取触发提示文本
+   */
+  getTriggerHint(npcId: string): string {
+    const npc = this.npcs.get(npcId);
+    if (!npc) return '';
+    return `按空格与${npc.name}对话`;
+  }
+
+  /**
    * 发送消息给NPC
    */
   async sendNPCMessage(
@@ -104,6 +147,42 @@ export class NPCInteractionSystem {
       onChunk,
       (full) => { fullResponse = full; },
       (error) => { throw error; }
+    );
+
+    this.currentDialogNpcId = null;
+    return fullResponse;
+  }
+
+  /**
+   * 发送消息给NPC（支持工具调用回调）
+   */
+  async sendNPCMessageWithTools(
+    npcId: string,
+    message: string,
+    onChunk: (text: string) => void,
+    onToolCall?: ToolCallCallback
+  ): Promise<string> {
+    // 记录事件
+    this.eventHistory.push({
+      type: 'dialog',
+      npcId,
+      playerId: this.playerId,
+      timestamp: Date.now()
+    });
+
+    this.currentDialogNpcId = npcId;
+
+    let fullResponse = '';
+    await this.sseClient.chatStream(
+      {
+        npc_id: npcId,
+        player_id: this.playerId,
+        user_message: message
+      },
+      onChunk,
+      (full) => { fullResponse = full; },
+      (error) => { throw error; },
+      onToolCall
     );
 
     this.currentDialogNpcId = null;

@@ -68,6 +68,21 @@ export class BootScene extends Phaser.Scene {
 
     // Phase 2.5: 加载药材图片素材
     this.loadHerbImages();
+
+    // Phase 2 S3: 加载NPC精灵图素材
+    this.loadNPCSprites();
+  }
+
+  /**
+   * Phase 2 S3: 加载NPC精灵图素材
+   */
+  private loadNPCSprites(): void {
+    // 加载teacher2精灵图（用于NPC占位）
+    // qingmu使用teacher2_down作为NPC图像
+    this.load.image('npc_qingmu', 'assets/sprites/npc/teacher2_down.png');
+    this.load.image('npc_laozhang', 'assets/sprites/npc/teacher2_down.png');  // Placeholder
+    this.load.image('npc_neighbor', 'assets/sprites/npc/teacher2_down.png');  // Placeholder
+    console.log('[BootScene] NPC sprites loaded');
   }
 
   /**

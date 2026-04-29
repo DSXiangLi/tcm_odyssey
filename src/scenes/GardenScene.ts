@@ -22,6 +22,10 @@ import { createSceneTipUI, TutorialUI } from '../ui/TutorialUI';  // S13.4
 // Phase 2.5 全局背包系统
 import { InventoryManager, createInventoryManager } from '../systems/InventoryManager';
 import { InventoryUI, createInventoryUI } from '../ui/InventoryUI';
+// Phase 2 S3: NPC交互系统
+import { NPCInteractionSystem } from '../systems/NPCInteraction';
+import { DialogUI, DialogUIConfig } from '../ui/DialogUI';
+import { getNPCById } from '../data/npc-config';
 
 interface MapData {
   width: number;
@@ -50,11 +54,18 @@ export class GardenScene extends Phaser.Scene {
   private inventoryKey!: Phaser.Input.Keyboard.Key;
   private inventoryUI: InventoryUI | null = null;
   private inventoryManager!: InventoryManager;
+  // Phase 2 S3: NPC交互系统
+  private npcSystem!: NPCInteractionSystem;
+  private npcSprite!: Phaser.GameObjects.Image;
+  private dialogUI: DialogUI | null = null;
+  private nearbyHintText: Phaser.GameObjects.Text | null = null;
 
   constructor() {
     super({ key: SCENES.GARDEN });
     // 初始化背包管理器（单例）
     this.inventoryManager = createInventoryManager('player_001');
+    // Phase 2 S3: 初始化NPC交互系统
+    this.npcSystem = new NPCInteractionSystem('player_001');
   }
 
   create(): void {
@@ -105,6 +116,9 @@ export class GardenScene extends Phaser.Scene {
     // 设置输入
     this.setupInput();
 
+    // Phase 2 S3: 创建NPC
+    this.createNPC();
+
     // 添加UI提示
     this.add.text(10, 10, '老张药园 (Phase 1.5)', {
       fontSize: '16px',
@@ -151,6 +165,67 @@ export class GardenScene extends Phaser.Scene {
     // 存储偏移量供后续使用
     this.mapOffsetX = offsetX;
     this.mapOffsetY = offsetY;
+  }
+
+  /**
+   * Phase 2 S3: 创建NPC（老张）
+   */
+  private createNPC(): void {
+    // 从注册表获取老张配置
+    const laozhangConfig = getNPCById('laozhang');
+    if (!laozhangConfig) {
+      console.warn('[GardenScene] NPC laozhang not found in registry');
+      return;
+    }
+
+    // 注册NPC到交互系统
+    this.npcSystem.registerNPC({
+      id: laozhangConfig.id,
+      name: laozhangConfig.name,
+      sceneId: laozhangConfig.sceneId,
+      position: laozhangConfig.position,
+      triggerDistance: laozhangConfig.triggerDistance
+    });
+
+    // 创建NPC sprite（使用加载的精灵图）
+    this.npcSprite = this.add.image(
+      laozhangConfig.position.x,
+      laozhangConfig.position.y,
+      laozhangConfig.spriteKey
+    );
+    this.npcSprite.setDisplaySize(64, 64);
+    this.npcSprite.setDepth(5);
+
+    // 添加NPC名字标签
+    const nameLabel = this.add.text(
+      laozhangConfig.position.x,
+      laozhangConfig.position.y + 50,
+      laozhangConfig.name,
+      {
+        fontSize: '14px',
+        color: '#ffffff',
+        backgroundColor: '#333333aa',
+        padding: { x: 4, y: 2 }
+      }
+    );
+    nameLabel.setOrigin(0.5);
+    nameLabel.setDepth(5);
+
+    // 创建附近提示文本
+    this.nearbyHintText = this.add.text(0, 0, '', {
+      fontSize: '14px',
+      color: '#ffcc00',
+      backgroundColor: '#333333aa',
+      padding: { x: 8, y: 4 }
+    });
+    this.nearbyHintText.setScrollFactor(0);
+    this.nearbyHintText.setDepth(50);
+    this.nearbyHintText.setVisible(false);
+
+    // 进入触发
+    this.npcSystem.recordEnter('laozhang');
+
+    console.log('[GardenScene] NPC laozhang created');
   }
 
   private createPlayer(): void {
@@ -348,15 +423,37 @@ export class GardenScene extends Phaser.Scene {
     });
 
     // 空格键返回室外
-    if (Phaser.Input.Keyboard.JustDown(this.spaceKey) && !this.isTransitioning) {
-      this.eventBus.emit(GameEvents.SCENE_SWITCH, {
-        from: SCENES.GARDEN,
-        to: SCENES.TOWN_OUTDOOR
-      });
+    // Phase 2 S3: 检查附近NPC触发（优先级高于场景切换）
+    if (!this.dialogUI) {
+      const nearbyNpc = this.npcSystem.checkNearbyTrigger(
+        { x: this.player.x, y: this.player.y },
+        SCENES.GARDEN
+      );
 
-      this.isTransitioning = true;
-      this.registry.set('spawnPoint', { x: 15, y: 10 });
-      this.scene.start(SCENES.TOWN_OUTDOOR);
+      if (nearbyNpc) {
+        this.nearbyHintText?.setText(this.npcSystem.getTriggerHint(nearbyNpc.id));
+        this.nearbyHintText?.setPosition(this.player.x, this.player.y - 30);
+        this.nearbyHintText?.setVisible(true);
+
+        // 空格键触发对话（当靠近NPC时）
+        if (Phaser.Input.Keyboard.JustDown(this.spaceKey) && !this.isTransitioning) {
+          this.showDialogWithNPC(nearbyNpc.id);
+        }
+      } else {
+        this.nearbyHintText?.setVisible(false);
+
+        // 空格键返回室外（当不在NPC附近时）
+        if (Phaser.Input.Keyboard.JustDown(this.spaceKey) && !this.isTransitioning) {
+          this.eventBus.emit(GameEvents.SCENE_SWITCH, {
+            from: SCENES.GARDEN,
+            to: SCENES.TOWN_OUTDOOR
+          });
+
+          this.isTransitioning = true;
+          this.registry.set('spawnPoint', { x: 15, y: 10 });
+          this.scene.start(SCENES.TOWN_OUTDOOR);
+        }
+      }
     }
 
     // S11.4: G键进入种植游戏
@@ -413,6 +510,19 @@ export class GardenScene extends Phaser.Scene {
     if (this.sceneTipUI) {
       this.sceneTipUI.destroy();
       this.sceneTipUI = null;
+    }
+
+    // Phase 2 S3: 清理NPC系统
+    if (this.dialogUI) {
+      this.dialogUI.destroy();
+      this.dialogUI = null;
+    }
+    if (this.npcSystem) {
+      this.npcSystem.destroy();
+    }
+    if (this.nearbyHintText) {
+      this.nearbyHintText.destroy();
+      this.nearbyHintText = null;
     }
 
     // Phase 2.5 全局背包系统: 清理背包UI
@@ -476,6 +586,63 @@ export class GardenScene extends Phaser.Scene {
       this.inventoryUI.hide();
     } else {
       this.inventoryUI.show();
+    }
+  }
+
+  /**
+   * Phase 2 S3: 显示指定NPC的对话界面
+   */
+  private showDialogWithNPC(npcId: string): void {
+    if (this.dialogUI) return;  // 已有对话界面显示
+
+    const npc = getNPCById(npcId);
+    if (!npc) return;
+
+    const dialogConfig: DialogUIConfig = {
+      npcId: npc.id,
+      npcName: npc.name,
+      npcSpriteKey: npc.spriteKey,
+      playerId: 'player_001',
+      onToolCall: (name, args) => this.handleToolCall(name, args),
+      onComplete: () => {
+        console.log(`[GardenScene] Dialog with ${npcId} complete`);
+        if (this.dialogUI) {
+          this.dialogUI.destroy();
+          this.dialogUI = null;
+        }
+      }
+    };
+
+    this.dialogUI = new DialogUI(
+      this,
+      this.cameras.main.width / 2,
+      this.cameras.main.height - 150,
+      dialogConfig
+    );
+    this.dialogUI.setScrollFactor(0);
+
+    // 显示输入对话框
+    this.dialogUI.showInputDialog();
+  }
+
+  /**
+   * Phase 2 S3: 处理NPC工具调用
+   */
+  private handleToolCall(toolName: string, args: object): void {
+    console.log(`[GardenScene] Tool call: ${toolName}`, args);
+
+    switch (toolName) {
+      case 'trigger_minigame':
+        const { game_type } = args as any;
+        // GardenScene支持种植和炮制游戏
+        if (game_type === 'planting') {
+          this.togglePlanting();
+        } else if (game_type === 'processing') {
+          this.startProcessing();
+        }
+        break;
+      default:
+        console.warn(`[GardenScene] Unknown tool: ${toolName}`);
     }
   }
 }

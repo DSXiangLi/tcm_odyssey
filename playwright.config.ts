@@ -27,7 +27,10 @@ export default defineConfig({
   projects: [
     {
       name: 'chromium',
-      use: { ...devices['Desktop Chrome'] }
+      use: {
+        ...devices['Desktop Chrome'],
+        viewport: { width: 1440, height: 900 }  // 匹配诊断游戏设计尺寸
+      }
     }
   ],
   webServer: {

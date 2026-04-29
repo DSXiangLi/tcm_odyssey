@@ -27,7 +27,8 @@ import { Player } from '../entities/Player';
 import { EventBus, GameEvents } from '../systems/EventBus';
 import { GameStateBridge } from '../utils/GameStateBridge';
 import { DialogUI, DialogUIConfig } from '../ui/DialogUI';
-import { NPCInteractionSystem, NPCConfig } from '../systems/NPCInteraction';
+import { NPCInteractionSystem } from '../systems/NPCInteraction';
+import { getNPCById } from '../data/npc-config';
 // Phase 2 S5: 病案系统
 import { CaseManager, createCaseManager } from '../systems/CaseManager';
 import { CasesListUI, CasesListUIConfig } from '../ui/CasesListUI';
@@ -62,6 +63,8 @@ export class ClinicScene extends Phaser.Scene {
   private npcSystem!: NPCInteractionSystem;
   private npcSprite!: Phaser.GameObjects.Image;
   private dialogShown: boolean = false;
+  // Nearby trigger detection
+  private nearbyHintText: Phaser.GameObjects.Text | null = null;
   // Phase 2 S4: 问诊入口
   private inquiryButton!: Phaser.GameObjects.Text;
   private inquiryStartKey!: Phaser.Input.Keyboard.Key;
@@ -186,35 +189,59 @@ export class ClinicScene extends Phaser.Scene {
   }
 
   /**
-   * Phase 2 S3: 创建NPC
+   * Phase 2 S3: 创建NPC（使用注册表）
    */
   private createNPC(): void {
-    // 注册青木先生NPC
-    const qingmuConfig: NPCConfig = {
-      id: 'qingmu',
-      name: '青木先生',
-      sceneId: SCENES.CLINIC,
-      position: { x: 200, y: 150 },  // NPC位置（像素坐标）
-      triggerDistance: 100
-    };
-    this.npcSystem.registerNPC(qingmuConfig);
+    // 从注册表获取青木先生配置
+    const qingmuConfig = getNPCById('qingmu');
+    if (!qingmuConfig) {
+      console.warn('[ClinicScene] NPC qingmu not found in registry');
+      return;
+    }
 
-    // 创建NPC sprite（占位图形）
-    // 使用简单的圆形作为NPC占位符
-    this.npcSprite = this.add.image(200, 150, '__DEFAULT');
+    // 注册NPC到交互系统
+    this.npcSystem.registerNPC({
+      id: qingmuConfig.id,
+      name: qingmuConfig.name,
+      sceneId: qingmuConfig.sceneId,
+      position: qingmuConfig.position,
+      triggerDistance: qingmuConfig.triggerDistance
+    });
+
+    // 创建NPC sprite（使用加载的精灵图）
+    this.npcSprite = this.add.image(
+      qingmuConfig.position.x,
+      qingmuConfig.position.y,
+      qingmuConfig.spriteKey
+    );
     this.npcSprite.setDisplaySize(64, 64);
-    this.npcSprite.setTint(0x8B4513);  // 古朴棕色
     this.npcSprite.setDepth(5);
 
     // 添加NPC名字标签
-    const nameLabel = this.add.text(200, 200, '青木先生', {
-      fontSize: '14px',
-      color: '#ffffff',
-      backgroundColor: '#333333aa',
-      padding: { x: 4, y: 2 }
-    });
+    const nameLabel = this.add.text(
+      qingmuConfig.position.x,
+      qingmuConfig.position.y + 50,
+      qingmuConfig.name,
+      {
+        fontSize: '14px',
+        color: '#ffffff',
+        backgroundColor: '#333333aa',
+        padding: { x: 4, y: 2 }
+      }
+    );
     nameLabel.setOrigin(0.5);
     nameLabel.setDepth(5);
+
+    // 创建附近提示文本
+    this.nearbyHintText = this.add.text(0, 0, '', {
+      fontSize: '14px',
+      color: '#ffcc00',
+      backgroundColor: '#333333aa',
+      padding: { x: 8, y: 4 }
+    });
+    this.nearbyHintText.setScrollFactor(0);
+    this.nearbyHintText.setDepth(50);
+    this.nearbyHintText.setVisible(false);
 
     // 进入触发
     this.npcSystem.recordEnter('qingmu');
@@ -350,6 +377,83 @@ export class ClinicScene extends Phaser.Scene {
         currentText: () => text,
         isPlaceholder: true
       };
+    }
+  }
+
+  /**
+   * Phase 2 S3: 显示指定NPC的对话界面
+   */
+  private showDialogWithNPC(npcId: string): void {
+    if (this.dialogUI) return;  // 已有对话界面显示
+
+    const npc = getNPCById(npcId);
+    if (!npc) return;
+
+    const dialogConfig: DialogUIConfig = {
+      npcId: npc.id,
+      npcName: npc.name,
+      npcSpriteKey: npc.spriteKey,
+      playerId: 'player_001',
+      onToolCall: (name, args) => this.handleToolCall(name, args),
+      onComplete: () => {
+        console.log(`[ClinicScene] Dialog with ${npcId} complete`);
+        if (this.dialogUI) {
+          this.dialogUI.destroy();
+          this.dialogUI = null;
+        }
+      }
+    };
+
+    this.dialogUI = new DialogUI(
+      this,
+      this.cameras.main.width / 2,
+      this.cameras.main.height - 150,
+      dialogConfig
+    );
+    this.dialogUI.setScrollFactor(0);
+
+    // 显示输入对话框
+    this.dialogUI.showInputDialog();
+  }
+
+  /**
+   * Phase 2 S3: 处理NPC工具调用
+   */
+  private handleToolCall(toolName: string, args: object): void {
+    console.log(`[ClinicScene] Tool call: ${toolName}`, args);
+
+    switch (toolName) {
+      case 'trigger_minigame':
+        const { game_type, case_id } = args as any;
+        this.startMinigameFromTool(game_type, case_id);
+        break;
+      default:
+        console.warn(`[ClinicScene] Unknown tool: ${toolName}`);
+    }
+  }
+
+  /**
+   * Phase 2 S3: 从工具调用启动小游戏
+   */
+  private startMinigameFromTool(gameType: string, caseId: string): void {
+    // 关闭对话界面
+    if (this.dialogUI) {
+      this.dialogUI.destroy();
+      this.dialogUI = null;
+    }
+
+    switch (gameType) {
+      case 'inquiry':
+        this.scene.start(SCENES.INQUIRY, { caseId });
+        break;
+      case 'diagnosis':
+        this.scene.start(SCENES.PULSE, { caseId });
+        break;
+      case 'decoction':
+        this.scene.start(SCENES.DECOCTION, {});
+        break;
+      default:
+        console.warn(`[ClinicScene] Unknown game type: ${gameType}`);
     }
   }
 
@@ -892,15 +996,37 @@ export class ClinicScene extends Phaser.Scene {
     });
 
     // 空格键返回室外
-    if (this.spaceKey && Phaser.Input.Keyboard.JustDown(this.spaceKey) && !this.isTransitioning) {
-      this.eventBus.emit(GameEvents.SCENE_SWITCH, {
-        from: SCENES.CLINIC,
-        to: SCENES.TOWN_OUTDOOR
-      });
+    // Phase 2 S3: 检查附近NPC触发（优先级高于场景切换）
+    if (!this.dialogUI) {
+      const nearbyNpc = this.npcSystem.checkNearbyTrigger(
+        { x: this.player.x, y: this.player.y },
+        SCENES.CLINIC
+      );
 
-      this.isTransitioning = true;
-      this.registry.set('spawnPoint', { x: 60, y: 10 });
-      this.scene.start(SCENES.TOWN_OUTDOOR);
+      if (nearbyNpc) {
+        this.nearbyHintText?.setText(this.npcSystem.getTriggerHint(nearbyNpc.id));
+        this.nearbyHintText?.setPosition(this.player.x, this.player.y - 30);
+        this.nearbyHintText?.setVisible(true);
+
+        // 空格键触发对话（当靠近NPC时）
+        if (this.spaceKey && Phaser.Input.Keyboard.JustDown(this.spaceKey) && !this.isTransitioning) {
+          this.showDialogWithNPC(nearbyNpc.id);
+        }
+      } else {
+        this.nearbyHintText?.setVisible(false);
+
+        // 空格键返回室外（当不在NPC附近时）
+        if (this.spaceKey && Phaser.Input.Keyboard.JustDown(this.spaceKey) && !this.isTransitioning) {
+          this.eventBus.emit(GameEvents.SCENE_SWITCH, {
+            from: SCENES.CLINIC,
+            to: SCENES.TOWN_OUTDOOR
+          });
+
+          this.isTransitioning = true;
+          this.registry.set('spawnPoint', { x: 60, y: 10 });
+          this.scene.start(SCENES.TOWN_OUTDOOR);
+        }
+      }
     }
 
     // Phase 2 S4: I键开始问诊

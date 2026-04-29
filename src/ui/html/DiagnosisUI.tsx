@@ -184,9 +184,13 @@ export const DiagnosisUI: React.FC<DiagnosisUIProps> = ({ caseData, onComplete, 
   };
 
   return (
-    <div className="app paper-bg">
-      {/* 左侧导航 */}
-      <aside className="sidebar">
+    <>
+      {/* 背景层 - 与煎药游戏一致 */}
+      <div className="diagnosis-backdrop" />
+      {/* 主弹窗 */}
+      <div className="app paper-bg">
+        {/* 左侧导航 */}
+        <aside className="sidebar">
         <div className="brand">
           <div className="brand-cn">悬壶</div>
           <div className="brand-en">Diagnose · 中医诊室</div>
@@ -286,7 +290,8 @@ export const DiagnosisUI: React.FC<DiagnosisUIProps> = ({ caseData, onComplete, 
           退出诊断
         </button>
       )}
-    </div>
+      </div>
+    </>
   );
 };
 

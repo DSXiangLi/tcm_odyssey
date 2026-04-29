@@ -67,27 +67,35 @@ html, body {
 }
 
 /* ============ App 容器 ============ */
-/* 使用fixed定位覆盖整个屏幕，确保与游戏画面对齐 */
+/* 与煎药游戏一致的布局：backdrop + stage居中 + 固定尺寸弹窗 */
+
+/* 背景层 - 与煎药游戏 .backdrop 对应 */
+.diagnosis-backdrop {
+  position: fixed;
+  inset: 0;
+  background: radial-gradient(ellipse at 50% 40%, #3a2818 0%, #1a0f08 70%);
+  overflow: hidden;
+}
+
+/* 居中容器 - 与煎药游戏 .stage 对应 */
 #diagnosis-react-root {
   position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
+  inset: 0;
   display: flex;
   justify-content: center;
   align-items: center;
   z-index: 1000;
-  background: transparent;
 }
 
+/* 主弹窗 - 与煎药游戏 .scroll-modal 对应 */
 .app {
-  width: 100vw;
-  height: 100vh;
+  width: 1200px;
+  height: 720px;
   display: grid;
-  grid-template-columns: 220px 1fr;
+  grid-template-columns: 180px 1fr;
   background: var(--paper);
   position: relative;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.6);
   overflow: hidden;
 }
 
@@ -255,7 +263,7 @@ html, body {
 /* 页面内容 */
 .page-body {
   padding: 28px 40px;
-  height: calc(100vh - 120px);
+  height: calc(720px - 100px);
   overflow: hidden;
   position: relative;
 }

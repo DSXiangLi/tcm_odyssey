@@ -444,10 +444,9 @@ export class ClinicScene extends Phaser.Scene {
 
     switch (gameType) {
       case 'inquiry':
-        this.scene.start(SCENES.INQUIRY, { caseId });
-        break;
       case 'diagnosis':
-        this.scene.start(SCENES.PULSE, { caseId });
+        // Phase 2.5: 统一使用新的HTML诊断场景
+        this.scene.start(SCENES.DIAGNOSIS, { caseId });
         break;
       case 'decoction':
         this.scene.start(SCENES.DECOCTION, {});
@@ -799,19 +798,19 @@ export class ClinicScene extends Phaser.Scene {
       this.caseDetailUI = null;
     }
 
-    console.log(`[ClinicScene] Starting inquiry for case ${caseId}`);
+    console.log(`[ClinicScene] Starting diagnosis for case ${caseId}`);
 
     // 发送事件
     this.eventBus.emit(GameEvents.SCENE_SWITCH, {
       from: SCENES.CLINIC,
-      to: SCENES.INQUIRY,
+      to: SCENES.DIAGNOSIS,
       data: { caseId }
     });
 
     this.isTransitioning = true;
 
-    // 切换到问诊场景
-    this.scene.start(SCENES.INQUIRY, { caseId });
+    // 切换到诊断场景（Phase 2.5 HTML迁移版本）
+    this.scene.start(SCENES.DIAGNOSIS, { caseId });
   }
 
   /**
@@ -847,14 +846,14 @@ export class ClinicScene extends Phaser.Scene {
     // 发送事件
     this.eventBus.emit(GameEvents.SCENE_SWITCH, {
       from: SCENES.CLINIC,
-      to: SCENES.INQUIRY,
-      data: { caseId: 'case_001' }
+      to: SCENES.DIAGNOSIS,
+      data: { caseId: 'case-001' }
     });
 
     this.isTransitioning = true;
 
-    // 切换到问诊场景
-    this.scene.start(SCENES.INQUIRY, { caseId: 'case_001' });
+    // 切换到诊断场景（Phase 2.5 HTML迁移版本）
+    this.scene.start(SCENES.DIAGNOSIS, { caseId: 'case-001' });
   }
 
   /**

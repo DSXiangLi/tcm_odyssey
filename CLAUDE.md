@@ -536,6 +536,9 @@ docs/superpowers/
 │   ├── phase3/                         # Phase 3 主线（待创建）
 │   └── phase4/                         # Phase 4 主线（待创建）
 │
+├── experience/                         # ⚠️ 经验教训（失败复盘，强制阅读）
+│   └── 2026-04-29-e2e-css-loading-failure.md  # CSS未导入导致测试假通过
+│
 └── plans/                              # 实现计划文档（与specs结构对应）
     ├── phase1/
     ├── phase1-5/
@@ -628,6 +631,59 @@ docs/superpowers/
 
 ---
 
+## ⚠️ 经验教训（强制阅读）
+
+> **重要**: 每次开发前必须阅读此部分，避免重复犯错
+
+### 经验索引
+
+| 日期 | 文件 | 问题 | 关键教训 |
+|------|------|------|---------|
+| 2026-04-29 | [E2E CSS加载失败](docs/superpowers/experience/2026-04-29-e2e-css-loading-failure.md) | CSS未导入导致UI空白，测试报告100%通过 | `toBeVisible()`不检查尺寸/样式 |
+
+### 核心教训速查
+
+**1. E2E测试陷阱**:
+```typescript
+// ❌ 错误：只检查DOM存在
+await expect(element).toBeVisible();
+
+// ✅ 正确：必须验证尺寸和样式
+await expect(element).toBeAttached();
+const box = await element.boundingBox();
+expect(box?.width).toBeGreaterThan(100);  // 尺寸验证
+const bg = await element.evaluate(el => getComputedStyle(el).background);
+expect(bg).not.toBe('none');  // 样式验证
+```
+
+**2. CSS加载验证强制**:
+```typescript
+// 必须检查CSS是否实际加载
+const styleSheets = await page.evaluate(() => document.styleSheets.length);
+expect(styleSheets).toBeGreaterThan(1);
+
+// 或检查CSS变量生效
+const paperColor = await page.evaluate(() =>
+  getComputedStyle(document.documentElement).getPropertyValue('--paper')
+);
+expect(paperColor.trim()).toBeTruthy();
+```
+
+**3. 真实用户路径**:
+```typescript
+// ❌ 错误：直接跳转场景
+await page.evaluate(() => game.scene.start('DiagnosisScene', { caseId }));
+
+// ✅ 正确：模拟真实操作
+await page.goto('/');
+await page.waitForTimeout(2000);
+await page.keyboard.press('z');  // 真实按键触发
+```
+
+**一句话总结**: 测试通过了≠用户能用了。必须验证尺寸、样式、真实路径。
+
+---
+
 ---
 
 ## 相关文档索引
@@ -657,4 +713,4 @@ docs/superpowers/
 
 ---
 
-*本文档由 Claude Code 维护，更新于 2026-04-27*
+*本文档由 Claude Code 维护，更新于 2026-04-29*

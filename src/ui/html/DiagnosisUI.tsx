@@ -8,6 +8,7 @@
  */
 
 import React, { useState, useEffect, useRef } from 'react';
+import './diagnosis.css';  // 关键：导入CSS样式
 import { DiagnosisCase } from './data/diagnosis-cases';
 import { TongueImage, PatientPortrait, Seal } from './components/DiagnosisAssets';
 

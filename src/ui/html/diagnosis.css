@@ -87,13 +87,13 @@ html, body {
   z-index: 1000;
 }
 
-/* 主弹窗 - 与煎药游戏对应，但比游戏视窗小以显示边距 */
-/* 游戏视窗1280x720，弹窗应留10-15%边距 */
+/* 主弹窗 - 比游戏视窗稍小，留合理边距 */
+/* 游戏视窗1280x720，弹窗1150x700留约5-10%边距 */
 .app {
-  width: 1020px;
-  height: 640px;
+  width: 1150px;
+  height: 680px;
   display: grid;
-  grid-template-columns: 160px 1fr;
+  grid-template-columns: 180px 1fr;
   background: var(--paper);
   position: relative;
   box-shadow: 0 20px 60px rgba(0,0,0,0.6);
@@ -264,7 +264,7 @@ html, body {
 /* 页面内容 */
 .page-body {
   padding: 28px 40px;
-  height: calc(640px - 100px);
+  height: calc(680px - 100px);
   overflow: hidden;
   position: relative;
 }

@@ -640,6 +640,7 @@ docs/superpowers/
 | 日期 | 文件 | 问题 | 关键教训 |
 |------|------|------|---------|
 | 2026-04-29 | [E2E CSS加载失败](docs/superpowers/experience/2026-04-29-e2e-css-loading-failure.md) | CSS未导入导致UI空白，测试报告100%通过 | `toBeVisible()`不检查尺寸/样式 |
+| 2026-04-29 | [弹窗尺寸与代码清理](docs/superpowers/experience/2026-04-29-modal-size-and-code-cleanup.md) | 弹窗超过游戏视窗，旧代码残留 | 弹窗应比视窗小10-15% |
 
 ### 核心教训速查
 
@@ -681,6 +682,23 @@ await page.keyboard.press('z');  // 真实按键触发
 ```
 
 **一句话总结**: 测试通过了≠用户能用了。必须验证尺寸、样式、真实路径。
+
+**4. 弹窗尺寸统一**:
+```css
+/* ❌ 错误：弹窗与游戏视窗同尺寸 */
+.modal { width: 1280px; height: 720px; }
+
+/* ✅ 正确：弹窗比游戏视窗小10-15% */
+.modal { width: 1020px; height: 640px; }  /* 留边距 */
+```
+
+**5. 功能合并后清理**:
+```typescript
+// 功能合并后必须：
+// 1. 从 game.config.ts 移除旧场景
+// 2. 更新入口场景引用
+// 3. 在旧文件添加 @deprecated 注释
+```
 
 ---
 

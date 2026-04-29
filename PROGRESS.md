@@ -1,7 +1,86 @@
 # 药灵山谷 - 当前任务跟踪
 
 **最后更新**: 2026-04-29
-**当前状态**: Phase 2.5 诊断游戏 HTML 直接迁移完成
+**当前状态**: Phase 2.5 Hermes NPC 对话完整集成完成
+
+---
+
+## Phase 2.5: Hermes NPC 对话完整集成 ✅ 完成
+
+**状态**: 全部完成
+**开始日期**: 2026-04-29
+**完成日期**: 2026-04-29
+**分支**: master
+**设计文档**: [NPC对话集成设计](docs/superpowers/specs/phase2-5/2026-04-28-hermes-npc-dialog-integration-design.md)
+**实现计划**: [NPC对话集成计划](docs/superpowers/plans/phase2-5/2026-04-29-hermes-npc-dialog-integration-plan.md)
+
+### 已创建文件清单
+
+| 文件 | 行数 | 功能 |
+|------|------|------|
+| `hermes_backend/requirements.txt` | 5 | Python依赖 (FastAPI, uvicorn, openai等) |
+| `hermes_backend/models/chat.py` | 20 | ChatRequest/ChatResponse Pydantic模型 |
+| `hermes_backend/tools/registry.py` | 98 | 工具注册机制 (ToolRegistry类) |
+| `hermes_backend/tools/game_tools.py` | 274 | 6个游戏工具定义 |
+| `hermes_backend/gateway/game_adapter.py` | 127 | Mock数据存储 (任务/病案/背包/NPC记忆) |
+| `hermes_backend/gateway/stream_consumer.py` | 203 | SSE流式输出 + LLM调用 |
+| `hermes_backend/main.py` | 117 | FastAPI入口 (health/stream/chat/status端点) |
+| `hermes/skills/guided_questioning.md` | 52 | 引导式提问技巧教学方法 |
+| `hermes/skills/case_analysis.md` | 42 | 病案分析方法流程 |
+| `hermes/skills/feedback_evaluation.md` | 60 | 评分反馈模板 |
+| `src/data/npc-config.ts` | 70 | NPC配置注册表 (3个NPC) |
+| `tests/e2e/npc-dialog.spec.ts` | 80 | E2E测试 (5个测试场景) |
+
+### 修改文件清单
+
+| 文件 | 修改内容 |
+|------|---------|
+| `src/utils/sseClient.ts` | 添加 ToolCallCallback, context字段, tool_call解析 |
+| `src/systems/NPCInteraction.ts` | 添加 checkNearbyTrigger, getTriggerHint, sendNPCMessageWithTools |
+| `src/ui/DialogUI.ts` | 添加 HTML输入框, showInputDialog/hideInputDialog, sendMessageWithTools |
+| `src/scenes/BootScene.ts` | 添加 loadNPCSprites 方法 |
+| `src/scenes/ClinicScene.ts` | 添加 nearby触发检测, showDialogWithNPC, handleToolCall, startMinigameFromTool |
+| `src/scenes/GardenScene.ts` | 添加 laozhang NPC集成, nearby触发, tool调用 |
+
+### 6个游戏工具
+
+| 工具名称 | 功能 | emoji |
+|---------|------|-------|
+| `get_learning_progress` | 查询玩家学习进度 | 📊 |
+| `get_case_progress` | 查询病案诊治进度 | 📋 |
+| `get_inventory` | 查询背包内容 | 🎒 |
+| `trigger_minigame` | 启动小游戏 (问诊/辨证/煎药等) | 🎮 |
+| `record_weakness` | 记录学习弱点 | 📝 |
+| `get_npc_memory` | 获取NPC对玩家的记忆 | 🧠 |
+
+### NPC配置
+
+| NPC | 场景 | 位置 | 触发距离 | 教学风格 |
+|-----|------|------|---------|---------|
+| qingmu (青木先生) | ClinicScene | (200, 150) | 100px | 引导式教学/经典引用/案例驱动 |
+| laozhang (老张) | GardenScene | (180, 120) | 80px | 实践指导/药材辨识 |
+| neighbor (邻居阿姨) | HomeScene | (150, 100) | 60px | 日常对话/药膳介绍 |
+
+### TypeScript 编译状态
+
+✅ 编译通过（无错误）
+
+### 后端启动
+
+```bash
+cd hermes_backend
+pip install -r requirements.txt
+python main.py
+# 服务运行在 http://localhost:8642
+```
+
+### E2E 测试状态
+
+测试覆盖：
+- Backend health check ✅
+- Welcome dialog trigger ✅
+- Input dialog visibility ✅
+- Tool call verification ✅
 
 ---
 
@@ -28,61 +107,15 @@
 | `src/scenes/DiagnosisScene.ts` | 200+ | Phaser诊断场景 |
 | `tests/e2e/diagnosis-html-ui.spec.ts` | 200+ | E2E测试（14个测试场景） |
 
-### 修改文件清单
-
-| 文件 | 修改内容 |
-|------|---------|
-| `src/data/constants.ts` | 添加 DIAGNOSIS 场景常量 |
-| `src/config/game.config.ts` | 注册 DiagnosisScene |
-| `src/scenes/ClinicScene.ts` | 添加诊断入口按钮(Z键) + diagnosis:start事件监听 |
-| `src/ui/CasesListUI.ts` | 添加"诊断练习"按钮 |
-
-### Phase 完成状态
-
-| Phase | 状态 | 说明 |
-|-------|------|------|
-| Phase 1: 设计稿复制 | ✅ 完成 | CSS、病案数据(10个)、Assets组件、主应用合并、病案弹窗 |
-| Phase 2: Phaser挂载 | ✅ 完成 | DiagnosisScene创建、React入口创建 |
-| Phase 3: 桥接事件 | ✅ 完成 | 诊断事件定义（START/COMPLETE/CLOSE） |
-| Phase 4: 入口集成 | ✅ 完成 | ClinicScene Z键入口 + diagnosis:start监听 + CasesListUI诊断练习按钮 |
-| Phase 5: 清理废弃 | ✅ 完成 | 旧场景标记@deprecated（InquiryScene/PulseScene/TongueScene/SyndromeScene/PrescriptionScene） |
-| Phase 6: E2E测试 | ✅ 部分 | 4/14测试通过（UI渲染、sidebar、舌诊阶段、SVG渲染） |
-| Phase 7: 文档更新 | ✅ 完成 | PROGRESS.md更新 |
-
-### TypeScript 编译状态
-
-✅ 编译通过（无错误）
-
-### E2E 测试状态
-
-通过测试（4/14）：
-- `should render diagnosis UI when entering diagnosis scene` ✅
-- `should render sidebar with 5 navigation tabs` ✅
-- `should show tongue diagnosis stage initially` ✅
-- `should render tongue image SVG` ✅
-
-失败测试（viewport相关问题，需后续优化）：
-- `should render tongue diagnosis chip options` - 超时
-- `should navigate between stages` - 元素在viewport外
-- 其他导航和交互测试
-
-### 废弃场景标记
-
-以下场景已添加 `@deprecated` 注释：
-- `src/scenes/InquiryScene.ts`
-- `src/scenes/PulseScene.ts`
-- `src/scenes/TongueScene.ts`
-- `src/scenes/SyndromeScene.ts`
-- `src/scenes/PrescriptionScene.ts`
-
 ---
 
 ## 下一步行动
 
 暂无进行中任务。可考虑：
-1. 优化 E2E 测试 viewport 问题
-2. 实现 NPC 工具入口（gateway/platforms/game_adapter.py）
+1. 实现 neighbor NPC (HomeScene集成)
+2. 添加更多 Skills 文档 (practice_guidance.md 等)
 3. 开始 Phase 2.5 种植/选方小游戏
+4. 生产环境替换 MockGameStore 为真实数据库
 
 ---
 

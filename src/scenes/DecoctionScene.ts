@@ -45,6 +45,11 @@ export class DecoctionScene extends Phaser.Scene {
   private reactRoot: Root | null = null;
   private domContainer: HTMLElement | null = null;
 
+  // 事件监听器引用（用于正确移除）
+  private boundHerbDropHandler: EventListener | null = null;
+  private boundCompleteHandler: EventListener | null = null;
+  private boundCloseHandler: EventListener | null = null;
+
   // 数据
   private prescriptionId: string | null = null;
 
@@ -158,22 +163,29 @@ export class DecoctionScene extends Phaser.Scene {
    * 设置桥接事件监听 (React UI → Phaser)
    */
   private setupBridgeEventListeners(): void {
-    // 监听药材拖放事件
-    window.addEventListener(DECOCTION_EVENTS.HERB_DROP, ((e: CustomEvent) => {
+    // 保存监听器引用以便正确移除
+    this.boundHerbDropHandler = ((e: CustomEvent) => {
       const data = e.detail as { herbId: string; success: boolean };
       this.handleHerbDropEvent(data.herbId, data.success);
-    }) as EventListener);
+    }) as EventListener;
 
-    // 监听完成事件
-    window.addEventListener(DECOCTION_EVENTS.COMPLETE, ((e: CustomEvent) => {
+    this.boundCompleteHandler = ((e: CustomEvent) => {
       const data = e.detail as { herbs: string[]; fireType: string };
       this.handleCompleteEvent(data.herbs, data.fireType);
-    }) as EventListener);
+    }) as EventListener;
+
+    this.boundCloseHandler = (() => {
+      this.returnToClinic();
+    }) as EventListener;
+
+    // 监听药材拖放事件
+    window.addEventListener(DECOCTION_EVENTS.HERB_DROP, this.boundHerbDropHandler);
+
+    // 监听完成事件
+    window.addEventListener(DECOCTION_EVENTS.COMPLETE, this.boundCompleteHandler);
 
     // 监听关闭事件
-    window.addEventListener(DECOCTION_EVENTS.CLOSE, (() => {
-      this.returnToClinic();
-    }) as EventListener);
+    window.addEventListener(DECOCTION_EVENTS.CLOSE, this.boundCloseHandler);
   }
 
   /**
@@ -303,8 +315,8 @@ export class DecoctionScene extends Phaser.Scene {
    */
   returnToClinic(): void {
     // ===== 显式清理 React UI（不依赖 Phaser shutdown） =====
-    // Phaser 的 shutdown() 不一定在 scene.start() 后立即调用
-    // 所以必须在切换场景前手动清理
+    // Phaser 的 shutdown() 不一定在 scene.stop() 后立即调用
+    // 所以必须在停止场景前手动清理
     this.cleanupReactUI();
 
     this.eventBus.emit(GameEvents.SCENE_SWITCH, {
@@ -315,8 +327,8 @@ export class DecoctionScene extends Phaser.Scene {
     // 重置管理器
     this.decoctionManager.reset();
 
-    // 切换场景
-    this.scene.start(SCENES.CLINIC);
+    // 停止当前场景（ClinicScene仍在运行）
+    this.scene.stop();
   }
 
   /**
@@ -334,10 +346,19 @@ export class DecoctionScene extends Phaser.Scene {
       this.domContainer = null;
     }
 
-    // 移除桥接事件监听
-    window.removeEventListener(DECOCTION_EVENTS.HERB_DROP, (() => {}) as EventListener);
-    window.removeEventListener(DECOCTION_EVENTS.COMPLETE, (() => {}) as EventListener);
-    window.removeEventListener(DECOCTION_EVENTS.CLOSE, (() => {}) as EventListener);
+    // 正确移除桥接事件监听（使用保存的引用）
+    if (this.boundHerbDropHandler) {
+      window.removeEventListener(DECOCTION_EVENTS.HERB_DROP, this.boundHerbDropHandler);
+      this.boundHerbDropHandler = null;
+    }
+    if (this.boundCompleteHandler) {
+      window.removeEventListener(DECOCTION_EVENTS.COMPLETE, this.boundCompleteHandler);
+      this.boundCompleteHandler = null;
+    }
+    if (this.boundCloseHandler) {
+      window.removeEventListener(DECOCTION_EVENTS.CLOSE, this.boundCloseHandler);
+      this.boundCloseHandler = null;
+    }
   }
 
   update(): void {

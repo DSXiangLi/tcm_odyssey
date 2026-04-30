@@ -328,7 +328,7 @@ const TongueDiagnosis: React.FC<TongueDiagnosisProps> = ({ data, onChange }) => 
   const set = (k: string, v: string) => onChange({ ...data, [k]: v });
 
   return (
-    <div className="fade-in" style={{ display: 'grid', gridTemplateColumns: '420px 1fr', gap: 32, height: '100%' }}>
+    <div className="fade-in" style={{ display: 'grid', gridTemplateColumns: '360px 1fr', gap: 24, height: '100%', padding: '12px 0' }}>
       {/* 左：舌象 */}
       <div>
         <div className="field-label">舌象（点击放大）</div>
@@ -337,13 +337,13 @@ const TongueDiagnosis: React.FC<TongueDiagnosisProps> = ({ data, onChange }) => 
           style={{
             background: '#1a0e0a',
             border: '1px solid var(--paper-deep)',
-            padding: 28,
+            padding: 20,
             cursor: 'zoom-in',
             position: 'relative',
             display: 'flex', justifyContent: 'center'
           }}
         >
-          <TongueImage size={320} />
+          <TongueImage size={280} />
           <div style={{
             position: 'absolute', top: 10, right: 10,
             background: 'rgba(241,230,204,0.85)',
@@ -452,7 +452,7 @@ const PulseDiagnosis: React.FC<PulseDiagnosisProps> = ({ data, onChange, classic
   const set = (k: string, v: string) => onChange({ ...data, [k]: v });
 
   return (
-    <div className="fade-in" style={{ display: 'grid', gridTemplateColumns: '1fr 380px', gap: 32, height: '100%' }}>
+    <div className="fade-in" style={{ display: 'grid', gridTemplateColumns: '1fr 320px', gap: 24, height: '100%', padding: '16px 0' }}>
       {/* 左：脉动可视 */}
       <div style={{ display: 'flex', flexDirection: 'column' }}>
         <div className="field-label">手腕脉位 · 三指按候</div>
@@ -460,13 +460,13 @@ const PulseDiagnosis: React.FC<PulseDiagnosisProps> = ({ data, onChange, classic
           flex: 1,
           background: 'linear-gradient(180deg, #2a1f15, #1a1208)',
           border: '1px solid var(--paper-deep)',
-          padding: 32,
+          padding: 24,
           display: 'flex', flexDirection: 'column',
           alignItems: 'center', justifyContent: 'center',
           position: 'relative'
         }}>
-          {/* 手腕示意 SVG */}
-          <svg viewBox="0 0 600 280" width="520" style={{ display: 'block' }}>
+          {/* 手腕示意 SVG - 自适应宽度 */}
+          <svg viewBox="0 0 600 280" style={{ display: 'block', width: '100%', maxWidth: 480, height: 'auto' }}>
             <defs>
               <linearGradient id="armSkin" x1="0%" y1="0%" x2="0%" y2="100%">
                 <stop offset="0%" stopColor="#e8c8a0" />
@@ -677,7 +677,7 @@ const WenZhen: React.FC<WenZhenProps> = ({ data, onChange, caseData, showHints }
   const collectedClues = data.clues || [];
 
   return (
-    <div className="fade-in" style={{ display: 'grid', gridTemplateColumns: '340px 1fr', gap: 24, height: '100%' }}>
+    <div className="fade-in" style={{ display: 'grid', gridTemplateColumns: '280px 1fr', gap: 20, height: '100%', padding: '12px 0' }}>
       {/* 左：患者立绘 */}
       <div style={{
         background: 'linear-gradient(180deg, #d8c89c 0%, #c4b388 100%)',
@@ -686,14 +686,14 @@ const WenZhen: React.FC<WenZhenProps> = ({ data, onChange, caseData, showHints }
         overflow: 'hidden',
         display: 'flex', flexDirection: 'column'
       }}>
-        <div style={{ padding: '14px 18px', background: 'rgba(42,36,29,0.85)', color: 'var(--paper)' }}>
-          <div style={{ fontFamily: 'var(--font-kai)', fontSize: 18, letterSpacing: 4 }}>{caseData.name}</div>
-          <div style={{ fontSize: 11, letterSpacing: 2, opacity: 0.7, marginTop: 2 }}>
+        <div style={{ padding: '12px 14px', background: 'rgba(42,36,29,0.85)', color: 'var(--paper)' }}>
+          <div style={{ fontFamily: 'var(--font-kai)', fontSize: 16, letterSpacing: 3 }}>{caseData.name}</div>
+          <div style={{ fontSize: 10, letterSpacing: 1.5, opacity: 0.7, marginTop: 2 }}>
             {caseData.gender} · {caseData.age}岁 · {caseData.occupation}
           </div>
         </div>
-        <div style={{ flex: 1, display: 'flex', alignItems: 'flex-end', justifyContent: 'center' }}>
-          <PatientPortrait height={520} />
+        <div style={{ flex: 1, display: 'flex', alignItems: 'flex-end', justifyContent: 'center', overflow: 'hidden' }}>
+          <PatientPortrait height={400} />
         </div>
         <div style={{
           padding: '10px 16px',
@@ -867,7 +867,7 @@ const BianZheng: React.FC<BianZhengProps> = ({ data, onChange, summary, options 
   };
 
   return (
-    <div className="fade-in" style={{ display: 'grid', gridTemplateColumns: '380px 1fr', gap: 28, height: '100%' }}>
+    <div className="fade-in" style={{ display: 'grid', gridTemplateColumns: '320px 1fr', gap: 24, height: '100%', padding: '12px 0' }}>
       {/* 左：四诊汇总 */}
       <div style={{ overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
         <h3 className="section-title">四诊合参</h3>

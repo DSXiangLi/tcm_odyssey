@@ -22,9 +22,9 @@
 import Phaser from 'phaser';
 import { SCENES, TILE_SIZE } from '../data/constants';
 import { CLINIC_SCALED_CONFIG } from '../data/clinic-scaled-walkable-config';
-import { UI_COLOR_STRINGS } from '../data/ui-color-theme';
+// UI_COLOR_STRINGS 已删除（不再使用）
 import { Player } from '../entities/Player';
-import { EventBus, GameEvents } from '../systems/EventBus';
+import { EventBus, GameEvents, EventData } from '../systems/EventBus';
 import { GameStateBridge } from '../utils/GameStateBridge';
 import { DialogUI, DialogUIConfig } from '../ui/DialogUI';
 import { NPCInteractionSystem } from '../systems/NPCInteraction';
@@ -65,9 +65,9 @@ export class ClinicScene extends Phaser.Scene {
   private dialogShown: boolean = false;
   // Nearby trigger detection
   private nearbyHintText: Phaser.GameObjects.Text | null = null;
-  // Phase 2 S4: 问诊入口
-  private inquiryButton!: Phaser.GameObjects.Text;
-  private inquiryStartKey!: Phaser.Input.Keyboard.Key;
+  // Phase 2 S4: 问诊入口（已废弃，统一使用 Z键诊断）
+  // private inquiryButton!: Phaser.GameObjects.Text;  // 已删除
+  // private inquiryStartKey!: Phaser.Input.Keyboard.Key;  // 已删除
   // Phase 2 S5: 病案系统
   private caseManager!: CaseManager;
   private casesButton!: Phaser.GameObjects.Text;
@@ -121,6 +121,18 @@ export class ClinicScene extends Phaser.Scene {
       console.log('[ClinicScene] wake event received, isTransitioning reset to false');
     });
 
+    // ⭐ Phase 2.5修复：监听子场景退出事件，重置isTransitioning
+    // 当使用 scene.launch() 启动子场景时，ClinicScene 保持 running 状态
+    // 子场景使用 scene.stop() 退出时，不会触发 ClinicScene 的 wake 事件
+    // 需要监听 EventBus 的 SCENE_SWITCH 事件来重置状态
+    this.eventBus.on(GameEvents.SCENE_SWITCH, (data: EventData) => {
+      // 当子场景退出并返回 ClinicScene 时，重置 isTransitioning
+      if (data.to === SCENES.CLINIC && data.from !== SCENES.CLINIC) {
+        this.isTransitioning = false;
+        console.log(`[ClinicScene] SCENE_SWITCH from ${data.from} to ${data.to}, isTransitioning reset to false`);
+      }
+    });
+
     // Phase 1.5: 加载背景图
     this.createBackground();
 
@@ -160,8 +172,8 @@ export class ClinicScene extends Phaser.Scene {
       color: '#aaaaaa'
     }).setScrollFactor(0);
 
-    // Phase 2 S4: 创建问诊入口按钮
-    this.createInquiryButton();
+    // Phase 2 S4: 问诊入口（已废弃，统一使用 Z键诊断）
+    // this.createInquiryButton();  // 已删除
 
     // Phase 2 S5: 创建病案查看入口按钮
     this.createCasesButton();
@@ -445,11 +457,11 @@ export class ClinicScene extends Phaser.Scene {
     switch (gameType) {
       case 'inquiry':
       case 'diagnosis':
-        // Phase 2.5: 统一使用新的HTML诊断场景
-        this.scene.start(SCENES.DIAGNOSIS, { caseId });
+        // Phase 2.5: 使用launch并行运行，让诊所场景继续显示
+        this.scene.launch(SCENES.DIAGNOSIS, { caseId });
         break;
       case 'decoction':
-        this.scene.start(SCENES.DECOCTION, {});
+        this.scene.launch(SCENES.DECOCTION, {});
         break;
       default:
         console.warn(`[ClinicScene] Unknown game type: ${gameType}`);
@@ -558,7 +570,7 @@ export class ClinicScene extends Phaser.Scene {
     if (this.input.keyboard) {
       this.cursors = this.input.keyboard.createCursorKeys();
       this.spaceKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE);
-      this.inquiryStartKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.I);
+      // this.inquiryStartKey 已删除（统一使用Z键诊断）
       // Phase 2 S5: 病案查看快捷键
       this.casesOpenKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.C);
       // Phase 2 S8: 背包快捷键
@@ -570,25 +582,16 @@ export class ClinicScene extends Phaser.Scene {
   }
 
   /**
-   * Phase 2 S4: 创建问诊入口按钮
+   * Phase 2 S4: 问诊入口按钮（已废弃）
+   * 统一使用 Z键诊断入口
    */
-  private createInquiryButton(): void {
-    this.inquiryButton = this.add.text(10, 70, '[按 I 开始问诊]', {
-      fontSize: '14px',
-      color: UI_COLOR_STRINGS.BUTTON_SUCCESS,  // #60a040 场景提取绿
-      backgroundColor: '#333333aa',
-      padding: { x: 8, y: 4 }
-    });
-    this.inquiryButton.setScrollFactor(0);
-    this.inquiryButton.setInteractive({ useHandCursor: true });
-    this.inquiryButton.on('pointerdown', () => this.startInquiry());
-  }
+  // private createInquiryButton(): void { ... }  // 已删除
 
   /**
    * Phase 2 S5: 创建病案查看入口按钮
    */
   private createCasesButton(): void {
-    this.casesButton = this.add.text(10, 100, '[按 C 查看病案]', {
+    this.casesButton = this.add.text(10, 70, '[按 C 查看病案]', {
       fontSize: '14px',
       color: '#ffcc00',
       backgroundColor: '#333333aa',
@@ -603,7 +606,7 @@ export class ClinicScene extends Phaser.Scene {
    * Phase 2 S8: 创建背包入口按钮
    */
   private createInventoryButton(): void {
-    const inventoryButton = this.add.text(10, 130, '[按 B 打开背包]', {
+    const inventoryButton = this.add.text(10, 100, '[按 B 打开背包]', {
       fontSize: '14px',
       color: '#4a7c59',
       backgroundColor: '#333333aa',
@@ -618,7 +621,7 @@ export class ClinicScene extends Phaser.Scene {
    * Phase 2 S9: 创建煎药入口按钮
    */
   private createDecoctionButton(): void {
-    this.decoctionButton = this.add.text(10, 160, '[按 D 开始煎药]', {
+    this.decoctionButton = this.add.text(10, 130, '[按 D 开始煎药]', {
       fontSize: '14px',
       color: '#d4a574',  // 古朴金色
       backgroundColor: '#333333aa',
@@ -633,7 +636,7 @@ export class ClinicScene extends Phaser.Scene {
    * Phase 2.5: 创建诊断入口按钮
    */
   private createDiagnosisButton(): void {
-    this.diagnosisButton = this.add.text(10, 190, '[按 Z 开始诊断]', {
+    this.diagnosisButton = this.add.text(10, 160, '[按 Z 开始诊断]', {
       fontSize: '14px',
       color: '#80c0a0',  // 青绿色
       backgroundColor: '#333333aa',
@@ -677,7 +680,7 @@ export class ClinicScene extends Phaser.Scene {
     this.isTransitioning = true;
 
     // 切换到诊断场景
-    this.scene.start(SCENES.DIAGNOSIS, { caseId, returnScene: SCENES.CLINIC });
+    this.scene.launch(SCENES.DIAGNOSIS, { caseId, returnScene: SCENES.CLINIC });
   }
 
   /**
@@ -810,7 +813,7 @@ export class ClinicScene extends Phaser.Scene {
     this.isTransitioning = true;
 
     // 切换到诊断场景（Phase 2.5 HTML迁移版本）
-    this.scene.start(SCENES.DIAGNOSIS, { caseId });
+    this.scene.launch(SCENES.DIAGNOSIS, { caseId });
   }
 
   /**
@@ -836,25 +839,9 @@ export class ClinicScene extends Phaser.Scene {
   }
 
   /**
-   * Phase 2 S4: 开始问诊
+   * Phase 2 S4: 开始问诊（已废弃，统一使用 Z键诊断）
+   * 原 startInquiry 方法已删除，功能合并到 startDiagnosis
    */
-  private startInquiry(): void {
-    if (this.isTransitioning) return;
-
-    console.log('[ClinicScene] Starting inquiry...');
-
-    // 发送事件
-    this.eventBus.emit(GameEvents.SCENE_SWITCH, {
-      from: SCENES.CLINIC,
-      to: SCENES.DIAGNOSIS,
-      data: { caseId: 'case-001' }
-    });
-
-    this.isTransitioning = true;
-
-    // 切换到诊断场景（Phase 2.5 HTML迁移版本）
-    this.scene.start(SCENES.DIAGNOSIS, { caseId: 'case-001' });
-  }
 
   /**
    * Phase 2 S9: 开始煎药
@@ -874,7 +861,7 @@ export class ClinicScene extends Phaser.Scene {
     this.isTransitioning = true;
 
     // 切换到煎药场景
-    this.scene.start(SCENES.DECOCTION, {});
+    this.scene.launch(SCENES.DECOCTION, {});
   }
 
   /**
@@ -1026,11 +1013,6 @@ export class ClinicScene extends Phaser.Scene {
           this.scene.start(SCENES.TOWN_OUTDOOR);
         }
       }
-    }
-
-    // Phase 2 S4: I键开始问诊
-    if (Phaser.Input.Keyboard.JustDown(this.inquiryStartKey) && !this.isTransitioning) {
-      this.startInquiry();
     }
 
     // Phase 2 S5: C键打开病案列表

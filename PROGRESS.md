@@ -1,7 +1,49 @@
 # 药灵山谷 - 当前任务跟踪
 
-**最后更新**: 2026-04-29
-**当前状态**: Phase 2.5 Hermes NPC 对话完整集成完成
+**最后更新**: 2026-04-30
+**当前状态**: Phase 2.5 诊断/煎药游戏 HTML 直接迁移 + 场景切换修复完成
+
+---
+
+## 暂无进行中任务
+
+可考虑下一步：
+1. 实现 neighbor NPC (HomeScene集成)
+2. 开始 Phase 2.5 种植小游戏
+3. 生产环境替换 MockGameStore 为真实数据库
+
+---
+
+## Phase 2.5: 诊断/煎药场景切换修复 ✅ 完成
+
+**状态**: 全部完成
+**完成日期**: 2026-04-30
+
+### 修复内容
+
+| 问题 | 根本原因 | 修复方案 |
+|-----|---------|---------|
+| CSS导入缺失，UI不可见 | `import './diagnosis.css'` 未添加 | 添加CSS导入 |
+| 位置偏离游戏画面 | CSS假设1440×900，游戏1280×720 | 统一backdrop+centered modal布局 |
+| 退出后场景卡死 | `removeEventListener`使用空函数 | 保存监听器引用正确移除 |
+| 退出后无法再次进入 | `scene.launch()`不触发wake事件 | 监听SCENE_SWITCH事件重置isTransitioning |
+| 内部元素尺寸溢出 | 固定像素尺寸超出容器 | 调整grid布局和元素尺寸 |
+| I键问诊冗余入口 | 保留两个入口(Z/I) | 删除I键，统一Z键诊断 |
+
+### 经验文档
+
+- [事件监听器移除失败](docs/superpowers/experience/2026-04-30-event-listener-removal-failure.md)
+
+### Phaser场景切换机制总结
+
+| 方法 | 当前场景状态 | 新场景状态 | wake事件 |
+|------|-------------|-----------|---------|
+| `scene.start()` | 停止 | 启动 | ❌ |
+| `scene.launch()` | 保持running | 启动 | ❌ |
+| `scene.sleep()` | sleep | - | - |
+| `scene.stop()` | 停止自己 | - | ❌ |
+
+**关键结论**: `launch()` + `stop()` 组合不会触发wake，需通过EventBus通信。
 
 ---
 
@@ -31,57 +73,6 @@
 | `src/data/npc-config.ts` | 70 | NPC配置注册表 (3个NPC) |
 | `tests/e2e/npc-dialog.spec.ts` | 80 | E2E测试 (5个测试场景) |
 
-### 修改文件清单
-
-| 文件 | 修改内容 |
-|------|---------|
-| `src/utils/sseClient.ts` | 添加 ToolCallCallback, context字段, tool_call解析 |
-| `src/systems/NPCInteraction.ts` | 添加 checkNearbyTrigger, getTriggerHint, sendNPCMessageWithTools |
-| `src/ui/DialogUI.ts` | 添加 HTML输入框, showInputDialog/hideInputDialog, sendMessageWithTools |
-| `src/scenes/BootScene.ts` | 添加 loadNPCSprites 方法 |
-| `src/scenes/ClinicScene.ts` | 添加 nearby触发检测, showDialogWithNPC, handleToolCall, startMinigameFromTool |
-| `src/scenes/GardenScene.ts` | 添加 laozhang NPC集成, nearby触发, tool调用 |
-
-### 6个游戏工具
-
-| 工具名称 | 功能 | emoji |
-|---------|------|-------|
-| `get_learning_progress` | 查询玩家学习进度 | 📊 |
-| `get_case_progress` | 查询病案诊治进度 | 📋 |
-| `get_inventory` | 查询背包内容 | 🎒 |
-| `trigger_minigame` | 启动小游戏 (问诊/辨证/煎药等) | 🎮 |
-| `record_weakness` | 记录学习弱点 | 📝 |
-| `get_npc_memory` | 获取NPC对玩家的记忆 | 🧠 |
-
-### NPC配置
-
-| NPC | 场景 | 位置 | 触发距离 | 教学风格 |
-|-----|------|------|---------|---------|
-| qingmu (青木先生) | ClinicScene | (200, 150) | 100px | 引导式教学/经典引用/案例驱动 |
-| laozhang (老张) | GardenScene | (180, 120) | 80px | 实践指导/药材辨识 |
-| neighbor (邻居阿姨) | HomeScene | (150, 100) | 60px | 日常对话/药膳介绍 |
-
-### TypeScript 编译状态
-
-✅ 编译通过（无错误）
-
-### 后端启动
-
-```bash
-cd hermes_backend
-pip install -r requirements.txt
-python main.py
-# 服务运行在 http://localhost:8642
-```
-
-### E2E 测试状态
-
-测试覆盖：
-- Backend health check ✅
-- Welcome dialog trigger ✅
-- Input dialog visibility ✅
-- Tool call verification ✅
-
 ---
 
 ## Phase 2.5: 诊断游戏 HTML 直接迁移 ✅ 完成
@@ -109,14 +100,4 @@ python main.py
 
 ---
 
-## 下一步行动
-
-暂无进行中任务。可考虑：
-1. 实现 neighbor NPC (HomeScene集成)
-2. 添加更多 Skills 文档 (practice_guidance.md 等)
-3. 开始 Phase 2.5 种植/选方小游戏
-4. 生产环境替换 MockGameStore 为真实数据库
-
----
-
-*本文档由 Claude Code 维护，更新于 2026-04-29*
+*本文档由 Claude Code 维护，更新于 2026-04-30*

@@ -1,16 +1,65 @@
 # 药灵山谷 - 当前任务跟踪
 
 **最后更新**: 2026-04-30
-**当前状态**: Phase 2.5 诊断/煎药游戏 HTML 直接迁移 + 场景切换修复完成
+**当前状态**: Phase 2.5 NPC AI 自动测试验收 - 进行中 (Task 4 实现完成，待审查)
 
 ---
 
-## 暂无进行中任务
+## Phase 2.5: NPC AI 自动测试验收 ⏳ 进行中
 
-可考虑下一步：
-1. 实现 neighbor NPC (HomeScene集成)
-2. 开始 Phase 2.5 种植小游戏
-3. 生产环境替换 MockGameStore 为真实数据库
+**状态**: 实现中（4/8任务完成）
+**开始日期**: 2026-04-30
+**分支**: master
+**设计文档**: [NPC AI验收设计](docs/superpowers/specs/phase2-5/2026-04-30-npc-ai-acceptance-testing-design.md)
+**实现计划**: [NPC AI验收计划](docs/superpowers/plans/phase2-5/2026-04-30-npc-ai-acceptance-testing-plan.md)
+
+### 任务进度
+
+| Task | 状态 | 审查状态 |
+|------|------|---------|
+| Task 1: 后端 DialogLogger | ✅ 完成 | Spec✅ 质量✅ |
+| Task 2: EventBus NPC事件 | ✅ 完成 | Spec✅ 质量✅ |
+| Task 3: GameLogger NPC类别 | ✅ 完成 | Spec✅ 质量✅ |
+| Task 4: 配置和评估模块 | ✅ 实现 | 待审查 |
+| Task 5: 报告生成器 | ⏳ 待执行 | - |
+| Task 6: 全流程编排脚本 | ⏳ 待执行 | - |
+| Task 7: E2E测试扩展 | ⏳ 待执行 | - |
+| Task 8: 更新PROGRESS.md | ⏳ 待执行 | - |
+
+### 已创建文件清单
+
+| 文件 | 行数 | 功能 | Commit |
+|------|------|------|--------|
+| `hermes_backend/gateway/dialog_logger.py` | 117 | 后端对话日志记录器 | 2290ec9 |
+| `scripts/npc_acceptance/__init__.py` | 1 | 包初始化 | 18713ce |
+| `scripts/npc_acceptance/config.py` | 122 | 验收配置（阈值、权重、Prompt） | 18713ce |
+| `scripts/npc_acceptance/dialog_evaluator.py` | 307 | LLM对话质量评估 | 18713ce |
+
+### 已修改文件清单
+
+| 文件 | 修改内容 | Commit |
+|------|---------|--------|
+| `hermes_backend/gateway/stream_consumer.py` | 集成 DialogLogger | 2290ec9 |
+| `src/systems/EventBus.ts` | 添加6个NPC触发事件 | e3cdeae |
+| `src/utils/GameLogger.ts` | 添加npc_trigger类别 | f9c4fec |
+
+### 验收维度
+
+| 维度 | 权重 | 阈值 |
+|-----|------|------|
+| 教学风格符合度 | 40% | 75 |
+| 上下文连贯性 | 30% | 80 |
+| 工具调用合理性 | 30% | 70 |
+| E2E测试通过率 | 50% | 80% |
+| 综合验收分数 | - | 85% |
+
+### 继续执行提示
+
+重启对话后，使用以下命令继续执行：
+```
+执行 docs/superpowers/plans/phase2-5/2026-04-30-npc-ai-acceptance-testing-plan.md
+使用 subagent-driven-development 模式，从 Task 4 Spec合规审查 开始
+```
 
 ---
 

@@ -19,6 +19,14 @@ export const GameEvents = {
   // 交互事件
   DOOR_INTERACT: 'door:interact',
 
+  // NPC触发事件
+  NPC_SCENE_ENTER: 'npc:scene_enter',
+  NPC_NEARBY_DETECTED: 'npc:nearby_detected',
+  NPC_DIALOG_SHOWN: 'npc:dialog_shown',
+  NPC_DIALOG_HIDDEN: 'npc:dialog_hidden',
+  NPC_USER_INPUT: 'npc:user_input',
+  NPC_MINIGAME_TRIGGERED: 'npc:minigame_triggered',
+
   // 错误事件
   ERROR: 'game:error'
 } as const;

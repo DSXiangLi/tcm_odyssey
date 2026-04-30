@@ -41,6 +41,10 @@ export class DiagnosisScene extends Phaser.Scene {
   private reactRoot: Root | null = null;
   private domContainer: HTMLElement | null = null;
 
+  // 事件监听器引用（用于正确移除）
+  private boundCompleteHandler: EventListener | null = null;
+  private boundCloseHandler: EventListener | null = null;
+
   // 数据
   private caseId: string;
   private caseData: DiagnosisCase | null = null;
@@ -137,16 +141,21 @@ export class DiagnosisScene extends Phaser.Scene {
    * 设置桥接事件监听 (React UI → Phaser)
    */
   private setupBridgeEventListeners(): void {
-    // 监听诊断完成事件
-    window.addEventListener(DIAGNOSIS_EVENTS.COMPLETE, ((e: CustomEvent) => {
+    // 保存监听器引用以便正确移除
+    this.boundCompleteHandler = ((e: CustomEvent) => {
       const result = e.detail as DiagnosisResult;
       this.handleDiagnosisComplete(result);
-    }) as EventListener);
+    }) as EventListener;
+
+    this.boundCloseHandler = (() => {
+      this.returnToPreviousScene();
+    }) as EventListener;
+
+    // 监听诊断完成事件
+    window.addEventListener(DIAGNOSIS_EVENTS.COMPLETE, this.boundCompleteHandler);
 
     // 监听关闭事件
-    window.addEventListener(DIAGNOSIS_EVENTS.CLOSE, (() => {
-      this.returnToPreviousScene();
-    }) as EventListener);
+    window.addEventListener(DIAGNOSIS_EVENTS.CLOSE, this.boundCloseHandler);
   }
 
   /**
@@ -189,8 +198,8 @@ export class DiagnosisScene extends Phaser.Scene {
       to: this.returnScene
     });
 
-    // 切换场景
-    this.scene.start(this.returnScene);
+    // 停止当前场景（ClinicScene仍在运行）
+    this.scene.stop();
   }
 
   /**
@@ -212,9 +221,9 @@ export class DiagnosisScene extends Phaser.Scene {
     // 使用 errorText 后返回
     console.warn(errorText.text);
 
-    // 3秒后返回
+    // 3秒后停止当前场景
     this.time.delayedCall(3000, () => {
-      this.scene.start(this.returnScene);
+      this.scene.stop();
     });
   }
 
@@ -232,9 +241,15 @@ export class DiagnosisScene extends Phaser.Scene {
       this.domContainer = null;
     }
 
-    // 移除桥接事件监听
-    window.removeEventListener(DIAGNOSIS_EVENTS.COMPLETE, (() => {}) as EventListener);
-    window.removeEventListener(DIAGNOSIS_EVENTS.CLOSE, (() => {}) as EventListener);
+    // 正确移除桥接事件监听（使用保存的引用）
+    if (this.boundCompleteHandler) {
+      window.removeEventListener(DIAGNOSIS_EVENTS.COMPLETE, this.boundCompleteHandler);
+      this.boundCompleteHandler = null;
+    }
+    if (this.boundCloseHandler) {
+      window.removeEventListener(DIAGNOSIS_EVENTS.CLOSE, this.boundCloseHandler);
+      this.boundCloseHandler = null;
+    }
   }
 
   /**

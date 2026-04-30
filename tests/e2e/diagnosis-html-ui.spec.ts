@@ -279,11 +279,27 @@ test.describe('Diagnosis HTML UI Integration', () => {
   });
 
   test('should close scene on close button click', async ({ page }) => {
-    // Enter diagnosis scene
+    // Real game flow: ClinicScene → Z key → launch DiagnosisScene in parallel
+    // Step 1: Start ClinicScene first
     await page.evaluate(() => {
       const game = (window as any).__PHASER_GAME__;
       if (game) {
-        game.scene.start('DiagnosisScene', { caseId: 'case-001' });
+        game.scene.start('ClinicScene');
+      }
+    });
+
+    await page.waitForTimeout(1500);
+
+    // Step 2: Launch DiagnosisScene in parallel via ClinicScene's scene plugin
+    // Each scene has a ScenePlugin that can launch other scenes in parallel
+    await page.evaluate(() => {
+      const game = (window as any).__PHASER_GAME__;
+      if (game && game.scene) {
+        const clinicScene = game.scene.getScene('ClinicScene');
+        if (clinicScene && clinicScene.scene) {
+          // Use scene's ScenePlugin.launch() to run in parallel
+          clinicScene.scene.launch('DiagnosisScene', { caseId: 'case-001' });
+        }
       }
     });
 
@@ -311,7 +327,7 @@ test.describe('Diagnosis HTML UI Integration', () => {
       };
     });
 
-    // DiagnosisScene should be inactive, ClinicScene active
+    // DiagnosisScene should be inactive, ClinicScene active (parallel scene still running)
     expect(sceneState.diagnosisActive).toBe(false);
     expect(sceneState.clinicActive).toBe(true);
   });

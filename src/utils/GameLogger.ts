@@ -4,7 +4,7 @@ import { EventBus, GameEvents, EventData } from '../systems/EventBus';
 /**
  * 日志类别
  */
-export type LogCategory = 'scene' | 'player' | 'interaction' | 'error';
+export type LogCategory = 'scene' | 'player' | 'interaction' | 'error' | 'npc_trigger';
 
 /**
  * 日志条目
@@ -37,6 +37,12 @@ const EventCategoryMap: Record<string, LogCategory> = {
   [GameEvents.PLAYER_POSITION]: 'player',
   [GameEvents.PLAYER_COLLIDE]: 'player',
   [GameEvents.DOOR_INTERACT]: 'interaction',
+  [GameEvents.NPC_SCENE_ENTER]: 'npc_trigger',
+  [GameEvents.NPC_NEARBY_DETECTED]: 'npc_trigger',
+  [GameEvents.NPC_DIALOG_SHOWN]: 'npc_trigger',
+  [GameEvents.NPC_DIALOG_HIDDEN]: 'npc_trigger',
+  [GameEvents.NPC_USER_INPUT]: 'npc_trigger',
+  [GameEvents.NPC_MINIGAME_TRIGGERED]: 'npc_trigger',
   [GameEvents.ERROR]: 'error'
 };
 
@@ -73,7 +79,7 @@ export class GameLogger {
    * 初始化日志类别
    */
   private initializeCategories(): void {
-    const categories: LogCategory[] = ['scene', 'player', 'interaction', 'error'];
+    const categories: LogCategory[] = ['scene', 'player', 'interaction', 'error', 'npc_trigger'];
     categories.forEach(category => {
       this.logs.set(category, []);
     });

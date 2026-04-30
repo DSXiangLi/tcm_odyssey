@@ -5,6 +5,9 @@ import os
 import logging
 from typing import Dict, Any, Generator, List
 from pathlib import Path
+from datetime import datetime
+
+from gateway.dialog_logger import DialogLogger
 
 logger = logging.getLogger(__name__)
 
@@ -102,9 +105,16 @@ def stream_chat(request: Dict[str, Any]) -> Generator[Dict[str, Any], None, None
     from tools.registry import registry
     from openai import OpenAI
 
+    # 创建对话日志记录器
+    dialog_logger = DialogLogger()
+
     npc_id = request['npc_id']
     player_id = request['player_id']
     user_message = request['user_message']
+
+    # 开始会话日志
+    session_id = dialog_logger.start_session(npc_id, player_id, user_message)
+    logger.info(f"Session started: {session_id}")
 
     # Build system prompt
     system_prompt = build_system_prompt(npc_id, player_id)
@@ -149,6 +159,7 @@ def stream_chat(request: Dict[str, Any]) -> Generator[Dict[str, Any], None, None
         delta = chunk.choices[0].delta
 
         if delta.content:
+            dialog_logger.accumulate_text(delta.content)
             yield {'type': 'text', 'content': delta.content}
 
         # Handle tool calls (accumulate deltas)
@@ -184,6 +195,8 @@ def stream_chat(request: Dict[str, Any]) -> Generator[Dict[str, Any], None, None
 
             result = registry.execute_tool(name, args)
 
+            dialog_logger.log_tool_call(name, args, result)
+
             yield {
                 'type': 'tool_call',
                 'name': name,
@@ -201,3 +214,8 @@ def stream_chat(request: Dict[str, Any]) -> Generator[Dict[str, Any], None, None
             }
 
             logger.info(f"Tool executed: {name} -> {result}")
+
+    # End session and save log
+    log_path = dialog_logger.end_session()
+    logger.info(f"Session ended, log saved: {log_path}")
+    yield {'type': 'session_end', 'session_id': session_id, 'log_path': log_path}

@@ -239,6 +239,34 @@
 
 ---
 
+### Phase 2.5: Hermes NPC 对话完整集成 ✅ (2026-04-29)
+
+**核心成果**: AI驱动的NPC对话系统，支持流式输出、工具调用、上下文记忆。
+
+**创建文件**:
+| 文件 | 功能 |
+|------|------|
+| `hermes_backend/main.py` | FastAPI入口 (health/stream/chat/status端点) |
+| `hermes_backend/tools/game_tools.py` | 6个游戏工具定义 |
+| `hermes_backend/gateway/stream_consumer.py` | SSE流式输出 + LLM调用 |
+| `src/data/npc-config.ts` | NPC配置注册表 (3个NPC) |
+
+**6个游戏工具**: get_learning_progress, get_case_progress, get_inventory, trigger_minigame, record_weakness, get_npc_memory
+
+---
+
+### Phase 2.5: 场景切换修复 ✅ (2026-04-30)
+
+**问题**: 诊断/煎药游戏退出后无法再次进入，键盘操作失效。
+
+**根本原因**: `scene.launch()` + `scene.stop()` 组合不触发 `wake` 事件，`isTransitioning` 未重置。
+
+**修复方案**: 监听 EventBus SCENE_SWITCH 事件重置状态。
+
+**经验文档**: [Phaser场景切换机制](docs/superpowers/experience/2026-04-30-event-listener-removal-failure.md)
+
+---
+
 #### 一、生产类小游戏
 
 **煎药游戏** ✅ (设计文档: [煎药设计](docs/superpowers/specs/phase2-5/minigames/2026-04-19-decoction-minigame-design.md)):

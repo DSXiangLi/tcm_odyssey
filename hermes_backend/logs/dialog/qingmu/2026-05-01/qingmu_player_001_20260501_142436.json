@@ -1,0 +1,12 @@
+{
+  "session_id": "qingmu_player_001_20260501_142436",
+  "npc_id": "qingmu",
+  "player_id": "player_001",
+  "timestamp_start": "2026-05-01T14:24:36.214648",
+  "user_message": "它的君药是什么？",
+  "tool_calls": [],
+  "full_response": "这位学生，你问的是哪个方剂的君药呢？\n\n我们学习过的方剂中，有麻黄汤、桂枝汤、银翘散、桑菊饮等。你可先说说，你心中所指的是哪一剂？",
+  "timestamp_end": "2026-05-01T14:24:41.029424",
+  "response_duration_ms": 4814,
+  "response_token_count": 65
+}

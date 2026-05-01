@@ -1,0 +1,12 @@
+{
+  "session_id": "qingmu_player_001_20260501_142338",
+  "npc_id": "qingmu",
+  "player_id": "player_001",
+  "timestamp_start": "2026-05-01T14:23:38.914790",
+  "user_message": "我想试试煎药",
+  "tool_calls": [],
+  "full_response": "你想试试煎药，这是好事。不过在动手之前，青木想先考考你。\n\n你可还记得《伤寒论》中煎药的要领？煎药时，器具、水量、火候、时间，这四者各有讲究。\n\n你先说说，煎药器具当选何物？是铁锅、铝锅，还是另有选择？",
+  "timestamp_end": "2026-05-01T14:23:43.728760",
+  "response_duration_ms": 4813,
+  "response_token_count": 101
+}

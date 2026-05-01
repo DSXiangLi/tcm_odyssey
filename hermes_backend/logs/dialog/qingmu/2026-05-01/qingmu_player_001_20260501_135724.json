@@ -1,0 +1,12 @@
+{
+  "session_id": "qingmu_player_001_20260501_135724",
+  "npc_id": "qingmu",
+  "player_id": "player_001",
+  "timestamp_start": "2026-05-01T13:57:24.556396",
+  "user_message": "它的君药是什么？",
+  "tool_calls": [],
+  "full_response": "青木：\"你可问的是哪首方剂呢？是麻黄汤、桂枝汤，还是银翘散、桑菊饮？\n\n不妨先说说，你目前在学习哪首方剂？或者，你最近诊治的病人，用的是哪首方药？\n\n这样青木才能为你讲解君药之理。\"",
+  "timestamp_end": "2026-05-01T13:57:28.553494",
+  "response_duration_ms": 3997,
+  "response_token_count": 91
+}

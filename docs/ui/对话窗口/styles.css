@@ -1,0 +1,359 @@
+/* ============================================
+   中医古风对话框 · 共用样式
+   ============================================ */
+
+@import url('https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;500;600;700;900&family=Ma+Shan+Zheng&family=ZCOOL+XiaoWei&family=Long+Cang&display=swap');
+
+:root {
+  /* 纸张与墨 */
+  --paper: #f0e6d2;
+  --paper-deep: #e8d9b8;
+  --paper-light: #f7efde;
+  --paper-edge: #c9b489;
+  --ink: #1a1410;
+  --ink-soft: #3d2f24;
+  --ink-faint: #6b5841;
+
+  /* 朱砂、青黛、藤黄 */
+  --vermilion: #b3322a;
+  --vermilion-deep: #842018;
+  --vermilion-soft: #d65b4f;
+  --indigo: #2d4a52;
+  --celadon: #6b8e6b;
+  --celadon-deep: #4a6b4a;
+  --gold: #b8893f;
+  --gold-deep: #8a6428;
+
+  /* 教学高亮色 */
+  --herb: #6b8e6b;        /* 药材 - 青 */
+  --acupoint: #b3322a;     /* 穴位 - 朱砂 */
+  --classic: #b8893f;      /* 古文引用 - 金 */
+  --symptom: #8a4a6b;      /* 症候 - 紫 */
+
+  /* 字体 */
+  --font-serif: 'Noto Serif SC', 'STSong', 'SimSun', serif;
+  --font-cursive: 'Ma Shan Zheng', 'Long Cang', cursive;
+  --font-title: 'ZCOOL XiaoWei', 'Noto Serif SC', serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: var(--font-serif);
+  color: var(--ink);
+}
+
+/* 通用纸张纹理 */
+.paper-tex {
+  background-color: var(--paper);
+  background-image:
+    radial-gradient(ellipse at 20% 30%, rgba(180, 140, 90, 0.08) 0%, transparent 50%),
+    radial-gradient(ellipse at 80% 70%, rgba(140, 100, 60, 0.06) 0%, transparent 60%),
+    repeating-linear-gradient(
+      90deg,
+      transparent 0px,
+      transparent 2px,
+      rgba(120, 90, 50, 0.02) 2px,
+      rgba(120, 90, 50, 0.02) 3px
+    ),
+    repeating-linear-gradient(
+      0deg,
+      transparent 0px,
+      transparent 4px,
+      rgba(120, 90, 50, 0.015) 4px,
+      rgba(120, 90, 50, 0.015) 5px
+    );
+}
+
+.paper-tex-light {
+  background-color: var(--paper-light);
+  background-image:
+    radial-gradient(ellipse at 30% 40%, rgba(180, 140, 90, 0.05) 0%, transparent 50%),
+    repeating-linear-gradient(
+      90deg,
+      transparent 0px,
+      transparent 2px,
+      rgba(120, 90, 50, 0.015) 2px,
+      rgba(120, 90, 50, 0.015) 3px
+    );
+}
+
+/* 富文本教学标记 */
+.tcm-herb,
+.tcm-acupoint,
+.tcm-classic,
+.tcm-symptom {
+  cursor: help;
+  position: relative;
+  font-weight: 500;
+  border-bottom: 1px dashed currentColor;
+  padding: 0 1px;
+  transition: background 0.15s;
+}
+
+.tcm-herb {
+  color: var(--herb);
+  background: rgba(107, 142, 107, 0.08);
+}
+
+.tcm-acupoint {
+  color: var(--acupoint);
+  background: rgba(179, 50, 42, 0.08);
+}
+
+.tcm-classic {
+  color: var(--classic);
+  background: rgba(184, 137, 63, 0.08);
+  font-style: italic;
+}
+
+.tcm-symptom {
+  color: var(--symptom);
+  background: rgba(138, 74, 107, 0.08);
+}
+
+.tcm-herb:hover { background: rgba(107, 142, 107, 0.18); }
+.tcm-acupoint:hover { background: rgba(179, 50, 42, 0.18); }
+.tcm-classic:hover { background: rgba(184, 137, 63, 0.18); }
+.tcm-symptom:hover { background: rgba(138, 74, 107, 0.18); }
+
+/* 教学浮卡 */
+.tcm-tooltip {
+  position: absolute;
+  bottom: calc(100% + 10px);
+  left: 50%;
+  transform: translateX(-50%) translateY(4px);
+  width: 240px;
+  background: var(--paper-light);
+  border: 1px solid var(--paper-edge);
+  border-radius: 2px;
+  padding: 12px 14px;
+  font-size: 12px;
+  line-height: 1.7;
+  color: var(--ink-soft);
+  box-shadow:
+    0 1px 2px rgba(60, 40, 20, 0.1),
+    0 8px 24px rgba(60, 40, 20, 0.18);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s, transform 0.2s;
+  z-index: 100;
+  text-align: left;
+  font-style: normal;
+  font-weight: 400;
+}
+
+.tcm-tooltip::after {
+  content: '';
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  border: 6px solid transparent;
+  border-top-color: var(--paper-edge);
+}
+
+.tcm-herb:hover .tcm-tooltip,
+.tcm-acupoint:hover .tcm-tooltip,
+.tcm-classic:hover .tcm-tooltip,
+.tcm-symptom:hover .tcm-tooltip {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+  pointer-events: auto;
+}
+
+.tcm-tt-title {
+  font-family: var(--font-title);
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--ink);
+  margin-bottom: 4px;
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 6px;
+}
+
+.tcm-tt-pinyin {
+  font-size: 10px;
+  color: var(--ink-faint);
+  letter-spacing: 0.05em;
+  font-weight: 400;
+}
+
+.tcm-tt-row {
+  display: flex;
+  gap: 6px;
+  margin-top: 3px;
+  font-size: 11px;
+}
+
+.tcm-tt-row > span:first-child {
+  color: var(--ink-faint);
+  flex-shrink: 0;
+  min-width: 36px;
+}
+
+.tcm-tt-divider {
+  height: 1px;
+  background: var(--paper-edge);
+  margin: 8px 0;
+  opacity: 0.5;
+}
+
+.tcm-tt-body {
+  font-size: 11.5px;
+  line-height: 1.6;
+  color: var(--ink-soft);
+}
+
+/* 印章 */
+.seal {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  background: var(--vermilion);
+  color: var(--paper-light);
+  font-family: var(--font-title);
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: -0.05em;
+  line-height: 1;
+  border-radius: 2px;
+  box-shadow: inset 0 0 0 1.5px rgba(247, 239, 222, 0.4);
+  transform: rotate(-3deg);
+  filter: contrast(1.1);
+  position: relative;
+}
+
+.seal::before {
+  content: '';
+  position: absolute;
+  inset: -2px;
+  background: var(--vermilion);
+  opacity: 0.15;
+  border-radius: 3px;
+  z-index: -1;
+  filter: blur(3px);
+}
+
+/* 滚动条 */
+.tcm-scroll::-webkit-scrollbar {
+  width: 6px;
+}
+.tcm-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+.tcm-scroll::-webkit-scrollbar-thumb {
+  background: rgba(120, 90, 50, 0.25);
+  border-radius: 3px;
+}
+.tcm-scroll::-webkit-scrollbar-thumb:hover {
+  background: rgba(120, 90, 50, 0.4);
+}
+
+/* 卷轴顶/底装饰条 */
+.scroll-bar {
+  height: 28px;
+  background:
+    linear-gradient(180deg,
+      #6b4a2a 0%,
+      #8a6438 15%,
+      #a07a48 50%,
+      #8a6438 85%,
+      #4a3018 100%
+    );
+  position: relative;
+  border-radius: 2px;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 220, 160, 0.3),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.3),
+    0 2px 6px rgba(0, 0, 0, 0.2);
+}
+
+.scroll-bar::before,
+.scroll-bar::after {
+  content: '';
+  position: absolute;
+  top: -3px;
+  bottom: -3px;
+  width: 12px;
+  background:
+    radial-gradient(ellipse at 50% 50%,
+      #d4a85a 0%,
+      #a07a3a 50%,
+      #5a3a18 100%
+    );
+  border-radius: 50%;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 220, 160, 0.5),
+    0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.scroll-bar::before { left: -8px; }
+.scroll-bar::after { right: -8px; }
+
+/* 通用按钮 */
+.tcm-btn {
+  font-family: var(--font-serif);
+  font-size: 13px;
+  background: var(--paper-light);
+  color: var(--ink);
+  border: 1px solid var(--paper-edge);
+  padding: 8px 16px;
+  cursor: pointer;
+  transition: all 0.15s;
+  border-radius: 1px;
+  letter-spacing: 0.08em;
+}
+
+.tcm-btn:hover {
+  background: var(--paper-deep);
+  border-color: var(--ink-faint);
+}
+
+.tcm-btn-primary {
+  background: var(--vermilion);
+  color: var(--paper-light);
+  border-color: var(--vermilion-deep);
+}
+
+.tcm-btn-primary:hover {
+  background: var(--vermilion-deep);
+}
+
+/* 占位头像 */
+.npc-avatar {
+  width: 100%;
+  height: 100%;
+  background:
+    repeating-linear-gradient(
+      45deg,
+      var(--paper-deep) 0px,
+      var(--paper-deep) 6px,
+      var(--paper) 6px,
+      var(--paper) 12px
+    );
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: var(--ink-faint);
+  font-family: var(--font-title);
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  position: relative;
+  border: 1px solid var(--paper-edge);
+}
+
+.npc-avatar-glyph {
+  font-family: var(--font-cursive);
+  font-size: 32px;
+  color: var(--ink-soft);
+  margin-bottom: 4px;
+}

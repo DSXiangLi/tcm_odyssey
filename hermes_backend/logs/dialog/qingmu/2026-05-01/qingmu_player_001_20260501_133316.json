@@ -1,0 +1,12 @@
+{
+  "session_id": "qingmu_player_001_20260501_133316",
+  "npc_id": "qingmu",
+  "player_id": "player_001",
+  "timestamp_start": "2026-05-01T13:33:16.165168",
+  "user_message": "什么是风寒表实证？",
+  "tool_calls": [],
+  "full_response": "你可还记得太阳病开篇的条文？\n\n《伤寒论》第1条云：\"太阳之为病，脉浮，头项强痛而恶寒。\"\n\n这说的是太阳表证的基本特征。但你要问的是\"表实\"二字，你可知这\"实\"字，指的是什么？\n\n提示一下——在太阳病中，有汗者为何证？无汗者又为何证？",
+  "timestamp_end": "2026-05-01T13:33:21.107876",
+  "response_duration_ms": 4942,
+  "response_token_count": 118
+}

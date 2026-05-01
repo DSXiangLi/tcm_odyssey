@@ -66,10 +66,8 @@ export { SaveUI } from './SaveUI';
 export type { SaveUIConfig } from './SaveUI';
 export { createSaveUI } from './SaveUI';
 
-// Phase 2 S8: 背包系统UI
-export { InventoryUI } from './InventoryUI';
-export type { InventoryUIConfig, InventoryTabType } from './InventoryUI';
-export { createInventoryUI } from './InventoryUI';
+// Phase 2 S8: 背包系统UI (迁移至HTML/React)
+// 旧Phaser Graphics实现已删除，使用 src/ui/html/inventory-entry.tsx
 
 // Phase 2 S13: 新手引导UI
 export { TutorialUI } from './TutorialUI';

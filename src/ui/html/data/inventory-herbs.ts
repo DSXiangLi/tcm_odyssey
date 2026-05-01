@@ -290,11 +290,11 @@ export const BOOKS: BookData[] = [
     desc: '"内伤脾胃，百病由生"。' },
   { id: 'taipinghuiminhejijufang', name: '太平惠民和剂局方', dynasty: '宋', tier: 3, owned: true, progress: 36,
     desc: '官修方书，载方788首。' },
-  { id: 'leigongpaozhilun', name: '雷公炮炙论', dynasty: '南北朝·雷敩', tier: 3, owned: false,
+  { id: 'leigongpaozhilun', name: '雷公炮炙论', dynasty: '南北朝·雷敩', tier: 3, owned: false, progress: 0,
     desc: '炮制学专著。需于药铺老者处求得。' },
-  { id: 'jingyuequanshu', name: '景岳全书', dynasty: '明·张景岳', tier: 3, owned: false,
+  { id: 'jingyuequanshu', name: '景岳全书', dynasty: '明·张景岳', tier: 3, owned: false, progress: 0,
     desc: '阴阳水火并重之论。' },
-  { id: 'yixuezhongzhongcanxilu', name: '医学衷中参西录', dynasty: '清末·张锡纯', tier: 2, owned: false,
+  { id: 'yixuezhongzhongcanxilu', name: '医学衷中参西录', dynasty: '清末·张锡纯', tier: 2, owned: false, progress: 0,
     desc: '中西汇通。需更高声望解锁。' },
 ];
 

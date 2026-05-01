@@ -1,0 +1,80 @@
+<h2>背包UI迁移方案确认</h2>
+<p class="subtitle">基于"直接使用设计稿"的决定，以下是迁移方案</p>
+
+<div class="section">
+  <h3>迁移范围</h3>
+  <div style="display: flex; gap: 16px; flex-wrap: wrap;">
+    <div style="background: rgba(91, 122, 82, 0.15); padding: 12px 16px; border-radius: 4px; border-left: 3px solid #5b7a52; flex: 1;">
+      <div style="font-weight: bold;">保留5视图</div>
+      <div style="font-size: 12px; color: #666; margin-top: 4px;">
+        饮片 + 原药 + 方剂 + 工具 + 图书馆
+      </div>
+      <div style="font-size: 11px; color: #5b7a52; margin-top: 4px;">完整使用设计稿的扇形导航</div>
+    </div>
+    <div style="background: rgba(181, 58, 28, 0.15); padding: 12px 16px; border-radius: 4px; border-left: 3px solid #b53a2c; flex: 1;">
+      <div style="font-weight: bold;">数据适配</div>
+      <div style="font-size: 12px; color: #666; margin-top: 4px;">
+        使用设计稿的18分类 + 86味药材数据
+      </div>
+      <div style="font-size: 11px; color: #b53a2c; margin-top: 4px;">替换现有4药袋结构</div>
+    </div>
+    <div style="background: rgba(181, 138, 58, 0.15); padding: 12px 16px; border-radius: 4px; border-left: 3px solid #b58a3a; flex: 1;">
+      <div style="font-weight: bold;">图片嵌入</div>
+      <div style="font-size: 12px; color: #666; margin-top: 4px;">
+        25张药材图片 + 空槽位样式
+      </div>
+      <div style="font-size: 11px; color: #b58a3a; margin-top: 4px;">嵌入HerbSlot组件</div>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <h3>迁移步骤</h3>
+  <div style="font-size: 14px; line-height: 1.8;">
+    <div style="display: flex; gap: 12px; align-items: center;">
+      <div style="width: 24px; height: 24px; background: #b53a2c; color: #fff; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold;">1</div>
+      <div>创建 <code style="background: rgba(0,0,0,0.1); padding: 2px 6px;">src/ui/html/inventory.css</code> (迁移styles.css)</div>
+    </div>
+    <div style="display: flex; gap: 12px; align-items: center;">
+      <div style="width: 24px; height: 24px; background: #b53a2c; color: #fff; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold;">2</div>
+      <div>创建 <code style="background: rgba(0,0,0,0.1); padding: 2px 6px;">src/ui/html/data/inventory-data.ts</code> (迁移data.js)</div>
+    </div>
+    <div style="display: flex; gap: 12px; align-items: center;">
+      <div style="width: 24px; height: 24px; background: #b53a2c; color: #fff; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold;">3</div>
+      <div>创建 <code style="background: rgba(0,0,0,0.1); padding: 2px 6px;">src/ui/html/InventoryUI.tsx</code> (合并所有jsx为单一组件)</div>
+    </div>
+    <div style="display: flex; gap: 12px; align-items: center;">
+      <div style="width: 24px; height: 24px; background: #b53a2c; color: #fff; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold;">4</div>
+      <div>创建 <code style="background: rgba(0,0,0,0.1); padding: 2px 6px;">src/ui/html/inventory-entry.tsx</code> (入口挂载点)</div>
+    </div>
+    <div style="display: flex; gap: 12px; align-items: center;">
+      <div style="width: 24px; height: 24px; background: #b53a2c; color: #fff; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold;">5</div>
+      <div>创建 <code style="background: rgba(0,0,0,0.1); padding: 2px 6px;">src/ui/html/bridge/inventory-events.ts</code> (Phaser交互事件)</div>
+    </div>
+    <div style="display: flex; gap: 12px; align-items: center;">
+      <div style="width: 24px; height: 24px; background: #b53a2c; color: #fff; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold;">6</div>
+      <div>修改 <code style="background: rgba(0,0,0,0.1); padding: 2px 6px;">ClinicScene.ts</code> 替换InventoryUI调用</div>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <h3>文字适配示例</h3>
+  <div class="split" style="gap: 24px;">
+    <div style="flex: 1; padding: 12px; background: rgba(139, 95, 52, 0.08); border-radius: 4px;">
+      <div style="font-size: 11px; color: #7a5d3e; margin-bottom: 8px;">设计稿原文</div>
+      <div style="font-family: serif;">"百草笥" / "岐黄之印" / "壬寅春"</div>
+    </div>
+    <div style="flex: 1; padding: 12px; background: rgba(91, 122, 82, 0.08); border-radius: 4px;">
+      <div style="font-size: 11px; color: #5b7a52; margin-bottom: 8px;">游戏适配</div>
+      <div style="font-family: serif;">"药灵山谷" / "杏林印" / "甲辰春"</div>
+    </div>
+  </div>
+  <p style="margin-top: 8px; font-size: 12px; color: #666;">需要您确认：是否修改这些文字？如果需要，请提供替换内容。</p>
+</div>
+
+<div class="section">
+  <h3>最后确认</h3>
+  <p style="font-size: 14px;">以上迁移方案是否符合您的预期？如果确认，我将开始编写设计文档。</p>
+  <p style="font-size: 12px; color: #7a5d3e; margin-top: 8px;">如有任何调整需求（如文字替换、视图数量等），请直接告知。</p>
+</div>

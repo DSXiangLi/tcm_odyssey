@@ -1,0 +1,12 @@
+{
+  "session_id": "qingmu_player_001_20260501_133436",
+  "npc_id": "qingmu",
+  "player_id": "player_001",
+  "timestamp_start": "2026-05-01T13:34:36.775932",
+  "user_message": "为什么用桂枝做臣药？",
+  "tool_calls": [],
+  "full_response": "你问的是麻黄汤中的桂枝吧？\n\n《方剂学》有歌诀云：\"麻黄汤中用桂枝，杏仁甘草四般施。\"\n\n你可思考：麻黄为君，专司发汗解表；桂枝为臣，又当何用？\n\n若只以麻黄一味，能否胜任\"发汗解表，宣肺平喘\"之效？桂枝与麻黄配伍，一君一臣，可有相得益彰之妙？\n\n你可先说说，桂枝这味药，其主要功效是什么？",
+  "timestamp_end": "2026-05-01T13:34:43.342360",
+  "response_duration_ms": 6566,
+  "response_token_count": 145
+}

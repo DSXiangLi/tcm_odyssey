@@ -132,7 +132,7 @@ export function InventoryUI({ onClose }: InventoryUIProps) {
 // ============================================================
 // 卷轴面板
 // ============================================================
-function ScrollPanel({ side, children }: { side: 'left' | 'right'; children: React.ReactNode }) {
+function ScrollPanel({ children }: { side: 'left' | 'right'; children: React.ReactNode }) {
   return (
     <div className="scroll-panel" style={{ position: 'relative', height: '100%', display: 'flex', flexDirection: 'column', background: 'transparent' }}>
       {/* 顶端卷轴轴 */}

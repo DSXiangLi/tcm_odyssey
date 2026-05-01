@@ -3,7 +3,6 @@
  * 背包UI React入口挂载点
  */
 
-import React from 'react';
 import { createRoot } from 'react-dom/client';
 import InventoryUI from './InventoryUI';
 import './inventory.css';
@@ -12,7 +11,7 @@ export interface InventoryUIOptions {
   onClose: () => void;
 }
 
-let inventoryRoot: createRoot | null = null;
+let inventoryRoot: ReturnType<typeof createRoot> | null = null;
 let inventoryContainer: HTMLDivElement | null = null;
 
 /**

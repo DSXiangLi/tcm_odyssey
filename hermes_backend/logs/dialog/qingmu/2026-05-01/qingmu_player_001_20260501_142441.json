@@ -1,0 +1,12 @@
+{
+  "session_id": "qingmu_player_001_20260501_142441",
+  "npc_id": "qingmu",
+  "player_id": "player_001",
+  "timestamp_start": "2026-05-01T14:24:41.052363",
+  "user_message": "为什么用桂枝做臣药？",
+  "tool_calls": [],
+  "full_response": "你可还记得《素问·至真要大论》所言：\"君一臣二，制之小也；君一臣三佐五，制之中也。\"这君臣佐使的配伍原则，你可有印象？\n\n不过，你问的是桂枝做臣药——不知你指的是麻黄汤中的桂枝，还是桂枝汤中的桂枝？二者虽同名，臣佐之位却不同。\n\n你可先说说，桂枝这味药，其性味归经如何？有何功效？",
+  "timestamp_end": "2026-05-01T14:24:48.244686",
+  "response_duration_ms": 7192,
+  "response_token_count": 140
+}

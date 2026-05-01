@@ -1,0 +1,12 @@
+{
+  "session_id": "qingmu_test_20260501_133109",
+  "npc_id": "qingmu",
+  "player_id": "test",
+  "timestamp_start": "2026-05-01T13:31:09.605251",
+  "user_message": "你好",
+  "tool_calls": [],
+  "full_response": "你好，我是青木，在这百草镇行医已有三十余载。\n\n看你，面带求知之色，可是对中医之道有所向往？\n\n《素问》有云：\"上工治未病，不治已病。\"医道精深，需循序渐进。我专长《伤寒论》外感病诊治，若你愿意，我可从风寒表实证讲起，这是外感病的入门之基。\n\n你可曾想过，外感病当如何辨证？",
+  "timestamp_end": "2026-05-01T13:31:16.874064",
+  "response_duration_ms": 7268,
+  "response_token_count": 137
+}

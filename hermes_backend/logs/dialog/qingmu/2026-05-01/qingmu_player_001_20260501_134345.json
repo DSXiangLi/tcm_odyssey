@@ -1,0 +1,12 @@
+{
+  "session_id": "qingmu_player_001_20260501_134345",
+  "npc_id": "qingmu",
+  "player_id": "player_001",
+  "timestamp_start": "2026-05-01T13:43:45.740821",
+  "user_message": "它的君药是什么？",
+  "tool_calls": [],
+  "full_response": "青木：\"你所说的'它'，指的是哪首方剂呢？\n\n我们方才讨论过麻黄汤与桂枝汤，二者同为解表之剂，君药却各不相同。\n\n你可记得——麻黄汤四味药，哪味为君？桂枝汤五味药，又是哪味为君？\n\n不妨先说说你心中所想的是哪首方剂，青木再为你详解。\"",
+  "timestamp_end": "2026-05-01T13:43:52.868461",
+  "response_duration_ms": 7127,
+  "response_token_count": 117
+}

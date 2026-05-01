@@ -239,34 +239,6 @@
 
 ---
 
-### Phase 2.5: Hermes NPC 对话完整集成 ✅ (2026-04-29)
-
-**核心成果**: AI驱动的NPC对话系统，支持流式输出、工具调用、上下文记忆。
-
-**创建文件**:
-| 文件 | 功能 |
-|------|------|
-| `hermes_backend/main.py` | FastAPI入口 (health/stream/chat/status端点) |
-| `hermes_backend/tools/game_tools.py` | 6个游戏工具定义 |
-| `hermes_backend/gateway/stream_consumer.py` | SSE流式输出 + LLM调用 |
-| `src/data/npc-config.ts` | NPC配置注册表 (3个NPC) |
-
-**6个游戏工具**: get_learning_progress, get_case_progress, get_inventory, trigger_minigame, record_weakness, get_npc_memory
-
----
-
-### Phase 2.5: 场景切换修复 ✅ (2026-04-30)
-
-**问题**: 诊断/煎药游戏退出后无法再次进入，键盘操作失效。
-
-**根本原因**: `scene.launch()` + `scene.stop()` 组合不触发 `wake` 事件，`isTransitioning` 未重置。
-
-**修复方案**: 监听 EventBus SCENE_SWITCH 事件重置状态。
-
-**经验文档**: [Phaser场景切换机制](docs/superpowers/experience/2026-04-30-event-listener-removal-failure.md)
-
----
-
 #### 一、生产类小游戏
 
 **煎药游戏** ✅ (设计文档: [煎药设计](docs/superpowers/specs/phase2-5/minigames/2026-04-19-decoction-minigame-design.md)):
@@ -546,37 +518,6 @@ zhongyi_game_v3/
 ### 文档目录结构规范
 
 **使用 brainstorming 写设计文档时** 和 **使用 writing-plans 写规划文档时**，必须按所属阶段放入对应子目录：
-
-```
-docs/superpowers/
-├── specs/                              # 设计规范文档（按阶段组织）
-│   ├── 2026-04-05-game-design-v3.0.md  # 总体设计（顶级）
-│   │
-│   ├── phase1/                         # Phase 1 主线
-│   ├── phase1-5/                       # Phase 1.5 视觉主线
-│   │
-│   ├── phase2/                         # Phase 2 主线
-│   │   └── ui-optimization/            # UI配色优化支线
-│   │
-│   ├── phase2-5/                       # Phase 2.5 主线
-│   │   └── minigames/                  # 小游戏设计支线
-│   │
-│   ├── phase3/                         # Phase 3 主线（待创建）
-│   └── phase4/                         # Phase 4 主线（待创建）
-│
-├── experience/                         # ⚠️ 经验教训（失败复盘，强制阅读）
-│   └── 2026-04-29-e2e-css-loading-failure.md  # CSS未导入导致测试假通过
-│
-└── plans/                              # 实现计划文档（与specs结构对应）
-    ├── phase1/
-    ├── phase1-5/
-    ├── phase2/
-    │   └── ui-optimization/
-    ├── phase2-5/
-    │   └── minigames/
-    ├── phase3/
-    └── phase4/
-```
 
 **命名规则**:
 - 主线文档：`docs/superpowers/specs/phase{n}/YYYY-MM-DD-xxx-design.md`

@@ -150,10 +150,44 @@ class EvaluateOnlyRunner:
         print(f"  工具调用合理性: {avg_scores.get('工具调用合理性', 0):.1f}")
 
         # Print failed sessions
-        failed_sessions = [
+        self._print_failed_sessions(evaluation_results)
+
+        # Print improvement suggestions
+        self._print_improvement_suggestions(evaluation_results)
+
+        print("\n" + "=" * 50)
+
+        # Final verdict
+        passed = avg_total >= TOTAL_DIALOG_PASS_THRESHOLD
+        print(f"\nFinal Verdict: {'PASS' if passed else 'FAIL'}")
+        print("=" * 50 + "\n")
+
+    def _extract_failed_sessions(
+        self,
+        evaluation_results: Dict[str, Any]
+    ) -> List[Dict[str, Any]]:
+        """
+        提取失败的会话列表
+
+        Args:
+            evaluation_results: 评估结果
+
+        Returns:
+            失败会话列表
+        """
+        return [
             r for r in evaluation_results.get("results", [])
             if not r.get("passed", True)
         ]
+
+    def _print_failed_sessions(self, evaluation_results: Dict[str, Any]):
+        """
+        打印失败会话信息
+
+        Args:
+            evaluation_results: 评估结果
+        """
+        failed_sessions = self._extract_failed_sessions(evaluation_results)
 
         if failed_sessions:
             print(f"\nFailed Sessions ({len(failed_sessions)}):")
@@ -162,24 +196,40 @@ class EvaluateOnlyRunner:
                 score = session.get("total_score", 0)
                 print(f"  - {session_id}: score={score:.1f}")
 
-        # Print improvement suggestions
+    def _extract_improvement_suggestions(
+        self,
+        evaluation_results: Dict[str, Any]
+    ) -> List[str]:
+        """
+        提取唯一的改进建议列表
+
+        Args:
+            evaluation_results: 评估结果
+
+        Returns:
+            唯一改进建议列表（最多5条）
+        """
         all_suggestions = []
         for result in evaluation_results.get("results", []):
             suggestions = result.get("improvement_suggestions", [])
             all_suggestions.extend(suggestions)
 
-        if all_suggestions:
-            unique_suggestions = list(set(all_suggestions))[:5]
+        # Return unique suggestions (deduplicated)
+        return list(set(all_suggestions))[:5]
+
+    def _print_improvement_suggestions(self, evaluation_results: Dict[str, Any]):
+        """
+        打印改进建议
+
+        Args:
+            evaluation_results: 评估结果
+        """
+        unique_suggestions = self._extract_improvement_suggestions(evaluation_results)
+
+        if unique_suggestions:
             print(f"\nTop Improvement Suggestions:")
             for i, suggestion in enumerate(unique_suggestions, 1):
                 print(f"  {i}. {suggestion}")
-
-        print("\n" + "=" * 50)
-
-        # Final verdict
-        passed = avg_total >= TOTAL_DIALOG_PASS_THRESHOLD
-        print(f"\nFinal Verdict: {'PASS' if passed else 'FAIL'}")
-        print("=" * 50 + "\n")
 
     def run(self, log_dir: str = "logs/dialog") -> bool:
         """

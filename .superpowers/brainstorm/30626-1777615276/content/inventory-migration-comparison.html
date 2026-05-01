@@ -1,0 +1,122 @@
+<h2>背包UI迁移: 新旧设计对比</h2>
+<p class="subtitle">请选择您要迁移的目标设计方向</p>
+
+<div class="split">
+  <div class="mockup">
+    <div class="mockup-header">当前实现: Phaser Graphics (Neumorphism)</div>
+    <div class="mockup-body" style="background: linear-gradient(135deg, #e0e5ec, #d0d5dc); padding: 20px;">
+      <div style="font-family: monospace; color: #333; font-size: 12px; line-height: 1.6;">
+        <p style="margin-bottom: 12px; font-weight: bold;">文件: src/ui/InventoryUI.ts (~850行)</p>
+        <div style="background: #c5ccd6; padding: 16px; border-radius: 8px; margin-bottom: 12px;">
+          <div style="text-align: center; font-weight: bold; margin-bottom: 8px;">背包</div>
+          <div style="display: flex; gap: 8px; margin-bottom: 12px;">
+            <div style="padding: 8px 12px; background: #d5dade; border-radius: 4px;">药材</div>
+            <div style="padding: 8px 12px; background: #d5dade; border-radius: 4px;">种植</div>
+            <div style="padding: 8px 12px; background: #d5dade; border-radius: 4px;">工具</div>
+            <div style="padding: 8px 12px; background: #d5dade; border-radius: 4px;">知识</div>
+          </div>
+          <div style="display: flex; gap: 4px; margin-bottom: 12px;">
+            <div style="padding: 4px 8px; background: #c5ccd6; border-radius: 2px; font-size: 10px;">解表袋</div>
+            <div style="padding: 4px 8px; background: #c5ccd6; border-radius: 2px; font-size: 10px;">清热袋</div>
+          </div>
+          <div style="display: grid; grid-template-columns: repeat(6, 1fr); gap: 8px;">
+            <div style="width: 48px; height: 48px; background: #d5dade; border-radius: 4px; display: flex; align-items: center; justify-content: center; font-size: 10px;">麻黄<br/>×8</div>
+            <div style="width: 48px; height: 48px; background: #d5dade; border-radius: 4px; display: flex; align-items: center; justify-content: center; font-size: 10px;">桂枝<br/>×15</div>
+            <div style="width: 48px; height: 48px; background: #c5ccd6; border-radius: 4px; opacity: 0.5;"></div>
+            <div style="width: 48px; height: 48px; background: #c5ccd6; border-radius: 4px; opacity: 0.5;"></div>
+          </div>
+        </div>
+        <p style="color: #666; font-size: 11px;">特点: 简陋的Neumorphism风格，基于Phaser Graphics绘制，无图片资源</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="mockup">
+    <div class="mockup-header">新设计: 古卷轴风格 (React + HTML)</div>
+    <div class="mockup-body" style="background: radial-gradient(ellipse at center, #3a2d1c 0%, #1a120a 70%); padding: 20px;">
+      <div style="font-family: serif; color: #f0e3c4; font-size: 12px; line-height: 1.6;">
+        <p style="margin-bottom: 12px; font-weight: bold; color: #b58a3a;">文件: docs/ui/背包/ (古卷轴React组件)</p>
+        <div style="display: flex; gap: 12px;">
+          <div style="flex: 1; background: linear-gradient(180deg, #f0e3c4, #e8d8b3); padding: 16px; border-radius: 4px; border: 2px solid #b89866; position: relative;">
+            <div style="position: absolute; top: -8px; left: 0; right: 0; height: 16px; background: linear-gradient(180deg, #8b6520, #b58a3a, #5a3e15); border-radius: 4px 4px 0 0;"></div>
+            <div style="margin-top: 8px; font-family: 'KaiTi', serif; font-weight: bold; color: #1f1410; letter-spacing: 0.3em; text-align: center; margin-bottom: 12px;">饮片</div>
+            <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px;">
+              <div style="width: 56px; height: 56px; background: radial-gradient(ellipse at 30% 25%, rgba(255,240,200,0.6), transparent), #ead6a8; border: 1px solid #8b7244; border-radius: 2px; display: flex; flex-direction: column; align-items: center; justify-content: center;">
+                <div style="font-family: 'KaiTi', serif; font-size: 14px; color: #1f1410;">麻黄</div>
+                <div style="font-size: 10px; color: #7a5d3e;">温·辛</div>
+                <div style="position: absolute; bottom: 2px; right: 2px; font-size: 11px; background: #f0e3c4; padding: 0 4px; border: 1px solid #4a3826;">×8</div>
+              </div>
+              <div style="width: 56px; height: 56px; background: #ead6a8; border: 1px solid #8b7244; border-radius: 2px;"></div>
+            </div>
+            <div style="position: absolute; bottom: -8px; left: 0; right: 0; height: 16px; background: linear-gradient(180deg, #3a2810, #5a3e15, #b58a3a, #8b6520); border-radius: 0 0 4px 4px;"></div>
+          </div>
+          <div style="width: 180px; display: flex; flex-direction: column; align-items: center; justify-content: center;">
+            <div style="width: 100px; height: 100px; border-radius: 50%; background: radial-gradient(circle, #f0e3c4, #d9c599); border: 2px solid #8b7244; display: flex; flex-direction: column; align-items: center; justify-content: center;">
+              <div style="font-family: 'KaiTi', serif; font-size: 24px; color: #b53a2c; font-weight: bold;">百草</div>
+              <div style="font-family: 'KaiTi', serif; font-size: 12px; color: #b53a2c;">笥</div>
+            </div>
+            <div style="display: flex; gap: 8px; margin-top: 8px;">
+              <div style="width: 50px; height: 50px; border-radius: 50%; background: #b53a2c; display: flex; align-items: center; justify-content: center; color: #f0e3c4; font-family: 'KaiTi', serif;">饮</div>
+              <div style="width: 50px; height: 50px; border-radius: 50%; background: #d9c599; display: flex; align-items: center; justify-content: center; color: #1f1410; font-family: 'KaiTi', serif;">方</div>
+            </div>
+          </div>
+          <div style="flex: 1; background: linear-gradient(180deg, #f0e3c4, #e8d8b3); padding: 16px; border-radius: 4px; border: 2px solid #b89866;">
+            <div style="font-family: 'KaiTi', serif; color: #1f1410; font-weight: bold; margin-bottom: 12px;">摘要</div>
+            <div style="color: #4a3826; font-size: 11px;">
+              <div style="border-left: 2px solid #b53a2c; padding-left: 8px; margin-bottom: 8px;">
+                <div style="color: #7a5d3e; font-size: 10px;">已藏种数</div>
+                <div style="font-weight: bold;">45 / 86</div>
+              </div>
+              <div style="border-left: 2px solid #b53a2c; padding-left: 8px;">
+                <div style="color: #7a5d3e; font-size: 10px;">饮片总量</div>
+                <div style="font-weight: bold;">128 剂</div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <p style="color: #b58a3a; font-size: 11px; margin-top: 12px;">特点: 古卷轴羊皮纸风格，扇形导航，5个分类视图，药材图片嵌入</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <h3>迁移模式参考</h3>
+  <div style="display: flex; gap: 16px; flex-wrap: wrap;">
+    <div style="background: rgba(91, 122, 82, 0.15); padding: 12px 16px; border-radius: 4px; border-left: 3px solid #5b7a52;">
+      <div style="font-weight: bold; color: #5b7a52;">煎药游戏 DecoctionUI.tsx</div>
+      <div style="font-size: 12px; color: #666; margin-top: 4px;">直接迁移HTML/React组件 ~800行</div>
+    </div>
+    <div style="background: rgba(181, 58, 28, 0.15); padding: 12px 16px; border-radius: 4px; border-left: 3px solid #b53a2c;">
+      <div style="font-weight: bold; color: #b53a2c;">诊断游戏 DiagnosisUI.tsx</div>
+      <div style="font-size: 12px; color: #666; margin-top: 4px;">同样迁移模式，5阶段10病案</div>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <h3>可用资源</h3>
+  <div style="font-size: 13px; color: #666;">
+    <p>药材图片: public/assets/herbs/*.png (约25张)</p>
+    <p style="margin-top: 4px;">包含: 麻黄、桂枝、生姜、紫苏叶、白芷、苍耳子、细辛、辛夷、薄荷、蝉蜕、葱白、牛蒡子、柴胡、菊花、蔓荆子、桑叶、豆豉、葛根、姜黄、升麻、防风、荆芥、羌活、香薷</p>
+  </div>
+</div>
+
+<div class="options">
+  <div class="option" data-choice="full" onclick="toggleSelect(this)">
+    <div class="letter">A</div>
+    <div class="content">
+      <h3>完全迁移 (推荐)</h3>
+      <p>与煎药/诊断一致，将React组件完整迁移到src/ui/html/InventoryUI.tsx</p>
+      <p style="color: #5b7a52; font-size: 12px; margin-top: 4px;">保持设计稿完整性，后续维护简单</p>
+    </div>
+  </div>
+  <div class="option" data-choice="partial" onclick="toggleSelect(this)">
+    <div class="letter">B</div>
+    <div class="content">
+      <h3>部分迁移</h3>
+      <p>仅迁移视觉样式，保留Phaser架构</p>
+      <p style="color: #8a2a1f; font-size: 12px; margin-top: 4px;">可能需要更多适配工作</p>
+    </div>
+  </div>
+</div>

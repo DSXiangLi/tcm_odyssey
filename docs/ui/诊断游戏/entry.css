@@ -1,0 +1,53 @@
+/* 门厅页面附加样式 */
+.entry-stage {
+  width: 1440px;
+  height: 900px;
+  margin: 0 auto;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 30px 80px rgba(0,0,0,0.5);
+  background: #1a1410;
+}
+
+.entry-brand {
+  position: absolute;
+  top: 36px; left: 50%;
+  transform: translateX(-50%);
+  text-align: center;
+  z-index: 10;
+}
+.entry-brand-cn {
+  font-family: var(--font-kai);
+  font-size: 56px;
+  letter-spacing: 24px;
+  color: var(--paper);
+  font-weight: 500;
+  text-shadow: 0 4px 24px rgba(0,0,0,0.6);
+  padding-left: 24px; /* 补字距 */
+}
+.entry-brand-sub {
+  font-size: 13px;
+  letter-spacing: 12px;
+  color: var(--paper-deep);
+  font-family: var(--font-fangsong);
+  margin-top: 8px;
+  opacity: 0.75;
+  padding-left: 12px;
+}
+.entry-brand::after {
+  content:'';
+  display: block;
+  width: 80px; height: 1px;
+  background: var(--gold);
+  margin: 14px auto 0;
+  opacity: 0.5;
+}
+
+.entry-hint {
+  position: absolute;
+  bottom: 130px; left: 50%;
+  transform: translateX(-50%);
+  text-align: center;
+  z-index: 10;
+  width: 800px;
+}

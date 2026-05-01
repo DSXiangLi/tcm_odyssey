@@ -22,7 +22,7 @@ import { TutorialManager } from '../systems/TutorialManager';  // S13.4
 import { createSceneTipUI, TutorialUI } from '../ui/TutorialUI';  // S13.4
 // Phase 2.5 全局背包系统
 import { InventoryManager, createInventoryManager } from '../systems/InventoryManager';
-import { InventoryUI, createInventoryUI } from '../ui/InventoryUI';
+import { showInventoryUI, hideInventoryUI } from '../ui/html/inventory-entry';
 
 // 简化的地图数据结构（Phase 1.5不再使用瓦片渲染）
 interface MapData {
@@ -47,7 +47,7 @@ export class TownOutdoorScene extends Phaser.Scene {
   private sceneTipUI: TutorialUI | null = null;  // S13.4: 场景提示UI
   // Phase 2.5 全局背包系统
   private inventoryKey!: Phaser.Input.Keyboard.Key;
-  private inventoryUI: InventoryUI | null = null;
+  private inventoryCleanup: (() => void) | null = null;
   private inventoryManager!: InventoryManager;
 
   constructor() {
@@ -460,9 +460,9 @@ export class TownOutdoorScene extends Phaser.Scene {
     }
 
     // Phase 2.5 全局背包系统: 清理背包UI
-    if (this.inventoryUI) {
-      this.inventoryUI.destroy();
-      this.inventoryUI = null;
+    if (this.inventoryCleanup) {
+      this.inventoryCleanup();
+      this.inventoryCleanup = null;
     }
 
     this.eventBus.emit(GameEvents.SCENE_DESTROY, { sceneName: SCENES.TOWN_OUTDOOR });
@@ -509,19 +509,18 @@ export class TownOutdoorScene extends Phaser.Scene {
    * Phase 2.5 全局背包系统: 切换背包显示
    */
   private toggleInventory(): void {
-    if (!this.inventoryUI) {
+    if (!this.inventoryCleanup) {
       // 创建背包UI
-      this.inventoryUI = createInventoryUI(this, () => {
+      this.inventoryCleanup = showInventoryUI(() => {
         console.log('[TownOutdoorScene] Inventory closed');
+        this.inventoryCleanup = null;
       });
       this.inventoryManager.exposeToWindow();
       console.log('[TownOutdoorScene] Inventory UI created');
-    }
-
-    if (this.inventoryUI.isShowing()) {
-      this.inventoryUI.hide();
     } else {
-      this.inventoryUI.show();
+      // 关闭背包UI
+      hideInventoryUI();
+      this.inventoryCleanup = null;
     }
   }
 }

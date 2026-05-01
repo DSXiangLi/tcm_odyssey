@@ -1,0 +1,12 @@
+{
+  "session_id": "qingmu_player_001_20260501_133429",
+  "npc_id": "qingmu",
+  "player_id": "player_001",
+  "timestamp_start": "2026-05-01T13:34:29.345411",
+  "user_message": "它的君药是什么？",
+  "tool_calls": [],
+  "full_response": "你可先说明，你问的是哪首方剂的君药？\n\n我们外感病初学，首推麻黄汤与桂枝汤二方。你可还记得，麻黄汤主治风寒表实，桂枝汤君药为桂枝，调和营卫。那麻黄汤的君药，你可推知一二？",
+  "timestamp_end": "2026-05-01T13:34:36.743473",
+  "response_duration_ms": 7398,
+  "response_token_count": 85
+}

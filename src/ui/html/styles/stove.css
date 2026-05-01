@@ -1,0 +1,313 @@
+/* Stove Scene - 像素炉灶场景 */
+
+/* Stove area container */
+.stove-area {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+}
+
+/* Pixel canvas - the stove uses CSS grid of "pixels" */
+.pixel-canvas {
+  --px: 4px;
+  position: absolute;
+  left: 50%;
+  bottom: 60px;
+  transform: translateX(-50%);
+  width: calc(var(--px) * 72);
+  height: calc(var(--px) * 80);
+  image-rendering: pixelated;
+}
+
+.px {
+  position: absolute;
+  width: var(--px);
+  height: var(--px);
+}
+
+/* Stove body (brick) pattern generated with repeating backgrounds */
+.stove-body {
+  position: absolute;
+  left: calc(var(--px)*6);
+  bottom: 0;
+  width: calc(var(--px)*60);
+  height: calc(var(--px)*34);
+  background:
+    /* mortar grid */
+    linear-gradient(var(--brick-dark), var(--brick-dark)) 0 0 / 100% 2px no-repeat,
+    linear-gradient(var(--brick-dark), var(--brick-dark)) 0 calc(var(--px)*6) / 100% 2px no-repeat,
+    linear-gradient(var(--brick-dark), var(--brick-dark)) 0 calc(var(--px)*12) / 100% 2px no-repeat,
+    linear-gradient(var(--brick-dark), var(--brick-dark)) 0 calc(var(--px)*18) / 100% 2px no-repeat,
+    linear-gradient(var(--brick-dark), var(--brick-dark)) 0 calc(var(--px)*24) / 100% 2px no-repeat,
+    linear-gradient(var(--brick-dark), var(--brick-dark)) 0 calc(var(--px)*30) / 100% 2px no-repeat,
+    /* base brick color */
+    linear-gradient(180deg, #a25838 0%, #7a3e22 50%, #5a2e18 100%);
+  border: 3px solid var(--ink);
+  box-shadow:
+    inset 0 3px 0 rgba(255,200,150,.3),
+    inset 0 -3px 0 rgba(0,0,0,.4);
+}
+
+/* brick vertical joints — alternate rows */
+.stove-body::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(var(--brick-dark), var(--brick-dark)),
+    linear-gradient(var(--brick-dark), var(--brick-dark)),
+    linear-gradient(var(--brick-dark), var(--brick-dark)),
+    linear-gradient(var(--brick-dark), var(--brick-dark)),
+    linear-gradient(var(--brick-dark), var(--brick-dark)),
+    linear-gradient(var(--brick-dark), var(--brick-dark));
+  background-repeat: no-repeat;
+  background-size: 2px calc(var(--px)*6);
+  background-position:
+    calc(var(--px)*15) calc(var(--px)*0),
+    calc(var(--px)*35) calc(var(--px)*0),
+    calc(var(--px)*25) calc(var(--px)*6),
+    calc(var(--px)*45) calc(var(--px)*6),
+    calc(var(--px)*15) calc(var(--px)*12),
+    calc(var(--px)*35) calc(var(--px)*12);
+}
+
+.stove-body::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(var(--brick-dark), var(--brick-dark)),
+    linear-gradient(var(--brick-dark), var(--brick-dark)),
+    linear-gradient(var(--brick-dark), var(--brick-dark)),
+    linear-gradient(var(--brick-dark), var(--brick-dark));
+  background-repeat: no-repeat;
+  background-size: 2px calc(var(--px)*6);
+  background-position:
+    calc(var(--px)*25) calc(var(--px)*18),
+    calc(var(--px)*45) calc(var(--px)*18),
+    calc(var(--px)*15) calc(var(--px)*24),
+    calc(var(--px)*35) calc(var(--px)*24);
+}
+
+/* stove top ledge */
+.stove-top {
+  position: absolute;
+  left: calc(var(--px)*2);
+  bottom: calc(var(--px)*34);
+  width: calc(var(--px)*68);
+  height: calc(var(--px)*4);
+  background: linear-gradient(180deg,#4a2818 0%, #2a1408 100%);
+  border: 3px solid var(--ink);
+  box-shadow: inset 0 2px 0 rgba(200,120,60,.3);
+}
+
+/* Fire opening */
+.fire-hole {
+  position: absolute;
+  left: calc(var(--px)*24);
+  bottom: calc(var(--px)*6);
+  width: calc(var(--px)*24);
+  height: calc(var(--px)*16);
+  background: radial-gradient(ellipse at 50% 100%, #ffd24a 0%, #ff7a1a 30%, #b8322c 60%, #2a0a04 100%);
+  border: 3px solid var(--ink);
+  border-radius: 30% 30% 10% 10%;
+  overflow: hidden;
+}
+
+/* animated flames */
+.flame {
+  position: absolute;
+  bottom: -4px;
+  width: 10px;
+  height: 20px;
+  background:
+    radial-gradient(ellipse at 50% 100%, #fff1a8 0%, #ffd24a 30%, #ff7a1a 55%, #b8322c 90%);
+  border-radius: 50% 50% 20% 20%;
+  animation: flameDance 0.6s ease-in-out infinite alternate;
+  filter: drop-shadow(0 0 4px #ff8a22);
+}
+
+.flame.f1 { left: 16%; animation-delay: .0s; height: 26px; width: 12px; }
+.flame.f2 { left: 38%; animation-delay: .15s; height: 32px; width: 14px; }
+.flame.f3 { left: 58%; animation-delay: .3s; height: 28px; width: 12px; }
+.flame.f4 { left: 78%; animation-delay: .05s; height: 22px; width: 10px; }
+
+/* ember sparks */
+.ember-spark {
+  position: absolute;
+  width: 3px;
+  height: 3px;
+  background: #ffd24a;
+  border-radius: 50%;
+  animation: emberRise 2.2s linear infinite;
+  box-shadow: 0 0 4px #ffae2a;
+}
+
+/* Ground shadow under stove */
+.stove-shadow {
+  position: absolute;
+  left: calc(var(--px)*4);
+  bottom: -6px;
+  width: calc(var(--px)*64);
+  height: 8px;
+  background: radial-gradient(ellipse, rgba(0,0,0,.5), transparent 70%);
+}
+
+/* Floor planks */
+.floor {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 32px;
+  background:
+    repeating-linear-gradient(90deg, #4a2818 0 3px, transparent 3px 60px),
+    linear-gradient(180deg, #6b3e1f 0%, #3a2010 100%);
+  border-top: 3px solid var(--ink);
+}
+
+/* ======= Clay pot on top of stove ======= */
+.pot-wrap {
+  position: absolute;
+  left: calc(var(--px)*14);
+  bottom: calc(var(--px)*36);
+  width: calc(var(--px)*44);
+  height: calc(var(--px)*28);
+  z-index: 3;
+}
+
+.pot-body {
+  position: absolute;
+  left: calc(var(--px)*4);
+  bottom: 0;
+  width: calc(var(--px)*36);
+  height: calc(var(--px)*22);
+  background:
+    radial-gradient(ellipse at 30% 30%, #6a3a22 0%, transparent 40%),
+    linear-gradient(180deg, #5a2e18 0%, #3a1a0a 55%, #7a4422 75%, #3a1a0a 100%);
+  border: 3px solid var(--ink);
+  border-radius: 20% 20% 40% 40% / 15% 15% 35% 35%;
+  box-shadow:
+    inset 4px 4px 0 rgba(180,90,40,.3),
+    inset -4px -4px 0 rgba(0,0,0,.5);
+}
+
+/* pot rim */
+.pot-rim {
+  position: absolute;
+  left: 0;
+  bottom: calc(var(--px)*18);
+  width: calc(var(--px)*44);
+  height: calc(var(--px)*8);
+  background: linear-gradient(180deg, #7a4422 0%, #3a1a0a 50%, #5a2e18 100%);
+  border: 3px solid var(--ink);
+  border-radius: 50%;
+  box-shadow: inset 0 2px 0 rgba(200,120,60,.4);
+}
+
+/* liquid surface */
+.pot-liquid {
+  position: absolute;
+  left: calc(var(--px)*3);
+  bottom: calc(var(--px)*19);
+  width: calc(var(--px)*38);
+  height: calc(var(--px)*5);
+  background:
+    radial-gradient(ellipse at 50% 50%, #c89550 0%, #8a5028 50%, #3a1a0a 100%);
+  border: 2px solid var(--ink);
+  border-radius: 50%;
+  overflow: hidden;
+}
+
+.pot-liquid::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(90deg, transparent 0 8px, rgba(255,210,130,.3) 8px 10px);
+  animation: liquidRipple 3s linear infinite;
+}
+
+/* pot handles */
+.pot-handle {
+  position: absolute;
+  bottom: calc(var(--px)*14);
+  width: calc(var(--px)*3);
+  height: calc(var(--px)*4);
+  background: #3a1a0a;
+  border: 2px solid var(--ink);
+}
+
+.pot-handle.l { left: calc(var(--px)*1); }
+.pot-handle.r { right: calc(var(--px)*1); }
+
+/* ====== Ladle (锅铲) — auto-stirring ====== */
+.ladle {
+  position: absolute;
+  left: calc(var(--px)*18);
+  bottom: calc(var(--px)*50);
+  width: calc(var(--px)*4);
+  height: calc(var(--px)*22);
+  transform-origin: 50% 80%;
+  animation: stir 2.4s ease-in-out infinite;
+  z-index: 4;
+}
+
+.ladle-stick {
+  position: absolute;
+  left: calc(var(--px)*1);
+  top: 0;
+  width: calc(var(--px)*2);
+  height: calc(var(--px)*18);
+  background: linear-gradient(90deg, #6b3e1f 0%, #a26a3a 50%, #6b3e1f 100%);
+  border: 2px solid var(--ink);
+}
+
+.ladle-scoop {
+  position: absolute;
+  left: -4px;
+  top: calc(var(--px)*14);
+  width: calc(var(--px)*6);
+  height: calc(var(--px)*5);
+  background: linear-gradient(180deg, #c8b080 0%, #8a6a3a 100%);
+  border: 2px solid var(--ink);
+  border-radius: 20% 20% 50% 50%;
+}
+
+/* ====== Steam ====== */
+.steam {
+  position: absolute;
+  left: 50%;
+  bottom: calc(var(--px)*58);
+  width: 8px;
+  height: 8px;
+  transform: translateX(-50%);
+  z-index: 2;
+}
+
+.steam-puff {
+  position: absolute;
+  width: 22px;
+  height: 22px;
+  background: radial-gradient(circle, rgba(240,230,210,.85) 0%, rgba(240,230,210,.4) 50%, transparent 70%);
+  border-radius: 50%;
+  animation: steamRise 3.2s ease-out infinite;
+  opacity: 0;
+}
+
+.steam-puff.s1 { animation-delay: 0s; left: -14px; }
+.steam-puff.s2 { animation-delay: .6s; left: -2px; }
+.steam-puff.s3 { animation-delay: 1.2s; left: 10px; }
+.steam-puff.s4 { animation-delay: 1.8s; left: -10px; }
+.steam-puff.s5 { animation-delay: 2.4s; left: 2px; }
+
+/* Pot shake feedback states */
+.stove-area.shake-ok .pot-wrap { animation: potCheer .5s ease-out; }
+.stove-area.shake-bad .pot-wrap { animation: potAngry .6s ease-in-out; }
+
+.stove-area.shake-bad {
+  background: radial-gradient(ellipse at 50% 70%, rgba(184,50,44,.25) 0%, transparent 60%);
+}
+
+.stove-area.shake-ok {
+  background: radial-gradient(ellipse at 50% 70%, rgba(255,210,74,.25) 0%, transparent 60%);
+}

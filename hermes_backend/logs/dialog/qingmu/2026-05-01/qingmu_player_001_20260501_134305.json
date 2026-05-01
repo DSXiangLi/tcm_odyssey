@@ -1,0 +1,12 @@
+{
+  "session_id": "qingmu_player_001_20260501_134305",
+  "npc_id": "qingmu",
+  "player_id": "player_001",
+  "timestamp_start": "2026-05-01T13:43:05.863840",
+  "user_message": "我想试试煎药",
+  "tool_calls": [],
+  "full_response": "青木：煎药之法，看似简单，实则大有学问。\n\n你可还记得《伤寒论》中关于煎药的记载？古人云：\"水一斗，先煮麻黄，减二升，去上沫，内诸药，煮取三升，去滓，温服八升。\"\n\n这煎药有几个关键要点：先煎、去沫、火候、水量、服药时间。\n\n你且说说，你想煎哪味药？是麻黄汤，还是桂枝汤？你可知道这二者在煎法上有何不同？",
+  "timestamp_end": "2026-05-01T13:43:11.304313",
+  "response_duration_ms": 5440,
+  "response_token_count": 152
+}

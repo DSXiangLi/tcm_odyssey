@@ -1,0 +1,225 @@
+/* Herbs Grid - 药材网格和药牌 */
+
+/* Backpack header */
+.bag-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 16px 10px;
+  border-bottom: 2px dashed var(--wood-dark);
+}
+
+.bag-title {
+  font-family: "Noto Serif SC", serif;
+  font-weight: 900;
+  color: var(--ink);
+  font-size: 18px;
+  letter-spacing: 6px;
+}
+
+.bag-count {
+  font-family: "Noto Serif SC", serif;
+  color: var(--wood-dark);
+  font-size: 11px;
+  letter-spacing: 1px;
+  white-space: nowrap;
+  background: var(--paper-bright);
+  padding: 2px 8px;
+  border: 2px solid var(--wood-dark);
+}
+
+.bag-grid {
+  padding: 12px;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+  height: calc(100% - 62px);
+  overflow-y: scroll;
+  scrollbar-gutter: stable;
+}
+
+.bag-grid::-webkit-scrollbar {
+  width: 14px;
+}
+
+.bag-grid::-webkit-scrollbar-track {
+  background: repeating-linear-gradient(180deg,#5a3418 0 2px,#3a2010 2px 4px);
+  border-left: 2px solid var(--ink);
+}
+
+.bag-grid::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg,#c89550,#8a5a2a);
+  border: 2px solid var(--ink);
+  box-shadow: inset 1px 1px 0 rgba(255,220,150,.5);
+}
+
+/* Wooden tag (木牌挂签) */
+.tag {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  cursor: grab;
+  user-select: none;
+  transition: transform .15s;
+}
+
+.tag:hover {
+  transform: translateY(-2px);
+}
+
+.tag:active {
+  cursor: grabbing;
+}
+
+.tag.dragging {
+  opacity: .3;
+}
+
+.tag-string {
+  width: 2px;
+  height: 10px;
+  background: #3a2010;
+}
+
+.tag-string::before {
+  content: "";
+  position: absolute;
+  top: -3px;
+  left: -3px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--cinnabar);
+  border: 2px solid var(--ink);
+}
+
+.tag-plank {
+  width: 62px;
+  padding: 6px 4px 4px;
+  background: linear-gradient(180deg, #c89550 0%, #a26a3a 100%);
+  border: 2px solid var(--wood-dark);
+  box-shadow:
+    inset 1px 1px 0 rgba(255,220,150,.5),
+    inset -1px -1px 0 rgba(0,0,0,.35),
+    2px 2px 0 rgba(0,0,0,.4);
+  text-align: center;
+}
+
+.tag-plank::before {
+  content: "";
+  position: absolute;
+  top: 6px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 3px;
+  height: 3px;
+  background: #3a2010;
+  border-radius: 50%;
+}
+
+/* pixel herb icon (small) */
+.herb-icon {
+  display: flex;
+  justify-content: center;
+  margin-top: 4px;
+  image-rendering: pixelated;
+}
+
+.herb-icon svg {
+  image-rendering: pixelated;
+}
+
+.tag-name {
+  font-family: "Noto Serif SC", serif;
+  font-weight: 900;
+  color: var(--ink);
+  font-size: 11px;
+  letter-spacing: 1px;
+  margin-top: 2px;
+}
+
+.tag-prop {
+  font-family: "ZCOOL XiaoWei", serif;
+  color: var(--wood-dark);
+  font-size: 8px;
+  letter-spacing: 1px;
+  border-top: 1px dashed var(--wood-dark);
+  margin-top: 2px;
+  padding-top: 1px;
+}
+
+.tag-count {
+  position: absolute;
+  top: -2px;
+  right: -2px;
+  background: var(--cinnabar-deep);
+  color: #f4dba8;
+  font-family: "Noto Serif SC", serif;
+  font-weight: 900;
+  font-size: 9px;
+  padding: 1px 4px;
+  border: 1px solid var(--ink);
+  box-shadow: 1px 1px 0 rgba(0,0,0,.4);
+}
+
+/* Formula slots under pot */
+.formula-slots {
+  position: absolute;
+  bottom: 8px;
+  left: 14px;
+  right: 14px;
+  z-index: 5;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 6px 6px;
+  padding: 6px 4px;
+  background: linear-gradient(180deg, rgba(42,20,10,.75), rgba(26,10,4,.9));
+  border: 2px solid var(--wood-dark);
+  box-shadow: inset 1px 1px 0 rgba(200,149,80,.3);
+}
+
+.formula-slots.two-rows {
+  max-width: 100%;
+}
+
+.formula-slots .slot {
+  min-width: 46px;
+  height: 32px;
+  padding: 2px 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background:
+    repeating-linear-gradient(45deg, rgba(90,46,24,.3) 0 3px, transparent 3px 6px),
+    linear-gradient(180deg, rgba(60,30,12,.8), rgba(26,10,4,.9));
+  border: 2px dashed rgba(200,149,80,.45);
+  color: rgba(200,149,80,.55);
+  font-family: "Noto Serif SC", serif;
+  font-weight: 900;
+  font-size: 13px;
+  letter-spacing: 2px;
+  transition: all .25s ease;
+}
+
+.formula-slots .slot.filled {
+  background: linear-gradient(180deg, #f4dba8 0%, #c89550 100%);
+  border: 2px solid var(--ink);
+  color: var(--ink);
+  box-shadow:
+    inset 1px 1px 0 rgba(255,240,200,.7),
+    0 0 8px rgba(255,210,74,.4),
+    2px 2px 0 rgba(0,0,0,.4);
+  animation: slotFill .5s cubic-bezier(.3,1.7,.5,1);
+}
+
+.slot-plus {
+  opacity: .5;
+  font-size: 16px;
+}
+
+.slot-name {
+  white-space: nowrap;
+  font-size: 13px;
+}

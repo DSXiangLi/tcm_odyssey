@@ -1,0 +1,118 @@
+<h2>数据与功能适配确认</h2>
+<p class="subtitle">请确认以下关键适配点</p>
+
+<div class="section">
+  <h3>1. 五视图功能映射</h3>
+  <p style="font-size: 13px; color: #666; margin-bottom: 12px;">新设计稿有5个视图，请确认是否全部迁移：</p>
+
+  <table style="width: 100%; border-collapse: collapse; font-size: 14px;">
+    <tr style="background: rgba(181, 58, 28, 0.1);">
+      <th style="padding: 8px 12px; border: 1px solid #ddd; text-align: left;">设计稿视图</th>
+      <th style="padding: 8px 12px; border: 1px solid #ddd; text-align: left;">现有系统对应</th>
+      <th style="padding: 8px 12px; border: 1px solid #ddd; text-align: left;">迁移建议</th>
+    </tr>
+    <tr>
+      <td style="padding: 8px 12px; border: 1px solid #ddd;">饮片</td>
+      <td style="padding: 8px 12px; border: 1px solid #ddd;">药材背包</td>
+      <td style="padding: 8px 12px; border: 1px solid #ddd; color: #5b7a52;">✓ 必须</td>
+    </tr>
+    <tr>
+      <td style="padding: 8px 12px; border: 1px solid #ddd;">原始药材</td>
+      <td style="padding: 8px 12px; border: 1px solid #ddd;">（无）</td>
+      <td style="padding: 8px 12px; border: 1px solid #ddd; color: #b58a3a;">可合并到饮片</td>
+    </tr>
+    <tr>
+      <td style="padding: 8px 12px; border: 1px solid #ddd;">方剂</td>
+      <td style="padding: 8px 12px; border: 1px solid #ddd;">知识背包</td>
+      <td style="padding: 8px 12px; border: 1px solid #ddd; color: #5b7a52;">✓ 必须</td>
+    </tr>
+    <tr>
+      <td style="padding: 8px 12px; border: 1px solid #ddd;">工具</td>
+      <td style="padding: 8px 12px; border: 1px solid #ddd;">工具背包</td>
+      <td style="padding: 8px 12px; border: 1px solid #ddd; color: #5b7a52;">✓ 必须</td>
+    </tr>
+    <tr>
+      <td style="padding: 8px 12px; border: 1px solid #ddd;">图书馆</td>
+      <td style="padding: 8px 12px; border: 1px solid #ddd;">知识背包</td>
+      <td style="padding: 8px 12px; border: 1px solid #ddd; color: #b58a3a;">可合并到方剂</td>
+    </tr>
+  </table>
+</div>
+
+<div class="section">
+  <h3>2. 药材分类数量差异</h3>
+  <div class="split" style="gap: 24px;">
+    <div style="flex: 1; background: rgba(139, 95, 52, 0.08); padding: 16px; border-radius: 4px;">
+      <div style="font-weight: bold; margin-bottom: 8px;">新设计稿: 18个分类</div>
+      <div style="font-size: 12px; color: #666;">
+        解表、清热、泻下、祛风湿、化湿、利水渗湿、温里、理气、消食、驱虫、止血、活血化瘀、化痰止咳、安神、平肝息风、开窍、补虚、收涩
+      </div>
+      <div style="margin-top: 8px; padding: 8px; background: #ead6a8; border-radius: 2px;">
+        <div style="font-size: 11px;">药材数据包含: id, name, cat, xing, wei, gui, rarity, rawCount, pieceCount</div>
+      </div>
+    </div>
+    <div style="flex: 1; background: rgba(91, 122, 82, 0.08); padding: 16px; border-radius: 4px;">
+      <div style="font-weight: bold; margin-bottom: 8px;">现有系统: 4个药袋</div>
+      <div style="font-size: 12px; color: #666;">
+        解表袋(24味)、清热袋(4味)、止咳平喘袋(3味)、补益调和袋(4味)
+      </div>
+      <div style="margin-top: 8px; padding: 8px; background: #c5ccd6; border-radius: 2px;">
+        <div style="font-size: 11px;">药材数据包含: id, name, category, bag_id, properties{nature,flavor,meridian}</div>
+      </div>
+    </div>
+  </div>
+  <p style="margin-top: 12px; font-size: 13px; color: #b53a2c;">建议：使用新设计稿的18分类数据，扩展inventory-data.ts</p>
+</div>
+
+<div class="section">
+  <h3>3. 药材图片资源</h3>
+  <p style="font-size: 13px; color: #666;">现有图片 (public/assets/herbs/)：</p>
+  <div style="display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px;">
+    <span style="padding: 4px 8px; background: #ead6a8; border-radius: 2px; font-size: 12px;">麻黄</span>
+    <span style="padding: 4px 8px; background: #ead6a8; border-radius: 2px; font-size: 12px;">桂枝</span>
+    <span style="padding: 4px 8px; background: #ead6a8; border-radius: 2px; font-size: 12px;">生姜</span>
+    <span style="padding: 4px 8px; background: #ead6a8; border-radius: 2px; font-size: 12px;">紫苏叶</span>
+    <span style="padding: 4px 8px; background: #ead6a8; border-radius: 2px; font-size: 12px;">白芷</span>
+    <span style="padding: 4px 8px; background: #ead6a8; border-radius: 2px; font-size: 12px;">苍耳子</span>
+    <span style="padding: 4px 8px; background: #ead6a8; border-radius: 2px; font-size: 12px;">细辛</span>
+    <span style="padding: 4px 8px; background: #ead6a8; border-radius: 2px; font-size: 12px;">辛夷</span>
+    <span style="padding: 4px 8px; background: #ead6a8; border-radius: 2px; font-size: 12px;">薄荷</span>
+    <span style="padding: 4px 8px; background: #ead6a8; border-radius: 2px; font-size: 12px;">蝉蜕</span>
+    <span style="padding: 4px 8px; background: #ead6a8; border-radius: 2px; font-size: 12px;">葱白</span>
+    <span style="padding: 4px 8px; background: #ead6a8; border-radius: 2px; font-size: 12px;">牛蒡子</span>
+    <span style="padding: 4px 8px; background: #ead6a8; border-radius: 2px; font-size: 12px;">柴胡</span>
+    <span style="padding: 4px 8px; background: #ead6a8; border-radius: 2px; font-size: 12px;">菊花</span>
+    <span style="padding: 4px 8px; background: #ead6a8; border-radius: 2px; font-size: 12px;">蔓荆子</span>
+    <span style="padding: 4px 8px; background: #ead6a8; border-radius: 2px; font-size: 12px;">桑叶</span>
+    <span style="padding: 4px 8px; background: #ead6a8; border-radius: 2px; font-size: 12px;">豆豉</span>
+    <span style="padding: 4px 8px; background: #ead6a8; border-radius: 2px; font-size: 12px;">葛根</span>
+    <span style="padding: 4px 8px; background: #ead6a8; border-radius: 2px; font-size: 12px;">姜黄</span>
+    <span style="padding: 4px 8px; background: #ead6a8; border-radius: 2px; font-size: 12px;">升麻</span>
+    <span style="padding: 4px 8px; background: #ead6a8; border-radius: 2px; font-size: 12px;">防风</span>
+    <span style="padding: 4px 8px; background: #ead6a8; border-radius: 2px; font-size: 12px;">荆芥</span>
+    <span style="padding: 4px 8px; background: #ead6a8; border-radius: 2px; font-size: 12px;">羌活</span>
+    <span style="padding: 4px 8px; background: #ead6a8; border-radius: 2px; font-size: 12px;">香薷</span>
+  </div>
+  <p style="margin-top: 8px; font-size: 12px; color: #7a5d3e;">共25张图片，与新设计稿解表药分类高度匹配</p>
+</div>
+
+<div class="section">
+  <h3>4. 确认问题</h3>
+  <div class="options">
+    <div class="option" data-choice="5views" onclick="toggleSelect(this)">
+      <div class="letter">A</div>
+      <div class="content">
+        <h3>保留5视图</h3>
+        <p>饮片+原药+方剂+工具+图书馆，完整迁移</p>
+      </div>
+    </div>
+    <div class="option" data-choice="3views" onclick="toggleSelect(this)">
+      <div class="letter">B</div>
+      <div class="content">
+        <h3>简化为3视图 (推荐)</h3>
+        <p>药材(合并饮片+原药) + 方剂(合并图书馆) + 工具</p>
+        <p style="color: #5b7a52; font-size: 12px; margin-top: 4px;">与现有系统对齐，减少数据适配工作量</p>
+      </div>
+    </div>
+  </div>
+</div>

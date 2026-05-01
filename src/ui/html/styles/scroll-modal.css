@@ -1,0 +1,294 @@
+/* Scroll Modal Frame - 卷轴弹窗框架 */
+
+/* Main modal container */
+.scroll-modal {
+  position: relative;
+  width: 1200px;
+  height: 760px;
+  image-rendering: pixelated;
+  filter: drop-shadow(0 20px 40px rgba(0,0,0,.7));
+}
+
+/* End caps (roller rods) */
+.roller {
+  position: absolute;
+  left: -18px;
+  right: -18px;
+  height: 38px;
+  background:
+    linear-gradient(180deg, #7a4a22 0%, #5a3418 50%, #3a2010 100%);
+  border-top: 3px solid #a26a3a;
+  border-bottom: 3px solid #2a1408;
+  box-shadow: inset 0 2px 0 #c08a4a, inset 0 -2px 0 #1a0c04;
+}
+
+.roller.top {
+  top: -10px;
+  border-radius: 4px 4px 0 0;
+}
+
+.roller.bottom {
+  bottom: -10px;
+  border-radius: 0 0 4px 4px;
+}
+
+.roller-cap {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 22px;
+  height: 54px;
+  background: linear-gradient(180deg, #c89550 0%, #8a5a2a 50%, #5a3418 100%);
+  border: 3px solid #2a1408;
+  box-shadow: inset 0 2px 0 rgba(255,220,140,.5);
+}
+
+.roller-cap.left {
+  left: -30px;
+}
+
+.roller-cap.right {
+  right: -30px;
+}
+
+/* Paper */
+.paper {
+  position: absolute;
+  inset: 28px 0;
+  background:
+    radial-gradient(ellipse at 30% 20%, #f4dba8 0%, transparent 55%),
+    radial-gradient(ellipse at 70% 80%, #e8c991 0%, transparent 50%),
+    linear-gradient(180deg, #e8c991 0%, #d9b47a 100%);
+  box-shadow:
+    inset 0 0 0 3px #8a5a2a,
+    inset 0 0 0 6px #e8c991,
+    inset 0 0 0 8px #8a5a2a,
+    inset 0 20px 60px rgba(138,74,42,.25),
+    inset 0 -20px 60px rgba(138,74,42,.25);
+}
+
+/* Paper texture dots */
+.paper::before {
+  content: "";
+  position: absolute;
+  inset: 10px;
+  background-image:
+    radial-gradient(circle at 13% 27%, rgba(90,46,24,.08) 1px, transparent 2px),
+    radial-gradient(circle at 67% 43%, rgba(90,46,24,.06) 1px, transparent 2px),
+    radial-gradient(circle at 33% 73%, rgba(90,46,24,.07) 1px, transparent 2px),
+    radial-gradient(circle at 87% 87%, rgba(90,46,24,.05) 1px, transparent 2px),
+    radial-gradient(circle at 53% 13%, rgba(90,46,24,.08) 1px, transparent 2px);
+  background-size: 180px 180px, 220px 220px, 260px 260px, 200px 200px, 240px 240px;
+  pointer-events: none;
+}
+
+/* Red seal stamps on the corners */
+.seal {
+  position: absolute;
+  width: 70px;
+  height: 70px;
+  background: var(--cinnabar-deep);
+  border: 3px solid var(--cinnabar);
+  color: #f4dba8;
+  font-family: "Noto Serif SC", serif;
+  font-weight: 900;
+  display: grid;
+  place-content: center;
+  text-align: center;
+  line-height: 1;
+  font-size: 22px;
+  letter-spacing: 2px;
+  box-shadow: 0 0 0 3px #e8c991, 2px 2px 0 0 rgba(0,0,0,.4);
+  transform: rotate(-4deg);
+  image-rendering: pixelated;
+}
+
+.seal.tl {
+  top: 40px;
+  left: 18px;
+}
+
+.seal.br {
+  bottom: 40px;
+  right: 18px;
+  transform: rotate(3deg);
+}
+
+.seal .s1, .seal .s2 {
+  display: block;
+}
+
+.seal.small {
+  width: 52px;
+  height: 52px;
+  font-size: 16px;
+}
+
+/* Title bar */
+.title-bar {
+  position: absolute;
+  top: 44px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 22px;
+  z-index: 5;
+}
+
+.title-bar .ch {
+  font-family: "Noto Serif SC", serif;
+  font-weight: 900;
+  color: var(--ink);
+  font-size: 34px;
+  letter-spacing: 12px;
+  text-shadow: 2px 2px 0 rgba(184,50,44,.2);
+}
+
+.title-bar .sub {
+  font-family: "ZCOOL XiaoWei", serif;
+  color: var(--wood-dark);
+  font-size: 14px;
+  letter-spacing: 4px;
+  writing-mode: vertical-rl;
+  border-left: 1px solid var(--wood-dark);
+  border-right: 1px solid var(--wood-dark);
+  padding: 4px 3px;
+}
+
+.title-bar .deco {
+  width: 60px;
+  height: 2px;
+  background: var(--wood-dark);
+  position: relative;
+}
+
+.title-bar .deco::before,
+.title-bar .deco::after {
+  content: "";
+  position: absolute;
+  top: -3px;
+  width: 8px;
+  height: 8px;
+  background: var(--cinnabar);
+  transform: rotate(45deg);
+}
+
+.title-bar .deco::before {
+  left: 0;
+}
+
+.title-bar .deco::after {
+  right: 0;
+}
+
+/* Close button */
+.close-btn {
+  position: absolute;
+  top: 50px;
+  right: 60px;
+  z-index: 10;
+  width: 44px;
+  height: 44px;
+  background: var(--cinnabar-deep);
+  border: 3px solid var(--ink);
+  color: #f4dba8;
+  font-family: "Noto Serif SC", serif;
+  font-size: 22px;
+  font-weight: 900;
+  cursor: pointer;
+  box-shadow: 2px 2px 0 rgba(0,0,0,.4), inset 1px 1px 0 rgba(255,255,255,.2);
+}
+
+.close-btn:hover {
+  background: var(--cinnabar);
+}
+
+/* Main 3-region layout */
+.content {
+  position: absolute;
+  top: 110px;
+  left: 40px;
+  right: 40px;
+  bottom: 44px;
+  display: grid;
+  grid-template-columns: 1.15fr 1fr;
+  grid-template-rows: 2.2fr 1fr;
+  gap: 18px;
+}
+
+.region {
+  position: relative;
+  background:
+    linear-gradient(180deg, rgba(244,219,168,.5), rgba(200,149,80,.3));
+  border: 3px solid var(--wood-dark);
+  box-shadow: inset 0 0 0 2px var(--paper-bright), inset 0 0 0 4px var(--wood-dark);
+}
+
+.region-stove {
+  grid-row: 1/2;
+  grid-column: 1/2;
+}
+
+.region-bag {
+  grid-row: 1/3;
+  grid-column: 2/3;
+}
+
+.region-vials {
+  grid-row: 2/3;
+  grid-column: 1/2;
+}
+
+.region-label {
+  position: absolute;
+  top: -14px;
+  left: 16px;
+  z-index: 6;
+  background: var(--ink);
+  color: var(--paper-bright);
+  font-family: "Noto Serif SC", serif;
+  font-weight: 900;
+  padding: 2px 14px;
+  letter-spacing: 4px;
+  font-size: 14px;
+  border: 2px solid var(--wood-light);
+  box-shadow: 2px 2px 0 rgba(0,0,0,.3);
+}
+
+/* Frame variants */
+.variant-bamboo .paper {
+  box-shadow:
+    inset 0 0 0 3px #4a5a2a,
+    inset 0 0 0 6px #e8c991,
+    inset 0 0 0 8px #4a5a2a,
+    inset 0 20px 60px rgba(74,90,42,.2);
+}
+
+.variant-bamboo .roller {
+  background: linear-gradient(180deg, #6a8a3a 0%, #4a5a2a 50%, #2a3a15 100%);
+  border-top-color: #8aaa5a;
+  border-bottom-color: #1a2a0a;
+}
+
+.variant-bamboo .roller-cap {
+  background: linear-gradient(180deg, #8aaa5a 0%, #4a5a2a 50%, #2a3a15 100%);
+}
+
+.variant-gold .paper {
+  background:
+    radial-gradient(ellipse at 30% 20%, #fff3d0 0%, transparent 55%),
+    linear-gradient(180deg, #f4dba8 0%, #e8c991 100%);
+  box-shadow:
+    inset 0 0 0 3px #c89550,
+    inset 0 0 0 6px #f4dba8,
+    inset 0 0 0 8px #8a5a2a,
+    inset 0 0 0 10px #c89550,
+    inset 0 0 60px rgba(200,149,80,.4);
+}
+
+.variant-gold .seal {
+  background: #1a0a04;
+  border-color: #c89550;
+  color: #ffd24a;
+}

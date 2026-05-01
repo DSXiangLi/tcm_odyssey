@@ -15,7 +15,7 @@ import { EventBus, GameEvents } from '../systems/EventBus';
 import { GameStateBridge } from '../utils/GameStateBridge';
 // Phase 2.5 全局背包系统
 import { InventoryManager, createInventoryManager } from '../systems/InventoryManager';
-import { InventoryUI, createInventoryUI } from '../ui/InventoryUI';
+import { showInventoryUI, hideInventoryUI } from '../ui/html/inventory-entry';
 
 export class HomeScene extends Phaser.Scene {
   private player!: Player;
@@ -32,7 +32,7 @@ export class HomeScene extends Phaser.Scene {
   private mapOffsetY: number = 0;
   // Phase 2.5 全局背包系统
   private inventoryKey!: Phaser.Input.Keyboard.Key;
-  private inventoryUI: InventoryUI | null = null;
+  private inventoryCleanup: (() => void) | null = null;
   private inventoryManager!: InventoryManager;
 
   constructor() {
@@ -291,9 +291,9 @@ export class HomeScene extends Phaser.Scene {
     this.isTransitioning = false;
 
     // Phase 2.5 全局背包系统: 清理背包UI
-    if (this.inventoryUI) {
-      this.inventoryUI.destroy();
-      this.inventoryUI = null;
+    if (this.inventoryCleanup) {
+      this.inventoryCleanup();
+      this.inventoryCleanup = null;
     }
 
     this.eventBus.emit(GameEvents.SCENE_DESTROY, { sceneName: SCENES.HOME });
@@ -310,19 +310,18 @@ export class HomeScene extends Phaser.Scene {
    * Phase 2.5 全局背包系统: 切换背包显示
    */
   private toggleInventory(): void {
-    if (!this.inventoryUI) {
+    if (!this.inventoryCleanup) {
       // 创建背包UI
-      this.inventoryUI = createInventoryUI(this, () => {
+      this.inventoryCleanup = showInventoryUI(() => {
         console.log('[HomeScene] Inventory closed');
+        this.inventoryCleanup = null;
       });
       this.inventoryManager.exposeToWindow();
       console.log('[HomeScene] Inventory UI created');
-    }
-
-    if (this.inventoryUI.isShowing()) {
-      this.inventoryUI.hide();
     } else {
-      this.inventoryUI.show();
+      // 关闭背包UI
+      hideInventoryUI();
+      this.inventoryCleanup = null;
     }
   }
 }

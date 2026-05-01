@@ -125,8 +125,8 @@ def stream_chat(request: Dict[str, Any]) -> Generator[Dict[str, Any], None, None
     logger.info(f"Tools available: {len(tools)}")
 
     # Initialize OpenAI client
-    api_key = os.getenv('OPENAI_API_KEY') or os.getenv('DEEPSEEK_API_KEY')
-    base_url = os.getenv('OPENAI_BASE_URL') or 'https://api.deepseek.com/v1'
+    api_key = os.getenv('OPENAI_API_KEY') or os.getenv('DEEPSEEK_API_KEY') or os.getenv('GLM_API_KEY')
+    base_url = os.getenv('OPENAI_BASE_URL') or os.getenv('DEEPSEEK_API_URL') or os.getenv('GLM_API_BASE') or 'https://api.deepseek.com/v1'
 
     if not api_key:
         logger.error("No API key found")
@@ -138,7 +138,7 @@ def stream_chat(request: Dict[str, Any]) -> Generator[Dict[str, Any], None, None
     # Create streaming chat completion
     try:
         response = client.chat.completions.create(
-            model='deepseek-chat',
+            model=os.getenv('DEEPSEEK_MODEL') or os.getenv('GLM_MODEL_NAME') or 'deepseek-chat',
             messages=[
                 {'role': 'system', 'content': system_prompt},
                 {'role': 'user', 'content': user_message}

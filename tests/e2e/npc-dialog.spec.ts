@@ -18,7 +18,7 @@ import { test, expect } from '@playwright/test';
 // ========================================
 
 const HERMES_BACKEND_URL = 'http://localhost:8642';
-const FRONTEND_URL = 'http://localhost:5173';
+const FRONTEND_URL = 'http://localhost:3000';
 
 // ========================================
 // Smoke Tests (NPC-S01~S03)

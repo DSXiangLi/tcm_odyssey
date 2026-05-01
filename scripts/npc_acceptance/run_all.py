@@ -258,6 +258,23 @@ class NPCAcceptanceRunner:
                 match = re.search(r'(\d+)\s*failed', line)
                 if match:
                     failed = int(match.group(1))
+            # Try to extract test IDs for categorization
+            if 'NPC-S' in line:
+                categories["smoke"]["total"] += 1
+                if '✓' in line or 'passed' in line.lower():
+                    categories["smoke"]["passed"] += 1
+            elif 'NPC-T' in line:
+                categories["trigger"]["total"] += 1
+                if '✓' in line or 'passed' in line.lower():
+                    categories["trigger"]["passed"] += 1
+            elif 'NPC-D' in line:
+                categories["dialog"]["total"] += 1
+                if '✓' in line or 'passed' in line.lower():
+                    categories["dialog"]["passed"] += 1
+            elif 'NPC-TC' in line or 'NPC-Q' in line:
+                categories["tool"]["total"] += 1
+                if '✓' in line or 'passed' in line.lower():
+                    categories["tool"]["passed"] += 1
 
         total = passed + failed
 
@@ -346,13 +363,13 @@ class NPCAcceptanceRunner:
                 test_id = spec.get("title", "")
                 passed = spec.get("ok", False)
 
-                if "NPC-001" in test_id or "NPC-002" in test_id:
+                if "NPC-S" in test_id:
                     cat = "smoke"
-                elif "NPC-003" in test_id or "NPC-004" in test_id:
+                elif "NPC-T" in test_id:
                     cat = "trigger"
-                elif "NPC-005" in test_id or "NPC-006" in test_id:
+                elif "NPC-D" in test_id:
                     cat = "dialog"
-                elif "NPC-007" in test_id or "NPC-008" in test_id:
+                elif "NPC-TC" in test_id or "NPC-Q" in test_id:
                     cat = "tool"
                 else:
                     cat = "smoke"  # Default

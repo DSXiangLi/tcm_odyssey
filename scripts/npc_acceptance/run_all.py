@@ -247,6 +247,12 @@ class NPCAcceptanceRunner:
         passed = 0
         failed = 0
         failed_tests = []
+        categories = {
+            "smoke": {"passed": 0, "total": 0},
+            "trigger": {"passed": 0, "total": 0},
+            "dialog": {"passed": 0, "total": 0},
+            "tool": {"passed": 0, "total": 0}
+        }
 
         # Parse stdout for test counts
         for line in stdout.split('\n'):
@@ -285,12 +291,7 @@ class NPCAcceptanceRunner:
             "total": total,
             "pass_rate": passed / total if total > 0 else 0,
             "failed_tests": failed_tests,
-            "by_category": {
-                "smoke": {"passed": 0, "total": 0},
-                "trigger": {"passed": 0, "total": 0},
-                "dialog": {"passed": 0, "total": 0},
-                "tool": {"passed": 0, "total": 0}
-            },
+            "by_category": categories,
             "stdout": stdout[:1000],  # Keep first 1000 chars
             "stderr": stderr[:1000]
         }

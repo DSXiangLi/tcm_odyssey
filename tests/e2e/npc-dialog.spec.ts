@@ -190,29 +190,6 @@ test.describe('NPC Dialog - Trigger Tests', () => {
 
     expect(currentScene).toBe('GardenScene');
   });
-
-    // Navigate to garden door and enter
-    // Garden door is at position (15, 8) in TownOutdoorScene
-    // Use movement keys to get there
-    for (let i = 0; i < 10; i++) {
-      await page.keyboard.press('A');  // Move left towards garden
-      await page.waitForTimeout(200);
-    }
-
-    // Enter garden
-    await page.keyboard.press('Space');
-    await page.waitForTimeout(3000);
-
-    // Check that laozhang NPC is registered
-    const npcSystemState = await page.evaluate(() => {
-      const scene = (window as any).__CURRENT_SCENE__;
-      if (!scene || !scene.npcSystem) return null;
-      const npcs = scene.npcSystem.getAllNPCs();
-      return npcs.map((npc: any) => npc.id);
-    });
-
-    expect(npcSystemState).toContain('laozhang');
-  });
 });
 
 // ========================================
@@ -374,11 +351,6 @@ test.describe('NPC Dialog - Dialog Flow Tests', () => {
 
     // Note: Dialog may or may not close depending on implementation
     // This test verifies the mechanism exists
-  });
-    const dialogDestroyed = await page.evaluate(() => {
-      return (window as any).__DIALOG_UI__ === null;
-    });
-    expect(dialogDestroyed).toBeTruthy();
   });
 });
 

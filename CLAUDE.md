@@ -566,12 +566,6 @@ zhongyi_game_v3/
 | 测试内容 | 评估"假设响应" | 评估实际行为 |
 | 测试目的 | 自欺欺人 | 发现真实问题 |
 
-**为什么禁止 Mock**:
-1. Mock 测试评估的是自己写的假响应，不是系统真实输出
-2. Mock 测试通过不代表真实系统正确
-3. Mock 测试隐藏真实问题，导致生产环境故障
-4. Mock 测试是"假通过"，不是"真验收"
-
 **测试必须做到**:
 - NPC 对话测试 → 必须调用真实 LLM API
 - 游戏功能测试 → 必须启动真实游戏进程
@@ -581,10 +575,6 @@ zhongyi_game_v3/
 **唯一允许 Mock 的场景**:
 - 单元测试中的依赖注入（如 Mock Logger）
 - 开发阶段的临时验证（必须标注"临时Mock"并在上线前替换）
-
-**违规后果**:
-- Mock 测试通过但真实测试失败 → 需要重新进行真实测试
-- 提交 Mock 测试报告 → 报告无效，需重做
 
 ### 问题修复原则
 - 使用 `/systematic-debugging` 先定位问题根本原因
@@ -609,96 +599,11 @@ zhongyi_game_v3/
 
 | 日期 | 文件 | 问题 | 关键教训 |
 |------|------|------|---------|
-| 2026-04-29 | [E2E CSS加载失败](docs/superpowers/experience/2026-04-29-e2e-css-loading-failure.md) | CSS未导入导致UI空白，测试报告100%通过 | `toBeVisible()`不检查尺寸/样式 |
-| 2026-04-29 | [弹窗尺寸与代码清理](docs/superpowers/experience/2026-04-29-modal-size-and-code-cleanup.md) | 弹窗超过游戏视窗，旧代码残留 | 弹窗应比视窗小10-15% |
+| 2026-04-29 | [E2E CSS加载失败](docs/superpowers/experience/2026-04-29-e2e-css-loading-failure.md) | CSS未导入导致UI空白 | `toBeVisible()`不检查尺寸 |
+| 2026-04-29 | [弹窗尺寸与代码清理](docs/superpowers/experience/2026-04-29-modal-size-and-code-cleanup.md) | 弹窗超过游戏视窗 | 弹窗比视窗小10-15% |
+| 2026-04-29 | [E2E核心教训汇总](docs/superpowers/experience/2026-04-29-e2e-testing-core-lessons.md) | 测试通过但用户无法使用 | 验证尺寸+样式+真实路径 |
+| 2026-04-30 | [事件监听器移除失败](docs/superpowers/experience/2026-04-30-event-listener-removal-failure.md) | 场景退出后无法再次进入 | `launch()+stop()`不触发wake |
 
-### 核心教训速查
-
-**1. E2E测试陷阱**:
-```typescript
-// ❌ 错误：只检查DOM存在
-await expect(element).toBeVisible();
-
-// ✅ 正确：必须验证尺寸和样式
-await expect(element).toBeAttached();
-const box = await element.boundingBox();
-expect(box?.width).toBeGreaterThan(100);  // 尺寸验证
-const bg = await element.evaluate(el => getComputedStyle(el).background);
-expect(bg).not.toBe('none');  // 样式验证
-```
-
-**2. CSS加载验证强制**:
-```typescript
-// 必须检查CSS是否实际加载
-const styleSheets = await page.evaluate(() => document.styleSheets.length);
-expect(styleSheets).toBeGreaterThan(1);
-
-// 或检查CSS变量生效
-const paperColor = await page.evaluate(() =>
-  getComputedStyle(document.documentElement).getPropertyValue('--paper')
-);
-expect(paperColor.trim()).toBeTruthy();
-```
-
-**3. 真实用户路径**:
-```typescript
-// ❌ 错误：直接跳转场景
-await page.evaluate(() => game.scene.start('DiagnosisScene', { caseId }));
-
-// ✅ 正确：模拟真实操作
-await page.goto('/');
-await page.waitForTimeout(2000);
-await page.keyboard.press('z');  // 真实按键触发
-```
-
-**一句话总结**: 测试通过了≠用户能用了。必须验证尺寸、样式、真实路径。
-
-**4. 弹窗尺寸统一**:
-```css
-/* ❌ 错误：弹窗与游戏视窗同尺寸 */
-.modal { width: 1280px; height: 720px; }
-
-/* ✅ 正确：弹窗比游戏视窗小10-15% */
-.modal { width: 1020px; height: 640px; }  /* 留边距 */
-```
-
-**5. 功能合并后清理**:
-```typescript
-// 功能合并后必须：
-// 1. 从 game.config.ts 移除旧场景
-// 2. 更新入口场景引用
-// 3. 在旧文件添加 @deprecated 注释
-```
-
----
-
----
-
-## 相关文档索引
-
-### 设计文档
-- [完整游戏设计](docs/superpowers/specs/2026-04-05-game-design-v3.0.md)
-- [视觉设计规范](docs/superpowers/specs/phase1-5/2026-04-05-visual-design-v1.0.md)
-- [Phase 2 NPC Agent设计](docs/superpowers/specs/phase2/2026-04-12-phase2-npc-agent-design.md)
-- [弹窗设计方案规范](docs/superpowers/specs/phase2/ui-optimization/2026-04-18-modal-design-spec.md)
-- [Phase 1验收标准](docs/superpowers/specs/phase1/2026-04-05-phase1-acceptance-criteria.md)
-
-### 小游戏设计文档
-| 游戏 | 设计文档 | 开发计划 |
-|-----|---------|---------|
-| 煎药 | [煎药设计](docs/superpowers/specs/phase2-5/minigames/2026-04-19-decoction-minigame-design.md) | [煎药计划](docs/superpowers/plans/2026-04-20-decoction-minigame-implementation.md) |
-| 炮制 | [炮制设计](docs/superpowers/specs/phase2-5/minigames/2026-04-19-processing-minigame-design.md) | [炮制计划](docs/superpowers/plans/2026-04-20-processing-minigame-implementation.md) |
-| 种植 | [种植设计](docs/superpowers/specs/phase2-5/minigames/2026-04-19-planting-minigame-design.md) | [种植计划](docs/superpowers/plans/2026-04-20-planting-minigame-implementation.md) |
-| 脉诊 | [脉诊设计](docs/superpowers/specs/phase2-5/minigames/2026-04-19-pulse-minigame-design.md) | [脉诊计划](docs/superpowers/plans/2026-04-20-pulse-minigame-implementation.md) |
-| 舌诊 | [舌诊设计](docs/superpowers/specs/phase2-5/minigames/2026-04-19-tongue-minigame-design.md) | [舌诊计划](docs/superpowers/plans/2026-04-20-tongue-minigame-implementation.md) |
-| **辨证选方** | [辨证选方设计](docs/superpowers/specs/phase2-5/minigames/2026-04-21-diagnosis-prescription-minigame-design.md) | [辨证选方计划](docs/superpowers/plans/2026-04-21-diagnosis-prescription-minigame-implementation.md) |
-
-> **废弃文档**: 辨证设计、选方设计已合并为辨证选方，旧文档已标注废弃。
-
-### 实现计划
-- [Phase 2 实现计划](docs/superpowers/plans/2026-04-12-phase2-implementation-plan.md)
-- [Phase 2 退出按钮修复计划](docs/superpowers/plans/2026-04-18-phase2-minigame-exit-button-fix.md)
-
----
+**一句话总结**: 测试通过了≠用户能用了。必须验证尺寸、样式、真实路径、场景切换机制。
 
 *本文档由 Claude Code 维护，更新于 2026-04-29*

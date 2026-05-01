@@ -22,6 +22,7 @@ const FRONTEND_URL = 'http://localhost:3000';
 
 /**
  * Helper function to enter ClinicScene directly
+ * Requires game to have loaded assets first (after BootScene)
  */
 async function enterClinicScene(page: any) {
   await page.evaluate(() => {
@@ -46,6 +47,41 @@ async function enterGardenScene(page: any) {
   await page.waitForTimeout(2000);
 }
 
+/**
+ * Helper function to start game from TitleScene
+ * Handles: TitleScene → Tutorial (skipped via JS) → BootScene → TownOutdoorScene
+ *
+ * Viewport: 1440×900, Game: 1280×720
+ * Game is centered with FIT scaling, game canvas starts at (160, 90)
+ */
+async function startGameFromTitle(page: any) {
+  await page.goto(FRONTEND_URL);
+  await page.waitForSelector('canvas');
+  await page.waitForTimeout(2000);  // Wait for TitleScene
+
+  // Calculate viewport coordinates for the "开始游戏" button
+  const gameOffsetX = 160;
+  const gameOffsetY = 90;
+  const buttonX = gameOffsetX + 640;  // 800
+  const buttonY = gameOffsetY + 380;   // 470
+
+  // Click "开始游戏"
+  await page.mouse.click(buttonX, buttonY);
+  await page.waitForTimeout(1500);
+
+  // Skip tutorial programmatically (if TutorialManager exists)
+  await page.evaluate(() => {
+    const tutorialManager = (window as any).__TUTORIAL_MANAGER__;
+    if (tutorialManager) {
+      tutorialManager.skipTutorial();
+    }
+  });
+  await page.waitForTimeout(500);
+
+  // Wait for BootScene to load assets + transition to TownOutdoorScene
+  await page.waitForTimeout(6000);
+}
+
 // ========================================
 // Smoke Tests (NPC-S01~S03)
 // ========================================
@@ -68,9 +104,32 @@ test.describe('NPC Dialog - Smoke Tests', () => {
 
   test('NPC-S02: NPC sprite loading', async ({ page }) => {
     // Acceptance: After BootScene, npc_qingmu texture exists
+    // Game flow: TitleScene → Tutorial (skipped via JS) → BootScene → TownOutdoorScene
     await page.goto(FRONTEND_URL);
     await page.waitForSelector('canvas');
-    await page.waitForTimeout(5000);  // Wait for BootScene to fully load all assets
+    await page.waitForTimeout(2000);  // Wait for TitleScene
+
+    // Calculate viewport coordinates
+    const gameOffsetX = 160;  // (1440-1280)/2
+    const gameOffsetY = 90;   // (900-720)/2
+    const buttonX = gameOffsetX + 640;  // "开始游戏" at game center: 800
+    const buttonY = gameOffsetY + 380;  // Button y: 470
+
+    // Click "开始游戏"
+    await page.mouse.click(buttonX, buttonY);
+    await page.waitForTimeout(1500);
+
+    // Skip tutorial programmatically (if TutorialManager exists)
+    await page.evaluate(() => {
+      const tutorialManager = (window as any).__TUTORIAL_MANAGER__;
+      if (tutorialManager) {
+        tutorialManager.skipTutorial();
+      }
+    });
+    await page.waitForTimeout(500);
+
+    // Wait for BootScene to load assets + transition to TownOutdoorScene
+    await page.waitForTimeout(6000);
 
     // Check if NPC texture was loaded
     const textureExists = await page.evaluate(() => {
@@ -84,18 +143,22 @@ test.describe('NPC Dialog - Smoke Tests', () => {
 
   test('NPC-S03: DialogUI render', async ({ page }) => {
     // Acceptance: After entering clinic, DialogUI visible with NPC avatar, name, dialog area
+    // Game flow: TitleScene → BootScene → TownOutdoorScene → ClinicScene
     await page.goto(FRONTEND_URL);
     await page.waitForSelector('canvas');
-    await page.waitForTimeout(3000);  // Wait for game to load
+    await page.waitForTimeout(2000);  // Wait for TitleScene
 
-    // Directly switch to ClinicScene for testing
-    await page.evaluate(() => {
-      const game = (window as any).__PHASER_GAME__;
-      if (game) {
-        game.scene.start('ClinicScene');
-      }
-    });
-    await page.waitForTimeout(3000);  // Wait for clinic scene + welcome dialog
+    // Click "开始游戏" to trigger BootScene
+    const startButton = page.locator('button, [role="button"]').filter({ hasText: '开始游戏' }).first();
+    if (await startButton.isVisible()) {
+      await startButton.click();
+    } else {
+      await page.mouse.click(640, 400);
+    }
+    await page.waitForTimeout(6000);  // Wait for BootScene + TownOutdoorScene
+
+    // Now switch to ClinicScene
+    await enterClinicScene(page);
 
     // Check DialogUI global state
     const dialogState = await page.evaluate(() => {
@@ -117,8 +180,7 @@ test.describe('NPC Dialog - Trigger Tests', () => {
   test('NPC-T01: Scene enter trigger', async ({ page }) => {
     // Acceptance: After entering ClinicScene 1s, auto-show qingmu welcome dialog
     await page.goto(FRONTEND_URL);
-    await page.waitForSelector('canvas');
-    await page.waitForTimeout(3000);
+    await startGameFromTitle(page);
 
     // Enter clinic directly
     await enterClinicScene(page);
@@ -135,8 +197,7 @@ test.describe('NPC Dialog - Trigger Tests', () => {
   test('NPC-T02: Nearby NPC detection', async ({ page }) => {
     // Acceptance: Player moves within 100px of NPC, show "Press space to talk"
     await page.goto(FRONTEND_URL);
-    await page.waitForSelector('canvas');
-    await page.waitForTimeout(3000);
+    await startGameFromTitle(page);
 
     // Enter clinic directly
     await enterClinicScene(page);
@@ -152,8 +213,7 @@ test.describe('NPC Dialog - Trigger Tests', () => {
   test('NPC-T03: Space key dialog', async ({ page }) => {
     // Acceptance: Press space, DialogUI shows, input box visible
     await page.goto(FRONTEND_URL);
-    await page.waitForSelector('canvas');
-    await page.waitForTimeout(3000);
+    await startGameFromTitle(page);
 
     // Enter clinic directly
     await enterClinicScene(page);
@@ -173,8 +233,7 @@ test.describe('NPC Dialog - Trigger Tests', () => {
   test('NPC-T04: Multi-NPC scene switch', async ({ page }) => {
     // Acceptance: Switch from clinic to garden, laozhang NPC registers correctly
     await page.goto(FRONTEND_URL);
-    await page.waitForSelector('canvas');
-    await page.waitForTimeout(3000);
+    await startGameFromTitle(page);
 
     // Enter clinic first
     await enterClinicScene(page);
@@ -201,8 +260,7 @@ test.describe('NPC Dialog - Dialog Flow Tests', () => {
   test('NPC-D01: Input state toggle', async ({ page }) => {
     // Acceptance: After dialog completes 2s, input box auto-shows and focuses
     await page.goto(FRONTEND_URL);
-    await page.waitForSelector('canvas');
-    await page.waitForTimeout(3000);
+    await startGameFromTitle(page);
 
     // Enter clinic directly - triggers welcome dialog
     await enterClinicScene(page);
@@ -275,8 +333,7 @@ test.describe('NPC Dialog - Dialog Flow Tests', () => {
   test('NPC-D04: Stop generation', async ({ page }) => {
     // Acceptance: During response, click "stop", generation stops, shows partial
     await page.goto(FRONTEND_URL);
-    await page.waitForSelector('canvas');
-    await page.waitForTimeout(3000);
+    await startGameFromTitle(page);
 
     // Enter clinic directly
     await enterClinicScene(page);
@@ -333,8 +390,7 @@ test.describe('NPC Dialog - Dialog Flow Tests', () => {
   test('NPC-D05: Dialog close', async ({ page }) => {
     // Acceptance: Click close/ESC, DialogUI destroys, event NPC_DIALOG_HIDDEN recorded
     await page.goto(FRONTEND_URL);
-    await page.waitForSelector('canvas');
-    await page.waitForTimeout(3000);
+    await startGameFromTitle(page);
 
     // Enter clinic directly
     await enterClinicScene(page);
@@ -426,8 +482,7 @@ test.describe('NPC Dialog - Tool Call Tests', () => {
   test('NPC-TC04: Minigame scene switch', async ({ page }) => {
     // Acceptance: After tool trigger, scene switches to DecoctionScene
     await page.goto(FRONTEND_URL);
-    await page.waitForSelector('canvas');
-    await page.waitForTimeout(3000);
+    await startGameFromTitle(page);
 
     // Enter clinic directly
     await enterClinicScene(page);

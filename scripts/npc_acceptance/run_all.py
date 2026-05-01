@@ -173,7 +173,7 @@ class NPCAcceptanceRunner:
             [
                 "npx", "playwright", "test",
                 test_file,
-                "--reporter=json",
+                "--reporter=list",
                 "--workers=1"
             ],
             cwd=self.project_root,

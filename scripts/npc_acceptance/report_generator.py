@@ -487,7 +487,7 @@ class ReportGenerator:
         unique_suggestions = list(set(all_suggestions))
 
         if not unique_suggestions:
-            return ["当前表现良好，暂无改进建议。"]
+            return "当前表现良好，暂无改进建议。"
 
         # 格式化
         lines = []

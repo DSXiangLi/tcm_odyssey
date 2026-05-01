@@ -35,7 +35,7 @@ import { CasesListUI, CasesListUIConfig } from '../ui/CasesListUI';
 import { CaseDetailUI, CaseDetailUIConfig } from '../ui/CaseDetailUI';
 // Phase 2 S8: 背包系统
 import { InventoryManager, createInventoryManager } from '../systems/InventoryManager';
-import { InventoryUI, createInventoryUI } from '../ui/InventoryUI';
+import { showInventoryUI, hideInventoryUI } from '../ui/html/inventory-entry';
 // Phase 2 S13.4: 新手引导系统
 import { TutorialManager } from '../systems/TutorialManager';
 import { createSceneTipUI, TutorialUI } from '../ui/TutorialUI';
@@ -78,7 +78,7 @@ export class ClinicScene extends Phaser.Scene {
   // Phase 2 S8: 背包系统
   private inventoryManager!: InventoryManager;
   private inventoryKey!: Phaser.Input.Keyboard.Key;
-  private inventoryUI: InventoryUI | null = null;
+  private inventoryCleanup: (() => void) | null = null;
   // Phase 2 S9: 煎药系统
   private decoctionButton!: Phaser.GameObjects.Text;
   private decoctionKey!: Phaser.Input.Keyboard.Key;
@@ -1058,9 +1058,9 @@ export class ClinicScene extends Phaser.Scene {
       this.caseManager.destroy();
     }
     // Phase 2 S8: 清理背包系统
-    if (this.inventoryUI) {
-      this.inventoryUI.destroy();
-      this.inventoryUI = null;
+    if (this.inventoryCleanup) {
+      this.inventoryCleanup();
+      this.inventoryCleanup = null;
     }
     if (this.inventoryManager) {
       this.inventoryManager.destroy();
@@ -1091,19 +1091,18 @@ export class ClinicScene extends Phaser.Scene {
    * Phase 2 S8: 切换背包显示
    */
   private toggleInventory(): void {
-    if (!this.inventoryUI) {
+    if (!this.inventoryCleanup) {
       // 创建背包UI
-      this.inventoryUI = createInventoryUI(this, () => {
+      this.inventoryCleanup = showInventoryUI(() => {
         console.log('[ClinicScene] Inventory closed');
+        this.inventoryCleanup = null;
       });
       this.inventoryManager.exposeToWindow();
       console.log('[ClinicScene] Inventory UI created');
-    }
-
-    if (this.inventoryUI.isShowing()) {
-      this.inventoryUI.hide();
     } else {
-      this.inventoryUI.show();
+      // 关闭背包UI
+      hideInventoryUI();
+      this.inventoryCleanup = null;
     }
   }
 

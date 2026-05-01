@@ -9,6 +9,7 @@ from .config import (
     FINAL_ACCEPTANCE_THRESHOLD,
     DIALOG_EVALUATION_THRESHOLDS,
     E2E_TEST_PASS_THRESHOLD,
+    TOTAL_DIALOG_PASS_THRESHOLD,
 )
 
 
@@ -53,7 +54,50 @@ class ReportGenerator:
         final_acceptance = self.calculate_final_acceptance(test_result, evaluation_results)
 
         # 构建报告内容
-        report_lines = [
+        report_lines = self._build_report_sections(
+            run_id, test_result, evaluation_results, final_acceptance
+        )
+
+        report_content = "\n".join(report_lines)
+
+        # 保存报告
+        report_path = self.output_dir / "summary_report.md"
+        with open(report_path, 'w', encoding='utf-8') as f:
+            f.write(report_content)
+
+        return str(report_path)
+
+    def _build_report_sections(
+        self,
+        run_id: str,
+        test_result: Dict[str, Any],
+        evaluation_results: Dict[str, Any],
+        final_acceptance: Dict[str, Any]
+    ) -> List[str]:
+        """
+        构建报告各部分的行内容
+
+        Args:
+            run_id: 测试运行ID
+            test_result: E2E测试结果
+            evaluation_results: 对话评估结果
+            final_acceptance: 综合验收结果
+
+        Returns:
+            报告行列表
+        """
+        return [
+            *self._format_header_section(run_id),
+            *self._format_test_results_section(test_result),
+            *self._format_evaluation_section(evaluation_results),
+            *self._format_acceptance_section(final_acceptance),
+            *self._format_improvements_section(evaluation_results),
+            *self._format_logs_section(),
+        ]
+
+    def _format_header_section(self, run_id: str) -> List[str]:
+        """格式化报告头部"""
+        return [
             "# Hermes NPC 对话自动验收报告",
             "",
             f"**执行时间**: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}",
@@ -61,7 +105,11 @@ class ReportGenerator:
             "",
             "---",
             "",
-            ## 1. 测试执行结果
+        ]
+
+    def _format_test_results_section(self, test_result: Dict[str, Any]) -> List[str]:
+        """格式化测试执行结果部分"""
+        return [
             "## 1. 测试执行结果",
             "",
             "### 1.1 E2E 测试通过率",
@@ -74,7 +122,11 @@ class ReportGenerator:
             "",
             "---",
             "",
-            ## 2. 对话质量评估结果
+        ]
+
+    def _format_evaluation_section(self, evaluation_results: Dict[str, Any]) -> List[str]:
+        """格式化对话质量评估结果部分"""
+        return [
             "## 2. 对话质量评估结果",
             "",
             "### 2.1 评估概览",
@@ -87,36 +139,39 @@ class ReportGenerator:
             "",
             "---",
             "",
-            ## 3. 综合验收判定
+        ]
+
+    def _format_acceptance_section(self, final_acceptance: Dict[str, Any]) -> List[str]:
+        """格式化综合验收判定部分"""
+        return [
             "## 3. 综合验收判定",
             "",
             self._format_acceptance_table(final_acceptance),
             "",
             "---",
             "",
-            ## 4. 改进建议
+        ]
+
+    def _format_improvements_section(self, evaluation_results: Dict[str, Any]) -> List[str]:
+        """格式化改进建议部分"""
+        return [
             "## 4. 改进建议",
             "",
             self._format_improvement_suggestions(evaluation_results),
             "",
             "---",
             "",
-            ## 5. 日志文件路径
+        ]
+
+    def _format_logs_section(self) -> List[str]:
+        """格式化日志文件路径部分"""
+        return [
             "## 5. 日志文件路径",
             "",
             f"- 对话日志: `logs/dialog/`",
             f"- 触发事件日志: `{self.output_dir / 'trigger_logs.json'}`",
             f"- 评估详情: `{self.evaluation_dir}/`",
         ]
-
-        report_content = "\n".join(report_lines)
-
-        # 保存报告
-        report_path = self.output_dir / "summary_report.md"
-        with open(report_path, 'w', encoding='utf-8') as f:
-            f.write(report_content)
-
-        return str(report_path)
 
     def save_evaluation_results(self, evaluation_results: Dict[str, Any]) -> str:
         """
@@ -173,8 +228,8 @@ class ReportGenerator:
             "test_pass_rate_threshold": E2E_TEST_PASS_THRESHOLD,
             "test_pass_rate_passed": test_pass_rate >= E2E_TEST_PASS_THRESHOLD,
             "dialog_quality_score": dialog_avg_score,
-            "dialog_quality_threshold": 75,
-            "dialog_quality_passed": dialog_avg_score >= 75,
+            "dialog_quality_threshold": TOTAL_DIALOG_PASS_THRESHOLD,
+            "dialog_quality_passed": dialog_avg_score >= TOTAL_DIALOG_PASS_THRESHOLD,
             "dialog_pass_rate": evaluation_results.get("pass_rate", 0),
             "dialog_pass_rate_passed": evaluation_results.get("pass_rate", 0) >= 0.8,
         }
@@ -310,7 +365,33 @@ class ReportGenerator:
             Markdown表格字符串
         """
         results = evaluation_results.get("results", [])
+        failed_items = self._collect_failed_evaluation_items(results)
 
+        if not failed_items:
+            return "无不合格项。"
+
+        lines = [
+            "| 会话 | 维度 | 分数 | 阈值 | 差距 | 改进建议 |",
+            "|-----|------|------|------|------|---------|"
+        ]
+
+        for item in failed_items:
+            lines.append(
+                f"| {item['session']} | {item['dimension']} | {item['score']:.1f} | {item['threshold']} | {item['gap']:.1f} | {item['suggestion']} |"
+            )
+
+        return "\n".join(lines)
+
+    def _collect_failed_evaluation_items(self, results: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+        """
+        收集不合格评估项
+
+        Args:
+            results: 评估结果列表
+
+        Returns:
+            不合格项列表
+        """
         failed_items = []
         for result in results:
             if "error" in result:
@@ -318,8 +399,8 @@ class ReportGenerator:
                     "session": result.get("session_id", "N/A"),
                     "dimension": "评估失败",
                     "score": 0,
-                    "threshold": 75,
-                    "gap": 75,
+                    "threshold": TOTAL_DIALOG_PASS_THRESHOLD,
+                    "gap": TOTAL_DIALOG_PASS_THRESHOLD,
                     "suggestion": result.get("error", "请检查评估流程")
                 })
                 continue
@@ -344,20 +425,7 @@ class ReportGenerator:
                             "suggestion": self._get_dimension_suggestion(dimension, score)
                         })
 
-        if not failed_items:
-            return "无不合格项。"
-
-        lines = [
-            "| 会话 | 维度 | 分数 | 阈值 | 差距 | 改进建议 |",
-            "|-----|------|------|------|------|---------|"
-        ]
-
-        for item in failed_items:
-            lines.append(
-                f"| {item['session']} | {item['dimension']} | {item['score']:.1f} | {item['threshold']} | {item['gap']:.1f} | {item['suggestion']} |"
-            )
-
-        return "\n".join(lines)
+        return failed_items
 
     def _get_dimension_suggestion(self, dimension: str, score: float) -> str:
         """
@@ -456,7 +524,7 @@ class ReportGenerator:
             "| 条件 | 实际值 | 阈值 | 结果 |",
             "|-----|-------|------|------|",
             f"| E2E 测试通过率 | {test_rate*100:.1f}% | {E2E_TEST_PASS_THRESHOLD*100:.0f}% | {test_icon} |",
-            f"| 对话质量总分 | {dialog_score:.1f} | 75 | {dialog_icon} |",
+            f"| 对话质量总分 | {dialog_score:.1f} | {TOTAL_DIALOG_PASS_THRESHOLD} | {dialog_icon} |",
             f"| 综合验收分数 | {score*100:.1f}% | {FINAL_ACCEPTANCE_THRESHOLD*100:.0f}% | {final_icon} |",
         ]
 

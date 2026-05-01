@@ -203,28 +203,54 @@ class NPCAcceptanceRunner:
         Returns:
             解析后的测试结果
         """
-        # Try to find JSON report
+        # Try to parse JSON report file first
+        result = self._try_parse_json_report()
+        if result:
+            return result
+
+        # Fallback: parse from stdout using regex
+        return self._parse_stdout_fallback(stdout, stderr)
+
+    def _try_parse_json_report(self) -> Optional[Dict[str, Any]]:
+        """
+        尝试解析 JSON 报告文件
+
+        Returns:
+            解析后的测试结果，如果失败返回 None
+        """
         report_path = self.project_root / "test-results" / "report.json"
 
-        if report_path.exists():
-            try:
-                with open(report_path, 'r') as f:
-                    report = json.load(f)
-                    return self._extract_test_stats_from_report(report)
-            except Exception as e:
-                print(f"[NPCAcceptance] 无法解析 JSON 报告: {e}")
+        if not report_path.exists():
+            return None
 
-        # Fallback: parse from stdout
+        try:
+            with open(report_path, 'r') as f:
+                report = json.load(f)
+                return self._extract_test_stats_from_report(report)
+        except Exception as e:
+            print(f"[NPCAcceptance] 无法解析 JSON 报告: {e}")
+            return None
+
+    def _parse_stdout_fallback(self, stdout: str, stderr: str) -> Dict[str, Any]:
+        """
+        从 stdout 解析测试结果（fallback 方法）
+
+        Args:
+            stdout: 标准输出
+            stderr: 标准错误
+
+        Returns:
+            解析后的测试结果
+        """
+        import re
+
         passed = 0
         failed = 0
-        total = 0
         failed_tests = []
 
         # Parse stdout for test counts
         for line in stdout.split('\n'):
             if 'passed' in line.lower():
-                # Try to extract numbers
-                import re
                 match = re.search(r'(\d+)\s*passed', line)
                 if match:
                     passed = int(match.group(1))
@@ -264,6 +290,7 @@ class NPCAcceptanceRunner:
         """
         passed = 0
         failed = 0
+        total = 0
         failed_tests = []
 
         # Playwright JSON report structure
@@ -310,12 +337,16 @@ class NPCAcceptanceRunner:
         }
 
         # Categorize by test ID pattern
+        # Smoke tests: NPC-001, NPC-002 (basic smoke tests)
+        # Trigger tests: NPC-003, NPC-004 (trigger mechanism tests)
+        # Dialog tests: NPC-005, NPC-006 (dialog flow tests)
+        # Tool tests: NPC-007, NPC-008 (tool invocation tests)
         for suite in report.get("suites", []):
             for spec in suite.get("specs", []):
                 test_id = spec.get("title", "")
                 passed = spec.get("ok", False)
 
-                if "NPC-001" in test_id or "NPC-003" in test_id:
+                if "NPC-001" in test_id or "NPC-002" in test_id:
                     cat = "smoke"
                 elif "NPC-003" in test_id or "NPC-004" in test_id:
                     cat = "trigger"

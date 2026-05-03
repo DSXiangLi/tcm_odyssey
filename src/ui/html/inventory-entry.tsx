@@ -4,7 +4,7 @@
  */
 
 import { createRoot } from 'react-dom/client';
-import InventoryUI from './InventoryUI';
+import { InventoryUI } from './InventoryUI';
 import './inventory.css';
 
 export interface InventoryUIOptions {

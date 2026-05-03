@@ -144,6 +144,10 @@ export class BootScene extends Phaser.Scene {
     const savedTargetScene = this.game.registry.get('savedTargetScene');
     const savedPlayerPosition = this.game.registry.get('savedPlayerPosition');
 
+    // ⭐ 新增：检查URL参数是否有指定场景（用于测试）
+    const urlParams = new URLSearchParams(window.location.search);
+    const urlScene = urlParams.get('scene');
+
     if (savedTargetScene && typeof savedTargetScene === 'string') {
       console.log(`[BootScene] Found saved target scene: ${savedTargetScene}`);
 
@@ -158,6 +162,27 @@ export class BootScene extends Phaser.Scene {
 
       // 跳转到存档目标场景
       this.scene.start(savedTargetScene);
+    } else if (urlScene) {
+      // ⭐ 新增：URL参数指定场景（用于测试直接跳转）
+      console.log(`[BootScene] URL parameter scene: ${urlScene}`);
+
+      // 映射URL参数到场景key
+      const sceneMap: Record<string, string> = {
+        'clinic': SCENES.CLINIC,
+        'garden': SCENES.GARDEN,
+        'home': SCENES.HOME,
+        'town': SCENES.TOWN_OUTDOOR,
+        'town_outdoor': SCENES.TOWN_OUTDOOR
+      };
+
+      const targetScene = sceneMap[urlScene.toLowerCase()];
+      if (targetScene) {
+        console.log(`[BootScene] Jumping to scene: ${targetScene}`);
+        this.scene.start(targetScene);
+      } else {
+        console.warn(`[BootScene] Unknown scene in URL: ${urlScene}, falling back to default`);
+        this.scene.start(SCENES.TOWN_OUTDOOR);
+      }
     } else {
       // 新游戏流程：跳转到默认室外场景
       this.scene.start(SCENES.TOWN_OUTDOOR);

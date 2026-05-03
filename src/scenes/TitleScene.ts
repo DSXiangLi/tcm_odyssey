@@ -151,6 +151,17 @@ export class TitleScene extends Phaser.Scene {
   }
 
   create(): void {
+    // ⭐ 新增：检查URL参数是否有指定场景（用于测试直接跳转）
+    const urlParams = new URLSearchParams(window.location.search);
+    const urlScene = urlParams.get('scene');
+
+    if (urlScene) {
+      console.log(`[TitleScene] URL parameter scene detected: ${urlScene}, skipping title`);
+      // 直接跳转到BootScene，BootScene会处理URL参数
+      this.scene.start(SCENES.BOOT);
+      return;
+    }
+
     // 更新状态桥接器 - 标识当前场景
     this.gameStateBridge.updateCurrentScene(SCENES.TITLE);
     // 检查存档

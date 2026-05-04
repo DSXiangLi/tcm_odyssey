@@ -75,7 +75,14 @@ export function InventoryUI({ onClose }: InventoryUIProps) {
       }
     };
     window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+      // 卸载时确保焦点返回到canvas，让Phaser能接收键盘事件
+      const canvas = document.querySelector('canvas');
+      if (canvas) {
+        canvas.focus();
+      }
+    };
   }, [handleClose]);
 
   // 用 mode 把饮片/原始药材都路由到 HerbView

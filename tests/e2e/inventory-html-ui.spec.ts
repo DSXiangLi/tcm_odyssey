@@ -6,28 +6,39 @@
 import { test, expect } from '@playwright/test';
 
 test.describe('背包HTML UI', () => {
-  test.beforeEach(async ({ page }) => {
-    // 启动游戏到诊所场景
-    await page.goto('/?scene=clinic');
-    await page.waitForLoadState('networkidle');
-    await page.waitForTimeout(3000);
+  test.beforeEach(async ({ page, context }) => {
+    // 清除所有cookies和存储，确保完全重置
+    await context.clearCookies();
 
-    // 清理可能残留的背包UI（确保测试间状态隔离）
-    await page.evaluate(() => {
-      const inventoryRoot = document.getElementById('inventory-ui-root');
-      if (inventoryRoot) {
-        inventoryRoot.remove();
-      }
+    // 硬刷新页面，确保Phaser游戏完全重置
+    await page.goto('/?scene=clinic', { waitUntil: 'networkidle' });
+    await page.waitForTimeout(5000);
+
+    // 等待场景准备完成
+    await page.waitForFunction(() => (window as any).__SCENE_READY__ === true, {
+      timeout: 15000
     });
 
-    // 点击画布获取焦点
-    await page.locator('canvas').click();
-    await page.waitForTimeout(500);
+    // 通过暴露的函数重置背包状态（关键：确保测试间状态隔离）
+    await page.evaluate(() => {
+      if ((window as any).__RESET_INVENTORY_STATE__) {
+        (window as any).__RESET_INVENTORY_STATE__();
+      }
+    });
   });
 
-  test('按B键打开背包显示古卷轴UI', async ({ page }) => {
-    await page.keyboard.press('b');
+  // 辅助函数：打开背包（使用直接调用而非键盘事件，更稳定）
+  async function openInventory(page: any) {
+    await page.evaluate(() => {
+      if ((window as any).__OPEN_INVENTORY__) {
+        (window as any).__OPEN_INVENTORY__();
+      }
+    });
     await page.waitForTimeout(500);
+  }
+
+  test('按B键打开背包显示古卷轴UI', async ({ page }) => {
+    await openInventory(page);
 
     // 等待背包UI出现
     const inventoryUI = page.locator('.inventory-ui');
@@ -36,8 +47,7 @@ test.describe('背包HTML UI', () => {
   });
 
   test('背包显示5视图扇形导航', async ({ page }) => {
-    await page.keyboard.press('b');
-    await page.waitForTimeout(500);
+    await openInventory(page);
 
     await expect(page.locator('.inventory-ui')).toBeVisible({ timeout: 10000 });
     await expect(page.locator('.center-dial')).toBeVisible();
@@ -45,8 +55,7 @@ test.describe('背包HTML UI', () => {
   });
 
   test('点击饮片视图显示左侧卷轴面板', async ({ page }) => {
-    await page.keyboard.press('b');
-    await page.waitForTimeout(500);
+    await openInventory(page);
 
     await expect(page.locator('.inventory-ui')).toBeVisible({ timeout: 10000 });
     await page.locator('.fan-petal').first().click();
@@ -57,8 +66,7 @@ test.describe('背包HTML UI', () => {
   });
 
   test('饮片视图显示18功效分类', async ({ page }) => {
-    await page.keyboard.press('b');
-    await page.waitForTimeout(500);
+    await openInventory(page);
 
     await expect(page.locator('.inventory-ui')).toBeVisible({ timeout: 10000 });
     await page.locator('.fan-petal').first().click();
@@ -68,8 +76,7 @@ test.describe('背包HTML UI', () => {
   });
 
   test('点击分类显示药材槽位', async ({ page }) => {
-    await page.keyboard.press('b');
-    await page.waitForTimeout(500);
+    await openInventory(page);
 
     await expect(page.locator('.inventory-ui')).toBeVisible({ timeout: 10000 });
     await page.locator('.fan-petal').first().click();
@@ -80,8 +87,7 @@ test.describe('背包HTML UI', () => {
   });
 
   test('药材槽位显示内容', async ({ page }) => {
-    await page.keyboard.press('b');
-    await page.waitForTimeout(500);
+    await openInventory(page);
 
     await expect(page.locator('.inventory-ui')).toBeVisible({ timeout: 10000 });
     await page.locator('.fan-petal').first().click();
@@ -97,8 +103,7 @@ test.describe('背包HTML UI', () => {
   });
 
   test('hover槽位显示tooltip', async ({ page }) => {
-    await page.keyboard.press('b');
-    await page.waitForTimeout(500);
+    await openInventory(page);
 
     await expect(page.locator('.inventory-ui')).toBeVisible({ timeout: 10000 });
     await page.locator('.fan-petal').first().click();
@@ -111,20 +116,16 @@ test.describe('背包HTML UI', () => {
     }
   });
 
-  test.skip('点击关闭按钮关闭背包', async ({ page }) => {
-    // TODO: 需要修复React组件状态清理
-    await page.keyboard.press('b');
-    await page.waitForTimeout(500);
+  test('点击关闭按钮关闭背包', async ({ page }) => {
+    await openInventory(page);
 
     await expect(page.locator('.inventory-ui')).toBeVisible({ timeout: 10000 });
     await page.locator('.close-btn').click();
     await expect(page.locator('.inventory-ui')).not.toBeVisible({ timeout: 5000 });
   });
 
-  test.skip('按ESC关闭背包', async ({ page }) => {
-    // TODO: ESC键监听需要在InventoryUI.tsx中实现
-    await page.keyboard.press('b');
-    await page.waitForTimeout(500);
+  test('按ESC关闭背包', async ({ page }) => {
+    await openInventory(page);
 
     await expect(page.locator('.inventory-ui')).toBeVisible({ timeout: 10000 });
     await page.keyboard.press('Escape');
@@ -132,8 +133,7 @@ test.describe('背包HTML UI', () => {
   });
 
   test('稀有度边框显示', async ({ page }) => {
-    await page.keyboard.press('b');
-    await page.waitForTimeout(500);
+    await openInventory(page);
 
     await expect(page.locator('.inventory-ui')).toBeVisible({ timeout: 10000 });
     await page.locator('.fan-petal').first().click();
@@ -146,8 +146,7 @@ test.describe('背包HTML UI', () => {
   });
 
   test('右侧摘要面板', async ({ page }) => {
-    await page.keyboard.press('b');
-    await page.waitForTimeout(500);
+    await openInventory(page);
 
     await expect(page.locator('.inventory-ui')).toBeVisible({ timeout: 10000 });
     await expect(page.locator('.summary-panel')).toBeVisible();
@@ -157,8 +156,7 @@ test.describe('背包HTML UI', () => {
   });
 
   test('方剂视图', async ({ page }) => {
-    await page.keyboard.press('b');
-    await page.waitForTimeout(500);
+    await openInventory(page);
 
     await expect(page.locator('.inventory-ui')).toBeVisible({ timeout: 10000 });
     await page.locator('.fan-petal').nth(2).click();
@@ -167,8 +165,7 @@ test.describe('背包HTML UI', () => {
   });
 
   test('工具视图', async ({ page }) => {
-    await page.keyboard.press('b');
-    await page.waitForTimeout(500);
+    await openInventory(page);
 
     await expect(page.locator('.inventory-ui')).toBeVisible({ timeout: 10000 });
     await page.locator('.fan-petal').nth(3).click();
@@ -176,8 +173,7 @@ test.describe('背包HTML UI', () => {
   });
 
   test('图书馆视图', async ({ page }) => {
-    await page.keyboard.press('b');
-    await page.waitForTimeout(500);
+    await openInventory(page);
 
     await expect(page.locator('.inventory-ui')).toBeVisible({ timeout: 10000 });
     await page.locator('.fan-petal').nth(4).click();

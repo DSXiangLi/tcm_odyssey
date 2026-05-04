@@ -100,6 +100,13 @@ window.addEventListener('load', () => {
   // 创建游戏实例
   const game = new Phaser.Game(gameConfig);
 
+  // 为canvas添加tabindex使其可以获得键盘焦点
+  const canvas = document.querySelector('canvas');
+  if (canvas) {
+    canvas.setAttribute('tabindex', '0');
+    canvas.focus();
+  }
+
   // 设置游戏实例到状态桥接器
   gameStateBridge.setGame(game);
 

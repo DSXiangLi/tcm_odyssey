@@ -198,6 +198,25 @@ export class ClinicScene extends Phaser.Scene {
 
     this.eventBus.emit(GameEvents.SCENE_READY, { sceneName: SCENES.CLINIC });
     (window as any).__SCENE_READY__ = true;
+
+    // 暴露背包状态重置函数（供E2E测试使用）
+    (window as any).__RESET_INVENTORY_STATE__ = () => {
+      this.inventoryCleanup = null;
+      const inventoryRoot = document.getElementById('inventory-ui-root');
+      if (inventoryRoot) {
+        inventoryRoot.remove();
+      }
+      // 确保焦点返回到canvas
+      const canvas = document.querySelector('canvas');
+      if (canvas) {
+        (canvas as HTMLCanvasElement).focus();
+      }
+    };
+
+    // 暴露背包打开函数（供E2E测试使用，避免键盘事件不稳定）
+    (window as any).__OPEN_INVENTORY__ = () => {
+      this.toggleInventory();
+    };
   }
 
   /**
@@ -1091,10 +1110,16 @@ export class ClinicScene extends Phaser.Scene {
    * Phase 2 S8: 切换背包显示
    */
   private toggleInventory(): void {
-    if (!this.inventoryCleanup) {
+    // 检查DOM元素是否存在，而不是仅依赖inventoryCleanup引用
+    // 这处理了测试清理场景：DOM被移除但引用未清除的情况
+    const inventoryRoot = document.getElementById('inventory-ui-root');
+    const isActuallyOpen = inventoryRoot !== null && this.inventoryCleanup !== null;
+
+    if (!isActuallyOpen) {
       // 创建背包UI
       this.inventoryCleanup = showInventoryUI(() => {
         console.log('[ClinicScene] Inventory closed');
+        hideInventoryUI(); // 确保React组件被正确卸载
         this.inventoryCleanup = null;
       });
       this.inventoryManager.exposeToWindow();

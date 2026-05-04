@@ -688,9 +688,9 @@ function HerbSlot({ herb, mode, onHover, onLeave }: {
           alt={herb.name}
           style={{
             position: 'absolute',
-            inset: 8,
+            inset: 2,
             objectFit: 'contain',
-            opacity: 0.85,
+            opacity: 0.95,
           }}
         />
       )}

@@ -40,6 +40,11 @@ interface TooltipState {
   y: number;
 }
 
+interface ImageModalState {
+  herb: HerbData | null;
+  visible: boolean;
+}
+
 type ViewType = 'piece' | 'raw' | 'formula' | 'tool' | 'book';
 
 // ============================================================
@@ -48,6 +53,7 @@ type ViewType = 'piece' | 'raw' | 'formula' | 'tool' | 'book';
 export function InventoryUI({ onClose }: InventoryUIProps) {
   const [active, setActive] = useState<ViewType>('piece');
   const [tooltip, setTooltip] = useState<TooltipState>({ herb: null, x: 0, y: 0 });
+  const [imageModal, setImageModal] = useState<ImageModalState>({ herb: null, visible: false });
 
   const handleHover = useCallback((herb: HerbData, e: React.MouseEvent) => {
     setTooltip({ herb, x: e.clientX, y: e.clientY });
@@ -60,6 +66,14 @@ export function InventoryUI({ onClose }: InventoryUIProps) {
   const handleSetActive = useCallback((view: ViewType) => {
     setActive(view);
     emitViewChanged(view);
+  }, []);
+
+  const handleImageClick = useCallback((herb: HerbData) => {
+    setImageModal({ herb, visible: true });
+  }, []);
+
+  const closeImageModal = useCallback(() => {
+    setImageModal({ herb: null, visible: false });
   }, []);
 
   const handleClose = useCallback(() => {
@@ -88,8 +102,8 @@ export function InventoryUI({ onClose }: InventoryUIProps) {
   // 用 mode 把饮片/原始药材都路由到 HerbView
   const renderView = () => {
     switch (active) {
-      case 'piece': return <HerbView mode="piece" onHover={handleHover} onLeave={handleLeave} />;
-      case 'raw':   return <HerbView mode="raw" onHover={handleHover} onLeave={handleLeave} />;
+      case 'piece': return <HerbView mode="piece" onHover={handleHover} onLeave={handleLeave} onImageClick={handleImageClick} />;
+      case 'raw':   return <HerbView mode="raw" onHover={handleHover} onLeave={handleLeave} onImageClick={handleImageClick} />;
       case 'formula': return <FormulaView />;
       case 'tool':  return <ToolView />;
       case 'book':  return <BookView />;
@@ -131,6 +145,11 @@ export function InventoryUI({ onClose }: InventoryUIProps) {
           x={tooltip.x}
           y={tooltip.y}
         />
+      )}
+
+      {/* 图片放大Modal */}
+      {imageModal.visible && imageModal.herb && (
+        <ImageModal herb={imageModal.herb} onClose={closeImageModal} />
       )}
     </div>
   );
@@ -451,7 +470,7 @@ function SummaryPanel({ active }: { active: ViewType }) {
 // ============================================================
 // 药材视图
 // ============================================================
-function HerbView({ mode, onHover, onLeave }: { mode: 'piece' | 'raw'; onHover: (herb: HerbData, e: React.MouseEvent) => void; onLeave: () => void }) {
+function HerbView({ mode, onHover, onLeave, onImageClick }: { mode: 'piece' | 'raw'; onHover: (herb: HerbData, e: React.MouseEvent) => void; onLeave: () => void; onImageClick: (herb: HerbData) => void }) {
   const [filter, setFilter] = useState<string>('all');
   const [showEmpty, setShowEmpty] = useState(true);
 
@@ -559,6 +578,7 @@ function HerbView({ mode, onHover, onLeave }: { mode: 'piece' | 'raw'; onHover: 
                   <HerbSlot
                     key={h.id} herb={h} mode={mode}
                     onHover={onHover} onLeave={onLeave}
+                    onImageClick={onImageClick}
                   />
                 ))}
               </div>
@@ -657,11 +677,12 @@ function ChapterHeadStyled({ cat, total }: { cat: { id: string; name: string; gl
 // ============================================================
 // 药材槽位
 // ============================================================
-function HerbSlot({ herb, mode, onHover, onLeave }: {
+function HerbSlot({ herb, mode, onHover, onLeave, onImageClick }: {
   herb: HerbData;
   mode: 'piece' | 'raw';
   onHover: (herb: HerbData, e: React.MouseEvent) => void;
   onLeave: () => void;
+  onImageClick: (herb: HerbData) => void;
 }) {
   const count = mode === 'piece' ? herb.pieceCount : herb.rawCount;
   const isEmpty = count === 0;
@@ -669,7 +690,11 @@ function HerbSlot({ herb, mode, onHover, onLeave }: {
 
   const handleClick = useCallback(() => {
     emitHerbClick(herb.id, herb.name, herb.cat);
-  }, [herb]);
+    // 原药模式点击图片时放大
+    if (mode === 'raw' && imagePath && !isEmpty) {
+      onImageClick(herb);
+    }
+  }, [herb, mode, imagePath, isEmpty, onImageClick]);
 
   return (
     <div
@@ -681,8 +706,36 @@ function HerbSlot({ herb, mode, onHover, onLeave }: {
       onClick={handleClick}
       style={{ aspectRatio: '1 / 1' }}
     >
-      {/* 药材图片 */}
-      {imagePath && !isEmpty && (
+      {/* 饮片模式：文字卡片 */}
+      {mode === 'piece' && !isEmpty && (
+        <div className="herb-name" style={{
+          position: 'absolute', inset: 8,
+          display: 'flex', flexDirection: 'column',
+          alignItems: 'center', justifyContent: 'center',
+          gap: 4,
+          background: 'linear-gradient(135deg, rgba(247,230,208,0.3) 0%, rgba(220,200,170,0.2) 100%)',
+          borderRadius: 4,
+          border: '1px solid rgba(139,100,52,0.2)',
+        }}>
+          <div style={{
+            fontFamily: 'STKaiti, KaiTi, serif',
+            fontSize: 'clamp(16px, 2.2vw, 24px)',
+            fontWeight: 900,
+            color: 'var(--ink)',
+            letterSpacing: '0.05em',
+            textShadow: '0 1px 0 rgba(255,235,180,0.6)',
+          }}>{herb.name}</div>
+          <div style={{
+            fontSize: 10,
+            color: 'var(--ink-light)',
+            letterSpacing: '0.2em',
+            fontFamily: 'STKaiti, KaiTi, serif',
+          }}>饮片</div>
+        </div>
+      )}
+
+      {/* 原药模式：图片显示 */}
+      {mode === 'raw' && imagePath && !isEmpty && (
         <img
           src={imagePath}
           alt={herb.name}
@@ -691,17 +744,18 @@ function HerbSlot({ herb, mode, onHover, onLeave }: {
             inset: 2,
             objectFit: 'contain',
             opacity: 0.95,
+            cursor: 'pointer',
           }}
         />
       )}
 
-      {/* 名称 */}
-      {!isEmpty && !imagePath && (
+      {/* 原药模式无图片：文字卡片 */}
+      {mode === 'raw' && !imagePath && !isEmpty && (
         <div className="herb-name" style={{
           position: 'absolute', inset: 8,
           display: 'flex', flexDirection: 'column',
           alignItems: 'center', justifyContent: 'center',
-          gap: 2,
+          gap: 4,
         }}>
           <div style={{
             fontFamily: 'STKaiti, KaiTi, serif',
@@ -716,7 +770,7 @@ function HerbSlot({ herb, mode, onHover, onLeave }: {
             color: 'var(--ink-light)',
             letterSpacing: '0.2em',
             fontFamily: 'STKaiti, KaiTi, serif',
-          }}>{mode === 'piece' ? '饮片' : '原药'}</div>
+          }}>原药</div>
         </div>
       )}
 
@@ -1209,6 +1263,127 @@ function BookSpine({ book, color, selected, onClick }: {
       <div className="spine-tag" style={{
         fontSize: 8, color: book.owned ? 'rgba(247,230,208,0.7)' : 'rgba(247,230,208,0.4)',
       }}>{book.owned ? book.dynasty.split('·')[0] : '未得'}</div>
+    </div>
+  );
+}
+
+// ============================================================
+// 图片放大Modal
+// ============================================================
+function ImageModal({ herb, onClose }: { herb: HerbData; onClose: () => void }) {
+  const imagePath = HERB_IMAGES[herb.id];
+  const cat = HERB_CATEGORIES.find(c => c.id === herb.cat);
+  const RARITY_NAMES = ['', '常见', '精良', '珍贵', '稀世'];
+
+  // 点击背景关闭
+  const handleBackgroundClick = useCallback((e: React.MouseEvent) => {
+    if (e.target === e.currentTarget) {
+      onClose();
+    }
+  }, [onClose]);
+
+  // ESC键关闭
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        onClose();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [onClose]);
+
+  if (!imagePath) return null;
+
+  return (
+    <div
+      onClick={handleBackgroundClick}
+      style={{
+        position: 'fixed',
+        inset: 0,
+        background: 'rgba(0, 0, 0, 0.85)',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        zIndex: 1000,
+        cursor: 'pointer',
+      }}
+    >
+      {/* 图片容器 */}
+      <div style={{
+        position: 'relative',
+        maxWidth: '80vw',
+        maxHeight: '80vh',
+        background: 'var(--paper-1)',
+        borderRadius: 12,
+        padding: 24,
+        boxShadow: '0 20px 60px rgba(0,0,0,0.5), 0 0 0 2px var(--paper-dark)',
+        cursor: 'default',
+      }}>
+        {/* 关闭按钮 */}
+        <div
+          onClick={onClose}
+          style={{
+            position: 'absolute',
+            top: 8,
+            right: 8,
+            width: 32,
+            height: 32,
+            background: 'var(--vermilion)',
+            color: 'var(--paper-1)',
+            borderRadius: '50%',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            fontSize: 18,
+            fontWeight: 900,
+            cursor: 'pointer',
+            boxShadow: '0 2px 8px rgba(0,0,0,0.3)',
+          }}
+        >
+          ✕
+        </div>
+
+        {/* 图片 */}
+        <img
+          src={imagePath}
+          alt={herb.name}
+          style={{
+            maxWidth: '60vw',
+            maxHeight: '60vh',
+            objectFit: 'contain',
+            borderRadius: 8,
+          }}
+        />
+
+        {/* 药材信息 */}
+        <div style={{
+          marginTop: 16,
+          textAlign: 'center',
+        }}>
+          <div style={{
+            fontFamily: 'STKaiti, KaiTi, serif',
+            fontSize: 28,
+            fontWeight: 900,
+            color: 'var(--ink)',
+            letterSpacing: '0.15em',
+          }}>{herb.name}</div>
+          <div style={{
+            fontSize: 14,
+            color: 'var(--ink-light)',
+            letterSpacing: '0.3em',
+            marginTop: 4,
+          }}>{cat?.name || ''} · 原药 · {RARITY_NAMES[herb.rarity]}</div>
+          <div style={{
+            fontSize: 12,
+            color: 'var(--ink-light)',
+            marginTop: 8,
+            letterSpacing: '0.1em',
+          }}>
+            性：{herb.xing} | 味：{herb.wei} | 归经：{herb.gui}
+          </div>
+        </div>
+      </div>
     </div>
   );
 }

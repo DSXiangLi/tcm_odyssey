@@ -1,7 +1,7 @@
 # 药灵山谷 (Yaoling Shangu) - 项目文档
 
 **版本**: v3.4
-**最后更新**: 2026-05-01
+**最后更新**: 2026-05-04
 **技术栈**: Phaser 3 + TypeScript + Vite + Hermes-Agent
 
 ---
@@ -36,7 +36,7 @@
 | Phase 2.5 NPC验收 | ⏳  | LLM评估器+19个E2E测试进行中          |
 | Phase 2.5 种植    | ⏳  | 入口已存在，待开发                   |
 | Phase 2.5 炮制    | ⏳  | 入口已存在，待开发                   |
-| Phase 2.5 背包    | ⏳  | 入口已存在，待优化UI                 |
+| Phase 2.5 背包    | ✅  | 古卷轴UI+E2E测试42/42通过        |
 
 > **详细内容**: [TODO.md](./TODO.md) - 已完成任务详情
 > **当前任务**: [PROGRESS.md](./PROGRESS.md) - 进行中工作
@@ -131,6 +131,6 @@ zhongyi_game_v3/
 | 日期 | 问题 | 关键教训 |
 |------|------|----------|
 | 2026-04-29 | CSS未导入UI空白 | `toBeVisible()`不检查尺寸 |
-| 2026-04-30 | 场景退出后无法再进入 | `launch()+stop()`不触发wake |
+| 2026-05-04 | 背包透明背景 | HTML小游戏需透明背景嵌入主游戏 |
 
 > **详细复盘**: `docs/superpowers/experience/` 目录

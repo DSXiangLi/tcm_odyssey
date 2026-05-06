@@ -149,6 +149,36 @@
 
 ---
 
+## Phase 2.5: 背包系统 HTML 直接迁移 ✅ (2026-05-04)
+
+**创建文件 (6个)**:
+| 文件 | 行数 | 功能 |
+|------|------|------|
+| `src/ui/html/inventory.css` | 600+ | 古卷轴风格样式（透明背景嵌入） |
+| `src/ui/html/InventoryUI.tsx` | 800+ | 主应用组件（5视图扇形导航） |
+| `src/ui/html/inventory-entry.tsx` | 50+ | React入口函数 |
+| `src/ui/html/bridge/inventory-events.ts` | 20+ | 桥接事件常量 |
+| `src/scenes/InventoryScene.ts` | 150+ | Phaser场景 |
+| `tests/e2e/inventory-flow.spec.ts` | 200+ | E2E测试（42个测试通过） |
+
+**核心成果**:
+- 古卷轴风格UI: 透明背景嵌入主游戏
+- 5视图扇形导航: 饮片/原药/方剂/工具/图书馆
+- 18功效分类侧边栏: 解表/清热/泻下等
+- 86味药材数据: 稀有度边框+Tooltip详情
+- E2E测试: 42/42通过（14首次运行，3次稳定性验证）
+
+**技术改进**:
+- `__RESET_INVENTORY_STATE__`函数重置背包状态
+- `__OPEN_INVENTORY__`函数直接打开背包
+- canvas tabindex属性确保可获取焦点
+- InventoryUI卸载时焦点返回canvas
+
+**设计文档**: [背包HTML迁移设计](docs/superpowers/specs/phase2-5/2026-05-01-inventory-html-migration-design.md)
+**实现计划**: [背包HTML迁移计划](docs/superpowers/plans/phase2-5/2026-05-01-inventory-html-migration-plan.md)
+
+---
+
 ## 视觉验收自动化系统 ✅
 
 **核心功能**:

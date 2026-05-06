@@ -1,7 +1,7 @@
 # 药灵山谷 (Yaoling Shangu) - 项目文档
 
-**版本**: v3.4
-**最后更新**: 2026-05-04
+**版本**: v3.5
+**最后更新**: 2026-05-06
 **技术栈**: Phaser 3 + TypeScript + Vite + Hermes-Agent
 
 ---
@@ -33,10 +33,11 @@
 | Phase 2.5 UI基础  | ✅  | ModalUI基类+组件库               |
 | Phase 2.5 煎药    | ✅  | HTML直接迁移+AI验收86.5分          |
 | Phase 2.5 诊断    | ✅  | 5阶段10病案+场景切换修复              |
-| Phase 2.5 NPC验收 | ⏳  | LLM评估器+19个E2E测试进行中          |
-| Phase 2.5 种植    | ⏳  | 入口已存在，待开发                   |
-| Phase 2.5 炮制    | ⏳  | 入口已存在，待开发                   |
+| Phase 2.5 NPC验收 | ✅  | LLM评估器+19个E2E测试             |
 | Phase 2.5 背包    | ✅  | 古卷轴UI+E2E测试42/42通过        |
+| Phase 2.5 病案集   | ⏳  | 设计完成，待执行（C键触发）            |
+| Phase 2.5 炮制    | ⏳  | 设计完成，待执行（P键触发）            |
+| Phase 2.5 种植    | ⏳  | 入口已存在，待开发                   |
 
 > **详细内容**: [TODO.md](./TODO.md) - 已完成任务详情
 > **当前任务**: [PROGRESS.md](./PROGRESS.md) - 进行中工作
@@ -54,11 +55,17 @@ zhongyi_game_v3/
 │
 ├── src/
 │   ├── scenes/                     # Phaser场景
-│   │   ├── ClinicScene.ts          # 诊所 (B背包, Z诊断, D煎药)
+│   │   ├── ClinicScene.ts          # 诊所 (B背包, C病案集, Z诊断, D煎药)
 │   │   ├── GardenScene.ts          # 药园 (G种植, P炮制)
 │   │   └── DiagnosisScene.ts       # 诊断游戏
 │   ├── systems/                    # 系统管理器
 │   ├── ui/                         # UI组件
+│   │   └── html/                   # HTML嵌入小游戏
+│   │       ├── CasebookUI.tsx      # 病案集 (待创建)
+│   │       ├── PaozhiUI.tsx        # 炮制 (待创建)
+│   │       ├── InventoryUI.tsx     # 背包 ✅
+│   │       ├── DiagnosisUI.tsx     # 诊断 ✅
+│   │       └── DecoctionUI.tsx     # 煎药 ✅
 │   └── data/                       # 数据定义
 │
 ├── tests/                          # 测试

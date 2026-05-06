@@ -28,7 +28,11 @@ export const SCENES = {
   // Phase 2 S11: 种植场景
   PLANTING: 'PlantingScene',
   // Phase 2.5: 诊断场景（HTML 直接迁移）
-  DIAGNOSIS: 'DiagnosisScene'
+  DIAGNOSIS: 'DiagnosisScene',
+  // Phase 2.5: 病案集场景（HTML 直接迁移）
+  CASEBOOK: 'CasebookScene',
+  // Phase 2.5: 炮制场景（HTML 直接迁移）
+  PAOZHI: 'PaozhiScene'
 } as const;
 
 // 玩家移动速度

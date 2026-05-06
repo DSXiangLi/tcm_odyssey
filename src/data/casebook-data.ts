@@ -1,0 +1,204 @@
+// src/data/casebook-data.ts
+/**
+ * 病案数据 - 从 docs/ui/病案集/data/cases.js 迁移
+ * 6类 × 10例，每类解锁前2例
+ */
+
+export interface CaseData {
+  id: string;
+  title: string;
+  patient: string;
+  unlocked: boolean;
+  chief?: string;
+  history?: string;
+  tongue?: string;
+  pulse?: string;
+  summary?: string;
+  syndrome?: string;
+  formula?: string;
+  score?: string;
+  stamp?: string;
+  comment?: string;
+}
+
+export interface CategoryData {
+  id: string;
+  name: string;
+  subtitle: string;
+}
+
+export interface CasebookData {
+  categories: CategoryData[];
+  cases: Record<string, CaseData[]>;
+}
+
+export const MEDICAL_CASES: CasebookData = {
+  categories: [
+    { id: 'fei', name: '肺系', subtitle: '咳喘鼻喉之疾' },
+    { id: 'xin', name: '心系', subtitle: '神志血脉之疾' },
+    { id: 'piwei', name: '脾胃', subtitle: '运化纳谷之疾' },
+    { id: 'gandan', name: '肝胆', subtitle: '疏泄藏血之疾' },
+    { id: 'shen', name: '肾系', subtitle: '水液藏精之疾' },
+    { id: 'qixue', name: '气血津液', subtitle: '荣卫流注之疾' },
+  ],
+  cases: {
+    fei: [
+      { id: 'fei-01', title: '风寒咳嗽', patient: '李某，男，三十有二，木匠', unlocked: true,
+        chief: '咳嗽五日，痰白清稀，鼻塞流涕。',
+        history: '患者于五日前晨起赴乡间作工，途遇朔风冷雨，归家后即觉头身困重，喷嚏频作，鼻流清涕。次日晨起咳嗽频作，咳声重浊，痰白清稀，量多易咯。伴恶寒微热，无汗，头痛连项，肢节酸楚，胸闷不舒，不思饮食。曾自服姜汤未效，咳嗽日渐加重，夜不能安。',
+        tongue: '舌淡红，苔薄白而润。',
+        pulse: '脉浮紧，寸部尤显。',
+        summary: '冬月感寒，咳声重浊，痰白清稀，鼻塞流涕，恶寒微热。',
+        syndrome: '风寒袭肺', formula: '三拗汤合止嗽散', score: '优', stamp: '妙手',
+        comment: '辨证清晰，宣肺散寒得当。三拗合止嗽，一散一润，深谙肺为娇脏之理。麻黄杏仁宣降并施，紫菀百部润肺止咳，佐以荆芥透邪外出，配伍井然。' },
+      { id: 'fei-02', title: '风热咳嗽', patient: '王某，女，二十有八，绣娘', unlocked: true,
+        chief: '咳嗽五日，痰黄黏稠，咽痛口干。',
+        history: '春末天气乍暖，患者因室内闷热而开窗纳凉，复又外出沽酒，归来即觉咽喉微痛。次日咳嗽渐作，痰色黄稠，咯之不畅，伴咽痛口干，欲饮冷水。身热微汗，头胀目赤，鼻流浊涕。胸中烦闷，夜寐不安，小便短黄，大便略干。',
+        tongue: '舌尖红，苔薄黄。',
+        pulse: '脉浮数。',
+        summary: '春末咳嗽五日，痰黄黏稠，咽痛口干，身热微汗。',
+        syndrome: '风热犯肺', formula: '桑菊饮', score: '良', stamp: '中工',
+        comment: '辨证准确，桑菊饮轻清宣透，惟剂量稍轻，可加芦根、浙贝增效。风热在表当辛凉解肌，既不可过用辛温，亦不可骤投苦寒，分寸拿捏需更精到。' },
+      { id: 'fei-03', title: '燥邪伤肺', patient: '陈某，男，四十', unlocked: false },
+      { id: 'fei-04', title: '痰湿蕴肺', patient: '赵某，女，五十有五', unlocked: false },
+      { id: 'fei-05', title: '肺阴亏耗', patient: '林某，男，六十', unlocked: false },
+      { id: 'fei-06', title: '哮病·寒哮', patient: '周某，男，三十有八', unlocked: false },
+      { id: 'fei-07', title: '哮病·热哮', patient: '吴某，女，四十有二', unlocked: false },
+      { id: 'fei-08', title: '喘证·实喘', patient: '郑某，男，四十有五', unlocked: false },
+      { id: 'fei-09', title: '肺痈', patient: '孙某，男，三十有六', unlocked: false },
+      { id: 'fei-10', title: '肺痨', patient: '冯某，女，二十有四', unlocked: false },
+    ],
+    xin: [
+      { id: 'xin-01', title: '心悸·心虚胆怯', patient: '张某，女，三十有五，商贾之妻', unlocked: true,
+        chief: '惊悸不宁两月，遇事善惊。',
+        history: '患者两月前夜行小巷，忽闻犬吠，惊惧之下心跳骤剧，自此每遇响动则心悸如鼓，胸中惕惕。日间善惊易恐，坐卧不安，闻声辄惊。夜寐不实，少寐多梦，梦中多惊恐之境，醒后心慌汗出。伴神疲乏力，气短懒言，食欲尚可，二便如常。',
+        tongue: '舌淡苔薄白。',
+        pulse: '脉细弦而动数。',
+        summary: '惊悸不宁，善惊易恐，坐卧不安，少寐多梦，舌淡苔薄。',
+        syndrome: '心虚胆怯', formula: '安神定志丸', score: '优', stamp: '妙手',
+        comment: '心胆同治，茯神远志安神，龙齿石菖蒲定志，切中病机。心虚胆怯之证，须审其虚实兼夹，本案纯虚无实，方证相应，故收效迅捷。' },
+      { id: 'xin-02', title: '不寐·心脾两虚', patient: '黄某，女，四十有八，绣坊管事', unlocked: true,
+        chief: '夜不成寐月余，多梦易醒。',
+        history: '患者操劳家中诸事，又主管绣坊事务，思虑过度。月余前因丧母悲恸过度，自此夜不能寐，初则入睡困难，渐至彻夜难眠，偶有浅睡亦多梦易醒。日间神疲倦怠，头晕目眩，食少纳呆，食后腹胀。面色萎黄无华，唇甲色淡，月事量少色淡。',
+        tongue: '舌淡，苔薄白。',
+        pulse: '脉细弱无力。',
+        summary: '夜不成寐月余，多梦易醒，神疲食少，面色萎黄。',
+        syndrome: '心脾两虚', formula: '归脾汤', score: '良', stamp: '中工',
+        comment: '归脾汤补益心脾，方证相合。可佐酸枣仁、夜交藤增其安神之效。气血既虚，神无所主，治当益气补血、健脾养心，本方主之颇宜。' },
+      { id: 'xin-03', title: '胸痹·心血瘀阻', patient: '何某，男，五十有八', unlocked: false },
+      { id: 'xin-04', title: '胸痹·痰浊闭阻', patient: '罗某，男，六十有二', unlocked: false },
+      { id: 'xin-05', title: '心悸·心阳不振', patient: '梁某，男，五十', unlocked: false },
+      { id: 'xin-06', title: '不寐·肝郁化火', patient: '宋某，女，四十', unlocked: false },
+      { id: 'xin-07', title: '癫证·痰气郁结', patient: '谢某，男，三十有二', unlocked: false },
+      { id: 'xin-08', title: '狂证·痰火扰神', patient: '韩某，男，二十有八', unlocked: false },
+      { id: 'xin-09', title: '痫病·风痰闭阻', patient: '唐某，女，二十有六', unlocked: false },
+      { id: 'xin-10', title: '健忘·心肾不交', patient: '冯某，男，五十有五', unlocked: false },
+    ],
+    piwei: [
+      { id: 'piwei-01', title: '胃痛·寒邪客胃', patient: '徐某，男，二十有六，脚夫', unlocked: true,
+        chief: '胃脘冷痛三日，得温则减。',
+        history: '三日前患者送货途中口渴难耐，连饮冰镇酸梅汤数碗，复食生冷瓜果，归家后即觉胃脘冷痛，痛势急迫，绵绵不止。痛时喜按喜温，得热饮或热敷则痛减，遇寒或食冷则痛甚。伴恶心欲呕，口淡不渴，喜热饮，食欲不振。手足不温，倦怠少力，小便清长，大便溏薄。',
+        tongue: '舌淡，苔白润。',
+        pulse: '脉弦紧。',
+        summary: '暴饮冷食后胃脘冷痛，得温则减，喜热饮，舌淡苔白。',
+        syndrome: '寒邪客胃', formula: '良附丸', score: '优', stamp: '妙手',
+        comment: '高良姜温胃散寒，香附理气止痛，简方而中的，深得仲景之旨。寒凝气滞，温通并施，二味成方，用之得当则效如桴鼓。' },
+      { id: 'piwei-02', title: '泄泻·脾胃虚弱', patient: '朱某，女，四十有三，茶寮主妇', unlocked: true,
+        chief: '大便溏薄三月，食后即泻。',
+        history: '患者素体脾胃虚弱，三月前因连日操劳茶寮生意，饮食失节，渐起便溏。初则大便日二三行，质稀不成形；近月加重，每食油腻或稍多即腹中作响，少顷即泻。泻物完谷不化，无臭秽。伴脘腹胀满，食少纳呆，神疲乏力，气短懒言，面色萎黄少华。形体渐瘦，四肢不温。',
+        tongue: '舌淡胖，边有齿痕，苔白滑。',
+        pulse: '脉细弱。',
+        summary: '大便溏薄三月，食后即泻，神疲乏力，面色萎黄。',
+        syndrome: '脾虚湿困', formula: '参苓白术散', score: '良', stamp: '中工',
+        comment: '健脾化湿之法不差，参苓白术散温和适宜。若加木香理气更佳。脾虚生湿，湿盛濡泻，治当补中带消，本方甘平和缓，最合"虚人大补反不胜补"之旨。' },
+      { id: 'piwei-03', title: '胃痛·肝气犯胃', patient: '魏某，男，三十有八', unlocked: false },
+      { id: 'piwei-04', title: '痞满·湿热中阻', patient: '萧某，女，三十有五', unlocked: false },
+      { id: 'piwei-05', title: '呕吐·痰饮内停', patient: '潘某，女，四十有八', unlocked: false },
+      { id: 'piwei-06', title: '呃逆·胃火上逆', patient: '汪某，男，五十', unlocked: false },
+      { id: 'piwei-07', title: '腹痛·中虚脏寒', patient: '田某，男，六十', unlocked: false },
+      { id: 'piwei-08', title: '便秘·阴津亏虚', patient: '范某，女，七十', unlocked: false },
+      { id: 'piwei-09', title: '痢疾·湿热痢', patient: '石某，男，二十有八', unlocked: false },
+      { id: 'piwei-10', title: '噎膈·痰气交阻', patient: '姚某，男，六十有八', unlocked: false },
+    ],
+    gandan: [
+      { id: 'gandan-01', title: '胁痛·肝郁气滞', patient: '袁某，女，三十有二，闺秀', unlocked: true,
+        chief: '两胁胀痛半年，情志不畅则甚。',
+        history: '患者半载前因家中变故，心绪抑郁，自此两胁胀痛时作。痛无定处，胀甚于痛，每遇情志不畅、忧思恼怒则疼痛加剧，得嗳气或矢气则稍舒。胸闷不舒，善太息，时觉咽中如有物梗，吞之不下，吐之不出。月事先后无定，经行乳房胀痛，经色暗红有块。食欲欠佳，夜寐不安。',
+        tongue: '舌淡红，苔薄白。',
+        pulse: '脉弦。',
+        summary: '两胁胀痛半年，情志不畅则加重，胸闷善太息。',
+        syndrome: '肝郁气滞', formula: '柴胡疏肝散', score: '优', stamp: '妙手',
+        comment: '柴胡疏肝散疏肝理气，方证契合。情志为病，当兼安神宽怀。本案兼有梅核气之征，可佐半夏厚朴汤之意，则更尽善矣。' },
+      { id: 'gandan-02', title: '黄疸·阳黄', patient: '邓某，男，四十，渔人', unlocked: true,
+        chief: '身目俱黄一旬，色泽鲜明。',
+        history: '患者素喜饮酒嗜食肥甘，又长年风餐露宿。十日前先觉身困乏力，食欲减退，恶心欲呕。三日后家人发现其目睛发黄，继而周身皮肤俱黄，色如橘皮，鲜明光亮。伴发热口渴，欲饮冷水，胸脘痞满，腹部胀痛，按之不舒。小便短赤，色如浓茶；大便秘结，三四日一行。',
+        tongue: '舌红，苔黄腻。',
+        pulse: '脉弦数。',
+        summary: '身目俱黄，色泽鲜明，发热口渴，小便短赤，舌红苔黄腻。',
+        syndrome: '湿热熏蒸', formula: '茵陈蒿汤', score: '良', stamp: '中工',
+        comment: '茵陈蒿汤为阳黄正治。可酌加金钱草、虎杖以助利胆退黄。湿热并重，茵陈清热利湿、栀子通利三焦、大黄泻热逐瘀，三味协同，使邪有出路。' },
+      { id: 'gandan-03', title: '眩晕·肝阳上亢', patient: '杜某，男，五十有六', unlocked: false },
+      { id: 'gandan-04', title: '头痛·肝火上炎', patient: '尹某，女，四十有二', unlocked: false },
+      { id: 'gandan-05', title: '中风·风痰阻络', patient: '柯某，男，六十有五', unlocked: false },
+      { id: 'gandan-06', title: '鼓胀·气滞湿阻', patient: '左某，男，五十有八', unlocked: false },
+      { id: 'gandan-07', title: '积聚·气滞血瘀', patient: '雷某，女，五十', unlocked: false },
+      { id: 'gandan-08', title: '疟疾·正疟', patient: '蓝某，男，三十', unlocked: false },
+      { id: 'gandan-09', title: '颤证·肝风内动', patient: '钟某，男，七十', unlocked: false },
+      { id: 'gandan-10', title: '郁证·肝郁化火', patient: '段某，女，三十有八', unlocked: false },
+    ],
+    shen: [
+      { id: 'shen-01', title: '水肿·肾阳衰微', patient: '苗某，男，五十有五，盐工', unlocked: true,
+        chief: '面浮足肿三月，腰以下尤甚。',
+        history: '患者长年劳作于盐田，涉水冒寒，又素嗜咸食。三月前先觉双足踝部微肿，朝起稍轻，午后渐重。月余后肿势上延至膝，按之凹陷不起，状如泥淖，久按方复。继而面目浮肿，腰腹胀满，腰膝冷痛如带冰雪，畏寒肢冷，四肢不温。神疲蜷卧，懒言少动，纳食不馨。小便短少，日不及一斤；大便溏薄。',
+        tongue: '舌淡胖，边有齿痕，苔白滑。',
+        pulse: '脉沉迟无力，尺部尤甚。',
+        summary: '面浮足肿，腰以下尤甚，按之凹陷不起，腰膝冷痛，畏寒肢冷。',
+        syndrome: '肾阳衰微', formula: '真武汤合济生肾气丸', score: '优', stamp: '妙手',
+        comment: '温阳利水，标本兼治。真武主温化，肾气丸固本，配伍精当。肾阳衰微则水泛为肿，非温煦不能化气行水，附桂同用，相得益彰。' },
+      { id: 'shen-02', title: '腰痛·肾阴亏虚', patient: '葛某，男，四十有八，私塾先生', unlocked: true,
+        chief: '腰膝酸软隐痛半年，劳则加剧。',
+        history: '患者年逾不惑，因屡试不第，长夜苦读，又素体阴亏。半载前渐觉腰膝酸软，隐隐作痛，绵绵不止。劳累或久立则痛甚，卧床稍可缓解。伴五心烦热，午后潮热，夜间盗汗。头晕耳鸣，目眩眼花，咽干口燥而不欲多饮。形体消瘦，颧红唇赤，遗精频作，小便短黄。',
+        tongue: '舌红少苔，质干。',
+        pulse: '脉细数。',
+        summary: '腰膝酸软隐痛，劳则加剧，五心烦热，舌红少苔。',
+        syndrome: '肾阴亏虚', formula: '左归丸', score: '良', stamp: '中工',
+        comment: '滋阴补肾得法。可加杜仲、续断引药入腰，更合病位。左归纯补真阴，不杂阳药，最宜阴虚而无火证者，本案稍兼虚火，可佐知母黄柏。' },
+      { id: 'shen-03', title: '淋证·热淋', patient: '邵某，女，三十', unlocked: false },
+      { id: 'shen-04', title: '癃闭·肾阳衰惫', patient: '万某，男，七十有二', unlocked: false },
+      { id: 'shen-05', title: '阳痿·命门火衰', patient: '蒋某，男，四十', unlocked: false },
+      { id: 'shen-06', title: '遗精·相火妄动', patient: '钱某，男，二十有四', unlocked: false },
+      { id: 'shen-07', title: '消渴·下消', patient: '彭某，男，五十有八', unlocked: false },
+      { id: 'shen-08', title: '关格·脾肾阳衰', patient: '余某，男，六十有六', unlocked: false },
+      { id: 'shen-09', title: '尿血·下焦湿热', patient: '殷某，女，四十有五', unlocked: false },
+      { id: 'shen-10', title: '虚劳·肾精亏虚', patient: '苏某，男，六十', unlocked: false },
+    ],
+    qixue: [
+      { id: 'qixue-01', title: '汗证·气虚自汗', patient: '马某，女，五十，乳娘', unlocked: true,
+        chief: '日间汗出过多半年，动则尤甚。',
+        history: '患者半载前大病初愈，自此常觉汗出涔涔。无论寒暑，日间不动即微汗津津，稍事活动则大汗淋漓，浸湿衣襟。汗出后身觉清冷，畏风怕冷，需厚衣加身。伴神疲乏力，气短懒言，声低气怯，食少纳差。面色㿠白无华，唇甲色淡。每遇时令变更则易感冒，每月必发数次，缠绵难愈。',
+        tongue: '舌淡苔薄白。',
+        pulse: '脉细弱。',
+        summary: '日间汗出过多，动则尤甚，神疲乏力，气短懒言，易感冒。',
+        syndrome: '肺卫不固', formula: '玉屏风散', score: '优', stamp: '妙手',
+        comment: '玉屏风散益气固表，三药相伍，补中有疏，深得"治未病"之精髓。黄芪走表实卫，白术健脾培土，防风走表祛风，配伍精妙。' },
+      { id: 'qixue-02', title: '血证·便血', patient: '武某，男，四十有五，酒坊师傅', unlocked: true,
+        chief: '便下鲜血半月，先血后便。',
+        history: '患者素嗜辛辣醇酒，又久坐少动。半月前忽觉便后纸上带血，初以为痔，未予重视。数日后血量渐多，每便必下鲜血，先血后便，血色鲜红，量约半盏，滴沥不止。伴肛门灼热下坠，便后疼痛。口苦口干，欲饮冷水。腹部隐痛，矢气频作。小便短黄。',
+        tongue: '舌红，苔黄腻。',
+        pulse: '脉滑数。',
+        summary: '便下鲜血半月，先血后便，伴肛门灼热，舌红苔黄。',
+        syndrome: '肠道湿热', formula: '地榆散合槐角丸', score: '良', stamp: '中工',
+        comment: '清化湿热、凉血止血，方证相符。可加白头翁助清下焦湿热。湿热蕴结大肠，灼伤肠络则血溢，治法层次清楚，惟用药稍欠峻猛。' },
+      { id: 'qixue-03', title: '内伤发热·阴虚发热', patient: '常某，女，三十有六', unlocked: false },
+      { id: 'qixue-04', title: '虚劳·气血两虚', patient: '贺某，男，五十有八', unlocked: false },
+      { id: 'qixue-05', title: '血证·咳血', patient: '熊某，男，四十', unlocked: false },
+      { id: 'qixue-06', title: '血证·吐血', patient: '康某，男，五十有二', unlocked: false },
+      { id: 'qixue-07', title: '消渴·上消', patient: '毛某，女，五十有五', unlocked: false },
+      { id: 'qixue-08', title: '癌病·气血亏虚', patient: '史某，男，六十有八', unlocked: false },
+      { id: 'qixue-09', title: '厥证·气厥', patient: '顾某，女，三十', unlocked: false },
+      { id: 'qixue-10', title: '痰饮·悬饮', patient: '侯某，男，五十有六', unlocked: false },
+    ],
+  }
+};
+
+export default MEDICAL_CASES;

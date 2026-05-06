@@ -488,18 +488,19 @@ export class GardenScene extends Phaser.Scene {
   }
 
   /**
-   * S10: 进入炮制游戏
+   * S10/Phase 2.5: P键进入炮制游戏（HTML嵌入版本）
    */
   private startProcessing(): void {
     this.eventBus.emit(GameEvents.SCENE_SWITCH, {
       from: SCENES.GARDEN,
-      to: SCENES.PROCESSING
+      to: SCENES.PAOZHI
     });
 
-    console.log('[GardenScene] Starting processing...');
+    console.log('[GardenScene] Starting paozhi (processing)...');
 
-    // 切换到炮制场景
-    this.scene.start(SCENES.PROCESSING, {});
+    // 切换到炮制场景（HTML嵌入版本）
+    this.scene.launch(SCENES.PAOZHI, {});
+    this.scene.pause();
   }
 
   shutdown(): void {

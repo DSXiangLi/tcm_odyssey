@@ -1036,7 +1036,8 @@ export class ClinicScene extends Phaser.Scene {
 
     // Phase 2 S5: C键打开病案列表
     if (Phaser.Input.Keyboard.JustDown(this.casesOpenKey) && !this.isTransitioning) {
-      this.showCasesList();
+      // Phase 2.5: 启动病案集场景（HTML 直接迁移版本）
+      this.scene.launch(SCENES.CASEBOOK, {});
     }
 
     // Phase 2 S8: B键打开背包

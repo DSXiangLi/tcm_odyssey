@@ -1,0 +1,339 @@
+/* src/ui/html/paozhi.css
+ * 炮制游戏样式
+ *
+ * 包含：设计令牌、背景效果、字体类、动画关键帧、透明背景嵌入
+ */
+
+/* ── Design tokens — 古朴风格 ────────────────────────── */
+:root {
+  --bg-1: #e8dcc4;
+  --bg-2: #d6c098;
+  --bg-3: #b89970;
+  --paper: #f4e9d2;
+  --paper-warm: #ecdfc0;
+  --paper-dark: #d9c69a;
+  --paper-edge: #b89870;
+  --ink: #2b1f15;
+  --ink-soft: #4a3a28;
+  --ink-faint: #6b5942;
+  --vermilion: #b9341c;
+  --vermilion-deep: #8b2412;
+  --persimmon: #d97842;
+  --jade: #4a6b4d;
+  --jade-deep: #2f4730;
+  --gold: #b8893a;
+  --gold-soft: #d9b56a;
+  --bronze: #6e4a22;
+  --bronze-deep: #3a2010;
+  --shadow: rgba(40, 25, 10, .25);
+  --frame: rgba(60, 40, 20, .35);
+  --frame-soft: rgba(60, 40, 20, .18);
+  --noise-op: .5;
+  --vignette: rgba(40, 25, 10, .42);
+}
+
+/* ── Transparent background embedding for Phaser ────────────────────────── */
+#paozhi-react-root {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  pointer-events: auto;
+  /* Transparent background to show Phaser game underneath */
+  background: transparent;
+}
+
+#paozhi-react-root > div {
+  /* Main game container with full background */
+  position: relative;
+  width: 100vw;
+  height: 100vh;
+}
+
+/* ── Base styles ────────────────────────── */
+* { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; height: 100%; }
+
+#paozhi-react-root body,
+#paozhi-react-root .game-body {
+  font-family: "Noto Serif SC", "ZCOOL XiaoWei", serif;
+  color: var(--ink);
+  background:
+    radial-gradient(ellipse at 30% 15%, rgba(244,233,210,.7) 0%, transparent 50%),
+    radial-gradient(ellipse at 70% 90%, rgba(110,74,34,.15) 0%, transparent 55%),
+    radial-gradient(ellipse at 50% 50%, var(--bg-1) 0%, var(--bg-2) 60%, var(--bg-3) 100%);
+  overflow: hidden;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+/* ── Paper grain via SVG noise ────────────────────────── */
+#paozhi-react-root .paper-grain::before {
+  content: "";
+  position: fixed; inset: 0;
+  pointer-events: none;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='240' height='240'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.18  0 0 0 0 0.13  0 0 0 0 0.08  0 0 0 0.6 0'/></filter><rect width='100%' height='100%' filter='url(%23n)' opacity='1'/></svg>");
+  opacity: var(--noise-op);
+  mix-blend-mode: multiply;
+  z-index: 1;
+}
+
+/* ── Vignette overlay ────────────────────────── */
+#paozhi-react-root .vignette::after {
+  content: "";
+  position: fixed; inset: 0;
+  pointer-events: none;
+  background: radial-gradient(ellipse at center, transparent 50%, var(--vignette) 100%);
+  z-index: 2;
+}
+
+/* ── Font classes ────────────────────────── */
+.f-han {
+  font-family: "Ma Shan Zheng", "ZCOOL XiaoWei", "Noto Serif SC", serif;
+  font-weight: 400;
+  letter-spacing: .04em;
+}
+
+.f-seal {
+  font-family: "ZCOOL XiaoWei", "Noto Serif SC", serif;
+  letter-spacing: .12em;
+}
+
+.f-body {
+  font-family: "Noto Serif SC", serif;
+}
+
+.f-ui {
+  font-family: "Noto Sans SC", "Noto Serif SC", sans-serif;
+}
+
+/* ── Scrollbar inside dark scroll ────────────────────────── */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-thumb { background: var(--ink-faint); border-radius: 3px; }
+::-webkit-scrollbar-track { background: transparent; }
+
+/* ── Prevent dragging native images ────────────────────────── */
+img { -webkit-user-drag: none; user-drag: none; }
+
+/* ── Keyframe Animations ────────────────────────── */
+
+/* Particle rise animation */
+@keyframes pt-rise {
+  0% { transform: translate(0,0) scale(.4); opacity: 0; }
+  15% { opacity: 1; }
+  100% { transform: translate(var(--drift), calc(-1 * var(--rise))) scale(1.6); opacity: 0; }
+}
+
+/* Soft pulse for buttons and elements */
+@keyframes pulse-soft {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.04); }
+}
+
+/* Tiny shake for spatula hint */
+@keyframes shake-tiny {
+  0%, 100% { transform: translate(0,0) rotate(0); }
+  25% { transform: translate(-1px,1px) rotate(-.4deg); }
+  75% { transform: translate(1px,-1px) rotate(.4deg); }
+}
+
+/* Float up animation */
+@keyframes float-up {
+  0% { transform: translateY(8px); opacity: 0; }
+  100% { transform: translateY(0); opacity: 1; }
+}
+
+/* Glow pulse for hot elements */
+@keyframes glow-pulse {
+  0%, 100% { filter: drop-shadow(0 0 8px rgba(255,140,40,.4)); }
+  50% { filter: drop-shadow(0 0 24px rgba(255,200,80,.85)); }
+}
+
+/* Scroll unfurl animation */
+@keyframes scroll-unfurl {
+  0% { transform: scaleY(0); opacity: 0; }
+  100% { transform: scaleY(1); opacity: 1; }
+}
+
+/* Herb tumble animation for frying */
+@keyframes herb-tumble {
+  0% { transform: translateY(0) rotate(0deg); }
+  50% { transform: translateY(-8px) rotate(180deg); }
+  100% { transform: translateY(0) rotate(360deg); }
+}
+
+/* Fade in animation */
+@keyframes fade-in {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Slice flash animation for cutting */
+@keyframes slice-flash {
+  0% { transform: translateX(-40px) rotate(-30deg); opacity: 0; }
+  30% { opacity: 1; }
+  100% { transform: translateX(40px) rotate(15deg); opacity: 0; }
+}
+
+/* Ripple animation */
+@keyframes ripple {
+  0% { transform: scale(.3); opacity: 1; }
+  100% { transform: scale(2); opacity: 0; }
+}
+
+/* ── Common component styles ────────────────────────── */
+
+/* Slot container */
+.slot-container {
+  width: 116px;
+  height: 116px;
+  border-radius: 2px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  position: relative;
+  transition: all .25s;
+}
+
+/* Result modal overlay */
+.result-modal-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 100;
+  background: rgba(20,12,4,.6);
+  backdrop-filter: blur(6px);
+  display: grid;
+  place-items: center;
+  animation: fade-in .4s;
+}
+
+/* Result modal content */
+.result-modal-content {
+  width: 480px;
+  padding: 40px;
+  background: linear-gradient(180deg, var(--paper) 0%, var(--paper-warm) 50%, var(--paper-dark) 100%);
+  border: 1px solid var(--bronze);
+  border-radius: 3px;
+  box-shadow:
+    0 30px 80px rgba(0,0,0,.55),
+    inset 0 0 0 1px rgba(255,255,255,.4),
+    inset 0 0 0 6px var(--paper),
+    inset 0 0 0 7px var(--vermilion);
+  text-align: center;
+  position: relative;
+}
+
+/* Vessel rack container */
+.vessel-rack {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 12px 6px 16px;
+  background: linear-gradient(180deg, rgba(110,74,34,.22) 0%, rgba(110,74,34,.10) 100%);
+  border: 1px solid var(--frame);
+  border-radius: 2px;
+  box-shadow: inset 0 0 0 1px rgba(255,235,200,.25), 0 4px 10px rgba(40,25,10,.18);
+}
+
+/* Bottom shelf (药库) */
+.bottom-shelf {
+  position: relative;
+  padding: 10px 16px 14px;
+  background: linear-gradient(180deg, #6e4a22 0%, #5a3a18 50%, #3a2010 100%);
+  border-top: 2px solid #2a1408;
+  box-shadow: inset 0 6px 12px rgba(0,0,0,.4), 0 -2px 6px rgba(0,0,0,.2);
+}
+
+/* Drawer slot in药库 */
+.drawer-slot {
+  flex: 0 0 110px;
+  height: 116px;
+  padding: 0;
+  appearance: none;
+  border: 0;
+  border-radius: 2px;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+}
+
+/* Primary button style */
+.btn-primary {
+  appearance: none;
+  border: 0;
+  background: linear-gradient(180deg, #c8442a, #b9341c 60%, #8b2412);
+  color: #f4e9d2;
+  padding: 13px 48px;
+  border-radius: 2px;
+  cursor: pointer;
+  font-family: "Ma Shan Zheng", serif;
+  font-size: 24px;
+  letter-spacing: .4em;
+  padding-left: calc(48px + .4em);
+  box-shadow:
+    0 6px 16px rgba(60,20,10,.45),
+    inset 0 -2px 0 rgba(0,0,0,.3),
+    inset 0 1px 0 rgba(255,200,170,.3);
+}
+
+/* Secondary button style */
+.btn-secondary {
+  appearance: none;
+  border: 1px solid var(--vermilion);
+  background: var(--vermilion);
+  color: #f4e9d2;
+  padding: 8px 22px;
+  border-radius: 3px;
+  cursor: pointer;
+  font-family: "Ma Shan Zheng", serif;
+  font-size: 16px;
+  letter-spacing: .15em;
+}
+
+/* Progress bar */
+.progress-bar {
+  width: 320px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  align-items: center;
+}
+
+.progress-bar-track {
+  width: 100%;
+  height: 6px;
+  background: rgba(40,25,10,.18);
+  border-radius: 3px;
+  overflow: hidden;
+  border: 1px solid var(--frame);
+}
+
+.progress-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--gold), var(--vermilion));
+  transition: width .25s, background .3s;
+}
+
+/* Close button */
+.close-btn {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  appearance: none;
+  border: 1px solid var(--frame);
+  background: rgba(244,233,210,.7);
+  color: var(--ink-soft);
+  padding: 4px 10px;
+  border-radius: 3px;
+  cursor: pointer;
+  font-family: "Noto Sans SC", sans-serif;
+  font-size: 11px;
+}

@@ -14,6 +14,10 @@ import { ProcessingScene } from '../scenes/ProcessingScene';
 import { PlantingScene } from '../scenes/PlantingScene';
 // Phase 2.5: 诊断场景（HTML 直接迁移，整合舌诊/脉诊/问诊/辨证/选方）
 import { DiagnosisScene } from '../scenes/DiagnosisScene';
+// Phase 2.5: 病案集场景（HTML 直接迁移）
+import { CasebookScene } from '../scenes/CasebookScene';
+// Phase 2.5: 炮制场景（HTML 直接迁移）
+import { PaozhiScene } from '../scenes/PaozhiScene';
 // 以下场景已废弃，由 DiagnosisScene 整合：
 // - InquiryScene (问诊) - 已合并到 DiagnosisScene.wenzhen 阶段
 // - PulseScene (脉诊) - 已合并到 DiagnosisScene.pulse 阶段
@@ -52,7 +56,11 @@ export const gameConfig: Phaser.Types.Core.GameConfig = {
     // Phase 2 S11: 种植场景
     PlantingScene,
     // Phase 2.5: 诊断场景（HTML 直接迁移）
-    DiagnosisScene
+    DiagnosisScene,
+    // Phase 2.5: 病案集场景（HTML 直接迁移）
+    CasebookScene,
+    // Phase 2.5: 炮制场景（HTML 直接迁移）
+    PaozhiScene
   ],
   scale: {
     mode: Phaser.Scale.FIT,

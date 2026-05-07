@@ -1,8 +1,8 @@
 # HTML小游戏嵌入尺寸规范
 
-**日期**: 2026-05-07
+**日期**: 2026-05-08
 **阶段**: Phase 2.5
-**状态**: 规范文档
+**状态**: 规范文档 - 已更新
 
 ---
 
@@ -17,29 +17,26 @@ Phase 2.5将多个HTML小游戏嵌入到Phaser主游戏中。发现所有小游�
 
 ## 2. 游戏窗口标准
 
-**Phaser游戏窗口尺寸**: 800px × 600px
+**Phaser游戏窗口尺寸**: **1280px × 720px**
 
-**配置位置**: `src/config/game.config.ts`
+**配置位置**: `src/data/constants.ts`
 
 ```typescript
-export const GAME_CONFIG: Phaser.Types.Core.GameConfig = {
-  width: 800,
-  height: 600,
-  // ...
-};
+export const GAME_WIDTH = 1280;
+export const GAME_HEIGHT = 720;
 ```
 
 ---
 
 ## 3. HTML小游戏尺寸现状
 
-| 游戏 | 当前尺寸 | 超出程度 | 状态 |
-|------|----------|----------|------|
-| **病案集** | min(1400px, 96vw) × min(880px, 92vh) | 140% × 147% | ❌ 需修复 |
-| **诊断游戏** | 1150px × 680px | 144% × 113% | ❌ 需修复 |
-| **煎药游戏** | 1150px × 680px | 144% × 113% | ❌ 需修复 |
-| **炮制游戏** | 100vw × 100vh | 全屏 | ❌ 需修复 |
-| **背包游戏** | 90vw max-1200px × 85vh max-700px | 响应式 | ⚠️ 需优化 |
+| 游戏 | 当前尺寸 | 边距 | 状态 |
+|------|----------|------|------|
+| **病案集** | min(1150px, 90vw) × min(680px, 85vh) | 130×40 (10%×5.6%) | ✅ 已修复 |
+| **诊断游戏** | 1150px × 680px | 130×40 (10%×5.6%) | ✅ 合理 |
+| **煎药游戏** | 1150px × 680px | 130×40 (10%×5.6%) | ✅ 合理 |
+| **炮制游戏** | min(1150px, 90vw) × min(680px, 85vh) | 130×40 (10%×5.6%) | ✅ 已修复 |
+| **背包游戏** | 90vw max-1200px × 85vh max-700px | 响应式 | ✅ 相对合理 |
 
 ---
 
@@ -47,137 +44,134 @@ export const GAME_CONFIG: Phaser.Types.Core.GameConfig = {
 
 ### 4.1 核心原则
 
-**HTML小游戏容器尺寸必须适配游戏窗口（800×600）**
+**HTML小游戏容器尺寸必须适配游戏窗口（1280×720）**
 
 ### 4.2 推荐尺寸方案
 
-#### 方案A: 固定尺寸（推荐用于静态UI）
+#### 标准尺寸（推荐）
 
 ```css
 .container {
-  width: 760px;   /* 800 - 40px边距 */
-  height: 560px;  /* 600 - 40px边距 */
+  width: min(1150px, 90vw);
+  height: min(680px, 85vh);
 }
 ```
 
-#### 方案B: 响应式尺寸（推荐用于动态内容）
+**理由**:
+- 1150×680 占据游戏窗口 90%×94%
+- 预留边距 130×40 (10%×5.6%)
+- 与诊断/煎药游戏保持一致
+
+#### 方案A: 固定尺寸（静态UI）
 
 ```css
 .container {
-  width: min(760px, 90vw);   /* 最大760px，响应式 */
-  height: min(560px, 85vh);  /* 最大560px，响应式 */
+  width: 1150px;
+  height: 680px;
 }
 ```
 
-#### 方案C: 内容自适应（推荐用于滚动内容）
+#### 方案B: 响应式尺寸（动态内容）
 
 ```css
 .container {
-  max-width: 760px;
-  max-height: 560px;
-  overflow: auto;  /* 内容超出时滚动 */
+  width: min(1150px, 90vw);
+  height: min(680px, 85vh);
 }
 ```
 
 ---
 
-## 5. 各游戏推荐方案
+## 5. 各游戏实际方案
 
-### 5.1 病案集 (CasebookUI)
+### 5.1 病案集 (CasebookUI) ✅
 
-**当前**: `width: min(1400px, 96vw); height: min(880px, 92vh);`
+**修复历程**:
+- 初次错误: `min(760px, 90vw) × min(560px, 85vh)` (误以为800×600窗口)
+- 正确修复: `min(1150px, 90vw) × min(680px, 85vh)` (适配1280×720窗口)
 
-**推荐**: 方案B（响应式）
+**CSS位置**: `src/ui/html/casebook.css:65-73`
 
 ```css
 .book {
-  width: min(760px, 90vw);   /* 减小到760px */
-  height: min(560px, 85vh);  /* 减小到560px */
+  width: min(1150px, 90vw);
+  height: min(680px, 85vh);
 }
 ```
 
-**理由**:
-- 病案集内容丰富，需要响应式适配
-- 使用min()确保在不同屏幕上合理显示
-- 内容区域启用滚动
+### 5.2 诊断游戏 (DiagnosisUI) ✅
 
-### 5.2 诊断游戏 (DiagnosisUI)
-
-**当前**: `width: 1150px; height: 680px;`
-
-**推荐**: 方案A（固定尺寸）
+**CSS位置**: `src/ui/html/diagnosis.css:92-94`
 
 ```css
-.diagnosis-container {
-  width: 760px;
-  height: 560px;
+.app {
+  width: 1150px;
+  height: 680px;
 }
 ```
 
-**理由**:
-- 诊断流程固定，内容相对静态
-- 固定尺寸确保UI元素位置稳定
-- 5个阶段内容需重新布局优化
+**注释**: 游戏视窗1280x720，弹窗1150x700留约5-10%边距
 
-### 5.3 煎药游戏 (DecoctionUI)
+### 5.3 煎药游戏 (DecoctionUI) ✅
 
-**当前**: `width: 1150px; height: 680px;`
-
-**推荐**: 方案A（固定尺寸）
+**CSS位置**: `src/ui/html/decoction.css:49`
 
 ```css
-.decoction-ui {
-  width: 760px;
-  height: 560px;
+.scroll {
+  width: 1150px;
+  height: 680px;
 }
 ```
 
-**理由**:
-- 煎药流程固定，药材架和煎药壶位置固定
-- 固定尺寸确保交互区域合理分布
+### 5.4 炮制游戏 (PaozhiUI) ✅
 
-### 5.4 炮制游戏 (PaozhiUI)
+**修复历程**:
+- 初次错误: `100vw × 100vh` (全屏)
+- 正确修复: `min(1150px, 90vw) × min(680px, 85vh)` (适配窗口)
 
-**当前**: `width: 100vw; height: 100vh;`
-
-**推荐**: 方案B（响应式）
+**CSS位置**: `src/ui/html/paozhi.css:48-53`
 
 ```css
-.paozhi-root {
-  width: min(760px, 90vw);
-  height: min(560px, 85vh);
+#paozhi-react-root > div {
+  width: min(1150px, 90vw);
+  height: min(680px, 85vh);
 }
 ```
 
-**理由**:
-- 炮制界面有药材库、器皿架、任务卷轴
-- 响应式确保各区域合理分布
-- 拖拽交互需要足够空间
+### 5.5 背包游戏 (InventoryUI) ✅
 
-### 5.5 背包游戏 (InventoryUI)
-
-**当前**: `width: 90vw max-1200px; height: 85vh max-700px;`
-
-**推荐**: 方案C（优化现有）
+**CSS位置**: `src/ui/html/inventory.css:80-85`
 
 ```css
-.inventory-root {
-  width: min(760px, 90vw);
-  max-width: 760px;  /* 限制最大宽度 */
-  height: min(560px, 85vh);
-  max-height: 560px; /* 限制最大高度 */
+.main-container {
+  width: 90vw;
+  max-width: 1200px;
+  height: 85vh;
+  max-height: 700px;
 }
 ```
 
-**理由**:
-- 背包已有响应式设计，只需限制最大尺寸
-- 药材网格需要滚动，overflow已启用
+**备注**: 已有响应式设计，相对合理，无需修改
 
 ---
 
-## 6. CSS样式规范
+## 6. 尺寸对比验证
 
-### 6.1 透明背景嵌入
+### 实际占比计算
+
+| 游戏 | 尺寸 | 占据窗口比例 |
+|------|------|-------------|
+| 病案集 | 1150×680 | 89.8% × 94.4% |
+| 诊断游戏 | 1150×680 | 89.8% × 94.4% |
+| 煎药游戏 | 1150×680 | 89.8% × 94.4% |
+| 炮制游戏 | 1150×680 | 89.8% × 94.4% |
+| 背包游戏 | 动态 | 响应式 |
+
+---
+
+## 7. CSS样式规范
+
+### 7.1 透明背景嵌入
 
 所有HTML小游戏必须保持透明背景：
 
@@ -199,7 +193,7 @@ export const GAME_CONFIG: Phaser.Types.Core.GameConfig = {
 }
 ```
 
-### 6.2 内容滚动
+### 7.2 内容滚动
 
 内容超出时启用优雅滚动：
 
@@ -209,78 +203,58 @@ export const GAME_CONFIG: Phaser.Types.Core.GameConfig = {
   scrollbar-width: thin;
   scrollbar-color: rgba(60,40,20,0.4) transparent;
 }
-
-.content-area::-webkit-scrollbar {
-  width: 4px;
-}
-
-.content-area::-webkit-scrollbar-thumb {
-  background: rgba(60,40,20,0.4);
-  border-radius: 2px;
-}
 ```
 
 ---
 
-## 7. 验收标准
+## 8. 验收标准
 
-### 7.1 尺寸验收
+### 8.1 尺寸验收
 
-- [ ] UI容器不超过800×600
-- [ ] UI在游戏窗口内完整可见
-- [ ] 无需滚动即可看到主要交互元素
-- [ ] 响应式适配不同屏幕比例
+- [x] UI容器不超过1280×720
+- [x] UI占据窗口约90%×94%
+- [x] 预留边距10%×5.6%
+- [x] 无需滚动即可看到主要交互元素
 
-### 7.2 视觉验收
+### 8.2 一致性验收
 
-- [ ] 透明背景正确显示底层游戏
-- [ ] UI与主游戏风格一致
-- [ ] 字体、颜色、边距统一
-
-### 7.3 交互验收
-
-- [ ] 所有按钮在可视范围内
-- [ ] 拖拽区域合理分布
-- [ ] 滚动条样式统一
+- [x] 病案集/诊断/煎药/炮制尺寸一致
+- [x] 透明背景正确显示底层游戏
+- [x] UI与主游戏风格一致
 
 ---
 
-## 8. 实施优先级
+## 9. 更新记录
 
-### P0 (立即修复)
-
-1. **病案集** - 用户已反馈，影响体验
-
-### P1 (优先修复)
-
-2. **诊断游戏** - 核心功能，影响学习流程
-3. **煎药游戏** - 核心功能，影响学习流程
-
-### P2 (后续优化)
-
-4. **炮制游戏** - Phase 2.5新增，可逐步优化
-5. **背包游戏** - 已有响应式，只需调整最大值
+| 日期 | 游戏 | 修改内容 |
+|------|------|----------|
+| 2026-05-07 | 病案集 | 初次错误修复为760×560 (误判窗口尺寸) |
+| 2026-05-08 | 病案集 | 正确修复为1150×680 (适配真实窗口1280×720) |
+| 2026-05-08 | 炮制游戏 | 从全屏调整为1150×680 |
 
 ---
 
-## 9. 相关文件
+## 10. 经验教训
 
-- **设计文档**: `docs/superpowers/specs/phase2.5/2026-05-06-casebook-paozhi-embedding-design.md`
-- **经验总结**: `docs/superpowers/experience/2026-05-07-html-game-size-issue.md`
+**关键教训**: 游戏窗口尺寸必须从配置文件确认，不能凭猜测
+
+**正确流程**:
+1. 检查 `src/data/constants.ts` 或 `src/config/game.config.ts`
+2. 确认真实窗口尺寸 (GAME_WIDTH × GAME_HEIGHT)
+3. 按此标准设计所有HTML小游戏
+
+---
+
+## 11. 相关文件
+
 - **CSS文件**:
   - `src/ui/html/casebook.css`
   - `src/ui/html/diagnosis.css`
   - `src/ui/html/decoction.css`
   - `src/ui/html/paozhi.css`
   - `src/ui/html/inventory.css`
-
----
-
-## 10. 更新记录
-
-| 日期 | 游戏 | 修改内容 |
-|------|------|----------|
-| 2026-05-07 | 病案集 | 尺寸从1400×880调整为760×560 |
+- **配置文件**: `src/data/constants.ts`
+- **经验总结**: `docs/superpowers/experience/2026-05-07-html-game-size-issue.md`
 
 ---
 

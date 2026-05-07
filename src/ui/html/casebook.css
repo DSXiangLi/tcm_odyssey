@@ -61,11 +61,11 @@ html, body {
   justify-content: center;
 }
 
-/* 书本容器 - 适配游戏窗口800x600 */
+/* 书本容器 - 适配游戏窗口1280x720 */
 .book {
   position: relative;
-  width: min(760px, 90vw);
-  height: min(560px, 85vh);
+  width: min(1150px, 90vw);
+  height: min(680px, 85vh);
   display: grid;
   grid-template-columns: 1fr 1fr;
   filter: drop-shadow(0 30px 60px rgba(0,0,0,0.6))
@@ -107,7 +107,7 @@ html, body {
   opacity: 0.6;
 }
 
-/* 单页 - 适配小尺寸容器 */
+/* 单页 - 适配1150x680容器 */
 .page {
   position: relative;
   background:
@@ -115,7 +115,7 @@ html, body {
     radial-gradient(ellipse at 70% 80%, rgba(140,110,70,0.15), transparent 70%),
     linear-gradient(180deg, var(--paper-1) 0%, var(--paper-2) 100%);
   overflow: hidden;
-  padding: 32px 36px 40px;
+  padding: 56px 60px 64px;
 }
 
 .page.left { border-right: 1px solid rgba(60,40,20,0.15); }
@@ -173,10 +173,10 @@ html, body {
 .page-inner.detail-scroll::-webkit-scrollbar-track { background: transparent; }
 .page-inner.detail-scroll .page-num { position: relative; left: auto; right: auto; bottom: auto; margin: 24px auto 0; text-align: center; display: block; }
 
-/* 鱼尾·版心边框 - 适配小尺寸 */
+/* 鱼尾·版心边框 */
 .frame {
   position: absolute;
-  inset: 28px 32px;
+  inset: 40px 44px;
   border: 1px solid rgba(60,40,20,0.35);
   pointer-events: none;
   z-index: 1;
@@ -205,10 +205,10 @@ html, body {
 
 .cover-title .main {
   font-family: var(--font-brush);
-  font-size: 48px;
+  font-size: 64px;
   color: var(--ink-1);
-  letter-spacing: 8px;
-  text-indent: 8px;
+  letter-spacing: 12px;
+  text-indent: 12px;
   line-height: 1;
   text-shadow:
     1px 1px 0 rgba(255,250,235,0.3),
@@ -234,17 +234,17 @@ html, body {
   position: relative;
 }
 
-/* 朱印小图 - 适配小尺寸 */
+/* 朱印小图 */
 .seal-mini {
   position: absolute;
-  top: 8px;
-  right: 6px;
-  width: 48px;
-  height: 48px;
+  top: 10px;
+  right: 8px;
+  width: 56px;
+  height: 56px;
   background: var(--vermillion-2);
   color: #f5e8c8;
   font-family: var(--font-brush);
-  font-size: 18px;
+  font-size: 22px;
   display: grid;
   grid-template-columns: 1fr 1fr;
   place-items: center;
@@ -407,10 +407,10 @@ html, body {
 
 .right-header .cat-title {
   font-family: var(--font-brush);
-  font-size: 36px;
+  font-size: 44px;
   color: var(--ink-1);
-  letter-spacing: 6px;
-  text-indent: 6px;
+  letter-spacing: 8px;
+  text-indent: 8px;
 }
 
 .right-header .cat-sub {
@@ -451,15 +451,15 @@ html, body {
 }
 .case-grid::-webkit-scrollbar-track { background: transparent; }
 
-/* 单个病案卡 - 适配小尺寸 */
+/* 单个病案卡 */
 .case-card {
   position: relative;
-  padding: 12px 14px 10px;
+  padding: 16px 18px 14px;
   cursor: pointer;
   border: 1px solid rgba(60,40,20,0.3);
   background: rgba(255,248,225,0.4);
   transition: all 0.25s ease;
-  min-height: 70px;
+  min-height: 88px;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
@@ -489,10 +489,10 @@ html, body {
 
 .case-card .title {
   font-family: var(--font-elegant);
-  font-size: 16px;
+  font-size: 20px;
   color: var(--ink-1);
-  letter-spacing: 2px;
-  margin-bottom: 6px;
+  letter-spacing: 3px;
+  margin-bottom: 8px;
 }
 
 .case-card .patient {
@@ -549,18 +549,18 @@ html, body {
   opacity: 0.7;
 }
 
-/* 页码 - 适配小尺寸 */
+/* 页码 */
 .page-num {
   position: absolute;
-  bottom: 16px;
+  bottom: 22px;
   font-family: var(--font-elegant);
   font-size: 12px;
   color: var(--ink-3);
   letter-spacing: 4px;
   z-index: 3;
 }
-.page-num.left { left: 36px; }
-.page-num.right { right: 36px; }
+.page-num.left { left: 60px; }
+.page-num.right { right: 60px; }
 
 /* ============================================================
    病案详情视图
@@ -597,10 +597,10 @@ html, body {
 
 .detail-title .case-name {
   font-family: var(--font-brush);
-  font-size: 44px;
+  font-size: 56px;
   color: var(--ink-1);
-  letter-spacing: 8px;
-  text-indent: 8px;
+  letter-spacing: 10px;
+  text-indent: 10px;
   line-height: 1;
 }
 
@@ -713,7 +713,7 @@ html, body {
 
 .locked-state .big-q {
   font-family: var(--font-brush);
-  font-size: 180px;
+  font-size: 220px;
   color: rgba(168,50,50,0.15);
   line-height: 0.9;
   letter-spacing: -10px;
@@ -848,18 +848,18 @@ html, body {
 }
 
 .big-seal {
-  width: 90px;
-  height: 90px;
+  width: 110px;
+  height: 110px;
   background: var(--vermillion-2);
   color: #f5e8c8;
   display: grid;
   grid-template-columns: 1fr 1fr;
   place-items: center;
   font-family: var(--font-brush);
-  font-size: 32px;
+  font-size: 38px;
   line-height: 1;
   letter-spacing: 0;
-  border: 3px solid var(--vermillion-3);
+  border: 4px solid var(--vermillion-3);
   transform: rotate(-5deg);
   filter: url(#sealRough);
   flex-shrink: 0;

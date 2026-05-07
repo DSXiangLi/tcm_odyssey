@@ -48,8 +48,8 @@
 #paozhi-react-root > div {
   /* Main game container with full background */
   position: relative;
-  width: 100vw;
-  height: 100vh;
+  width: min(1150px, 90vw);
+  height: min(680px, 85vh);
 }
 
 /* ── Base styles ────────────────────────── */

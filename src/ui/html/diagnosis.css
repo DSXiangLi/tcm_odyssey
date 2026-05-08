@@ -88,10 +88,10 @@ html, body {
 }
 
 /* 主弹窗 - 比游戏视窗稍小，留合理边距 */
-/* 游戏视窗1280x720，弹窗1150x700留约5-10%边距 */
+/* 游戏视窗1280x720，弹窗1150x680留约5-10%边距 */
 .app {
-  width: 1150px;
-  height: 680px;
+  width: min(1150px, 90vw);
+  height: min(680px, 85vh);
   display: grid;
   grid-template-columns: 180px 1fr;
   background: var(--paper);

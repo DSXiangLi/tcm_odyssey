@@ -670,8 +670,6 @@ export default function PaozhiUI({ onClose, initialRecipeId = 'r1', onComplete }
     <div
       style={{
         position: 'relative',
-        width: '100vw',
-        height: '100vh',
         display: 'grid',
         gridTemplateColumns: '138px 1fr 240px',
         gridTemplateRows: '1fr auto',

@@ -1093,3 +1093,27 @@ html, body {
 .book {
   pointer-events: auto;
 }
+
+/* ============================================================
+   关闭按钮 - 与煎药游戏保持一致
+   ============================================================ */
+.close-btn {
+  position: absolute;
+  top: 50px;
+  right: 60px;
+  z-index: 10;
+  width: 44px;
+  height: 44px;
+  background: var(--vermillion-2, #8b3a1c);
+  border: 3px solid var(--ink-1, #1a1410);
+  color: #f4dba8;
+  font-family: "Noto Serif SC", serif;
+  font-size: 22px;
+  font-weight: 900;
+  cursor: pointer;
+  box-shadow: 2px 2px 0 rgba(0, 0, 0, 0.4), inset 1px 1px 0 rgba(255, 255, 255, 0.2);
+}
+
+.close-btn:hover {
+  background: var(--vermillion-1, #b9341c);
+}

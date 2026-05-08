@@ -116,13 +116,13 @@ export function InventoryUI({ onClose }: InventoryUIProps) {
       {/* 暗木桌面背景 */}
       <div className="wood-bg" />
 
-      {/* 关闭按钮 */}
-      <div className="close-btn" onClick={handleClose}>
-        ✕
-      </div>
-
       {/* 主容器布局 */}
       <div className="main-container">
+        {/* Close button - inside main-container */}
+        <button className="close-btn" onClick={handleClose}>
+          ×
+        </button>
+
         {/* 左卷 */}
         <ScrollPanel side="left">
           {renderView()}

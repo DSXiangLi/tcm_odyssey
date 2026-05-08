@@ -427,6 +427,10 @@ export default function CasebookUI({ onClose, initialCaseId, progress }: Caseboo
       <SvgDefs />
       <div className="desk">
         <div className={`book ${flipDir ? 'flipping' : ''}`}>
+          {/* Close button - inside book container */}
+          <button className="close-btn" onClick={handleClose}>
+            ×
+          </button>
           {/* 左页 */}
           <div className="page left">
             <div className="frame" />

@@ -322,18 +322,24 @@ img { -webkit-user-drag: none; user-drag: none; }
   transition: width .25s, background .3s;
 }
 
-/* Close button */
+/* Close button - 与煎药游戏保持一致 */
 .close-btn {
   position: absolute;
-  top: 12px;
-  right: 12px;
-  appearance: none;
-  border: 1px solid var(--frame);
-  background: rgba(244,233,210,.7);
-  color: var(--ink-soft);
-  padding: 4px 10px;
-  border-radius: 3px;
+  top: 50px;
+  right: 60px;
+  z-index: 10;
+  width: 44px;
+  height: 44px;
+  background: var(--vermilion-deep, #8b2412);
+  border: 3px solid var(--ink, #2b1f15);
+  color: #f4e9d2;
+  font-family: "Noto Serif SC", serif;
+  font-size: 22px;
+  font-weight: 900;
   cursor: pointer;
-  font-family: "Noto Sans SC", sans-serif;
-  font-size: 11px;
+  box-shadow: 2px 2px 0 rgba(0, 0, 0, 0.4), inset 1px 1px 0 rgba(255, 255, 255, 0.2);
+}
+
+.close-btn:hover {
+  background: var(--vermilion, #b9341c);
 }

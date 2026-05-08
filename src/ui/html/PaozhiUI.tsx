@@ -682,26 +682,9 @@ export default function PaozhiUI({ onClose, initialRecipeId = 'r1', onComplete }
         userSelect: 'none',
       }}
     >
-      {/* Close button */}
-      <button
-        onClick={handleClose}
-        style={{
-          position: 'absolute',
-          top: 10,
-          right: 10,
-          appearance: 'none',
-          border: '1px solid var(--frame)',
-          background: 'rgba(244,233,210,.7)',
-          color: 'var(--ink-soft)',
-          padding: '4px 10px',
-          borderRadius: 3,
-          cursor: 'pointer',
-          fontFamily: 'Noto Sans SC,sans-serif',
-          fontSize: 11,
-          zIndex: 100,
-        }}
-      >
-        关闭
+      {/* Close button - 与煎药游戏保持一致 */}
+      <button className="close-btn" onClick={handleClose}>
+        ×
       </button>
 
       {/* Quest scroll */}

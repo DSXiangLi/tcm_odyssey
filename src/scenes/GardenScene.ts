@@ -119,18 +119,20 @@ export class GardenScene extends Phaser.Scene {
     // Phase 2 S3: 创建NPC
     this.createNPC();
 
-    // 添加UI提示
+    // 添加UI提示 - 增强可见性
     this.add.text(10, 10, '老张药园 (Phase 1.5)', {
       fontSize: '16px',
       color: '#ffffff',
       backgroundColor: '#000000aa',
       padding: { x: 8, y: 4 }
-    }).setScrollFactor(0);
+    }).setScrollFactor(0).setDepth(100);
 
     this.add.text(10, 40, '按空格键返回室外 | 按G键种植 | 按P键炮制', {
-      fontSize: '12px',
-      color: '#aaaaaa'
-    }).setScrollFactor(0);
+      fontSize: '14px',
+      color: '#ffcc00',
+      backgroundColor: '#000000aa',
+      padding: { x: 8, y: 4 }
+    }).setScrollFactor(0).setDepth(100);
 
     this.eventBus.emit(GameEvents.SCENE_READY, { sceneName: SCENES.GARDEN });
     (window as any).__SCENE_READY__ = true;

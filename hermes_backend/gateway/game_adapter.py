@@ -116,12 +116,14 @@ _user_store: Optional[MockUserStore] = None
 
 def get_game_store() -> MockGameStore:
     """Get global game store."""
+    global _game_store
     if _game_store is None:
         _game_store = MockGameStore()
     return _game_store
 
 def get_user_store() -> MockUserStore:
     """Get global user store."""
+    global _user_store
     if _user_store is None:
         _user_store = MockUserStore()
     return _user_store

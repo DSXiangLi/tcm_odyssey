@@ -168,12 +168,17 @@ TRIGGER_MINIGAME_SCHEMA = {
 
 def trigger_minigame_handler(args: dict, **kw) -> dict:
     """Handle trigger_minigame tool call."""
+    # Use defaults for missing arguments to make handler more robust
+    game_type = args.get("game_type", "decoction")
+    case_id = args.get("case_id", "default_case")
+    difficulty = args.get("difficulty", 1)
+
     return {
         "status": "launched",
-        "session_id": f"game_{args['game_type']}_{args['case_id']}",
-        "game_type": args["game_type"],
-        "case_id": args["case_id"],
-        "difficulty": args.get("difficulty", 1)
+        "session_id": f"game_{game_type}_{case_id}",
+        "game_type": game_type,
+        "case_id": case_id,
+        "difficulty": difficulty
     }
 
 registry.register(

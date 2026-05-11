@@ -139,6 +139,15 @@ Crops the composite image and identifies each herb using Qwen VL.
 - **No watermark**: API configured to remove watermarks
 - **Quality settings**: Photography style, photorealistic detail
 - **Batch tracking**: Sequential numbering for multi-batch operations
+- **Reference image**: Uses style reference from `references/reference.png` (图生图模式)
+
+## Reference Image
+
+The skill uses a style reference image for consistent visual output:
+
+- **Location**: `skills/herb-specimen-generator/references/reference.png`
+- **Purpose**: Provides style guidance for generated images (图生图模式)
+- **Behavior**: Automatically loaded if present, skipped if missing
 
 ## Error Handling
 

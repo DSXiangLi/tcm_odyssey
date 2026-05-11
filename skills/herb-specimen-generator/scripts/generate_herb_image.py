@@ -88,9 +88,9 @@ def build_prompt(herb_names: List[str]) -> Tuple[str, str]:
     # 构建完整prompt
     prompt = (
         f"有一定透明度玻璃质感的背景、"
-        f"在一个图片中生成{names_str}这{count}种中药材的植物或动物形态的图鉴，"
+        f"在一个图片中生成{names_str}这{count}种中药材药用部分植物（动物）形态的图鉴，"
         f"要求1比1还原，摄影风格，完美还原植物（动物）细节，"
-        f"每个植物（动物）下方写明名称，名称无边框白色黑体字体，"
+        f"每个植物（动物）下方印刷级清晰度写明对应中药名称，名称为无边框白色黑体、黑体字体，"
         f"{layout}"
     )
 
@@ -119,6 +119,14 @@ def generate_image(herb_names: List[str], output_dir: Path, batch_num: int = 1) 
     print(f"  尺寸: 4096×4096 (4K)")
     print()
 
+    # 加载参考图片（从技能目录的references文件夹）
+    reference_path = Path(__file__).parent.parent / "references" / "reference.png"
+    reference_base64 = None
+    if reference_path.exists():
+        with open(reference_path, "rb") as f:
+            reference_base64 = base64.b64encode(f.read()).decode("utf-8")
+        print(f"  参考图: {reference_path.name} (已加载)")
+
     # 构建API请求
     headers = {
         "Authorization": f"Bearer {SEED_IMAGE_KEY}",
@@ -135,11 +143,13 @@ def generate_image(herb_names: List[str], output_dir: Path, batch_num: int = 1) 
         "sequential_image_generation": "disabled",  # 关闭组图生成（单张图片）
         # 提示词优化参数（可选，doubao-seedream-4.5/4.0支持）
         "optimize_prompt_options": {
-            "enabled": True,  # 启用提示词优化
-            "style": "photography",  # 摄影风格
-            "quality": "high"  # 高质量
+            "enabled": False,  # 启用提示词优化
         }
     }
+
+    # 添加参考图（图生图模式）
+    if reference_base64:
+        payload["image"] = f"data:image/png;base64,{reference_base64}"
 
     print(f"调用生图API...")
     print(f"  Prompt: {prompt[:100]}...")
@@ -148,7 +158,9 @@ def generate_image(herb_names: List[str], output_dir: Path, batch_num: int = 1) 
     print(f"    - size=4K (4096×4096)")
     print(f"    - response_format=b64_json")
     print(f"    - sequential_image_generation=disabled")
-    print(f"    - optimize_prompt_options: enabled=True, style=photography, quality=high")
+    if reference_base64:
+        print(f"    - image=reference.png (参考图模式)")
+    print(f"    - optimize_prompt_options: enabled=False")
 
     # 重试机制
     max_retries = 3

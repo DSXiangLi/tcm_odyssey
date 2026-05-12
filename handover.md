@@ -8,33 +8,29 @@
 
 ## 当前任务
 
-**建议**: 下一个session开始时，请执行：
-```
-/brainstorming
-```
-然后根据PROGRESS.md中的"下一步TODO"继续工作。
+**建议**: 下一个session开始时，请阅读 [PROGRESS.md](./PROGRESS.md)，重点关注末尾的"下一步TODO"部分。
 
-### 最近对话上下文
+### 最近对话摘要
 
 - 请帮我检查代码
-- 谢谢
+- 请更新文档
 
 ---
 
 ## PROGRESS 摘要
 
 请查看 [PROGRESS.md](./PROGRESS.md) 了解：
-- 当前进展状态
-- 已完成的任务
-- 下一步TODO（**重点关注**）
+- **当前进展状态**
+- **已完成的任务**
+- **下一步TODO** ⭐ （重点关注）
 
 ---
 
 ## STATE 摘要
 
 请查看 [STATE.md](./STATE.md) 了解：
-- 已完成的Phases
-- 当前Phase状态
+- **已完成的Phases**
+- **当前Phase状态**
 
 ---
 
@@ -47,4 +43,4 @@
 ---
 
 *本文档由 PreCompact Hook 自动生成*
-*建议：下一个session开始后，使用 /brainstorming 技能来深入分析当前任务*
+*建议：下一个session开始后，直接查看PROGRESS.md末尾的"下一步TODO"继续工作*

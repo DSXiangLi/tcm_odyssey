@@ -8,7 +8,7 @@
 
 ## 当前任务
 
-继续当前任务
+Reply with just: OK
 
 ### 关键词
 

@@ -2,17 +2,17 @@
 
 继续当前任务，参考 PROGRESS.md 和 STATE.md
 
-## 当前状态
+---
 
-- **项目**: 药灵山谷 (Yaoling Shangu)
-- **阶段**: Phase 2.5 Hermes NPC后端开发
-- **分支**: master
-- **本次会话**: 仅问候交流，无实质性开发进展
+## Session信息
 
-## 参考文档
+- **日期**: 2026-05-13
+- **时长**: 约2分钟
+- **交互**: 用户问候，助手回应
 
-| 文档 | 用途 |
-|------|------|
-| [PROGRESS.md](./PROGRESS.md) | 当前进行中任务 + 下一步TODO |
-| [STATE.md](./STATE.md) | 已完成阶段详情 |
-| [CLAUDE.md](./CLAUDE.md) | 项目架构 + 开发原则 |
+## 下一个Session应该知道
+
+1. 项目当前在 Phase 2.5，Hermes NPC后端基础完成
+2. 待开发模块：病案集(C键)、炮制(P键)、种植
+3. 如需开发工作，参考 PROGRESS.md 了解详细进展
+4. 如需了解已完成功能，参考 STATE.md

@@ -1,39 +1,46 @@
 # Handover 文档 - 2026-05-13 Session
 
 ## 当前任务
-PreCompact Hook 功能完善 - 实现智能文档更新系统
+PreCompact Hook 优化 - 从JSON输出改为Claude自主调用工具
 
-## 核心突破（已完成）
-- **Hook成功执行**：参考skill-creator/run_eval.py实现独立Claude进程
-- **关键技术**：`subprocess.Popen` + `--output-format stream-json` + 移除`CLAUDECODE`环境变量
-- **JSON流解析**：处理`stream_event`和`assistant`类型事件
+## 核心突破
+Hook成功实现了**三文档智能更新**（测试通过）：
 
-## 待处理任务（用户提出的新需求）
-Hook需要智能判断并更新三个文档：
-1. **handover.md**：每个session结束前必须更新
-2. **PROGRESS.md**：任务进展时更新（需判断是否有实质进展）
-3. **STATE.md**：Phase完全完成时追加（需判断Phase是否完成）
+| 文档 | 更新策略 | 状态 |
+|------|----------|------|
+| **handover.md** | 每session必须Write重写 | ✅ |
+| **PROGRESS.md** | 有实质进展时Edit追加 | ✅ |
+| **STATE.md** | Phase完全完成时Edit追加 | ✅ |
 
-## 关键挑战
-- 如何判断"实质进展"？（vs 仅咨询/分析）
-- 如何判断"Phase完成"？（vs Phase进展）
-- 如何让Claude子进程理解当前项目状态并做出智能判断？
+## 关键技术
+- **参考**: `skill-creator/run_eval.py` 独立Claude进程模式
+- **实现**: `subprocess.Popen` + `--output-format stream-json`
+- **关键**: 移除`CLAUDECODE`环境变量绕过嵌套检测
+- **新方案**: Claude自主使用Edit/Write工具，无需JSON输出
+
+## 待处理任务
+
+| 优先级 | 任务 | 状态 |
+|--------|------|------|
+| HIGH | Hook持续测试验证 | ✅ 初步通过 |
+| MEDIUM | 观察实际session中hook行为 | ⏳ |
 
 ## 执行步骤
-1. 设计prompt让Claude分析对话内容
-2. 定义清晰的判断规则（参考CLAUDE.md中的文档更新规则）
-3. Claude输出JSON格式的更新内容
-4. Hook解析JSON并写入对应文档
+1. Git备份核心文档（precompact开头）
+2. 解析JSONL transcript（保留最近5轮）
+3. 生成prompt（含当前文档状态）
+4. Claude子进程自主调用Edit/Write工具
+5. Git提交更新（docs: PreCompact auto-update）
 
 ## PROGRESS摘要
-- Hook基础实现完成 ✅（独立进程+流式JSON）
-- 新需求：智能三文档同步更新 ⏳
-- 当前状态：正在设计判断逻辑
+- Phase 2.5 Hermes后端 ✅ (19/19测试通过)
+- PreCompact Hook基础实现 ✅
+- Hook工具自主调用测试 ✅
 
 ## STATE摘要
-无新Phase完成，仅记录在PROGRESS.md
+无新Phase完成
 
 ## 参考文档
-- CLAUDE.md：文档职责划分 + 更新规则
-- skill-creator/run_eval.py：独立Claude进程调用模式
-- precompact-unified.py：当前Hook实现
+- `.claude/hooks/precompact-unified.py` - 当前Hook实现（419行）
+- `docs/superpowers/specs/phase{n}/` - 设计规范目录
+- `CLAUDE.md` - 文档职责划分规则

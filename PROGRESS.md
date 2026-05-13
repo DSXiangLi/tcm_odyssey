@@ -273,4 +273,39 @@ Error: Error during compaction: Error: Failed to generate conversation summary -
 |--------|------|------||
 | HIGH | 设计智能判断逻辑（实质进展 vs Phase完成） | ⏳ |
 | HIGH | 实现三文档同步更新机制 | ⏳ |
-| HIGH | 测试Hook完整功能 | ⏳ |
+| HIGH | 测试Hook完整功能 | ✅ |
+
+---
+
+## PreCompact Hook 工具自主调用优化 (2026-05-13)
+
+**重大改进**: 从JSON输出改为Claude自主使用工具
+
+### 用户需求
+"让Claude自主使用Edit/Write工具，不要JSON输出格式"
+
+### 实现变更
+
+| 变更点 | 原方案 | 新方案 |
+|--------|--------|--------|
+| 输出格式 | JSON结构化输出 | Claude自主调用工具 |
+| 文档更新 | Hook解析JSON后写入 | Claude直接Edit/Write |
+| 判断逻辑 | Hook硬编码规则 | Claude根据prompt自主判断 |
+
+### 新方案优势
+- Claude理解上下文后自主决策
+- Edit/Write工具精准定位修改
+- 无需推理完整文档内容
+- 更自然的文档维护方式
+
+### 测试验证
+Hook执行成功，Claude自主完成三文档更新
+
+---
+
+## 下一步 TODO
+
+| 优先级 | 任务 | 状态 |
+|--------|------|------|
+| MEDIUM | 观察实际session中hook行为 | ⏳ |
+| LOW | 优化prompt减少上下文消耗 | ⏳ |

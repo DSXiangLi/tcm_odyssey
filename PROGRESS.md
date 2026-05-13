@@ -223,3 +223,54 @@ Error: Error during compaction: Error: Failed to generate conversation summary -
 ---
 
 *本文档由 Claude Code 维护*
+
+---
+
+## PreCompact Hook 调试突破 (2026-05-13)
+
+**重大进展**: Hook成功执行 ✅
+
+### 技术突破
+参考skill-creator/run_eval.py，实现了独立Claude进程调用：
+
+| 技术 | 说明 |
+|------|------||
+| `subprocess.Popen` | 启动独立Claude进程 |
+| `--output-format stream-json` | 获取流式JSON输出 |
+| **移除`CLAUDECODE`环境变量** | 关键！绕过嵌套检测 |
+| `select.select()` | 等待输出就绪（非阻塞） |
+| JSON流事件解析 | 处理`stream_event`和`assistant`类型 |
+
+### 执行流程
+```
+1. Git备份核心文档
+2. 解析JSONL transcript（最近5轮对话）
+3. 生成prompt（含对话摘要+PROGRESS/STATE内容）
+4. 启动Claude子进程
+5. 流式解析JSON响应
+6. 提取assistant文本内容
+7. 写入handover.md
+```
+
+### 用户提出新需求
+不止需要更新handover，还需要智能同步更新三个文档：
+- **handover.md**：session结束前必须更新
+- **PROGRESS.md**：任务进展时更新（需判断实质进展）
+- **STATE.md**：Phase完全完成时追加（需判断Phase完成）
+
+### 当前挑战 ⏳
+- 如何让Hook智能判断"实质进展"？
+- 如何让Hook智能判断"Phase完成"？
+- 如何让Claude子进程理解项目状态并做出判断？
+
+---
+
+## 下一步 TODO
+
+### PreCompact Hook 功能完善
+
+| 优先级 | 任务 | 状态 |
+|--------|------|------||
+| HIGH | 设计智能判断逻辑（实质进展 vs Phase完成） | ⏳ |
+| HIGH | 实现三文档同步更新机制 | ⏳ |
+| HIGH | 测试Hook完整功能 | ⏳ |

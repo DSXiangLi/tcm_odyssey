@@ -8,58 +8,73 @@
 
 ## 当前任务
 
-Reply with just: OK
+实现 PreCompact Hook，使其能够自主调用 Claude CLI 更新 handover.md 和 PROGRESS.md。
 
-### 关键词
+### 关键进展
 
-无特定关键词
+**已发现正确实现方式**：
+- 参考 `skill-creator` skill 中的 eval 部分
+- 使用 `subprocess.Popen` + `--output-format stream-json`
+- **移除 `CLAUDECODE` 环境变量**（关键！）
+- 使用 `select` 等待流式输出
+- 解析 JSON 流事件
+
+### 待处理列表
+
+| 优先级 | 任务 | 状态 |
+|--------|------|------|
+| P0 | 按skill-creator eval模式重写PreCompact hook | 进行中 |
+| P1 | 测试hook能否自主更新文档 | 待验证 |
+| P2 | 验证PreCompact触发时文档自动更新 | 待验证 |
+
+### 执行步骤
+
+1. 研究 `~/.claude/skills/claude-api/skill-creator/skill.md` 中的 eval 实现部分
+2. 关键技术点：
+   - `subprocess.Popen` 启动独立进程
+   - `--output-format stream-json` 获取流式JSON输出
+   - 移除环境变量 `CLAUDECODE` 防止嵌套检测
+   - 使用 `select.select()` 等待输出就绪
+   - 解析 `{"type": "assistant", "message": ...}` 格式的JSON事件
+3. 更新 `.claude/hooks/precompact-unified.py` 实现
+4. 测试验证
 
 ---
 
 ## PROGRESS 摘要
 
-最近章节: 
-## 下一步 TODO
+**当前状态**: Phase 2.5 Hermes NPC后端开发 - 基础完成 ✅
 
-### Hermes NPC 后端开发 (hermes_dev分支)
-
-1. **创建 laozhang NPC** - 药园种植/炮制指导
-2. **创建 neighbor NPC** - 生活互动角色
-3. **真实数据存储** - MockGameStore → 实际游戏状态
-4. **工具执行反馈** - trigger_minigame → 实际场景切换
-5. **对话日志分析** - 教学效果可视化
-
----
-
-## PreCompact Hook 调试 (2026-05-12)
-
-**当前状态**: 正在调试 Hook 报错问题
-
-### 问题描述
-
-compact 命令执行时报错：
-```
-Error: Error during compaction: Error: Failed to generate conversation summary - response did not contain valid text content
-```
-
-### 已完成
-
-- 创建 precompact-unified.py hook 文件
-- 初步测试
+**已完成**:
+- Hermes Backend FastAPI服务 (localhost:8642)
+- SSE流式对话 + 6个游戏工具
+- NPC定义文件 (SOUL/MEMORY/SYLLABUS/TASKS)
+- E2E测试 19/19通过
 
 ---
 
 ## STATE 摘要
 
-Phase 2.5: UI组件系统统一化 ✅, Phase 2.5: 煎药小游戏 HTML 直接迁移 ✅ (2026-04-27), Phase 2.5: 诊断游戏 HTML 直接迁移 ✅ (2026-04-29), Phase 2.5: NPC AI验收系统 ✅ (2026-05-01), Phase 2.5: 背包系统 HTML 直接迁移 ✅ (2026-05-04), Phase 2.5: 病案集 HTML 嵌入 ✅ (2026-05-07), Phase 2.5: 炮制 HTML 嵌入 ✅ (2026-05-07), Phase 2.5: HTML游戏尺寸统一 ✅ (2026-05-08), Phase2 视觉验收自动化系统设计](docs/superpowers/specs/phase2/2026-04-15-phase2-visual-acceptance-design.md), Phase2 视觉验收自动化系统实现计划](docs/superpowers/plans/2026-04-15-phase2-visual-acceptance-implementation.md)
+| 阶段 | 状态 |
+|------|------|
+| Phase 1 | ✅ 项目框架与核心系统 |
+| Phase 1.5 | ✅ 游戏世界视觉呈现 |
+| Phase 2 | ✅ NPC Agent系统 (861测试) |
+| Phase 2.5 UI基础 | ✅ ModalUI基类+组件库 |
+| Phase 2.5 煎药 | ✅ HTML迁移+AI验收 |
+| Phase 2.5 诊断 | ✅ 5阶段10病案 |
+| Phase 2.5 NPC验收 | ✅ LLM评估器+19 E2E测试 |
+| Phase 2.5 背包 | ✅ 古卷轴UI+42/42测试通过 |
+| Phase 2.5 病案集 | ⏳ 设计完成，待执行 |
+| Phase 2.5 炮制 | ⏳ 设计完成，待执行 |
 
 ---
 
 ## 参考文档
 
-- **完整进度**: [PROGRESS.md](./PROGRESS.md)
-- **项目状态**: [STATE.md](./STATE.md)
-- **项目概览**: [CLAUDE.md](./CLAUDE.md)
+- [PROGRESS.md](./PROGRESS.md) - Hermes后端开发详情
+- [STATE.md](./STATE.md) - 已完成阶段详情
+- `~/.claude/skills/claude-api/skill-creator/skill.md` - eval独立进程实现参考
 
 ---
 

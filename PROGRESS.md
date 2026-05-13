@@ -174,4 +174,52 @@ hermes/npcs/neighbor/
 
 ---
 
+## PreCompact Hook 调试 (2026-05-12)
+
+**当前状态**: 正在调试 Hook 报错问题
+
+### 问题描述
+
+compact 命令执行时报错：
+```
+Error: Error during compaction: Error: Failed to generate conversation summary - response did not contain valid text content
+```
+
+### 已完成
+
+- 创建 precompact-unified.py hook 文件
+- 初步测试 hook 执行
+
+### 待处理
+
+1. 定位报错根本原因
+2. 检查 skill-creator 中的 eval 模块实现方式
+3. 修复 hook 使 compact 命令正常执行
+
+---
+
+## 下一步 TODO
+
+### PreCompact Hook 修复
+
+**优先级**: HIGH
+
+**待处理列表**:
+
+| 优先级 | 任务 | 状态 |
+|--------|------|------|
+| HIGH | 定位 PreCompact Hook 报错根本原因 | ⏳ |
+| HIGH | 检查 skill-creator 中 eval 模块实现方式 | ⏳ |
+| HIGH | 修复 hook 使 compact 命令正常执行 | ⏳ |
+
+**执行步骤**:
+
+1. 分析 precompact-unified.py 的当前实现
+2. 对比 skill-creator skill 中 eval 模块的 claude 命令调用方式
+3. 定位报错原因（response did not contain valid text content）
+4. 修复 hook 实现
+5. 测试 compact 命令执行
+
+---
+
 *本文档由 Claude Code 维护*

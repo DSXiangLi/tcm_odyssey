@@ -33,6 +33,7 @@ npm-debug.log*
 .cache/
 .npm/
 .eslintcache
+.worktrees/
 
 # Temporary files
 *.tmp

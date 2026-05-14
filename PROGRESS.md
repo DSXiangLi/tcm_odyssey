@@ -4,7 +4,7 @@
 **核心问题**: "我们正在做什么？进展如何？"
 **当前状态**: Phase 2.5 Hermes NPC后端开发 - 基础完成 ✅
 **当前分支**: `hermes_dev`
-**Git提交**: `f5912d8`
+**Git提交**: `e2e20de`
 
 ---
 
@@ -176,11 +176,18 @@ hermes/npcs/neighbor/
 
 ## 开发辅助维护 (2026-05-14)
 
-### Hooks 配置规范化 ✅
+### PreCompact Hook 优化 ✅
 
-**问题**: `.claude/hooks/hooks.json` 与 `.claude/settings.local.json` 重复配置
-**修复**: 删除 hooks.json，保留 settings.local.json
-**结果**: 配置符合 Claude Code 官方规范
+**重大改进**: 从JSON输出改为Claude自主使用工具
+
+| 变更点 | 原方案 | 新方案 |
+|--------|--------|--------|
+| 输出格式 | JSON结构化输出 | Claude自主调用工具 |
+| 文档更新 | Hook解析JSON后写入 | Claude直接Edit/Write |
+| 判断逻辑 | Hook硬编码规则 | Claude根据prompt自主判断 |
+| 输出累积 | 累积assistant文本 | 仅监控工具调用 |
+
+**实现文件**: `.claude/hooks/precompact-unified.py`
 
 ---
 

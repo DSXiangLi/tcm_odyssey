@@ -174,4 +174,14 @@ hermes/npcs/neighbor/
 
 ---
 
+## 开发辅助维护 (2026-05-14)
+
+### Hooks 配置规范化 ✅
+
+**问题**: `.claude/hooks/hooks.json` 与 `.claude/settings.local.json` 重复配置
+**修复**: 删除 hooks.json，保留 settings.local.json
+**结果**: 配置符合 Claude Code 官方规范
+
+---
+
 *本文档由 Claude Code 维护*

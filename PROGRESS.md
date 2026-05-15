@@ -191,4 +191,57 @@ hermes/npcs/neighbor/
 
 ---
 
+## 新任务启动：DialogUI HTML嵌入方案 (Phase 2.5) - 2026-05-15
+
+### 背景
+
+当前DialogUI.ts使用Phaser GameObject Container渲染，存在以下问题：
+1. 无富文本支持（无法显示加粗、变色）
+2. 无历史记录功能
+3. 古风卷轴风格无法完美呈现
+
+### 设计方案 ✅
+
+**设计文档**: `docs/superpowers/specs/phase2.5/2026-05-14-dialog-ui-html-embedding-design.md`
+
+| 章节 | 内容 |
+|------|------|
+| 问题定义 | 当前DialogUI缺陷分析 |
+| 边界定义 | 包含：药园青木对话、诊所NPC交互；不包含：诊断场景内对话 |
+| 系统集成 | React组件 + document.body挂载 + 事件桥接 |
+| 验收标准 | E2E测试 + AI验收 ≥ 85分 |
+
+### 实现计划 ✅
+
+**计划文档**: `docs/superpowers/plans/2026-05-14-dialog-ui-html-embedding.md`
+
+**10个任务**:
+| Task | 内容 | 关键文件 |
+|------|------|----------|
+| 1 | 事件桥接层 | `src/ui/dialog-events.ts` |
+| 2 | 教学数据库 | `src/ui/tcm-data.ts` |
+| 3 | 古风卷轴样式 | `src/ui/dialog.css` |
+| 4 | React入口挂载 | `src/ui/dialog-entry.tsx` |
+| 5 | DialogUI主组件 | `src/ui/DialogUI.tsx` |
+| 6 | GameStateBridge扩展 | `src/systems/GameStateBridge.ts` |
+| 7 | GardenScene集成 | `src/scenes/GardenScene.ts` |
+| 8 | ClinicScene集成 | `src/scenes/ClinicScene.ts` |
+| 9 | E2E测试 | `tests/e2e/dialog-ui.spec.ts` |
+| 10 | AI验收 | 验收脚本 |
+
+### 技术架构对比
+
+| 层面 | 当前 DialogUI.ts | HTML嵌入方案 |
+|------|------------------|--------------|
+| 渲染层 | Phaser GameObject Container | React组件 + document.body挂载 |
+| 样式 | Phaser Graphics绘制 | CSS + 古风字体 |
+| 数据流 | DialogUI ↔ SSEClient ↔ Hermes | React ↔ bridge/events ↔ Phaser ↔ Hermes |
+| 生命周期 | Phaser Scene管理 | entry文件createRoot/unmount |
+
+### 下一步
+
+执行实现计划，按Task 1-10顺序开发。
+
+---
+
 *本文档由 Claude Code 维护*

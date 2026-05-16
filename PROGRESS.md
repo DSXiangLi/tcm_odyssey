@@ -160,4 +160,20 @@ OpenAI Compatible LLM (对话生成)
 
 ---
 
+## 开发效率改进 (2026-05-16)
+
+### design-doc-reviewer 技能 ✅
+
+**改进内容**:
+- AskUserQuestion强制调用机制（Critical Requirements）
+- 中文分类术语强制使用
+- 语言策略明确：分类标题中文，分析内容匹配文档语言
+- 技能长度：211行 → 295行
+
+**目录调整**:
+- 技能文件移动到 `skills/` 目录
+- 安装位置：`~/.claude/skills/design-doc-reviewer`
+
+---
+
 *本文档由 Claude Code 维护*

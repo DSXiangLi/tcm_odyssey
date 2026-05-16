@@ -208,11 +208,39 @@ test.describe('NPC Dialog - Smoke Tests', () => {
     const dialogTitleText = await page.locator('.dialog-title').textContent().catch(() => '');
     const dialogSealText = await page.locator('.dialog-seal').textContent().catch(() => '');
 
-    // Verify scroll bar decoration exists
-    const scrollBarTopHeight = await page.locator('.scroll-bar-top').evaluate(el => el?.style?.height || '0px').catch(() => '0px');
-
     // Basic validation - dialog should exist with proper structure
     expect(dialogScrollVisible || dialogTitleText.includes('青木')).toBeTruthy();
+
+    // === 验收量化标准验证 (Section 6.3) ===
+
+    // 1. 卷轴顶部装饰高度24px
+    const scrollBarTopHeight = await page.locator('.scroll-bar-top')
+      .evaluate(el => window.getComputedStyle(el).height).catch(() => '0px');
+    expect(scrollBarTopHeight).toBe('24px');
+
+    // 2. 宣纸背景色
+    const paperBgColor = await page.locator('.dialog-paper')
+      .evaluate(el => window.getComputedStyle(el).backgroundColor).catch(() => '');
+    expect(paperBgColor).toBe('rgb(240, 230, 210)'); // #f0e6d2
+
+    // 3. 印章显示NPC首字
+    const sealText = await page.locator('.dialog-seal').textContent().catch(() => '');
+    expect(sealText).toMatch(/青|苏|老/); // NPC名字首字
+
+    // 4. 富文本hover效果
+    const herb = page.locator('.tcm-herb').first();
+    const herbExists = await herb.count().catch(() => 0);
+
+    if (herbExists > 0) {
+      await herb.hover();
+      await page.waitForTimeout(200);
+      const tooltipOpacity = await page.locator('.tcm-tooltip')
+        .evaluate(el => window.getComputedStyle(el).opacity).catch(() => '0');
+      expect(tooltipOpacity).toBe('1');
+    } else {
+      // If no herb element yet (waiting for NPC response), skip hover test
+      console.log('[NPC-S03] No .tcm-herb element found, skipping hover test');
+    }
   });
 });
 

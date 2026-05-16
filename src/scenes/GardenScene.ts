@@ -24,7 +24,7 @@ import { InventoryManager, createInventoryManager } from '../systems/InventoryMa
 import { showInventoryUI, hideInventoryUI } from '../ui/html/inventory-entry';
 // Phase 2 S3: NPC交互系统
 import { NPCInteractionSystem } from '../systems/NPCInteraction';
-import { showDialogUI, hideDialogUI } from '../ui/html/dialog-entry';
+import { showDialogUI } from '../ui/html/dialog-entry';
 import { getNPCById } from '../data/npc-config';
 
 interface MapData {

@@ -24,7 +24,7 @@ import { InventoryManager, createInventoryManager } from '../systems/InventoryMa
 import { showInventoryUI, hideInventoryUI } from '../ui/html/inventory-entry';
 // Phase 2 S3: NPC交互系统
 import { NPCInteractionSystem } from '../systems/NPCInteraction';
-import { DialogUI, DialogUIConfig } from '../ui/DialogUI';
+import { showDialogUI, hideDialogUI } from '../ui/html/dialog-entry';
 import { getNPCById } from '../data/npc-config';
 
 interface MapData {
@@ -57,7 +57,7 @@ export class GardenScene extends Phaser.Scene {
   // Phase 2 S3: NPC交互系统
   private npcSystem!: NPCInteractionSystem;
   private npcSprite!: Phaser.GameObjects.Image;
-  private dialogUI: DialogUI | null = null;
+  private dialogCleanup: (() => void) | null = null;
   private nearbyHintText: Phaser.GameObjects.Text | null = null;
 
   constructor() {
@@ -426,7 +426,7 @@ export class GardenScene extends Phaser.Scene {
 
     // 空格键返回室外
     // Phase 2 S3: 检查附近NPC触发（优先级高于场景切换）
-    if (!this.dialogUI) {
+    if (!this.dialogCleanup) {
       const nearbyNpc = this.npcSystem.checkNearbyTrigger(
         { x: this.player.x, y: this.player.y },
         SCENES.GARDEN
@@ -516,9 +516,9 @@ export class GardenScene extends Phaser.Scene {
     }
 
     // Phase 2 S3: 清理NPC系统
-    if (this.dialogUI) {
-      this.dialogUI.destroy();
-      this.dialogUI = null;
+    if (this.dialogCleanup) {
+      this.dialogCleanup();
+      this.dialogCleanup = null;
     }
     if (this.npcSystem) {
       this.npcSystem.destroy();
@@ -595,36 +595,24 @@ export class GardenScene extends Phaser.Scene {
    * Phase 2 S3: 显示指定NPC的对话界面
    */
   private showDialogWithNPC(npcId: string): void {
-    if (this.dialogUI) return;  // 已有对话界面显示
+    if (this.dialogCleanup) return;  // 已有对话显示
 
     const npc = getNPCById(npcId);
     if (!npc) return;
 
-    const dialogConfig: DialogUIConfig = {
+    this.dialogCleanup = showDialogUI({
       npcId: npc.id,
       npcName: npc.name,
-      npcSpriteKey: npc.spriteKey,
       playerId: 'player_001',
       onToolCall: (name, args) => this.handleToolCall(name, args),
-      onComplete: () => {
-        console.log(`[GardenScene] Dialog with ${npcId} complete`);
-        if (this.dialogUI) {
-          this.dialogUI.destroy();
-          this.dialogUI = null;
+      onClose: () => {
+        console.log(`[GardenScene] Dialog with ${npcId} closed`);
+        if (this.dialogCleanup) {
+          this.dialogCleanup();
+          this.dialogCleanup = null;
         }
       }
-    };
-
-    this.dialogUI = new DialogUI(
-      this,
-      this.cameras.main.width / 2,
-      this.cameras.main.height - 150,
-      dialogConfig
-    );
-    this.dialogUI.setScrollFactor(0);
-
-    // 显示输入对话框
-    this.dialogUI.showInputDialog();
+    });
   }
 
   /**

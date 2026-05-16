@@ -25,9 +25,6 @@ export { default as BaseUIComponent } from './base/BaseUIComponent';
 export { default as ModalUI, MODAL_SIZES, EXIT_BUTTON_POSITIONS } from './base/ModalUI';
 export type { ModalType } from './base/ModalUI';
 
-export { DialogUI } from './DialogUI';
-export type { DialogUIConfig } from './DialogUI';
-
 export { StreamingText } from './StreamingText';
 export type { StreamingTextConfig } from './StreamingText';
 

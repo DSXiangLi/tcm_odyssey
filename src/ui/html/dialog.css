@@ -1,0 +1,411 @@
+/* src/ui/html/dialog.css
+ * 对话UI · 古风卷轴样式
+ */
+
+@import url('https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;500;600;700;900&family=Ma+Shan+Zheng&family=ZCOOL+XiaoWei&display=swap');
+
+:root {
+  /* 纸张与墨 */
+  --paper: #f0e6d2;
+  --paper-deep: #e8d9b8;
+  --paper-light: #f7efde;
+  --paper-edge: #c9b489;
+  --ink: #1a1410;
+  --ink-soft: #3d2f24;
+  --ink-faint: #6b5841;
+
+  /* 朱砂、青黛、藤黄 */
+  --vermilion: #b3322a;
+  --vermilion-deep: #842018;
+  --vermilion-soft: #d65b4f;
+  --herb: #6b8e6b;
+  --acupoint: #b3322a;
+  --classic: #b8893f;
+  --symptom: #8a4a6b;
+
+  /* 字体 */
+  --font-serif: 'Noto Serif SC', 'STSong', 'SimSun', serif;
+  --font-cursive: 'Ma Shan Zheng', cursive;
+  --font-title: 'ZCOOL XiaoWei', 'Noto Serif SC', serif;
+}
+
+/* 全屏容器 */
+.dialog-root {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(20, 15, 10, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+/* 卷轴主体 */
+.dialog-scroll {
+  width: 480px;
+  max-height: 80vh;
+  position: relative;
+  padding: 16px 4px;
+  display: flex;
+  flex-direction: column;
+}
+
+/* 顶部木轴 - 高度24px */
+.scroll-bar-top {
+  height: 24px;
+  background: linear-gradient(180deg, #6b4a2a 0%, #8a6438 15%, #a07a48 50%, #8a6438 85%, #4a3018 100%);
+  border-radius: 2px;
+  box-shadow: inset 0 1px 0 rgba(255, 220, 160, 0.3), 0 2px 6px rgba(0, 0, 0, 0.2);
+  position: relative;
+}
+
+.scroll-bar-top::before,
+.scroll-bar-top::after {
+  content: '';
+  position: absolute;
+  top: -2px;
+  bottom: -2px;
+  width: 10px;
+  background: radial-gradient(ellipse at 50% 50%, #d4a85a 0%, #a07a3a 50%, #5a3a18 100%);
+  border-radius: 50%;
+}
+
+.scroll-bar-top::before { left: -6px; }
+.scroll-bar-top::after { right: -6px; }
+
+/* 底部木轴 */
+.scroll-bar-bottom {
+  height: 24px;
+  background: linear-gradient(180deg, #6b4a2a 0%, #8a6438 15%, #a07a48 50%, #8a6438 85%, #4a3018 100%);
+  border-radius: 2px;
+  box-shadow: inset 0 -1px 0 rgba(0, 0, 0, 0.3), 0 2px 6px rgba(0, 0, 0, 0.2);
+  position: relative;
+}
+
+.scroll-bar-bottom::before,
+.scroll-bar-bottom::after {
+  content: '';
+  position: absolute;
+  top: -2px;
+  bottom: -2px;
+  width: 10px;
+  background: radial-gradient(ellipse at 50% 50%, #d4a85a 0%, #a07a3a 50%, #5a3a18 100%);
+  border-radius: 50%;
+}
+
+.scroll-bar-bottom::before { left: -6px; }
+.scroll-bar-bottom::after { right: -6px; }
+
+/* 宣纸主体 - 背景色 #f0e6d2 */
+.dialog-paper {
+  flex: 1;
+  background-color: #f0e6d2;
+  background-image:
+    radial-gradient(ellipse at 20% 30%, rgba(180, 140, 90, 0.08) 0%, transparent 50%),
+    radial-gradient(ellipse at 80% 70%, rgba(140, 100, 60, 0.06) 0%, transparent 60%),
+    repeating-linear-gradient(90deg, transparent 0px, transparent 2px, rgba(120, 90, 50, 0.02) 2px, rgba(120, 90, 50, 0.02) 3px),
+    repeating-linear-gradient(0deg, transparent 0px, transparent 4px, rgba(120, 90, 50, 0.015) 4px, rgba(120, 90, 50, 0.015) 5px);
+  box-shadow: inset 0 8px 16px -8px rgba(80,50,20,0.25), inset 0 -8px 16px -8px rgba(80,50,20,0.25), 0 4px 16px rgba(60,40,20,0.2);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+/* 标题栏 */
+.dialog-header {
+  padding: 12px 20px 8px;
+  border-bottom: 1px solid rgba(120, 90, 50, 0.2);
+  background: linear-gradient(180deg, rgba(255, 250, 235, 0.4) 0%, transparent 100%);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.dialog-title {
+  font-family: var(--font-title);
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--ink);
+  letter-spacing: 0.2em;
+}
+
+.dialog-subtitle {
+  font-size: 10px;
+  color: var(--ink-faint);
+  letter-spacing: 0.15em;
+  margin-top: 2px;
+}
+
+/* 印章 - 显示NPC名字首字 */
+.dialog-seal {
+  width: 32px;
+  height: 32px;
+  background: var(--vermilion);
+  color: var(--paper-light);
+  font-family: var(--font-title);
+  font-size: 12px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 2px;
+  box-shadow: inset 0 0 0 1.5px rgba(247, 239, 222, 0.4);
+  transform: rotate(-3deg);
+}
+
+/* 对话历史 */
+.dialog-history {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px 20px;
+}
+
+.dialog-history::-webkit-scrollbar {
+  width: 6px;
+}
+
+.dialog-history::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.dialog-history::-webkit-scrollbar-thumb {
+  background: rgba(120, 90, 50, 0.25);
+  border-radius: 3px;
+}
+
+/* 消息样式 */
+.msg-narration {
+  font-size: 12px;
+  color: var(--ink-faint);
+  font-style: italic;
+  text-align: center;
+  margin: 8px 0 16px;
+  letter-spacing: 0.05em;
+  line-height: 1.7;
+}
+
+.msg-system {
+  font-size: 11px;
+  color: var(--vermilion);
+  text-align: center;
+  margin: 12px 0;
+  letter-spacing: 0.1em;
+  font-weight: 500;
+}
+
+.msg-npc {
+  margin-bottom: 16px;
+}
+
+.msg-npc-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+
+.msg-npc-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 1px solid var(--paper-edge);
+  background: repeating-linear-gradient(45deg, var(--paper-deep) 0px, var(--paper-deep) 5px, var(--paper) 5px, var(--paper) 10px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-cursive);
+  font-size: 16px;
+  color: var(--ink-soft);
+}
+
+.msg-npc-name {
+  font-family: var(--font-title);
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.msg-npc-title {
+  font-size: 10px;
+  color: var(--ink-faint);
+}
+
+.msg-npc-mood {
+  font-size: 10px;
+  color: var(--vermilion);
+  border: 1px solid var(--vermilion-soft);
+  padding: 2px 6px;
+  border-radius: 1px;
+  letter-spacing: 0.1em;
+}
+
+.msg-npc-text {
+  font-size: 13px;
+  line-height: 1.85;
+  color: var(--ink-soft);
+  padding-left: 40px;
+}
+
+.msg-player {
+  margin-bottom: 16px;
+  padding-left: 36px;
+  position: relative;
+}
+
+.msg-player-label {
+  position: absolute;
+  left: 0;
+  top: 2px;
+  font-family: var(--font-cursive);
+  font-size: 12px;
+  color: var(--vermilion);
+  writing-mode: vertical-rl;
+  letter-spacing: 0.1em;
+}
+
+.msg-player-text {
+  font-size: 13px;
+  line-height: 1.8;
+  color: var(--ink-soft);
+  font-style: italic;
+  border-left: 2px solid var(--vermilion-soft);
+  padding-left: 10px;
+}
+
+/* 富文本标记 */
+.tcm-herb, .tcm-acupoint, .tcm-classic, .tcm-symptom {
+  cursor: help;
+  font-weight: 500;
+  border-bottom: 1px dashed currentColor;
+  padding: 0 1px;
+  transition: background 0.15s;
+  position: relative;
+}
+
+.tcm-herb { color: var(--herb); background: rgba(107, 142, 107, 0.08); }
+.tcm-acupoint { color: var(--acupoint); background: rgba(179, 50, 42, 0.08); }
+.tcm-classic { color: var(--classic); background: rgba(184, 137, 63, 0.08); font-style: italic; }
+.tcm-symptom { color: var(--symptom); background: rgba(138, 74, 107, 0.08); }
+
+.tcm-herb:hover { background: rgba(107, 142, 107, 0.18); }
+.tcm-acupoint:hover { background: rgba(179, 50, 42, 0.18); }
+.tcm-classic:hover { background: rgba(184, 137, 63, 0.18); }
+.tcm-symptom:hover { background: rgba(138, 74, 107, 0.18); }
+
+/* 教学浮卡 - hover后opacity=1 */
+.tcm-tooltip {
+  position: absolute;
+  bottom: calc(100% + 8px);
+  left: 50%;
+  transform: translateX(-50%) translateY(4px);
+  width: 220px;
+  background: var(--paper-light);
+  border: 1px solid var(--paper-edge);
+  border-radius: 2px;
+  padding: 10px 12px;
+  font-size: 12px;
+  line-height: 1.6;
+  color: var(--ink-soft);
+  box-shadow: 0 2px 8px rgba(60, 40, 20, 0.2);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s, transform 0.2s;
+  z-index: 10;
+  text-align: left;
+  font-style: normal;
+}
+
+.tcm-tooltip::after {
+  content: '';
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  border: 5px solid transparent;
+  border-top-color: var(--paper-edge);
+}
+
+.tcm-term:hover .tcm-tooltip {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+
+/* 输入区域 */
+.dialog-input-area {
+  padding: 10px 16px;
+  border-top: 1px solid rgba(120, 90, 50, 0.15);
+  background: rgba(255, 250, 235, 0.3);
+}
+
+.dialog-input-row {
+  display: flex;
+  gap: 8px;
+  align-items: stretch;
+}
+
+.dialog-input {
+  flex: 1;
+  background: var(--paper-light);
+  border: 1px solid var(--paper-edge);
+  border-radius: 2px;
+  padding: 8px 12px;
+  font-family: var(--font-serif);
+  font-size: 13px;
+  color: var(--ink);
+  outline: none;
+}
+
+.dialog-input:focus {
+  border-color: var(--vermilion-soft);
+}
+
+.dialog-send-btn {
+  padding: 8px 16px;
+  background: var(--vermilion);
+  color: var(--paper-light);
+  border: 1px solid var(--vermilion-deep);
+  border-radius: 2px;
+  font-family: var(--font-serif);
+  font-size: 13px;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.dialog-send-btn:hover {
+  background: var(--vermilion-deep);
+}
+
+/* 生成状态 */
+.dialog-loading {
+  text-align: center;
+  padding: 8px;
+  font-size: 12px;
+  color: var(--ink-faint);
+}
+
+.dialog-stop-btn {
+  font-size: 12px;
+  color: var(--vermilion);
+  cursor: pointer;
+  padding: 4px 8px;
+  border: 1px solid var(--vermilion-soft);
+  border-radius: 2px;
+}
+
+/* 关闭按钮 */
+.dialog-close-btn {
+  position: absolute;
+  top: -12px;
+  right: -12px;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--vermilion);
+  color: white;
+  border: none;
+  cursor: pointer;
+  font-size: 14px;
+}

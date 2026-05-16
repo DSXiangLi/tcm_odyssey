@@ -1,6 +1,7 @@
 // src/utils/GameStateBridge.ts
 import Phaser from 'phaser';
 import { TOWN_OUTDOOR_CONFIG } from '../data/map-config';
+import { DialogMessage } from '../ui/html/bridge/dialog-events';
 
 /**
  * 瓦片数据
@@ -70,6 +71,8 @@ export class GameStateBridge {
   private _game: Phaser.Game | null = null;
   private state: GameState;
   private exposedToWindow: boolean = false;
+  // 对话历史存储（按NPC ID分组，最多50条）
+  private dialogHistory: Map<string, DialogMessage[]> = new Map();
 
   private constructor() {
     this.state = {
@@ -229,5 +232,41 @@ export class GameStateBridge {
       },
       timestamp: Date.now()
     };
+  }
+
+  /**
+   * 获取NPC对话历史
+   * @param npcId NPC唯一标识
+   * @returns 对话消息数组（最多50条）
+   */
+  getDialogHistory(npcId: string): DialogMessage[] {
+    return this.dialogHistory.get(npcId) || [];
+  }
+
+  /**
+   * 设置NPC对话历史（自动裁剪超出部分）
+   * @param npcId NPC唯一标识
+   * @param messages 对话消息数组
+   */
+  setDialogHistory(npcId: string, messages: DialogMessage[]): void {
+    const trimmed = messages.length > 50 ? messages.slice(-50) : messages;
+    this.dialogHistory.set(npcId, trimmed);
+    this.state.timestamp = Date.now();
+  }
+
+  /**
+   * 清除NPC对话历史
+   */
+  clearDialogHistory(npcId: string): void {
+    this.dialogHistory.delete(npcId);
+    this.state.timestamp = Date.now();
+  }
+
+  /**
+   * 清除所有对话历史
+   */
+  clearAllDialogHistory(): void {
+    this.dialogHistory.clear();
+    this.state.timestamp = Date.now();
   }
 }

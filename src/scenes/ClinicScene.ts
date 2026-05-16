@@ -26,9 +26,9 @@ import { CLINIC_SCALED_CONFIG } from '../data/clinic-scaled-walkable-config';
 import { Player } from '../entities/Player';
 import { EventBus, GameEvents, EventData } from '../systems/EventBus';
 import { GameStateBridge } from '../utils/GameStateBridge';
-import { DialogUI, DialogUIConfig } from '../ui/DialogUI';
 import { NPCInteractionSystem } from '../systems/NPCInteraction';
 import { getNPCById } from '../data/npc-config';
+import { showDialogUI } from '../ui/html/dialog-entry';
 // Phase 2 S5: 病案系统
 import { CaseManager, createCaseManager } from '../systems/CaseManager';
 import { CasesListUI, CasesListUIConfig } from '../ui/CasesListUI';
@@ -59,7 +59,7 @@ export class ClinicScene extends Phaser.Scene {
   private mapOffsetX: number = 0;
   private mapOffsetY: number = 0;
   // Phase 2 S3: NPC交互系统
-  private dialogUI: DialogUI | null = null;
+  private dialogCleanup: (() => void) | null = null;
   private npcSystem!: NPCInteractionSystem;
   private npcSprite!: Phaser.GameObjects.Image;
   private dialogShown: boolean = false;
@@ -300,34 +300,20 @@ export class ClinicScene extends Phaser.Scene {
       return;
     }
 
-    // 创建DialogUI
-    const dialogConfig: DialogUIConfig = {
+    // 使用React DialogUI显示欢迎对话
+    this.dialogCleanup = showDialogUI({
       npcId: 'qingmu',
       npcName: '青木先生',
-      npcSpriteKey: 'avatar_qingmu',  // Renamed from npcAvatarKey
       playerId: 'player_001',
-      onComplete: () => {
-        console.log('[ClinicScene] Welcome dialog complete');
+      onToolCall: (name: string, args: Record<string, unknown>) => this.handleToolCall(name, args),
+      onClose: () => {
+        console.log('[ClinicScene] Welcome dialog closed');
+        if (this.dialogCleanup) {
+          this.dialogCleanup();
+          this.dialogCleanup = null;
+        }
       }
-    };
-
-    // DialogUI位置：屏幕底部中央
-    const dialogX = this.cameras.main.width / 2;
-    const dialogY = this.cameras.main.height - 120;
-
-    this.dialogUI = new DialogUI(this, dialogX, dialogY, dialogConfig);
-    this.dialogUI.setScrollFactor(0);  // 固定在屏幕上
-
-    // 暴露DialogUI状态到全局（供测试访问）
-    this.exposeDialogUIToGlobal();
-
-    // 发送欢迎消息
-    try {
-      await this.dialogUI.sendMessage('你好，我是新来的学生');
-    } catch (error) {
-      console.error('[ClinicScene] Dialog error:', error);
-      this.showPlaceholderDialog();
-    }
+    });
   }
 
   /**
@@ -380,23 +366,6 @@ export class ClinicScene extends Phaser.Scene {
   }
 
   /**
-   * Phase 2 S3: 暴露DialogUI状态到全局（供测试访问）
-   * 注意：DialogUI 自己也会暴露状态，这里只是确保在创建后立即可用
-   */
-  private exposeDialogUIToGlobal(): void {
-    if (typeof window !== 'undefined' && this.dialogUI) {
-      const status = this.dialogUI.getStatus();
-      (window as any).__DIALOG_UI__ = {
-        npcId: status.npcId,
-        npcName: status.npcName,
-        visible: true,
-        isGenerating: status.isGenerating,
-        currentText: () => status.currentText
-      };
-    }
-  }
-
-  /**
    * Phase 2 S3: 暴露占位对话状态到全局（供测试访问）
    */
   private exposePlaceholderDialogToGlobal(text: string): void {
@@ -415,47 +384,35 @@ export class ClinicScene extends Phaser.Scene {
    * Phase 2 S3: 显示指定NPC的对话界面
    */
   private showDialogWithNPC(npcId: string): void {
-    if (this.dialogUI) return;  // 已有对话界面显示
+    if (this.dialogCleanup) return;  // 已有对话界面显示
 
     const npc = getNPCById(npcId);
     if (!npc) return;
 
-    const dialogConfig: DialogUIConfig = {
+    this.dialogCleanup = showDialogUI({
       npcId: npc.id,
       npcName: npc.name,
-      npcSpriteKey: npc.spriteKey,
       playerId: 'player_001',
-      onToolCall: (name, args) => this.handleToolCall(name, args),
-      onComplete: () => {
-        console.log(`[ClinicScene] Dialog with ${npcId} complete`);
-        if (this.dialogUI) {
-          this.dialogUI.destroy();
-          this.dialogUI = null;
+      onToolCall: (name: string, args: Record<string, unknown>) => this.handleToolCall(name, args),
+      onClose: () => {
+        console.log(`[ClinicScene] Dialog with ${npcId} closed`);
+        if (this.dialogCleanup) {
+          this.dialogCleanup();
+          this.dialogCleanup = null;
         }
       }
-    };
-
-    this.dialogUI = new DialogUI(
-      this,
-      this.cameras.main.width / 2,
-      this.cameras.main.height - 150,
-      dialogConfig
-    );
-    this.dialogUI.setScrollFactor(0);
-
-    // 显示输入对话框
-    this.dialogUI.showInputDialog();
+    });
   }
 
   /**
    * Phase 2 S3: 处理NPC工具调用
    */
-  private handleToolCall(toolName: string, args: object): void {
+  private handleToolCall(toolName: string, args: Record<string, unknown>): void {
     console.log(`[ClinicScene] Tool call: ${toolName}`, args);
 
     switch (toolName) {
       case 'trigger_minigame':
-        const { game_type, case_id } = args as any;
+        const { game_type, case_id } = args as { game_type: string; case_id?: string };
         this.startMinigameFromTool(game_type, case_id);
         break;
       default:
@@ -466,11 +423,11 @@ export class ClinicScene extends Phaser.Scene {
   /**
    * Phase 2 S3: 从工具调用启动小游戏
    */
-  private startMinigameFromTool(gameType: string, caseId: string): void {
+  private startMinigameFromTool(gameType: string, caseId?: string): void {
     // 关闭对话界面
-    if (this.dialogUI) {
-      this.dialogUI.destroy();
-      this.dialogUI = null;
+    if (this.dialogCleanup) {
+      this.dialogCleanup();
+      this.dialogCleanup = null;
     }
 
     switch (gameType) {
@@ -1002,7 +959,7 @@ export class ClinicScene extends Phaser.Scene {
 
     // 空格键返回室外
     // Phase 2 S3: 检查附近NPC触发（优先级高于场景切换）
-    if (!this.dialogUI) {
+    if (!this.dialogCleanup) {
       const nearbyNpc = this.npcSystem.checkNearbyTrigger(
         { x: this.player.x, y: this.player.y },
         SCENES.CLINIC
@@ -1058,9 +1015,9 @@ export class ClinicScene extends Phaser.Scene {
 
   shutdown(): void {
     // Phase 2 S3: 清理NPC系统
-    if (this.dialogUI) {
-      this.dialogUI.destroy();
-      this.dialogUI = null;
+    if (this.dialogCleanup) {
+      this.dialogCleanup();
+      this.dialogCleanup = null;
     }
     if (this.npcSystem) {
       this.npcSystem.destroy();

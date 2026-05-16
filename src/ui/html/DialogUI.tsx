@@ -9,6 +9,7 @@ import { SSEClient, ChatRequest } from '../../utils/sseClient';
 import { EventBus } from '../../systems/EventBus';
 import { DIALOG_EVENTS, DialogMessage } from './bridge/dialog-events';
 import { TCM_DATA, TCMKind } from './data/tcm-data';
+import { GameStateBridge } from '../../utils/GameStateBridge';
 
 const MAX_HISTORY = 50;
 
@@ -131,9 +132,6 @@ function MessageView({ msg }: { msg: DialogMessage }) {
   );
 }
 
-// 全局对话历史存储（按NPC ID分组，最多50条）
-const globalHistoryStore: Map<string, DialogMessage[]> = new Map();
-
 export function DialogUI({ npcId, npcName, playerId, onToolCall, onClose }: DialogUIProps) {
   const [messages, setMessages] = useState<DialogMessage[]>([]);
   const [input, setInput] = useState('');
@@ -145,8 +143,9 @@ export function DialogUI({ npcId, npcName, playerId, onToolCall, onClose }: Dial
 
   // 加载历史对话
   useEffect(() => {
-    const history = globalHistoryStore.get(npcId) || [];
-    if (history.length > 0) {
+    const bridge = GameStateBridge.getInstance();
+    const history = bridge.getDialogHistory(npcId);
+    if (history && history.length > 0) {
       setMessages(history);
     }
   }, [npcId]);
@@ -164,7 +163,8 @@ export function DialogUI({ npcId, npcName, playerId, onToolCall, onClose }: Dial
       ? newMessages.slice(-MAX_HISTORY)
       : newMessages;
     setMessages(trimmed);
-    globalHistoryStore.set(npcId, trimmed);
+    const bridge = GameStateBridge.getInstance();
+    bridge.setDialogHistory(npcId, trimmed);
   };
 
   // 发送消息

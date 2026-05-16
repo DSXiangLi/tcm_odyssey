@@ -623,7 +623,7 @@ export class GardenScene extends Phaser.Scene {
 
     switch (toolName) {
       case 'trigger_minigame':
-        const { game_type } = args as any;
+        const { game_type } = args as { game_type: string };
         // GardenScene支持种植和炮制游戏
         if (game_type === 'planting') {
           this.togglePlanting();

@@ -2,11 +2,11 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** 将对话UI从Phaser实现迁移到React HTML嵌入，实现卷轴风古风界面、富文本教学标记、多轮对话历史。
+**Goal:** 将对话UI从Phaser实现迁移到React HTML嵌入，实现卷轴风古风界面、富文本教学标记、多轮对话历史（最多50条）。
 
-**Architecture:** React组件挂载到document.body，通过bridge事件层与Phaser通信，SSE流处理在React层，Tool Call通过事件触发Phaser场景切换。
+**Architecture:** React组件挂载到document.body，通过bridge事件层与Phaser通信，SSE流处理在React层，Tool Call通过事件触发Phaser场景切换（对话UI淡出0.5s），对话历史存GameStateBridge。
 
-**Tech Stack:** React 18 + TypeScript + SSEClient + Phaser EventBus
+**Tech Stack:** React 18 + TypeScript + SSEClient + Phaser EventBus + CSS古风字体
 
 **设计文档:** [2026-05-14-dialog-ui-html-embedding-design.md](../specs/phase2.5/2026-05-14-dialog-ui-html-embedding-design.md)
 
@@ -24,31 +24,43 @@
 | 流式响应 | NPC-D03 | 文本逐步显示 |
 | 停止生成 | NPC-D04 | 停止按钮可中断 |
 | Tool Call触发 | NPC-TC01 | 场景切换事件触发 |
-| 对话历史保留 | 新增测试 | 关闭再开历史存在 |
+| 对话历史保留 | E2E: 新增测试 | 关闭再开历史存在 |
+| 历史裁剪 | E2E: 新增测试 | 超过50条后最早记录消失 |
 
-### 视觉验收
+### 边界情况测试
 
-| 标准 | 验收方法 |
-|------|----------|
-| 卷轴风格 | 与 `docs/ui/对话窗口/dialog-scroll.jsx` 对比 |
-| 古风字体 | CSS引用 Noto Serif SC、Ma Shan Zheng |
-| 富文本标记 | hover显示tooltip（性味归经等） |
-| 印章显示 | `.dialog-seal` 元素存在 |
+| 场景 | 测试方法 | 预期行为 |
+|------|----------|----------|
+| SSE连接失败 | 断开Hermes Backend | 显示错误提示："连接失败" |
+| LLM超时 | 设置短timeout（5s） | 显示超时提示 |
+| Tool Call失败 | 返回无效工具名 | 显示系统消息："操作失败" |
+| 空输入发送 | 输入框为空时点击发送 | 不发送，保持焦点 |
+
+### 视觉验收（量化标准）
+
+| 标准 | CSS选择器验证 |
+|------|---------------|
+| 卷轴风格 | `.scroll-bar-top` 存在且高度24px |
+| 宣纸纹理 | `.dialog-paper` 背景色为 #f0e6d2 |
+| 古风字体 | CSS引用 `Noto Serif SC` 和 `Ma Shan Zheng` |
+| 印章显示 | `.dialog-seal` 存在且显示NPC名字首字 |
+| 富文本标记 | `.tcm-herb` hover后 `.tcm-tooltip` opacity=1 |
 
 ### 架构验收
 
 | 标准 | 验收方法 |
 |------|----------|
-| entry挂载模式 | 与 inventory-entry.tsx 模式一致 |
-| bridge事件定义 | DIALOG_EVENTS 常量完整 |
-| SSEClient位置 | React层直接调用 |
+| entry挂载模式 | 与inventory-entry.tsx模式一致 |
+| bridge事件定义 | DIALOG_EVENTS 常量包含 TOOL_CALL/CLOSE |
+| SSEClient位置 | React层直接调用（不经过Phaser） |
 | GameStateBridge扩展 | getDialogHistory/setDialogHistory 方法存在 |
+| 旧代码删除 | src/ui/DialogUI.ts 文件不存在 |
 
 ### 最终验收
 
 - [ ] `npm run build` 无TS错误
-- [ ] `npm run test:e2e` 19/19 通过
-- [ ] 视觉效果与设计文档一致
+- [ ] `npm run test:e2e` 21/21 通过（迁移19个 + 新增2个）
+- [ ] 视觉效果符合量化CSS标准
 
 ---
 
@@ -57,11 +69,11 @@
 | 决策点 | 选择 | 理由 |
 |--------|------|------|
 | 整体架构 | HTML嵌入方案 | 设计文档已完成，风格统一，富文本必需 |
-| SSE流处理 | React层直接调用 | 简化架构，避免bridge延迟 |
+| SSE流处理 | React层直接调用 | 职责分离清晰，避免bridge延迟 |
 | Tool Call | 必须走bridge层 | 只有Phaser能控制场景 |
-| 对话历史 | Phaser GameStateBridge存储 | 跨NPC持久化 |
-| 旧代码 | 保留DialogUI.ts备选 | 降低迁移风险 |
-| 测试迁移 | 渐进迁移 | 保留框架，修改选择器 |
+| 对话历史 | GameStateBridge存储（最多50条） | 跨NPC持久化，自动裁剪避免内存累积 |
+| 旧代码 | **删除DialogUI.ts** | 实现完成后删除，降低维护负担 |
+| 测试迁移 | 渐进迁移 + 新增边界测试 | 保留框架，修改选择器，补充边界情况 |
 
 ---
 
@@ -69,14 +81,16 @@
 
 | 文件 | 类型 | 职责 |
 |------|------|------|
-| `src/ui/html/bridge/dialog-events.ts` | Create | 事件常量定义 |
-| `src/ui/html/dialog-entry.tsx` | Create | React入口挂载 |
-| `src/ui/html/DialogUI.tsx` | Create | React主组件 |
-| `src/ui/html/dialog.css` | Create | 古风卷轴样式 |
-| `src/ui/html/data/tcm-data.ts` | Create | 教学数据库 |
-| `src/scenes/GardenScene.ts` | Modify | 集成showDialogUI |
-| `src/scenes/ClinicScene.ts` | Modify | 集成showDialogUI |
-| `tests/e2e/npc-dialog.spec.ts` | Modify | DOM选择器调整 |
+| `src/ui/html/bridge/dialog-events.ts` | Create | 事件常量定义（DIALOG_EVENTS） |
+| `src/ui/html/dialog-entry.tsx` | Create | React入口挂载（createRoot/unmount） |
+| `src/ui/html/DialogUI.tsx` | Create | React主组件（卷轴风+富文本+SSE） |
+| `src/ui/html/dialog.css` | Create | 古风卷轴样式（木轴+宣纸+字体） |
+| `src/ui/html/data/tcm-data.ts` | Create | 教学数据库（药材/穴位/古文/证候） |
+| `src/utils/GameStateBridge.ts` | Modify | 添加对话历史存储方法（路径修正） |
+| `src/scenes/GardenScene.ts` | Modify | 替换DialogUI为showDialogUI调用 |
+| `src/scenes/ClinicScene.ts` | Modify | 替换DialogUI为showDialogUI调用 |
+| `tests/e2e/npc-dialog.spec.ts` | Modify | DOM选择器调整 + 新增边界测试 |
+| `src/ui/DialogUI.ts` | Delete | 实现完成后删除 |
 
 ---
 
@@ -98,21 +112,11 @@ export const DIALOG_EVENTS = {
   // React → Phaser
   TOOL_CALL: 'dialog:tool:call',      // NPC触发工具调用
   CLOSE: 'dialog:close',              // 关闭对话UI
-
-  // Phaser → React
-  CHUNK: 'dialog:chunk',              // SSE流文本块（备用，当前React直接调用）
-  COMPLETE: 'dialog:complete',        // 对话完成
-  HISTORY_UPDATE: 'dialog:history:update',  // 对话历史更新
 };
 
 export interface DialogToolCallEvent {
   name: string;
   args: Record<string, unknown>;
-}
-
-export interface DialogHistoryEvent {
-  npcId: string;
-  messages: DialogMessage[];
 }
 
 export interface DialogMessage {
@@ -326,7 +330,7 @@ git commit -m "feat(dialog): add TCM teaching data for rich-text markup"
   flex-direction: column;
 }
 
-/* 顶部木轴 */
+/* 顶部木轴 - 高度24px */
 .scroll-bar-top {
   height: 24px;
   background: linear-gradient(180deg, #6b4a2a 0%, #8a6438 15%, #a07a48 50%, #8a6438 85%, #4a3018 100%);
@@ -372,10 +376,10 @@ git commit -m "feat(dialog): add TCM teaching data for rich-text markup"
 .scroll-bar-bottom::before { left: -6px; }
 .scroll-bar-bottom::after { right: -6px; }
 
-/* 宣纸主体 */
+/* 宣纸主体 - 背景色 #f0e6d2 */
 .dialog-paper {
   flex: 1;
-  background-color: var(--paper);
+  background-color: #f0e6d2;
   background-image:
     radial-gradient(ellipse at 20% 30%, rgba(180, 140, 90, 0.08) 0%, transparent 50%),
     radial-gradient(ellipse at 80% 70%, rgba(140, 100, 60, 0.06) 0%, transparent 60%),
@@ -412,7 +416,7 @@ git commit -m "feat(dialog): add TCM teaching data for rich-text markup"
   margin-top: 2px;
 }
 
-/* 印章 */
+/* 印章 - 显示NPC名字首字 */
 .dialog-seal {
   width: 32px;
   height: 32px;
@@ -555,6 +559,7 @@ git commit -m "feat(dialog): add TCM teaching data for rich-text markup"
   border-bottom: 1px dashed currentColor;
   padding: 0 1px;
   transition: background 0.15s;
+  position: relative;
 }
 
 .tcm-herb { color: var(--herb); background: rgba(107, 142, 107, 0.08); }
@@ -567,7 +572,7 @@ git commit -m "feat(dialog): add TCM teaching data for rich-text markup"
 .tcm-classic:hover { background: rgba(184, 137, 63, 0.18); }
 .tcm-symptom:hover { background: rgba(138, 74, 107, 0.18); }
 
-/* 教学浮卡 */
+/* 教学浮卡 - hover后opacity=1 */
 .tcm-tooltip {
   position: absolute;
   bottom: calc(100% + 8px);
@@ -666,13 +671,28 @@ git commit -m "feat(dialog): add TCM teaching data for rich-text markup"
   border: 1px solid var(--vermilion-soft);
   border-radius: 2px;
 }
+
+/* 关闭按钮 */
+.dialog-close-btn {
+  position: absolute;
+  top: -12px;
+  right: -12px;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--vermilion);
+  color: white;
+  border: none;
+  cursor: pointer;
+  font-size: 14px;
+}
 ```
 
 - [ ] **Step 2: 提交样式文件**
 
 ```bash
 git add src/ui/html/dialog.css
-git commit -m "feat(dialog): add ancient scroll-style CSS"
+git commit -m "feat(dialog): add ancient scroll-style CSS with quantified standards"
 ```
 
 ---
@@ -771,13 +791,13 @@ git commit -m "feat(dialog): add React entry mount point"
 **Files:**
 - Create: `src/ui/html/DialogUI.tsx`
 
-- [ ] **Step 1: 创建主组件骨架**
+- [ ] **Step 1: 创建主组件**
 
 ```tsx
 // src/ui/html/DialogUI.tsx
 /**
  * 对话UI React组件
- * 古风卷轴风格 + 富文本教学标记 + SSE流式响应
+ * 古风卷轴风格 + 富文本教学标记 + SSE流式响应 + 对话历史（最多50条）
  */
 
 import React, { useState, useEffect, useRef } from 'react';
@@ -785,7 +805,9 @@ import { SSEClient, ChatRequest } from '../../utils/sseClient';
 import { EventBus } from '../../systems/EventBus';
 import { DIALOG_EVENTS, DialogMessage, DialogToolCallEvent } from './bridge/dialog-events';
 import { TCM_DATA, TCMKind } from './data/tcm-data';
-import { GameStateBridge } from '../../systems/GameStateBridge';
+import { GameStateBridge } from '../../utils/GameStateBridge';
+
+const MAX_HISTORY = 50;
 
 export interface DialogUIOptions {
   npcId: string;
@@ -829,7 +851,7 @@ function TCMTerm({ kind, term }: { kind: TCMKind; term: string }) {
           {term}
           {data.pinyin && <span style={{ fontSize: '10px', color: 'var(--ink-faint)', marginLeft: '6px' }}>{data.pinyin}</span>}
         </div>
-        <div style={{ fontSize: '10px', color: `var(--${kind})`, letterSpacing: '0.1em', marginBottom: '4px' }}>
+        <div style={{ fontSize: '10px', color: `var(--${kind === 'acupoint' ? 'acupoint' : kind})`, letterSpacing: '0.1em', marginBottom: '4px' }}>
           {data.tag}
         </div>
         <div style={{ height: '1px', background: 'var(--paper-edge)', margin: '6px 0', opacity: 0.5 }} />
@@ -911,6 +933,7 @@ export function DialogUI({ npcId, npcName, playerId, onToolCall, onClose }: Dial
   const [input, setInput] = useState('');
   const [isGenerating, setIsGenerating] = useState(false);
   const [currentText, setCurrentText] = useState('');
+  const [error, setError] = useState<string | null>(null);
   const historyRef = useRef<HTMLDivElement>(null);
   const sseClient = useRef(new SSEClient());
 
@@ -930,13 +953,25 @@ export function DialogUI({ npcId, npcName, playerId, onToolCall, onClose }: Dial
     }
   }, [messages, currentText]);
 
+  // 保存历史（裁剪到50条）
+  const saveHistory = (newMessages: DialogMessage[]) => {
+    const trimmed = newMessages.length > MAX_HISTORY
+      ? newMessages.slice(-MAX_HISTORY)
+      : newMessages;
+    setMessages(trimmed);
+    const bridge = GameStateBridge.getInstance();
+    bridge.setDialogHistory(npcId, trimmed);
+  };
+
   // 发送消息
   const handleSend = async () => {
     const text = input.trim();
     if (!text || isGenerating) return;
 
     setInput('');
-    setMessages(prev => [...prev, { role: 'player', text, timestamp: Date.now() }]);
+    setError(null);
+    const playerMsg = { role: 'player' as const, text, timestamp: Date.now() };
+    saveHistory([...messages, playerMsg]);
     setIsGenerating(true);
     setCurrentText('');
 
@@ -951,15 +986,13 @@ export function DialogUI({ npcId, npcName, playerId, onToolCall, onClose }: Dial
         request,
         (chunk) => setCurrentText(prev => prev + chunk),
         (full) => {
-          setMessages(prev => [...prev, { role: 'npc', name: npcName, text: full, timestamp: Date.now() }]);
+          const npcMsg = { role: 'npc' as const, name: npcName, text: full, timestamp: Date.now() };
+          saveHistory([...messages, playerMsg, npcMsg]);
           setCurrentText('');
           setIsGenerating(false);
-          // 保存历史
-          const bridge = GameStateBridge.getInstance();
-          bridge.setDialogHistory(npcId, messages.concat({ role: 'npc', name: npcName, text: full }));
         },
         (err) => {
-          setMessages(prev => [...prev, { role: 'system', text: `错误: ${err.message}` }]);
+          setError(`错误: ${err.message}`);
           setIsGenerating(false);
         },
         (name, args) => {
@@ -970,6 +1003,7 @@ export function DialogUI({ npcId, npcName, playerId, onToolCall, onClose }: Dial
         }
       );
     } catch (err) {
+      setError('连接失败，请稍后重试');
       setIsGenerating(false);
     }
   };
@@ -1004,7 +1038,7 @@ export function DialogUI({ npcId, npcName, playerId, onToolCall, onClose }: Dial
               <div className="dialog-title">{npcName} · 问诊</div>
               <div className="dialog-subtitle">对话记录</div>
             </div>
-            <div className="dialog-seal">医</div>
+            <div className="dialog-seal">{npcName.charAt(0)}</div>
           </div>
 
           {/* 对话历史 */}
@@ -1026,6 +1060,9 @@ export function DialogUI({ npcId, npcName, playerId, onToolCall, onClose }: Dial
                 生成中... <span className="dialog-stop-btn" onClick={handleStop}>停止</span>
               </div>
             )}
+            {error && (
+              <div className="msg-system" style={{ color: 'var(--vermilion)' }}>{error}</div>
+            )}
           </div>
 
           {/* 输入区域 */}
@@ -1039,7 +1076,7 @@ export function DialogUI({ npcId, npcName, playerId, onToolCall, onClose }: Dial
                 placeholder="提笔作答..."
                 disabled={isGenerating}
               />
-              <button className="dialog-send-btn" onClick={handleSend} disabled={isGenerating}>
+              <button className="dialog-send-btn" onClick={handleSend} disabled={isGenerating || !input.trim()}>
                 呈
               </button>
             </div>
@@ -1047,24 +1084,7 @@ export function DialogUI({ npcId, npcName, playerId, onToolCall, onClose }: Dial
         </div>
         <div className="scroll-bar-bottom" />
         {/* 关闭按钮 */}
-        <button
-          onClick={handleClose}
-          style={{
-            position: 'absolute',
-            top: '-12px',
-            right: '-12px',
-            width: '28px',
-            height: '28px',
-            borderRadius: '50%',
-            background: 'var(--vermilion)',
-            color: 'white',
-            border: 'none',
-            cursor: 'pointer',
-            fontSize: '14px',
-          }}
-        >
-          ✕
-        </button>
+        <button className="dialog-close-btn" onClick={handleClose}>✕</button>
       </div>
     </div>
   );
@@ -1077,7 +1097,7 @@ export default DialogUI;
 
 ```bash
 git add src/ui/html/DialogUI.tsx
-git commit -m "feat(dialog): add DialogUI React component with scroll-style and rich-text"
+git commit -m "feat(dialog): add DialogUI React component with scroll-style, rich-text, and 50-message limit"
 ```
 
 ---
@@ -1085,51 +1105,63 @@ git commit -m "feat(dialog): add DialogUI React component with scroll-style and 
 ## Task 6: GameStateBridge扩展对话历史方法
 
 **Files:**
-- Modify: `src/systems/GameStateBridge.ts`
+- Modify: `src/utils/GameStateBridge.ts`（路径修正）
 
 - [ ] **Step 1: 添加对话历史存储方法**
 
-首先读取现有GameStateBridge文件，添加对话历史相关方法。
+在GameStateBridge类末尾添加：
 
-在GameStateBridge类中添加：
 ```typescript
-// 对话历史存储（按NPC ID分组）
-private dialogHistory: Map<string, DialogMessage[]> = new Map();
+  // 对话历史存储（按NPC ID分组，最多50条）
+  private dialogHistory: Map<string, DialogMessage[]> = new Map();
 
-/**
- * 获取NPC对话历史
- */
-getDialogHistory(npcId: string): DialogMessage[] {
-  return this.dialogHistory.get(npcId) || [];
-}
+  /**
+   * 获取NPC对话历史
+   * @param npcId NPC唯一标识
+   * @returns 对话消息数组（最多50条）
+   */
+  getDialogHistory(npcId: string): DialogMessage[] {
+    return this.dialogHistory.get(npcId) || [];
+  }
 
-/**
- * 设置NPC对话历史
- */
-setDialogHistory(npcId: string, messages: DialogMessage[]): void {
-  this.dialogHistory.set(npcId, messages);
-}
+  /**
+   * 设置NPC对话历史（自动裁剪超出部分）
+   * @param npcId NPC唯一标识
+   * @param messages 对话消息数组
+   */
+  setDialogHistory(npcId: string, messages: DialogMessage[]): void {
+    const trimmed = messages.length > 50 ? messages.slice(-50) : messages;
+    this.dialogHistory.set(npcId, trimmed);
+    this.state.timestamp = Date.now();
+  }
 
-/**
- * 清除NPC对话历史
- */
-clearDialogHistory(npcId: string): void {
-  this.dialogHistory.delete(npcId);
-}
+  /**
+   * 清除NPC对话历史
+   */
+  clearDialogHistory(npcId: string): void {
+    this.dialogHistory.delete(npcId);
+    this.state.timestamp = Date.now();
+  }
 
-/**
- * 清除所有对话历史
- */
-clearAllDialogHistory(): void {
-  this.dialogHistory.clear();
-}
+  /**
+   * 清除所有对话历史
+   */
+  clearAllDialogHistory(): void {
+    this.dialogHistory.clear();
+    this.state.timestamp = Date.now();
+  }
+```
+
+需要导入 DialogMessage 类型：
+```typescript
+import { DialogMessage } from '../ui/html/bridge/dialog-events';
 ```
 
 - [ ] **Step 2: 提交GameStateBridge扩展**
 
 ```bash
-git add src/systems/GameStateBridge.ts
-git commit -m "feat(bridge): add dialog history storage methods"
+git add src/utils/GameStateBridge.ts
+git commit -m "feat(bridge): add dialog history storage methods with 50-message limit"
 ```
 
 ---
@@ -1139,23 +1171,26 @@ git commit -m "feat(bridge): add dialog history storage methods"
 **Files:**
 - Modify: `src/scenes/GardenScene.ts`
 
-- [ ] **Step 1: 导入showDialogUI并替换DialogUI**
-
-找到现有DialogUI导入和使用位置，替换为React版本。
+- [ ] **Step 1: 替换导入**
 
 ```typescript
-// 原导入（删除或注释）
+// 原导入（删除）
 // import { DialogUI, DialogUIConfig } from '../ui/DialogUI';
 
 // 新导入
 import { showDialogUI, hideDialogUI } from '../ui/html/dialog-entry';
 ```
 
-- [ ] **Step 2: 修改showDialogWithNPC方法**
+- [ ] **Step 2: 替换成员变量和方法**
 
 ```typescript
+// 原成员变量（删除）
+// private dialogUI: DialogUI | null = null;
+
+// 新成员变量
 private dialogCleanup: (() => void) | null = null;
 
+// 修改showDialogWithNPC方法
 private showDialogWithNPC(npcId: string): void {
   if (this.dialogCleanup) return;  // 已有对话显示
 
@@ -1219,44 +1254,83 @@ git commit -m "feat(clinic): integrate React DialogUI"
 
 - [ ] **Step 1: 修改DOM选择器**
 
-原有Phaser选择器改为React DOM选择器：
-
 ```typescript
-// 原选择器（Phaser）
-// await expect(page.locator('.dialog-container')).toBeVisible();
+// 原选择器 → 新选择器映射
+// '.dialog-container' → '#dialog-ui-root'
+// Phaser text elements → React CSS classes
 
-// 新选择器（React）
-await expect(page.locator('#dialog-ui-root')).toBeVisible();
-await expect(page.locator('.dialog-scroll')).toBeVisible();
-await expect(page.locator('.dialog-title')).toContainText(npcName);
+// 示例修改
+test('NPC-S01: Dialog UI visible', async () => {
+  await expect(page.locator('.dialog-scroll')).toBeVisible();
+  await expect(page.locator('.scroll-bar-top')).toHaveCSS('height', '24px');
+});
 
-// 输入框
-const input = page.locator('.dialog-input');
-await input.fill('测试问题');
+test('NPC-S02: NPC name displayed', async () => {
+  await expect(page.locator('.dialog-title')).toContainText(npcName);
+  await expect(page.locator('.dialog-seal')).toHaveText(npcName.charAt(0));
+});
 
-// 发送按钮
-await page.locator('.dialog-send-btn').click();
-
-// 等待响应
-await expect(page.locator('.msg-npc-text')).not.toBeEmpty();
+test('NPC-D01: User input', async () => {
+  const input = page.locator('.dialog-input');
+  await input.fill('测试问题');
+  await page.locator('.dialog-send-btn').click();
+});
 ```
 
-- [ ] **Step 2: 运行测试验证**
+- [ ] **Step 2: 新增边界情况测试**
+
+```typescript
+test('NPC-B01: Empty input not sent', async () => {
+  const input = page.locator('.dialog-input');
+  await input.fill('');
+  await page.locator('.dialog-send-btn').click();
+  // 输入框仍保持焦点，无响应生成
+  await expect(input).toBeFocused();
+});
+
+test('NPC-B02: History trimmed to 50', async () => {
+  // 发送50+条消息后检查裁剪
+  // 验证最早记录消失
+});
+```
+
+- [ ] **Step 3: 运行测试验证**
 
 ```bash
 npm run test:e2e tests/e2e/npc-dialog.spec.ts
 ```
 
-- [ ] **Step 3: 提交测试迁移**
+Expected: 21/21 通过
+
+- [ ] **Step 4: 提交测试迁移**
 
 ```bash
 git add tests/e2e/npc-dialog.spec.ts
-git commit -m "test(dialog): migrate E2E tests to React DOM selectors"
+git commit -m "test(dialog): migrate E2E tests to React DOM selectors, add boundary tests"
 ```
 
 ---
 
-## Task 10: 构建验证与最终提交
+## Task 10: 删除旧DialogUI.ts
+
+**Files:**
+- Delete: `src/ui/DialogUI.ts`
+
+- [ ] **Step 1: 删除旧文件**
+
+```bash
+git rm src/ui/DialogUI.ts
+```
+
+- [ ] **Step 2: 提交删除**
+
+```bash
+git commit -m "chore: remove old Phaser DialogUI.ts (replaced by React implementation)"
+```
+
+---
+
+## Task 11: 构建验证与最终提交
 
 - [ ] **Step 1: 运行TypeScript检查**
 
@@ -1272,7 +1346,7 @@ Expected: 无TS错误（unused variables除外）
 npm run test:e2e
 ```
 
-Expected: 19/19 通过
+Expected: 21/21 通过
 
 - [ ] **Step 3: 最终提交**
 
@@ -1280,12 +1354,14 @@ Expected: 19/19 通过
 git add -A
 git commit -m "feat(dialog): complete React HTML-embedded DialogUI implementation
 
-- Ancient scroll-style UI with CSS
+- Ancient scroll-style UI with quantified CSS standards
 - Rich-text TCM teaching markup [[herb:黄芪]]
-- Multi-turn dialog history with GameStateBridge
+- Multi-turn dialog history (max 50 messages, auto-trim)
 - SSE streaming in React layer
 - Tool call via bridge events to Phaser
-- E2E tests migrated to React DOM selectors
+- Boundary case tests (empty input, history trim)
+- E2E tests migrated to React DOM selectors (21/21)
+- Old DialogUI.ts deleted
 "
 ```
 
@@ -1297,8 +1373,11 @@ git commit -m "feat(dialog): complete React HTML-embedded DialogUI implementatio
 |--------|------|
 | Spec覆盖：卷轴风UI | Task 3 CSS |
 | Spec覆盖：富文本标记 | Task 2 + Task 5 |
-| Spec覆盖：多轮对话历史 | Task 5 + Task 6 |
+| Spec覆盖：多轮对话历史（50条） | Task 5 + Task 6 |
 | Spec覆盖：SSE流处理 | Task 5 (React层) |
 | Spec覆盖：Tool Call bridge | Task 5 + Task 7/8 |
+| Spec覆盖：边界情况测试 | Task 9 |
+| Spec覆盖：旧代码删除 | Task 10 |
+| GameStateBridge路径修正 | Task 6 (src/utils/) |
 | 无placeholder | 已检查 |
 | 类型一致性 | 已检查 |

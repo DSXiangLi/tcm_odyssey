@@ -328,7 +328,10 @@
   border-top-color: var(--paper-edge);
 }
 
-.tcm-term:hover .tcm-tooltip {
+.tcm-herb:hover .tcm-tooltip,
+.tcm-acupoint:hover .tcm-tooltip,
+.tcm-classic:hover .tcm-tooltip,
+.tcm-symptom:hover .tcm-tooltip {
   opacity: 1;
   transform: translateX(-50%) translateY(0);
 }

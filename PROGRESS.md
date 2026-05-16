@@ -123,17 +123,6 @@ OpenAI Compatible LLM (对话生成)
 | Tool Call Tests | 4 | 100% |
 | Quality Tests | 3 | 100% |
 
----
-
-## 待开发任务（后续Phase）
-
-| 任务 | 状态 | 说明 |
-|------|------|------|
-| NPC后端扩展 | 待定 | laozhang/neighbor角色定义 |
-| Phase 2.5 病案集 | ⏳ | 设计完成，待执行（C键触发） |
-| Phase 2.5 炮制 | ⏳ | 设计完成，待执行（P键触发） |
-| Phase 2.5 种植 | ⏳ | 入口已存在，待开发 |
-| 真实数据存储 | 待定 | MockGameStore→实际游戏状态 |
 
 ---
 
@@ -142,37 +131,6 @@ OpenAI Compatible LLM (对话生成)
 ### 立即执行
 
 1. **执行实现计划 Task 1-11** - DialogUI HTML嵌入
-
-### 后续规划
-
-1. **创建 laozhang NPC** - 药园种植/炮制指导
-2. **创建 neighbor NPC** - 生活互动角色
-3. **真实数据存储** - MockGameStore → 实际游戏状态
-
----
-
-## 参考文档
-
-- **设计文档**: `docs/superpowers/specs/phase2.5/2026-05-14-dialog-ui-html-embedding-design.md`
-- **实现计划**: `docs/superpowers/plans/2026-05-14-dialog-ui-html-embedding.md`
-- **已完成**: [TODO.md](./TODO.md)
-- **项目索引**: [CLAUDE.md](./CLAUDE.md)
-
----
-
-## 开发效率改进 (2026-05-16)
-
-### design-doc-reviewer 技能 ✅
-
-**改进内容**:
-- AskUserQuestion强制调用机制（Critical Requirements）
-- 中文分类术语强制使用
-- 语言策略明确：分类标题中文，分析内容匹配文档语言
-- 技能长度：211行 → 295行
-
-**目录调整**:
-- 技能文件移动到 `skills/` 目录
-- 安装位置：`~/.claude/skills/design-doc-reviewer`
 
 ---
 

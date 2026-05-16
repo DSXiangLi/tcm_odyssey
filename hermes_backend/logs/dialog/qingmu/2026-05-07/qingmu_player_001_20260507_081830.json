@@ -1,0 +1,12 @@
+{
+  "session_id": "qingmu_player_001_20260507_081830",
+  "npc_id": "qingmu",
+  "player_id": "player_001",
+  "timestamp_start": "2026-05-07T08:18:30.408351",
+  "user_message": "它的君药是什么？",
+  "tool_calls": [],
+  "full_response": "你问的是哪一方剂的君药呢？\n\n我们之前讨论过麻黄汤、桂枝汤、银翘散、桑菊饮四方。你可还记得，这四方之中，何者治风寒表实？何者治风寒表虚？何者治风热犯卫？何者治风温咳嗽？\n\n先明确了方剂，我们再来谈君药之理。你可先说说，你心中所想是哪一方？",
+  "timestamp_end": "2026-05-07T08:18:35.280609",
+  "response_duration_ms": 4872,
+  "response_token_count": 119
+}

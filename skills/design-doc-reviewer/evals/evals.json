@@ -1,0 +1,152 @@
+{
+  "skill_name": "design-doc-reviewer",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Review this design document: docs/superpowers/specs/phase2.5/2026-05-14-dialog-ui-html-embedding-design.md",
+      "expected_output": "Complete review with dimension analysis, issues found, and actionable recommendations",
+      "files": ["docs/superpowers/specs/phase2.5/2026-05-14-dialog-ui-html-embedding-design.md"],
+      "assertions": [
+        {
+          "name": "dimension_analysis_present",
+          "description": "Review includes systematic analysis of 8 dimensions",
+          "check": "Output contains table or structured list covering all 8 dimensions with status indicators"
+        },
+        {
+          "name": "issues_identified",
+          "description": "Review identifies specific issues: omissions, ambiguities, contradictions",
+          "check": "Output contains at least one concrete issue with location and recommendation"
+        },
+        {
+          "name": "actionable_recommendations",
+          "description": "Recommendations are specific and actionable",
+          "check": "Each recommendation specifies what to add/change, where, and provides concrete example"
+        },
+        {
+          "name": "clear_verdict",
+          "description": "Review provides final verdict: Approved, Needs Revision, or Blocked",
+          "check": "Output ends with explicit verdict statement"
+        },
+        {
+          "name": "project_context_checks",
+          "description": "Review considers project-specific context",
+          "check": "Output references project architecture, directory structure, or existing systems"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "评审这个设计文档的完备性：docs/superpowers/specs/phase2.5/2026-05-11-dialogui-scroll-style-design.md",
+      "expected_output": "批判性评审报告，指出遗漏点、模糊点、矛盾点，给出具体改进建议",
+      "files": ["docs/superpowers/specs/phase2.5/2026-05-11-dialogui-scroll-style-design.md"],
+      "assertions": [
+        {
+          "name": "critical_review_not_validation",
+          "description": "Review is critical, not rubber-stamp validation",
+          "check": "Output identifies specific problems or gaps"
+        },
+        {
+          "name": "specific_recommendations_not_generic",
+          "description": "Recommendations are concrete, not vague",
+          "check": "Each recommendation specifies exact location, issue, and fix"
+        },
+        {
+          "name": "problem_types_identified",
+          "description": "Review categorizes issues: 遗漏点, 模糊点, 矛盾点, 待澄清点",
+          "check": "Output uses these Chinese terms to categorize findings"
+        },
+        {
+          "name": "chinese_language_handling",
+          "description": "Skill handles Chinese prompts correctly",
+          "check": "Output is in Chinese or bilingual, maintains critical tone"
+        },
+        {
+          "name": "scoring_or_status_system",
+          "description": "Review provides systematic scoring for each dimension",
+          "check": "Output includes table showing completeness status"
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "Check design document completeness: design-doc-reviewer-workspace/incomplete-design.md",
+      "expected_output": "Identify missing dimensions and provide specific recommendations",
+      "files": ["design-doc-reviewer-workspace/incomplete-design.md"],
+      "assertions": [
+        {
+          "name": "identifies_missing_background",
+          "description": "Review identifies Background dimension is missing",
+          "check": "Output explicitly states Background is missing"
+        },
+        {
+          "name": "identifies_missing_problem_definition",
+          "description": "Review identifies Problem Definition is missing",
+          "check": "Output notes Problem Definition missing, 'Goal' is vague substitute"
+        },
+        {
+          "name": "identifies_missing_solution_details",
+          "description": "Review identifies Solution lacks technical details",
+          "check": "Output notes solution is high-level without implementation details"
+        },
+        {
+          "name": "identifies_missing_boundaries",
+          "description": "Review identifies Boundaries not specified",
+          "check": "Output notes scope not defined, no constraints mentioned"
+        },
+        {
+          "name": "identifies_missing_validation_criteria",
+          "description": "Review identifies Acceptance Criteria missing",
+          "check": "Output notes no measurable criteria or test plan"
+        },
+        {
+          "name": "provides_concrete_fix_for_each_missing",
+          "description": "Review provides fix for each missing dimension",
+          "check": "Each missing dimension has recommendation with example"
+        },
+        {
+          "name": "verdict_needs_revision",
+          "description": "Review gives verdict needs revision",
+          "check": "Output states verdict as 'Needs Revision' or 'Blocked'"
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "prompt": "Evaluate this design document: design-doc-reviewer-workspace/contradictory-design.md",
+      "expected_output": "Detect contradiction and ask clarifying questions",
+      "files": ["design-doc-reviewer-workspace/contradictory-design.md"],
+      "assertions": [
+        {
+          "name": "detects_click_count_contradiction",
+          "description": "Review detects contradiction between problem and solution",
+          "check": "Output identifies problem says 'reduce clicks' but solution adds complexity"
+        },
+        {
+          "name": "detects_simplification_vs_complexity_contradiction",
+          "description": "Review detects simplify vs add features contradiction",
+          "check": "Output notes adding features contradicts simplification goal"
+        },
+        {
+          "name": "uses_ask_user_question",
+          "description": "Review uses AskUserQuestion to clarify",
+          "check": "AskUserQuestion tool was invoked"
+        },
+        {
+          "name": "provides_alternative_approach",
+          "description": "Review suggests alternative approach",
+          "check": "Recommendation suggests concrete alternative solution"
+        },
+        {
+          "name": "verdict_blocked_or_needs_major_revision",
+          "description": "Review gives verdict blocked or major revision",
+          "check": "Output states verdict as 'Blocked' or 'Needs Revision'"
+        },
+        {
+          "name": "explains_why_contradiction_matters",
+          "description": "Review explains risk of contradiction",
+          "check": "Output explains implementing this will fail stated goal"
+        }
+      ]
+    }
+  ]
+}

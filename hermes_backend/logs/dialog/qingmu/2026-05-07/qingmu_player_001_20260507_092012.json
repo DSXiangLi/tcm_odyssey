@@ -1,0 +1,12 @@
+{
+  "session_id": "qingmu_player_001_20260507_092012",
+  "npc_id": "qingmu",
+  "player_id": "player_001",
+  "timestamp_start": "2026-05-07T09:20:12.833276",
+  "user_message": "你好，我是新来的学生",
+  "tool_calls": [],
+  "full_response": "你好，欢迎来到百草镇。\n\n我是青木，此地三代行医，专攻《伤寒论》，擅长外感病诊治。\n\n你既来学医，可知中医辨证之要义？《素问·阴阳应象大论》有言：\"治病必求于本。\"这\"本\"字，你如何理解？\n\n今日外感病多发，正是学医的好时机。你可愿从风寒外感学起，还是另有想问之处？",
+  "timestamp_end": "2026-05-07T09:20:17.711714",
+  "response_duration_ms": 4878,
+  "response_token_count": 133
+}

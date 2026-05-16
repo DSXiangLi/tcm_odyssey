@@ -1,0 +1,119 @@
+{
+  "expectations": [
+    {
+      "text": "Output identifies specific problems or gaps, not just confirms what's present",
+      "passed": true,
+      "evidence": "The review.md output contains multiple 'Gap Identified' sections throughout (Sections 1.1-1.8), explicitly lists missing elements with 'MISSING' labels in the checklist (Section 4), and identifies 6 critical gaps in the Executive Summary: Scroll Implementation Missing, Rich Text Parsing Missing, OptionCard Interaction Missing, Vertical Text Simplification, Height Allocation Gap (82px insufficient), File Scope Underestimated."
+    },
+    {
+      "text": "Each recommendation specifies exact location, exact issue, and concrete fix (not 'add more details' or 'could be better')",
+      "passed": false,
+      "evidence": "Recommendations in Section 5 are inconsistent. Recommendation 2 provides concrete fix with exact file paths ('Add: src/utils/richTextParser.ts (new), src/ui/components/OptionCard.ts (new)'). However, Recommendations 1, 4, 5 use vague phrasing: 'Add Missing Implementation Code' (no concrete code), 'Add Visual Mockup' (no specific format/location), 'Add Unit Test Requirements' (no specific test criteria). Recommendation 3 provides calculation but fix remains vague ('adjust content area height allocation')."
+    },
+    {
+      "text": "Output uses Chinese terms (遗漏点, 模糊点, 矛盾点, 待澄清点) to categorize findings",
+      "passed": false,
+      "evidence": "The entire review.md output uses English terminology: 'Gap Identified', 'Critical Gaps', 'Missing', 'Incomplete', 'HIGH RISK', 'MEDIUM RISK', 'LOW RISK'. No Chinese categorization terms (遗漏点, 模糊点, 矛盾点, 待澄清点) appear anywhere in the output."
+    },
+    {
+      "text": "Output is in Chinese or properly bilingual, maintains critical tone in Chinese",
+      "passed": false,
+      "evidence": "The review.md output is entirely in English with no Chinese content. The document title, section headers, body text, tables, and conclusion are all English. No bilingual formatting or Chinese critical tone is present."
+    },
+    {
+      "text": "Output includes table or list showing completeness status for each dimension",
+      "passed": true,
+      "evidence": "Multiple tables/lists present: Section 1.1-1.8 contain tables with 'Aspect | Status | Notes' columns; Section 1.3 has 'Element | Code Provided | Similarity Est. | Gap Analysis' table; Section 4 'Completeness Checklist' uses checkbox list format ([x]/[ ]); Section 6 'Final Assessment' table shows 'Category | Score | Max | Notes' with total score 75/100."
+    }
+  ],
+  "summary": {
+    "passed": 2,
+    "failed": 3,
+    "total": 5,
+    "pass_rate": 0.4
+  },
+  "execution_metrics": {
+    "tool_calls": {
+      "Read": 5,
+      "Glob": 4,
+      "Write": 1,
+      "Bash": 1
+    },
+    "total_tool_calls": 11,
+    "total_steps": 5,
+    "errors_encountered": 0,
+    "output_chars": 14122,
+    "transcript_chars": 180197
+  },
+  "timing": {
+    "executor_duration_seconds": 145.1,
+    "grader_duration_seconds": null,
+    "total_duration_seconds": 145.1
+  },
+  "claims": [
+    {
+      "claim": "The design document has 75/100 completeness score",
+      "type": "quality",
+      "verified": true,
+      "evidence": "Score is calculated from 8 categories in Section 6 Final Assessment table, each with explicit scoring: Problem Definition (9/10), Layout Specification (8/10), Visual Elements (7/10), Color Scheme (9/10), Functional Changes (6/10), File Scope (5/10), Implementation Priority (8/10), Acceptance Criteria (7/10). Total = 59/80 normalized to 75/100."
+    },
+    {
+      "claim": "Content area height is only 82px (320 - 24 - 60 - 80 - 50 - 24)",
+      "type": "factual",
+      "verified": true,
+      "evidence": "Calculation in Section 1.2: Top scroll bar: 24px, Title bar: 60px, Options: 80px, Input: 50px, Bottom scroll bar: 24px. Total fixed = 238px. Remaining from 320px = 82px for content area."
+    },
+    {
+      "claim": "6 of 8 visual elements have implementation code",
+      "type": "factual",
+      "verified": true,
+      "evidence": "Section 1.3 table explicitly shows: ScrollBar (YES), PaperBackground (YES), SealStamp (YES), NPCAvatar (YES), MoodTag (YES), GoldBorder (YES), Vertical Text (NO CODE), OptionCard (NO CODE). 6 YES, 2 NO."
+    },
+    {
+      "claim": "Element 3.7 (Vertical Text) has no implementation code",
+      "type": "factual",
+      "verified": true,
+      "evidence": "Section 1.3 Critical Gaps: 'Element 3.7 (Vertical Text): The design acknowledges Phaser limitation but provides NO concrete implementation code. The placeholder comment // 与心情标签类似 is insufficient for implementation.'"
+    },
+    {
+      "claim": "Scroll behavior is mentioned but not implemented",
+      "type": "quality",
+      "verified": true,
+      "evidence": "Section 1.5 5.2 New Functions table: 'History scrolling | Mentioned | NO - Critical missing implementation'. Also HIGH RISK item 1: 'Scroll Implementation Missing: Phaser doesn't natively support scroll containers like HTML.'"
+    },
+    {
+      "claim": "Rich text parsing is mentioned but not implemented",
+      "type": "quality",
+      "verified": true,
+      "evidence": "Section 1.5 5.2 New Functions table: 'Rich text highlight | Mentioned | NO - Parsing logic missing'. HIGH RISK item 2: 'Rich Text Parsing Missing: The original design has sophisticated rich text with clickable links. The design document mentions this but provides NO parsing implementation.'"
+    }
+  ],
+  "user_notes_summary": {
+    "uncertainties": [],
+    "needs_review": [],
+    "workarounds": []
+  },
+  "eval_feedback": {
+    "suggestions": [
+      {
+        "assertion": "Output uses Chinese terms (遗漏点, 模糊点, 矛盾点, 待澄清点) to categorize findings",
+        "reason": "This expectation is critically important for Chinese design document reviews. The output completely failed to use the specified Chinese categorization terms, instead using generic English terms like 'Gap Identified' and 'Critical Gaps'. A skill designed for Chinese design documents should enforce Chinese terminology for cultural context alignment."
+      },
+      {
+        "assertion": "Output is in Chinese or properly bilingual, maintains critical tone in Chinese",
+        "reason": "This expectation is essential for Chinese design document review workflows. The output is entirely English, which may not align with the user's expected output format for Chinese project documentation review. Consider making this a mandatory requirement with no exceptions."
+      },
+      {
+        "assertion": "Each recommendation specifies exact location, exact issue, and concrete fix",
+        "reason": "While the output identifies specific gaps well, the recommendations section falls short. Some recommendations like 'Add Missing Implementation Code' and 'Add Visual Mockup' are too vague. Concrete fixes should specify: exact file location, exact function/class to modify, exact code snippet to add. Without this, the review is diagnostic but not actionable enough."
+      },
+      {
+        "reason": "No expectation checks whether the reviewer correctly cross-references the input design document file path with the actual review output. The output correctly references 'docs/superpowers/specs/phase2.5/2026-05-11-dialogui-scroll-style-design.md' but this alignment could be verified explicitly."
+      },
+      {
+        "reason": "The expectation set focuses on output format but lacks checks for reviewer methodology: Did the reviewer read the referenced JSX design file (dialog-scroll.jsx)? Did the reviewer check the existing code files (DialogUI.ts, ui-color-theme.ts)? Did the reviewer verify claims against actual file contents? Without methodology checks, a superficial review could pass the format expectations."
+      }
+    ],
+    "overall": "The expectations for Chinese terminology and bilingual output are critical gaps - they completely failed. The output excels at gap identification (Expectation 1) and completeness tables (Expectation 5), but falls short on actionable specificity (Expectation 2 partial fail) and cultural/language alignment (Expectations 3-4 complete fail). Consider strengthening the recommendation specificity requirement and making Chinese terminology mandatory for Chinese design document reviews."
+  }
+}

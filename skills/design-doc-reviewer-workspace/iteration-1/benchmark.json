@@ -1,0 +1,140 @@
+{
+  "skill_name": "design-doc-reviewer",
+  "iteration": 1,
+  "timestamp": "2026-05-15T00:30:00Z",
+  "configurations": [
+    {
+      "name": "with_skill",
+      "runs": [
+        {
+          "eval_id": "eval-0",
+          "eval_name": "real-design-review",
+          "passed": 5,
+          "failed": 0,
+          "total": 5,
+          "pass_rate": 1.0,
+          "duration_seconds": 146.0,
+          "tokens": 37697
+        },
+        {
+          "eval_id": "eval-1",
+          "eval_name": "chinese-design-review",
+          "passed": 3,
+          "failed": 2,
+          "total": 5,
+          "pass_rate": 0.6,
+          "duration_seconds": 130.2,
+          "tokens": 37697
+        },
+        {
+          "eval_id": "eval-2",
+          "eval_name": "incomplete-design-check",
+          "passed": 6,
+          "failed": 1,
+          "total": 7,
+          "pass_rate": 0.86,
+          "duration_seconds": 116.9,
+          "tokens": 37638
+        },
+        {
+          "eval_id": "eval-3",
+          "eval_name": "contradictory-design-eval",
+          "passed": 5,
+          "failed": 1,
+          "total": 6,
+          "pass_rate": 0.83,
+          "duration_seconds": 115.6,
+          "tokens": 37694
+        }
+      ],
+      "aggregate": {
+        "mean_pass_rate": 0.82,
+        "std_pass_rate": 0.17,
+        "mean_duration_seconds": 127.2,
+        "mean_tokens": 37682
+      }
+    },
+    {
+      "name": "without_skill",
+      "runs": [
+        {
+          "eval_id": "eval-0",
+          "eval_name": "real-design-review",
+          "passed": 4,
+          "failed": 1,
+          "total": 5,
+          "pass_rate": 0.80,
+          "duration_seconds": 133.1,
+          "tokens": 37884
+        },
+        {
+          "eval_id": "eval-1",
+          "eval_name": "chinese-design-review",
+          "passed": 2,
+          "failed": 3,
+          "total": 5,
+          "pass_rate": 0.40,
+          "duration_seconds": 145.1,
+          "tokens": 37738
+        },
+        {
+          "eval_id": "eval-2",
+          "eval_name": "incomplete-design-check",
+          "passed": 4,
+          "failed": 3,
+          "total": 7,
+          "pass_rate": 0.57,
+          "duration_seconds": 90.4,
+          "tokens": 37686
+        },
+        {
+          "eval_id": "eval-3",
+          "eval_name": "contradictory-design-eval",
+          "passed": 5,
+          "failed": 1,
+          "total": 6,
+          "pass_rate": 0.83,
+          "duration_seconds": 95.3,
+          "tokens": 37648
+        }
+      ],
+      "aggregate": {
+        "mean_pass_rate": 0.65,
+        "std_pass_rate": 0.18,
+        "mean_duration_seconds": 116.0,
+        "mean_tokens": 37739
+      }
+    }
+  ],
+  "delta": {
+    "pass_rate": 0.17,
+    "duration_seconds": 11.2,
+    "tokens": -57
+  },
+  "analyst_observations": [
+    {
+      "type": "discriminating",
+      "observation": "eval-0 shows with_skill achieving 100% pass rate due to strict 8-dimension framework, while without_skill uses different structure achieving only 80%"
+    },
+    {
+      "type": "discriminating",
+      "observation": "eval-2 shows largest delta (+29%) - with_skill correctly identifies missing dimensions using systematic framework, while without_skill uses different terminology causing mismatches"
+    },
+    {
+      "type": "non_discriminating",
+      "observation": "eval-3 shows no difference - both versions correctly detect contradictions but both fail to invoke AskUserQuestion tool as instructed"
+    },
+    {
+      "type": "issue",
+      "observation": "Both with_skill and without_skill fail Chinese terminology expectations (eval-1) - skill produces English output when reviewing English documents, suggesting language instruction needs refinement"
+    },
+    {
+      "type": "issue",
+      "observation": "AskUserQuestion tool never invoked despite skill instruction - both versions write questions into output file instead of using interactive tool"
+    },
+    {
+      "type": "tradeoff",
+      "observation": "with_skill takes slightly longer (+11.2s) but produces higher-quality structured output - acceptable tradeoff given significant pass rate improvement (+17%)"
+    }
+  ]
+}

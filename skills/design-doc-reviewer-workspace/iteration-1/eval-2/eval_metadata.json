@@ -1,0 +1,42 @@
+{
+  "eval_id": 2,
+  "eval_name": "incomplete-design-check",
+  "prompt": "Check design document completeness: design-doc-reviewer-workspace/incomplete-design.md",
+  "assertions": [
+    {
+      "name": "identifies_missing_background",
+      "description": "Review identifies that Background dimension is completely missing",
+      "check": "Output explicitly states Background is missing with ❌ status"
+    },
+    {
+      "name": "identifies_missing_problem_definition",
+      "description": "Review identifies that Problem Definition dimension is missing",
+      "check": "Output explicitly states Problem Definition is missing, notes that 'Goal' is vague substitute"
+    },
+    {
+      "name": "identifies_missing_solution_details",
+      "description": "Review identifies that Solution lacks technical details and architecture",
+      "check": "Output notes solution is too high-level without implementation details, no diagrams, no data flow"
+    },
+    {
+      "name": "identifies_missing_boundaries",
+      "description": "Review identifies that Boundaries (what's in/out of scope) are not specified",
+      "check": "Output notes scope is not defined, no constraints mentioned"
+    },
+    {
+      "name": "identifies_missing_validation_criteria",
+      "description": "Review identifies that Acceptance Criteria and Validation Scope are missing",
+      "check": "Output notes no measurable criteria, no test plan, no edge cases"
+    },
+    {
+      "name": "provides_concrete_fix_for_each_missing",
+      "description": "For each missing dimension, review provides specific fix suggestion",
+      "check": "Each missing dimension has recommendation with example of what to add"
+    },
+    {
+      "name": "verdict_needs_revision",
+      "description": "Review gives verdict that document needs major revision before implementation",
+      "check": "Output states verdict as 'Needs Revision' or 'Blocked' with reasoning"
+    }
+  ]
+}

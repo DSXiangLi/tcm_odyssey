@@ -1,0 +1,12 @@
+{
+  "session_id": "qingmu_player_001_20260507_093455",
+  "npc_id": "qingmu",
+  "player_id": "player_001",
+  "timestamp_start": "2026-05-07T09:34:55.478643",
+  "user_message": "我觉得麻黄汤和桂枝汤差不多，都是解表的",
+  "tool_calls": [],
+  "full_response": "你可还记得《伤寒论》中，有汗者为何证？无汗者为何证？\n\n麻黄汤与桂枝汤，同为解表之剂，却有一'实'一'虚'之别。你可知这'实'字与'虚'字，指的是什么？\n\n古人云：\"汗出者，桂枝汤主之；无汗者，麻黄汤主之。\"这有汗与无汗，难道只是症状的差异吗？你想想，这背后反映的病机有何不同？",
+  "timestamp_end": "2026-05-07T09:35:02.768145",
+  "response_duration_ms": 7289,
+  "response_token_count": 139
+}

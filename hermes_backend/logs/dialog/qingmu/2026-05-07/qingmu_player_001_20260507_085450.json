@@ -1,0 +1,12 @@
+{
+  "session_id": "qingmu_player_001_20260507_085450",
+  "npc_id": "qingmu",
+  "player_id": "player_001",
+  "timestamp_start": "2026-05-07T08:54:50.569055",
+  "user_message": "它的君药是什么？",
+  "tool_calls": [],
+  "full_response": "你问的是哪首方剂的君药呢？\n\n我们之前讨论过麻黄汤、桂枝汤、银翘散、桑菊饮这四方。你先说说你想了解哪一首的君药，我们再来细论其君臣佐使之理。\n\n你可记得《方剂学》所言：\"君者，主也，主病之谓君。\"——这\"君药\"二字，当如何理解？",
+  "timestamp_end": "2026-05-07T08:54:59.835721",
+  "response_duration_ms": 9267,
+  "response_token_count": 114
+}

@@ -1,0 +1,12 @@
+{
+  "session_id": "qingmu_player_001_20260507_085856",
+  "npc_id": "qingmu",
+  "player_id": "player_001",
+  "timestamp_start": "2026-05-07T08:58:56.437611",
+  "user_message": "你好，我是新来的学生",
+  "tool_calls": [],
+  "full_response": "欢迎来到百草镇。\n\n我是青木，镇上唯一的医者，家中三代行医，专攻《伤寒论》，擅长外感病诊治。\n\n你既来学医，我先问问——你之前可曾学过中医？对《伤寒论》太阳病有多少了解？\n\n你可先说说，你为何想学外感病？是因家中有患外感者，还是对医道有志？",
+  "timestamp_end": "2026-05-07T08:59:08.629205",
+  "response_duration_ms": 12191,
+  "response_token_count": 120
+}

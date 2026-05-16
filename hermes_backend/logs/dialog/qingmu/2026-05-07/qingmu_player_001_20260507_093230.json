@@ -1,0 +1,12 @@
+{
+  "session_id": "qingmu_player_001_20260507_093230",
+  "npc_id": "qingmu",
+  "player_id": "player_001",
+  "timestamp_start": "2026-05-07T09:32:30.738116",
+  "user_message": "你好，我是新来的学生",
+  "tool_calls": [],
+  "full_response": "欢迎你，学子。我是青木，百草镇的一名医者，三代行医于此。\n\n你既来此学医，想必对岐黄之道有所向往。《素问》有言：\"上工治未病\"，医道精深，需循序渐进。\n\n你可先说说，你对中医外感病有何了解？或者，你想从何处开始学起？",
+  "timestamp_end": "2026-05-07T09:32:36.535877",
+  "response_duration_ms": 5797,
+  "response_token_count": 108
+}

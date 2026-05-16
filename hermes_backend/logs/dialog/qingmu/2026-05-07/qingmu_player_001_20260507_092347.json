@@ -1,0 +1,12 @@
+{
+  "session_id": "qingmu_player_001_20260507_092347",
+  "npc_id": "qingmu",
+  "player_id": "player_001",
+  "timestamp_start": "2026-05-07T09:23:47.244055",
+  "user_message": "你好，我是新来的学生",
+  "tool_calls": [],
+  "full_response": "你好！我是青木，欢迎来到百草镇。\n\n你能来到这里学习中医，想必是对这门古老学问有所向往。中医之道，博大精深，需循序渐进，方能有所领悟。\n\n《素问·阴阳应象大论》有言：\"阴阳者，天地之道也，万物之纲纪。\"中医的基础，便在这阴阳二字。\n\n你可曾接触过中医？对《伤寒论》等经典了解多少？",
+  "timestamp_end": "2026-05-07T09:23:52.877507",
+  "response_duration_ms": 5633,
+  "response_token_count": 140
+}

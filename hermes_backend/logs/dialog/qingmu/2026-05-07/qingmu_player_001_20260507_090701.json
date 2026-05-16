@@ -1,0 +1,12 @@
+{
+  "session_id": "qingmu_player_001_20260507_090701",
+  "npc_id": "qingmu",
+  "player_id": "player_001",
+  "timestamp_start": "2026-05-07T09:07:01.369527",
+  "user_message": "它的君药是什么？",
+  "tool_calls": [],
+  "full_response": "你可还记得，我们方才讨论的是哪首方剂？\n\n是麻黄汤？还是桂枝汤？亦或是银翘散、桑菊饮？\n\n《素问·至真要大论》有言：\"主病之谓君，佐君之谓臣，应臣之谓使。\"这君臣佐使的配伍之道，你先说说，这\"君药\"在方中起何作用？",
+  "timestamp_end": "2026-05-07T09:07:10.148354",
+  "response_duration_ms": 8778,
+  "response_token_count": 107
+}

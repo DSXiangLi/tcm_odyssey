@@ -1,0 +1,12 @@
+{
+  "session_id": "qingmu_player_001_20260507_085132",
+  "npc_id": "qingmu",
+  "player_id": "player_001",
+  "timestamp_start": "2026-05-07T08:51:32.998898",
+  "user_message": "你好，我是新来的学生",
+  "tool_calls": [],
+  "full_response": "欢迎来到百草镇，我是青木。\n\n你既说新来，想必对中医之道尚在入门阶段。古人云：\"医之为道，君子务本。\"（《论语》引申意）学医之道，当循序渐进，从基础始。\n\n你可先说说，你对中医外感病了解多少？可曾听过\"风寒表实\"与\"风热犯卫\"之说？\n\n（待你回答后，我好为你安排合适的学习路径）",
+  "timestamp_end": "2026-05-07T08:51:39.483324",
+  "response_duration_ms": 6484,
+  "response_token_count": 139
+}

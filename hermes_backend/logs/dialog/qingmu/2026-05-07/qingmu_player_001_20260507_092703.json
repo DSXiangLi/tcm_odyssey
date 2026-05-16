@@ -1,0 +1,28 @@
+{
+  "session_id": "qingmu_player_001_20260507_092703",
+  "npc_id": "qingmu",
+  "player_id": "player_001",
+  "timestamp_start": "2026-05-07T09:27:03.815100",
+  "user_message": "讲完麻黄汤了，我想试试煎药",
+  "tool_calls": [
+    {
+      "seq": 1,
+      "name": "trigger_minigame",
+      "args": {
+        "player_id": "player_001"
+      },
+      "result": {
+        "status": "launched",
+        "session_id": "game_decoction_default_case",
+        "game_type": "decoction",
+        "case_id": "default_case",
+        "difficulty": 1
+      },
+      "timestamp": "2026-05-07T09:27:11.369460"
+    }
+  ],
+  "full_response": "好！有志于实践，这正是医道精进的正途。\n\n《伤寒论》第35条云：\"太阳病，头痛发热，身疼腰痛，骨节疼痛，恶风无汗而喘者，麻黄汤主之。\"\n\n在动手煎药之前，你可记得麻黄汤的四味药？？麻黄、桂枝、杏仁、甘草——这四味药各有何用？\n\n煎药之法，看似简单，实则大有讲究。火候、加水量、煎煮时间，稍有不慎，便会影响药效。\n\n来吧，让我们看看你如何煎煮这剂麻黄汤。",
+  "timestamp_end": "2026-05-07T09:27:11.369504",
+  "response_duration_ms": 7554,
+  "response_token_count": 176
+}

@@ -1,0 +1,12 @@
+{
+  "session_id": "qingmu_player_001_20260507_084150",
+  "npc_id": "qingmu",
+  "player_id": "player_001",
+  "timestamp_start": "2026-05-07T08:41:50.420882",
+  "user_message": "你好，我是新来的学生",
+  "tool_calls": [],
+  "full_response": "欢迎你来到百草镇。我是青木，世代行医于此。\n\n既然新来，我先问你：你可知中医外感病，当从何入手学习？\n\n《伤寒论》开篇便言：\"太阳之为病，脉浮，头项强痛而恶寒。\"这太阳病三字，便是外感病辨证的门户。\n\n你可曾学过《伤寒论》？或是对哪类证型有所了解？",
+  "timestamp_end": "2026-05-07T08:41:55.746474",
+  "response_duration_ms": 5325,
+  "response_token_count": 124
+}

@@ -1,0 +1,12 @@
+{
+  "session_id": "qingmu_player_001_20260507_093252",
+  "npc_id": "qingmu",
+  "player_id": "player_001",
+  "timestamp_start": "2026-05-07T09:32:52.501735",
+  "user_message": "你好，我是新来的学生",
+  "tool_calls": [],
+  "full_response": "欢迎你来到百草镇。\n\n我是青木，世代行医于此。今日有缘，你我师徒二人，当共同研习医道。\n\n《素问·著至教论》有言：\"上知天文，下知地理，中知人事，可以长久。\"医道博大精深，非一日之功。\n\n在开始之前，我想先了解——你对中医基础，可曾有所涉猎？比如《伤寒论》的六经辨证，你可略知一二？",
+  "timestamp_end": "2026-05-07T09:33:00.342970",
+  "response_duration_ms": 7841,
+  "response_token_count": 141
+}

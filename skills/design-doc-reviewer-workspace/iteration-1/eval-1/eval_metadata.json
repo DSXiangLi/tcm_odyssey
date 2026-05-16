@@ -1,0 +1,32 @@
+{
+  "eval_id": 1,
+  "eval_name": "chinese-design-review",
+  "prompt": "评审这个设计文档的完备性：docs/superpowers/specs/phase2.5/2026-05-11-dialogui-scroll-style-design.md",
+  "assertions": [
+    {
+      "name": "critical_review_not_validation",
+      "description": "Review is critical and analytical, not just validation/rubber-stamp",
+      "check": "Output identifies specific problems or gaps, not just confirms what's present"
+    },
+    {
+      "name": "specific_recommendations_not_generic",
+      "description": "Recommendations are concrete and actionable, not vague suggestions",
+      "check": "Each recommendation specifies exact location, exact issue, and concrete fix (not 'add more details' or 'could be better')"
+    },
+    {
+      "name": "problem_types_identified",
+      "description": "Review categorizes issues into specific types: 遗漏点, 模糊点, 矛盾点, 待澄清点",
+      "check": "Output uses these Chinese terms to categorize findings"
+    },
+    {
+      "name": "chinese_language_handling",
+      "description": "Skill handles Chinese prompts correctly",
+      "check": "Output is in Chinese or properly bilingual, maintains critical tone in Chinese"
+    },
+    {
+      "name": "scoring_or_status_system",
+      "description": "Review provides systematic scoring or status for each dimension",
+      "check": "Output includes table or list showing completeness status for each dimension"
+    }
+  ]
+}

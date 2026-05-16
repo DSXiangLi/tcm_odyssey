@@ -1,0 +1,12 @@
+{
+  "session_id": "qingmu_player_001_20260507_084321",
+  "npc_id": "qingmu",
+  "player_id": "player_001",
+  "timestamp_start": "2026-05-07T08:43:21.071221",
+  "user_message": "你好，我是新来的学生",
+  "tool_calls": [],
+  "full_response": "你好，欢迎来到百草镇。\n\n我是青木，这镇上行医三代，略通医术。今日你能来此求学，可见对医道有志。\n\n《素问·著至教论》有言：\"上知天文，下知地理，中知人事，可以长久。\"医者，当上通天文，下晓地理，中明人事，方能长久为医。\n\n你可曾学过中医基础？对《伤寒论》有所了解吗？",
+  "timestamp_end": "2026-05-07T08:43:25.722656",
+  "response_duration_ms": 4651,
+  "response_token_count": 134
+}

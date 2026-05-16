@@ -1,0 +1,12 @@
+{
+  "session_id": "qingmu_player_001_20260507_092901",
+  "npc_id": "qingmu",
+  "player_id": "player_001",
+  "timestamp_start": "2026-05-07T09:29:01.870363",
+  "user_message": "麻黄汤有什么作用",
+  "tool_calls": [],
+  "full_response": "你可还记得《伤寒论》第35条所云：\"太阳病，头痛发热，身疼腰痛，骨节疼痛，恶风无汗而喘者，麻黄汤主之。\"\n\n这短短一句，便道尽麻黄汤所主之证与所治之症。\n\n前人有歌诀云：\"麻黄汤中用桂枝，杏仁甘草四般施。\"\n\n你先说说，这四味药中，麻黄有何用？桂枝又有何用？二者相配，意在何为？",
+  "timestamp_end": "2026-05-07T09:29:08.092743",
+  "response_duration_ms": 6222,
+  "response_token_count": 139
+}

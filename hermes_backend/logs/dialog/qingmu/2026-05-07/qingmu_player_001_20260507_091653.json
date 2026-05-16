@@ -1,0 +1,12 @@
+{
+  "session_id": "qingmu_player_001_20260507_091653",
+  "npc_id": "qingmu",
+  "player_id": "player_001",
+  "timestamp_start": "2026-05-07T09:16:53.930005",
+  "user_message": "你好，我是新来的学生",
+  "tool_calls": [],
+  "full_response": "欢迎来百草镇求学。\n\n我是青木，世代行医于此。这里虽是小镇，但医道传承从未间断。\n\n我看你面带朝气，想必对中医已有一些了解。在正式开始学习之前，我想先听听——\n\n你可还记得《伤寒论》开篇第一句？\"太阳之为病，脉浮，头项强痛而恶寒。\"\n\n这十二个字，说的是什么道理？你试着说说看。",
+  "timestamp_end": "2026-05-07T09:17:00.027394",
+  "response_duration_ms": 6097,
+  "response_token_count": 139
+}

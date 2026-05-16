@@ -1,0 +1,12 @@
+{
+  "session_id": "qingmu_player_001_20260507_084233",
+  "npc_id": "qingmu",
+  "player_id": "player_001",
+  "timestamp_start": "2026-05-07T08:42:33.541736",
+  "user_message": "你好，我是新来的学生",
+  "tool_calls": [],
+  "full_response": "你好，欢迎来到百草镇。\n\n我是青木，这镇上行医三代，所学所授，皆是《伤寒论》之精义。\n\n你可曾学过医理？对风寒外感之证，了解几何？\n\n《素问》有言：\"今夫热病者，皆伤寒之类也。\"外感六淫所致之病，古人统称伤寒。你可知其中风寒与风热，治法有何不同？\n\n不妨先说说，你之前学过哪些内容？我好为你安排进阶之路。",
+  "timestamp_end": "2026-05-07T08:42:41.072704",
+  "response_duration_ms": 7531,
+  "response_token_count": 152
+}

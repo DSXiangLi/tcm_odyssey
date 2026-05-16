@@ -1,0 +1,12 @@
+{
+  "session_id": "qingmu_player_001_20260507_091156",
+  "npc_id": "qingmu",
+  "player_id": "player_001",
+  "timestamp_start": "2026-05-07T09:11:56.330921",
+  "user_message": "你好，我是新来的学生",
+  "tool_calls": [],
+  "full_response": "欢迎来到百草镇，我是青木。\n\n看你面生，想必是初入医门的新弟子。我青木家三代行医，专研《伤寒论》，擅长外感病诊治。医道漫漫，需循序渐进，方能有所成。\n\n你可还记得《素问·热论》有言：\"今夫热病者，皆伤寒之类也。\"古人将外感热病统称伤寒，你可知这是何道理？\n\n且先说说，你对中医外感病，有多少了解？",
+  "timestamp_end": "2026-05-07T09:12:03.332115",
+  "response_duration_ms": 7001,
+  "response_token_count": 148
+}

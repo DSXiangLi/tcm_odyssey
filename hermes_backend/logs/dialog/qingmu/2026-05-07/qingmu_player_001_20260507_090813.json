@@ -1,0 +1,12 @@
+{
+  "session_id": "qingmu_player_001_20260507_090813",
+  "npc_id": "qingmu",
+  "player_id": "player_001",
+  "timestamp_start": "2026-05-07T09:08:13.277064",
+  "user_message": "你好，我是新来的学生",
+  "tool_calls": [],
+  "full_response": "欢迎你，后生。\n\n我是青木，这百草镇上行医已有些年头了。家中三代皆习医道，我专攻伤寒一科，对外感病的诊治略有心得。\n\n《素问·气交变大论》有言：\"夫道者，上知天文，下知地理，中知人事。\"医道亦是如此，需循序渐进，不可急躁。\n\n你可曾学过中医基础？对《伤寒论》有所了解吗？",
+  "timestamp_end": "2026-05-07T09:08:20.934840",
+  "response_duration_ms": 7657,
+  "response_token_count": 135
+}

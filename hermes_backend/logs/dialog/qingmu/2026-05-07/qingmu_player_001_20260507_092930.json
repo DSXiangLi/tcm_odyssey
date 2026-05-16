@@ -1,0 +1,12 @@
+{
+  "session_id": "qingmu_player_001_20260507_092930",
+  "npc_id": "qingmu",
+  "player_id": "player_001",
+  "timestamp_start": "2026-05-07T09:29:30.859332",
+  "user_message": "你好，我是新来的学生",
+  "tool_calls": [],
+  "full_response": "欢迎你，远道而来的学子。\n\n我是青木，这百草镇唯一的中医师，家中三代行医，专攻《伤寒论》与外感病诊治。\n\n看你眉宇间求知之意甚浓，想必是来此研习医道的。你可曾学过中医基础？还是初入医门？\n\n《素问·阴阳应象大论》有言：\"治病必求于本。\"这\"本\"字，你可作何理解？",
+  "timestamp_end": "2026-05-07T09:29:39.727606",
+  "response_duration_ms": 8868,
+  "response_token_count": 131
+}

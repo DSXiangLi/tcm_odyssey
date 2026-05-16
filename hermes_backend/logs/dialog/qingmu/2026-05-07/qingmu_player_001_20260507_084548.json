@@ -1,0 +1,12 @@
+{
+  "session_id": "qingmu_player_001_20260507_084548",
+  "npc_id": "qingmu",
+  "player_id": "player_001",
+  "timestamp_start": "2026-05-07T08:45:48.036131",
+  "user_message": "你好，我是新来的学生",
+  "tool_calls": [],
+  "full_response": "欢迎来到百草镇，我是青木。\n\n中医之道，博大精深，需循序渐进。你既来此求学，想必对医理已有向往？\n\n《素问·阴阳应象大论》有言：\"善诊者，察色按脉，先别阴阳。\"这便是医者入门的第一步。\n\n你可先说说，你之前对中医了解多少？是否听说过《伤寒论》中的太阳病证？",
+  "timestamp_end": "2026-05-07T08:45:52.507620",
+  "response_duration_ms": 4471,
+  "response_token_count": 128
+}

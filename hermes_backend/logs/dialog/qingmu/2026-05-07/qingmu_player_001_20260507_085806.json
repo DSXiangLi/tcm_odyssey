@@ -1,0 +1,12 @@
+{
+  "session_id": "qingmu_player_001_20260507_085806",
+  "npc_id": "qingmu",
+  "player_id": "player_001",
+  "timestamp_start": "2026-05-07T08:58:06.668387",
+  "user_message": "麻黄汤有什么作用",
+  "tool_calls": [],
+  "full_response": "你可记得《伤寒论》第35条云：\"太阳病，头痛发热，身疼腰痛，骨节疼痛，恶风无汗而喘者，麻黄汤主之。\"\n\n这\"无汗\"二字，正是麻黄汤证的关键所在。\n\n麻黄汤与桂枝汤，同为解表之剂，却有一\"实\"一\"虚\"之别。你可知这\"实\"字，指的是什么？",
+  "timestamp_end": "2026-05-07T08:58:13.118044",
+  "response_duration_ms": 6449,
+  "response_token_count": 117
+}

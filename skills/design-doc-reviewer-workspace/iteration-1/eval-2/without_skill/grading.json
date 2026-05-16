@@ -1,0 +1,107 @@
+{
+  "expectations": [
+    {
+      "text": "Output explicitly states Background dimension is missing with ❌ status",
+      "passed": false,
+      "evidence": "The output shows 'Status: ❌ INCOMPLETE' at the top, but does NOT explicitly call out 'Background' as a missing dimension. The suggested structure includes '背景' (Background) in section 1.2, but the actual review does not identify Background as a specific missing section with ❌ status. The missing sections identified are: Technical Architecture, Data Model, UI/UX Specifications, Component Design, Integration Points, Filtering Logic, Acceptance Criteria, Edge Cases, Dependencies, Implementation Phases - none of which is 'Background'."
+    },
+    {
+      "text": "Output notes Problem Definition is missing, mentions 'Goal' is vague substitute",
+      "passed": false,
+      "evidence": "The output reviews the 'Goal Section' with status '⚠️ PARTIAL', noting 'Basic goal stated' and missing 'Success metrics, User value proposition, Context within larger game experience'. However, there is NO explicit mention of 'Problem Definition' being missing, nor any statement that 'Goal' is a vague substitute for Problem Definition. The output uses different terminology entirely."
+    },
+    {
+      "text": "Output notes solution is high-level without implementation details, no diagrams, no data flow",
+      "passed": true,
+      "evidence": "The Executive Summary states: 'This design document provides only a high-level outline of the Casebook (病案集) system. It lacks the technical depth, structural details, and implementation specifications.' Section '1. Technical Architecture (CRITICAL - Missing)' explicitly lists 'Data flow diagrams' as missing. The 'Implementation Section' review notes 'Missing: Specific technical approach, Component architecture, File structure'."
+    },
+    {
+      "text": "Output notes scope is not defined, no constraints mentioned",
+      "passed": false,
+      "evidence": "The output does NOT explicitly state 'scope is not defined' or mention 'constraints'. While 'Implementation Phases (MEDIUM - Missing)' mentions 'MVP vs. full feature scope' as missing, this is about scope phasing, not scope definition itself. The suggested structure includes '范围' (Scope) but the review does not call out scope as a missing dimension with explicit wording."
+    },
+    {
+      "text": "Output notes no measurable criteria, no test plan, no edge cases",
+      "passed": true,
+      "evidence": "Section '7. Acceptance Criteria (HIGH - Missing)' explicitly states 'What's Missing: Definition of done, Test scenarios, Edge cases to handle, Performance requirements, User acceptance checklist'. Section '8. Edge Cases (MEDIUM - Missing)' lists specific edge cases that are missing: 'Empty case list (no diagnoses yet), Very long case list (pagination? scrolling?), Case detail view with long content, Failed diagnosis cases, Incomplete cases'."
+    },
+    {
+      "text": "Each missing dimension has recommendation with example of what to add",
+      "passed": true,
+      "evidence": "Each missing section (1-10) has a 'What's Missing' subsection listing specific items. The 'Immediate Actions Required' section provides concrete recommendations: 'Add Data Model Section - Define Case interface/type with all fields, Specify data storage approach, Document data initialization', 'Add UI/UX Specification Section - Create wireframe/mockup, Define component layout, Specify dimensions and positioning, Describe interaction flow', etc. Each recommendation includes examples of what content to add."
+    },
+    {
+      "text": "Output states verdict as 'Needs Revision' or 'Blocked' with reasoning",
+      "passed": true,
+      "evidence": "The Executive Summary shows: 'Status: ❌ INCOMPLETE', 'Completeness Score: 25/100', 'Recommendation: Major revisions required before implementation'. The Conclusion states: 'Risk of implementing current design: HIGH - Will result in multiple iterations, rework, and potential architectural issues.' While the exact phrase 'Needs Revision' is not used, 'Major revisions required before implementation' conveys the same meaning with clear reasoning about the high risk and need for 4-6 hours of additional design work."
+    }
+  ],
+  "summary": {
+    "passed": 4,
+    "failed": 3,
+    "total": 7,
+    "pass_rate": 0.57
+  },
+  "execution_metrics": {
+    "tool_calls": {
+      "Read": 1,
+      "Write": 1,
+      "Bash": 2
+    },
+    "total_tool_calls": 4,
+    "total_steps": 3,
+    "errors_encountered": 0,
+    "output_chars": 5954,
+    "transcript_chars": 28358
+  },
+  "timing": {
+    "executor_duration_seconds": null,
+    "grader_duration_seconds": null,
+    "total_duration_seconds": null
+  },
+  "claims": [
+    {
+      "claim": "The design document completeness score is 25/100",
+      "type": "quality",
+      "verified": false,
+      "evidence": "No methodology is provided for how this score was calculated. It appears to be an arbitrary assessment without objective scoring criteria."
+    },
+    {
+      "claim": "Estimated effort to complete is 4-6 hours of design work",
+      "type": "quality",
+      "verified": false,
+      "evidence": "This is an unsubstantiated estimate without justification or breakdown of how the time would be allocated across the missing sections."
+    },
+    {
+      "claim": "10 sections are missing from the design document",
+      "type": "factual",
+      "verified": true,
+      "evidence": "The output identifies 10 missing sections numbered 1-10: Technical Architecture, Data Model, UI/UX Specifications, Component Design, Integration Points, Filtering Logic, Acceptance Criteria, Edge Cases, Dependencies, Implementation Phases."
+    }
+  ],
+  "user_notes_summary": {
+    "uncertainties": [],
+    "needs_review": [],
+    "workarounds": []
+  },
+  "eval_feedback": {
+    "suggestions": [
+      {
+        "assertion": "Output explicitly states Background dimension is missing with ❌ status",
+        "reason": "The expectation specifies specific terminology ('Background', '❌ status') that may be too rigid. A good review could use equivalent terminology. However, the output genuinely does not identify Background/context as a missing dimension at all - it's only suggested in the template. Consider rewording to 'Output identifies that background/context information is missing or inadequate' without requiring specific emoji."
+      },
+      {
+        "assertion": "Output notes Problem Definition is missing, mentions 'Goal' is vague substitute",
+        "reason": "This expectation requires the reviewer to use specific terminology from a design document framework. The output reviewed 'Goal Section' which is equivalent but did not frame it as 'Problem Definition missing'. Consider allowing alternative framing: 'Output identifies that the problem being solved is not clearly defined or the goal statement lacks sufficient detail/context'."
+      },
+      {
+        "assertion": "Output notes scope is not defined, no constraints mentioned",
+        "reason": "The output indirectly addresses scope through 'MVP vs. full feature scope' in Implementation Phases, but never explicitly states scope/constraints as missing. This is a legitimate gap. However, the expectation could be clearer: 'Output identifies scope boundaries and constraints are missing'."
+      },
+      {
+        "reason": "The output provides thorough analysis of 10 missing dimensions with detailed recommendations, but uses different terminology than the expectations specified. The expectations appear to be based on a specific design document framework (Background, Problem Definition, Scope, etc.) while the output uses practical development terminology (Data Model, UI/UX, Technical Architecture, etc.). Both approaches are valid, but the mismatch in terminology causes failures on otherwise reasonable expectations."
+      }
+    ],
+    "overall": "The output is comprehensive and thorough, providing detailed analysis of missing sections with actionable recommendations. However, it uses different terminology than the expectation framework, causing 3 failures. The expectations should either be relaxed to accept equivalent terminology, or the skill being tested should be instructed to use the specific framework terminology (Background, Problem Definition, Scope, Success Criteria, etc.)."
+  }
+}

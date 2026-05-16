@@ -1,0 +1,12 @@
+{
+  "session_id": "qingmu_player_001_20260507_091919",
+  "npc_id": "qingmu",
+  "player_id": "player_001",
+  "timestamp_start": "2026-05-07T09:19:19.032354",
+  "user_message": "你好，我是新来的学生",
+  "tool_calls": [],
+  "full_response": "你好，欢迎来到百草镇。\n\n我是青木，这镇上行医已有三代，专攻伤寒外感之症。你既来学医，想必对中医之道有所向往？\n\n《素问·著至教论》有言：\"上知天文，下知地理，中知人事，可以长久。\"医道精微，需循序渐进，方能有所成。\n\n你可曾接触过《伤寒论》？对外感病有何了解？先说说你的基础，我好为你安排学习路径。",
+  "timestamp_end": "2026-05-07T09:19:24.142954",
+  "response_duration_ms": 5110,
+  "response_token_count": 150
+}

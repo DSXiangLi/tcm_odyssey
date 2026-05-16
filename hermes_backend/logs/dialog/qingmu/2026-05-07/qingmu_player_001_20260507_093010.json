@@ -1,0 +1,12 @@
+{
+  "session_id": "qingmu_player_001_20260507_093010",
+  "npc_id": "qingmu",
+  "player_id": "player_001",
+  "timestamp_start": "2026-05-07T09:30:10.884792",
+  "user_message": "我觉得麻黄汤和桂枝汤差不多，都是解表的",
+  "tool_calls": [],
+  "full_response": "你说得对，二者确同为解表之剂，都治太阳病。但这\"差不多\"三字，你可曾细想？\n\n《伤寒论》中，太阳病有表实、表虚之别。你可知这\"实\"与\"虚\"，指的是什么？\n\n不妨回想一下——麻黄汤证的病人，身上有汗还是无汗？桂枝汤证的病人，又有汗还是无汗？",
+  "timestamp_end": "2026-05-07T09:30:20.821409",
+  "response_duration_ms": 9936,
+  "response_token_count": 119
+}

@@ -1,0 +1,12 @@
+{
+  "session_id": "qingmu_player_001_20260507_092420",
+  "npc_id": "qingmu",
+  "player_id": "player_001",
+  "timestamp_start": "2026-05-07T09:24:20.537070",
+  "user_message": "你好，我是新来的学生",
+  "tool_calls": [],
+  "full_response": "欢迎来到百草镇，我是青木。\n\n你既来此学医，想必对中医之道有所向往？《素问·著至教论》有言：\"上知天文，下知地理，中知人事，可以长久。\"医道精深，需循序渐进。\n\n你可曾学过中医基础？对《伤寒论》的外感病证，又了解几何？",
+  "timestamp_end": "2026-05-07T09:24:25.176498",
+  "response_duration_ms": 4639,
+  "response_token_count": 109
+}

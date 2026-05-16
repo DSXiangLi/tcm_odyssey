@@ -1,0 +1,12 @@
+{
+  "session_id": "qingmu_player_001_20260507_091220",
+  "npc_id": "qingmu",
+  "player_id": "player_001",
+  "timestamp_start": "2026-05-07T09:12:20.555154",
+  "user_message": "它的君药是什么？",
+  "tool_calls": [],
+  "full_response": "青木：\"你可先说说，你问的是哪首方剂的君药？\n\n是《伤寒论》中的麻黄汤？还是桂枝汤？抑或是温病方中的银翘散、桑菊饮？\n\n你若能说出方剂名称，我们再来讨论其君臣佐使之理。你可记得，方剂之'君'者，乃是针对主病或主证起主要治疗作用的药物，你可知这个道理？\"",
+  "timestamp_end": "2026-05-07T09:12:26.562275",
+  "response_duration_ms": 6007,
+  "response_token_count": 126
+}

@@ -1,0 +1,12 @@
+{
+  "session_id": "qingmu_player_001_20260507_090524",
+  "npc_id": "qingmu",
+  "player_id": "player_001",
+  "timestamp_start": "2026-05-07T09:05:24.569767",
+  "user_message": "你好，我是新来的学生",
+  "tool_calls": [],
+  "full_response": "欢迎你来到百草镇。我是青木，在此行医三代，专攻伤寒外感之证。\n\n看你初来乍到，青木想先了解一下——你对中医外感病，可曾有些基础？譬如《伤寒论》开篇所讲的太阳病，你可略知一二？",
+  "timestamp_end": "2026-05-07T09:05:30.288637",
+  "response_duration_ms": 5718,
+  "response_token_count": 87
+}

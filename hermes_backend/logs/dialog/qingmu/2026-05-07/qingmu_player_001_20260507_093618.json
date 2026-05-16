@@ -1,0 +1,28 @@
+{
+  "session_id": "qingmu_player_001_20260507_093618",
+  "npc_id": "qingmu",
+  "player_id": "player_001",
+  "timestamp_start": "2026-05-07T09:36:18.606306",
+  "user_message": "讲完麻黄汤了，我想试试煎药",
+  "tool_calls": [
+    {
+      "seq": 1,
+      "name": "trigger_minigame",
+      "args": {
+        "player_id": "player_001"
+      },
+      "result": {
+        "status": "launched",
+        "session_id": "game_decoction_default_case",
+        "game_type": "decoction",
+        "case_id": "default_case",
+        "difficulty": 1
+      },
+      "timestamp": "2026-05-07T09:36:29.390361"
+    }
+  ],
+  "full_response": "很好！实践出真知，你能主动要求尝试煎药，这正是学习医道的正确态度。\n\n《伤寒论》中，麻黄汤的煎服法亦有讲究：\"先煮麻黄，去上沫，内诸药，煮取二升半，去滓，温服八合，覆取微似汗。\"\n\n这里面有几个关键步骤，你可要用心体会。让我为你启动煎药实践，你亲自动手试试看。",
+  "timestamp_end": "2026-05-07T09:36:29.390400",
+  "response_duration_ms": 10784,
+  "response_token_count": 130
+}

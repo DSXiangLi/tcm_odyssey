@@ -1,0 +1,1325 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Eval Review</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;600&family=Lora:wght@400;500&display=swap" rel="stylesheet">
+  <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js" integrity="sha384-EnyY0/GSHQGSxSgMwaIPzSESbqoOLSexfnSMN2AP+39Ckmn92stwABZynq1JyzdT" crossorigin="anonymous"></script>
+  <style>
+    :root {
+      --bg: #faf9f5;
+      --surface: #ffffff;
+      --border: #e8e6dc;
+      --text: #141413;
+      --text-muted: #b0aea5;
+      --accent: #d97757;
+      --accent-hover: #c4613f;
+      --green: #788c5d;
+      --green-bg: #eef2e8;
+      --red: #c44;
+      --red-bg: #fceaea;
+      --header-bg: #141413;
+      --header-text: #faf9f5;
+      --radius: 6px;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Lora', Georgia, serif;
+      background: var(--bg);
+      color: var(--text);
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* ---- Header ---- */
+    .header {
+      background: var(--header-bg);
+      color: var(--header-text);
+      padding: 1rem 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-shrink: 0;
+    }
+    .header h1 {
+      font-family: 'Poppins', sans-serif;
+      font-size: 1.25rem;
+      font-weight: 600;
+    }
+    .header .instructions {
+      font-size: 0.8rem;
+      opacity: 0.7;
+      margin-top: 0.25rem;
+    }
+    .header .progress {
+      font-size: 0.875rem;
+      opacity: 0.8;
+      text-align: right;
+    }
+
+    /* ---- Main content ---- */
+    .main {
+      flex: 1;
+      overflow-y: auto;
+      padding: 1.5rem 2rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1.25rem;
+    }
+
+    /* ---- Sections ---- */
+    .section {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      flex-shrink: 0;
+    }
+    .section-header {
+      font-family: 'Poppins', sans-serif;
+      padding: 0.75rem 1rem;
+      font-size: 0.75rem;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-muted);
+      border-bottom: 1px solid var(--border);
+      background: var(--bg);
+    }
+    .section-body {
+      padding: 1rem;
+    }
+
+    /* ---- Config badge ---- */
+    .config-badge {
+      display: inline-block;
+      padding: 0.2rem 0.625rem;
+      border-radius: 9999px;
+      font-family: 'Poppins', sans-serif;
+      font-size: 0.6875rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+      margin-left: 0.75rem;
+      vertical-align: middle;
+    }
+    .config-badge.config-primary {
+      background: rgba(33, 150, 243, 0.12);
+      color: #1976d2;
+    }
+    .config-badge.config-baseline {
+      background: rgba(255, 193, 7, 0.15);
+      color: #f57f17;
+    }
+
+    /* ---- Prompt ---- */
+    .prompt-text {
+      white-space: pre-wrap;
+      font-size: 0.9375rem;
+      line-height: 1.6;
+    }
+
+    /* ---- Outputs ---- */
+    .output-file {
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+    }
+    .output-file + .output-file {
+      margin-top: 1rem;
+    }
+    .output-file-header {
+      padding: 0.5rem 0.75rem;
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      background: var(--bg);
+      border-bottom: 1px solid var(--border);
+      font-family: 'SF Mono', SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .output-file-header .dl-btn {
+      font-size: 0.7rem;
+      color: var(--accent);
+      text-decoration: none;
+      cursor: pointer;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      font-weight: 500;
+      opacity: 0.8;
+    }
+    .output-file-header .dl-btn:hover {
+      opacity: 1;
+      text-decoration: underline;
+    }
+    .output-file-content {
+      padding: 0.75rem;
+      overflow-x: auto;
+    }
+    .output-file-content pre {
+      font-size: 0.8125rem;
+      line-height: 1.5;
+      white-space: pre-wrap;
+      word-break: break-word;
+      font-family: 'SF Mono', SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace;
+    }
+    .output-file-content img {
+      max-width: 100%;
+      height: auto;
+      border-radius: 4px;
+    }
+    .output-file-content iframe {
+      width: 100%;
+      height: 600px;
+      border: none;
+    }
+    .output-file-content table {
+      border-collapse: collapse;
+      font-size: 0.8125rem;
+      width: 100%;
+    }
+    .output-file-content table td,
+    .output-file-content table th {
+      border: 1px solid var(--border);
+      padding: 0.375rem 0.5rem;
+      text-align: left;
+    }
+    .output-file-content table th {
+      background: var(--bg);
+      font-weight: 600;
+    }
+    .output-file-content .download-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.5rem 1rem;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      color: var(--accent);
+      text-decoration: none;
+      font-size: 0.875rem;
+      cursor: pointer;
+    }
+    .output-file-content .download-link:hover {
+      background: var(--border);
+    }
+    .empty-state {
+      color: var(--text-muted);
+      font-style: italic;
+      padding: 2rem;
+      text-align: center;
+    }
+
+    /* ---- Feedback ---- */
+    .prev-feedback {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 0.625rem 0.75rem;
+      margin-top: 0.75rem;
+      font-size: 0.8125rem;
+      color: var(--text-muted);
+      line-height: 1.5;
+    }
+    .prev-feedback-label {
+      font-size: 0.7rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      margin-bottom: 0.25rem;
+      color: var(--text-muted);
+    }
+    .feedback-textarea {
+      width: 100%;
+      min-height: 100px;
+      padding: 0.75rem;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      font-family: inherit;
+      font-size: 0.9375rem;
+      line-height: 1.5;
+      resize: vertical;
+      color: var(--text);
+    }
+    .feedback-textarea:focus {
+      outline: none;
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+    }
+    .feedback-status {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      margin-top: 0.5rem;
+      min-height: 1.1em;
+    }
+
+    /* ---- Grades (collapsible) ---- */
+    .grades-toggle {
+      display: flex;
+      align-items: center;
+      cursor: pointer;
+      user-select: none;
+    }
+    .grades-toggle:hover {
+      color: var(--accent);
+    }
+    .grades-toggle .arrow {
+      margin-right: 0.5rem;
+      transition: transform 0.15s;
+      font-size: 0.75rem;
+    }
+    .grades-toggle .arrow.open {
+      transform: rotate(90deg);
+    }
+    .grades-content {
+      display: none;
+      margin-top: 0.75rem;
+    }
+    .grades-content.open {
+      display: block;
+    }
+    .grades-summary {
+      font-size: 0.875rem;
+      margin-bottom: 0.75rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .grade-badge {
+      display: inline-block;
+      padding: 0.125rem 0.5rem;
+      border-radius: 9999px;
+      font-size: 0.75rem;
+      font-weight: 600;
+    }
+    .grade-pass { background: var(--green-bg); color: var(--green); }
+    .grade-fail { background: var(--red-bg); color: var(--red); }
+    .assertion-list {
+      list-style: none;
+    }
+    .assertion-item {
+      padding: 0.625rem 0;
+      border-bottom: 1px solid var(--border);
+      font-size: 0.8125rem;
+    }
+    .assertion-item:last-child { border-bottom: none; }
+    .assertion-status {
+      font-weight: 600;
+      margin-right: 0.5rem;
+    }
+    .assertion-status.pass { color: var(--green); }
+    .assertion-status.fail { color: var(--red); }
+    .assertion-evidence {
+      color: var(--text-muted);
+      font-size: 0.75rem;
+      margin-top: 0.25rem;
+      padding-left: 1.5rem;
+    }
+
+    /* ---- View tabs ---- */
+    .view-tabs {
+      display: flex;
+      gap: 0;
+      padding: 0 2rem;
+      background: var(--bg);
+      border-bottom: 1px solid var(--border);
+      flex-shrink: 0;
+    }
+    .view-tab {
+      font-family: 'Poppins', sans-serif;
+      padding: 0.625rem 1.25rem;
+      font-size: 0.8125rem;
+      font-weight: 500;
+      cursor: pointer;
+      border: none;
+      background: none;
+      color: var(--text-muted);
+      border-bottom: 2px solid transparent;
+      transition: all 0.15s;
+    }
+    .view-tab:hover { color: var(--text); }
+    .view-tab.active {
+      color: var(--accent);
+      border-bottom-color: var(--accent);
+    }
+    .view-panel { display: none; }
+    .view-panel.active { display: flex; flex-direction: column; flex: 1; overflow: hidden; }
+
+    /* ---- Benchmark view ---- */
+    .benchmark-view {
+      padding: 1.5rem 2rem;
+      overflow-y: auto;
+      flex: 1;
+    }
+    .benchmark-table {
+      border-collapse: collapse;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      font-size: 0.8125rem;
+      width: 100%;
+      margin-bottom: 1.5rem;
+    }
+    .benchmark-table th, .benchmark-table td {
+      padding: 0.625rem 0.75rem;
+      text-align: left;
+      border: 1px solid var(--border);
+    }
+    .benchmark-table th {
+      font-family: 'Poppins', sans-serif;
+      background: var(--header-bg);
+      color: var(--header-text);
+      font-weight: 500;
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+    .benchmark-table tr:hover { background: var(--bg); }
+    .benchmark-table tr.benchmark-row-with { background: rgba(33, 150, 243, 0.06); }
+    .benchmark-table tr.benchmark-row-without { background: rgba(255, 193, 7, 0.06); }
+    .benchmark-table tr.benchmark-row-with:hover { background: rgba(33, 150, 243, 0.12); }
+    .benchmark-table tr.benchmark-row-without:hover { background: rgba(255, 193, 7, 0.12); }
+    .benchmark-table tr.benchmark-row-avg { font-weight: 600; border-top: 2px solid var(--border); }
+    .benchmark-table tr.benchmark-row-avg.benchmark-row-with { background: rgba(33, 150, 243, 0.12); }
+    .benchmark-table tr.benchmark-row-avg.benchmark-row-without { background: rgba(255, 193, 7, 0.12); }
+    .benchmark-delta-positive { color: var(--green); font-weight: 600; }
+    .benchmark-delta-negative { color: var(--red); font-weight: 600; }
+    .benchmark-notes {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1rem;
+    }
+    .benchmark-notes h3 {
+      font-family: 'Poppins', sans-serif;
+      font-size: 0.875rem;
+      margin-bottom: 0.75rem;
+    }
+    .benchmark-notes ul {
+      list-style: disc;
+      padding-left: 1.25rem;
+    }
+    .benchmark-notes li {
+      font-size: 0.8125rem;
+      line-height: 1.6;
+      margin-bottom: 0.375rem;
+    }
+    .benchmark-empty {
+      color: var(--text-muted);
+      font-style: italic;
+      text-align: center;
+      padding: 3rem;
+    }
+
+    /* ---- Navigation ---- */
+    .nav {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1rem 2rem;
+      border-top: 1px solid var(--border);
+      background: var(--surface);
+      flex-shrink: 0;
+    }
+    .nav-btn {
+      font-family: 'Poppins', sans-serif;
+      padding: 0.5rem 1.25rem;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      background: var(--surface);
+      cursor: pointer;
+      font-size: 0.875rem;
+      font-weight: 500;
+      color: var(--text);
+      transition: all 0.15s;
+    }
+    .nav-btn:hover:not(:disabled) {
+      background: var(--bg);
+      border-color: var(--text-muted);
+    }
+    .nav-btn:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+    .done-btn {
+      font-family: 'Poppins', sans-serif;
+      padding: 0.5rem 1.5rem;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      background: var(--surface);
+      color: var(--text);
+      cursor: pointer;
+      font-size: 0.875rem;
+      font-weight: 500;
+      transition: all 0.15s;
+    }
+    .done-btn:hover {
+      background: var(--bg);
+      border-color: var(--text-muted);
+    }
+    .done-btn.ready {
+      border: none;
+      background: var(--accent);
+      color: white;
+      font-weight: 600;
+    }
+    .done-btn.ready:hover {
+      background: var(--accent-hover);
+    }
+    /* ---- Done overlay ---- */
+    .done-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.5);
+      z-index: 100;
+      justify-content: center;
+      align-items: center;
+    }
+    .done-overlay.visible {
+      display: flex;
+    }
+    .done-card {
+      background: var(--surface);
+      border-radius: 12px;
+      padding: 2rem 3rem;
+      text-align: center;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+      max-width: 500px;
+    }
+    .done-card h2 {
+      font-size: 1.5rem;
+      margin-bottom: 0.5rem;
+    }
+    .done-card p {
+      color: var(--text-muted);
+      margin-bottom: 1.5rem;
+      line-height: 1.5;
+    }
+    .done-card .btn-row {
+      display: flex;
+      gap: 0.5rem;
+      justify-content: center;
+    }
+    .done-card button {
+      padding: 0.5rem 1.25rem;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      background: var(--surface);
+      cursor: pointer;
+      font-size: 0.875rem;
+    }
+    .done-card button:hover {
+      background: var(--bg);
+    }
+    /* ---- Toast ---- */
+    .toast {
+      position: fixed;
+      bottom: 5rem;
+      left: 50%;
+      transform: translateX(-50%);
+      background: var(--header-bg);
+      color: var(--header-text);
+      padding: 0.625rem 1.25rem;
+      border-radius: var(--radius);
+      font-size: 0.875rem;
+      opacity: 0;
+      transition: opacity 0.3s;
+      pointer-events: none;
+      z-index: 200;
+    }
+    .toast.visible {
+      opacity: 1;
+    }
+  </style>
+</head>
+<body>
+  <div id="app" style="height:100vh; display:flex; flex-direction:column;">
+    <div class="header">
+      <div>
+        <h1>Eval Review: <span id="skill-name"></span></h1>
+        <div class="instructions">Review each output and leave feedback below. Navigate with arrow keys or buttons. When done, copy feedback and paste into Claude Code.</div>
+      </div>
+      <div class="progress" id="progress"></div>
+    </div>
+
+    <!-- View tabs (only shown when benchmark data exists) -->
+    <div class="view-tabs" id="view-tabs" style="display:none;">
+      <button class="view-tab active" onclick="switchView('outputs')">Outputs</button>
+      <button class="view-tab" onclick="switchView('benchmark')">Benchmark</button>
+    </div>
+
+    <!-- Outputs panel (qualitative review) -->
+    <div class="view-panel active" id="panel-outputs">
+    <div class="main">
+      <!-- Prompt -->
+      <div class="section">
+        <div class="section-header">Prompt <span class="config-badge" id="config-badge" style="display:none;"></span></div>
+        <div class="section-body">
+          <div class="prompt-text" id="prompt-text"></div>
+        </div>
+      </div>
+
+      <!-- Outputs -->
+      <div class="section">
+        <div class="section-header">Output</div>
+        <div class="section-body" id="outputs-body">
+          <div class="empty-state">No output files found</div>
+        </div>
+      </div>
+
+      <!-- Previous Output (collapsible) -->
+      <div class="section" id="prev-outputs-section" style="display:none;">
+        <div class="section-header">
+          <div class="grades-toggle" onclick="togglePrevOutputs()">
+            <span class="arrow" id="prev-outputs-arrow">&#9654;</span>
+            Previous Output
+          </div>
+        </div>
+        <div class="grades-content" id="prev-outputs-content"></div>
+      </div>
+
+      <!-- Grades (collapsible) -->
+      <div class="section" id="grades-section" style="display:none;">
+        <div class="section-header">
+          <div class="grades-toggle" onclick="toggleGrades()">
+            <span class="arrow" id="grades-arrow">&#9654;</span>
+            Formal Grades
+          </div>
+        </div>
+        <div class="grades-content" id="grades-content"></div>
+      </div>
+
+      <!-- Feedback -->
+      <div class="section">
+        <div class="section-header">Your Feedback</div>
+        <div class="section-body">
+          <textarea
+            class="feedback-textarea"
+            id="feedback"
+            placeholder="What do you think of this output? Any issues, suggestions, or things that look great?"
+          ></textarea>
+          <div class="feedback-status" id="feedback-status"></div>
+          <div class="prev-feedback" id="prev-feedback" style="display:none;">
+            <div class="prev-feedback-label">Previous feedback</div>
+            <div id="prev-feedback-text"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="nav" id="outputs-nav">
+      <button class="nav-btn" id="prev-btn" onclick="navigate(-1)">&#8592; Previous</button>
+      <button class="done-btn" id="done-btn" onclick="showDoneDialog()">Submit All Reviews</button>
+      <button class="nav-btn" id="next-btn" onclick="navigate(1)">Next &#8594;</button>
+    </div>
+    </div><!-- end panel-outputs -->
+
+    <!-- Benchmark panel (quantitative stats) -->
+    <div class="view-panel" id="panel-benchmark">
+      <div class="benchmark-view" id="benchmark-content">
+        <div class="benchmark-empty">No benchmark data available. Run a benchmark to see quantitative results here.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Done overlay -->
+  <div class="done-overlay" id="done-overlay">
+    <div class="done-card">
+      <h2>Review Complete</h2>
+      <p>Your feedback has been saved. Go back to your Claude Code session and tell Claude you're done reviewing.</p>
+      <div class="btn-row">
+        <button onclick="closeDoneDialog()">OK</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast -->
+  <div class="toast" id="toast"></div>
+
+  <script>
+    // ---- Embedded data (injected by generate_review.py) ----
+    const EMBEDDED_DATA = {"skill_name": "design-doc-reviewer", "runs": [{"id": "eval-0-with_skill", "prompt": "Review this design document: docs/superpowers/specs/phase2.5/2026-05-14-dialog-ui-html-embedding-design.md", "eval_id": 0, "outputs": [{"name": "review.md", "type": "text", "content": "# Design Document Review: docs/superpowers/specs/phase2.5/2026-05-14-dialog-ui-html-embedding-design.md\n\n## Overall Assessment\n- **Completeness**: 7.5/8 dimensions complete (Boundaries dimension has minor gaps)\n- **Clarity**: High - Architecture diagrams, tables, and code flow clearly presented\n- **Actionability**: Needs Revision - Several implementation details require clarification\n\n---\n\n## Dimension Analysis\n\n| Dimension | Status | Notes |\n|-----------|--------|-------|\n| Background | \u2705 | Clear problem statement with current defects list and existing design docs reference |\n| Problem Definition | \u2705 | Core question explicitly stated: \"How to migrate high-quality UI from design docs to game system?\" |\n| Solution | \u2705 | Architecture diagram provided, component migration plan clear, technical stack specified |\n| Boundaries | \u26a0\ufe0f | IN/OUT scope defined but migration transition plan missing; what happens to existing DialogUI.ts? |\n| Integration | \u2705 | Consistency table with existing HTML UI patterns (inventory/decoction/diagnosis); data flow documented |\n| Expected Outcome | \u2705 | Visual, functional, and interaction effects all described with examples |\n| Validation Scope | \u2705 | E2E tests specified with pass conditions; visual/architecture validation methods listed |\n| Acceptance Criteria | \u2705 | Measurable criteria: 19/19 E2E tests pass, TypeScript no errors, no runtime errors |\n\n---\n\n## Critical Issues Found\n\n### Omissions (\u9057\u6f0f\u70b9)\n\n1. **Migration Transition Plan Missing**\n   - **Issue**: Document describes \"React component migration\" but does not specify how existing `DialogUI.ts` (Phaser-based) will be deprecated or co-exist during transition.\n   - **Location**: Section 2.1 (\u672c\u6b21\u5305\u542b) and Section 3.1 (\u67b6\u6784\u56fe)\n   - **Risk**: During migration, two DialogUI systems could conflict; tests reference `__DIALOG_UI__` which is set by current Phaser implementation. Without transition plan, E2E tests may fail during migration window.\n   - **Recommendation**: Add a \"Migration Strategy\" subsection specifying:\n     - Phase 1: Keep both systems, tests target whichever is active\n     - Phase 2: Deprecate DialogUI.ts after DialogUI.tsx passes all tests\n     - Define `__DIALOG_UI__` global state contract for test compatibility\n\n2. **Error Handling Not Specified**\n   - **Issue**: No mention of how React UI handles SSE connection failures, Hermes backend unavailability, or partial tool call failures.\n   - **Location**: Section 3.3 (\u6570\u636e\u6d41\u5411) and Section 4 (\u5b9e\u73b0\u540e\u6548\u679c)\n   - **Risk**: User experience degradation when network issues occur; no guidance for implementing error states in React.\n   - **Recommendation**: Add error handling specification:\n     - SSE connection timeout behavior (retry? show error message?)\n     - Hermes backend down: what UI state to display\n     - Tool call failure: how to handle and notify user\n\n3. **TCM_DATA Source Unclear**\n   - **Issue**: Document mentions \"rich-text.jsx + TCM_DATA\" but TCM_DATA in design prototype (`docs/ui/\u5bf9\u8bdd\u7a97\u53e3/rich-text.jsx`) is a demo stub with only 5 herbs, 4 acupoints.\n   - **Location**: Section 2.1 (\u672c\u6b21\u5305\u542b) - \"\u5bcc\u6587\u672c\u7cfb\u7edf\" row\n   - **Risk**: Production requires comprehensive TCM data. Current demo data insufficient for full game. Migration may break if TCM_DATA structure differs.\n   - **Recommendation**: Specify:\n     - Will TCM_DATA be migrated as-is (demo) or expanded?\n     - Where will production TCM data come from? (GameStateBridge? Backend API?)\n     - Data schema contract between React UI and data source\n\n4. **NPC Mood/Title Data Source Missing**\n   - **Issue**: Design prototype shows NPC mood (`\u6e29\u548c/\u601d\u7d22/\u4e25\u8083`) and title (`\u674f\u6797\u524d\u8f88 \u00b7 \u516d\u5341\u5e74\u4e34\u8bc1`), but document doesn't specify where this data originates.\n   - **Location**: Section 4.2 (\u529f\u80fd\u6548\u679c) - NPC\u4fe1\u606f\u5c55\u793a\n   - **Risk**: Implementation cannot proceed without knowing data source; backend may not provide these fields.\n   - **Recommendation**: Add data source specification:\n     - NPC mood: from Hermes backend response? From NPC config file?\n     - NPC title: static config or dynamic from backend?\n     - Define DialogUIOptions interface to include these fields\n\n### Ambiguities (\u6a21\u7cca\u70b9)\n\n1. **\"React\u5c42\u76f4\u63a5\u8c03\u7528SSEClient\" - Implementation Details**\n   - **Issue**: Architecture shows \"SSEClient.chatStream()\" in React layer, but SSEClient currently creates new instance per call. Should React create new SSEClient or reuse instance?\n   - **Location**: Section 3.1 (\u67b6\u6784\u56fe) - DialogUI.tsx box\n   - **Risk**: Instance management affects abort behavior and state tracking. Creating new instance each call may cause memory issues or race conditions.\n   - **Recommendation**: Specify SSEClient instantiation pattern:\n     - Single instance per DialogUI.tsx component lifecycle\n     - Or new instance per chatStream call (with cleanup)\n\n2. **GameStateBridge Extension Method**\n   - **Issue**: Document mentions \"GameStateBridge.setDialogHistory\" but current GameStateBridge.ts has no dialog history support. How should this be added?\n   - **Location**: Section 5.3 (\u67b6\u6784\u9a8c\u6536) - \"GameStateBridge\u6269\u5c55\"\n   - **Risk**: Without interface specification, implementation may add methods inconsistently, affecting test compatibility.\n   - **Recommendation**: Add GameStateBridge extension interface definition:\n     ```typescript\n     interface DialogHistoryEntry {\n       role: 'narration' | 'npc' | 'player' | 'system';\n       text: string;\n       name?: string;\n       mood?: string;\n       timestamp: number;\n     }\n\n     // Methods to add:\n     getDialogHistory(npcId: string): DialogHistoryEntry[];\n     setDialogHistory(npcId: string, history: DialogHistoryEntry[]): void;\n     appendDialogEntry(npcId: string, entry: DialogHistoryEntry): void;\n     ```\n\n3. **\u9884\u8bbe\u9009\u9879\u5217\u8868 Scope**\n   - **Issue**: Design prototype shows preset options (\u6df1\u95ee/\u53d6\u7a74/\u98df\u7597/\u81ea\u8ff0), but document excludes \"\u9884\u8bbe\u9009\u9879\u751f\u6210\" as Phase 3. Does this mean Phase 2.5 will have static options?\n   - **Location**: Section 2.2 (\u672c\u6b21\u4e0d\u5305\u542b) vs Section 4.3 (\u4ea4\u4e92\u6548\u679c)\n   - **Risk**: Implementation confusion - will options be hard-coded or omitted entirely?\n   - **Recommendation**: Clarify Phase 2.5 preset options approach:\n     - Hard-coded static options (placeholder for Phase 3)\n     - Or no options in Phase 2.5 (only free input)\n\n### Contradictions (\u77db\u76fe\u70b9)\n\n1. **E2E Test Selector Compatibility**\n   - **Issue**: Existing tests (`tests/e2e/npc-dialog.spec.ts`) access `__DIALOG_UI__` global state set by Phaser DialogUI.ts. React DialogUI.tsx will need different global contract. Document mentions \"\u8fc1\u79fb\u540e19/19\u901a\u8fc7\" but doesn't address test selector migration.\n   - **Location**: Section 5.4 (\u6d4b\u8bd5\u8986\u76d6\u7387) vs existing `npc-dialog.spec.ts`\n   - **Risk**: Tests may fail during migration if global state contract changes without coordination.\n   - **Recommendation**: Specify test migration plan:\n     - Define `__DIALOG_UI__` contract that both implementations honor\n     - Or create new `__DIALOG_UI_TSX__` for React version with test update\n     - Document test selector changes in acceptance criteria\n\n2. **\u5c3a\u5bf8\u5b9a\u4e49\u4e0d\u4e00\u81f4**\n   - **Issue**: Design prototype (`dialog-scroll.jsx`) shows dimensions `width: '460px', height: '760px'`, but existing game window is `1280\u00d7720`. Document doesn't specify how dialog dimensions will fit within game window.\n   - **Location**: `docs/ui/\u5bf9\u8bdd\u7a97\u53e3/dialog-scroll.jsx` vs project context (game window 1280\u00d7720)\n   - **Risk**: Dialog may overflow game window or appear misaligned. Experience doc `2026-05-08` warns about positioning issues.\n   - **Recommendation**: Specify dialog positioning within game window:\n     - Dialog centered at game canvas center (640, 360)?\n     - Or positioned relative to game viewport?\n     - Account for game offset (160, 90) when game is FIT scaled\n\n### Clarification Needed (\u5f85\u6f84\u6e05\u70b9)\n\n1. **TCM_DATA\u6269\u5c55\u7b56\u7565**\n   - The demo TCM_DATA has limited entries. Need clarification on whether Phase 2.5 uses demo data or requires production data integration.\n\n2. **DialogUI.ts\u5f03\u7528\u65f6\u95f4\u7ebf**\n   - When exactly should DialogUI.ts be removed? After all tests pass, or during migration?\n\n---\n\n## Recommendations\n\n### Must Fix Before Implementation\n\n1. **Add Migration Transition Strategy**\n   - Define clear phases: coexistence \u2192 validation \u2192 deprecation\n   - Specify `__DIALOG_UI__` global state contract for test compatibility\n   - Document which tests need selector updates\n\n2. **Add Error Handling Specification**\n   - SSE connection failure handling\n   - Hermes backend unavailability UI state\n   - Tool call failure notification\n\n3. **Define GameStateBridge Extension Interface**\n   - Provide TypeScript interface for `getDialogHistory/setDialogHistory`\n   - Specify data structure for dialog history entries\n\n### Should Fix (Recommended)\n\n1. **Specify TCM_DATA Strategy**\n   - Clarify: demo data migration or production data integration\n   - Define data schema contract\n\n2. **Clarify NPC Mood/Title Data Source**\n   - Specify backend response fields or config file structure\n   - Add to DialogUIOptions interface\n\n3. **Specify SSEClient Instantiation Pattern**\n   - Single instance per component or per-call\n   - Cleanup/abort behavior\n\n### Optional Improvements\n\n1. **Add Dialog Positioning Specification**\n   - Reference experience doc `2026-05-08` lessons\n   - Define positioning within game window with FIT scaling\n\n2. **Add Visual Mock or Wireframe**\n   - Current design has detailed prototype but no integration mock showing dialog within game context\n\n---\n\n## Cross-Reference Verification\n\n### Project Context Checks\n\n| Check | Status | Notes |\n|-------|--------|-------|\n| Phaser 3 + TypeScript alignment | \u2705 | Architecture uses React+TypeScript with Phaser events |\n| Directory structure compliance | \u2705 | Document correctly in `docs/superpowers/specs/phase2.5/` |\n| Naming convention | \u2705 | File name `2026-05-14-dialog-ui-html-embedding-design.md` follows convention |\n| Existing systems reference | \u2705 | References NPC Agent, ModalUI, HTML\u5c0f\u6e38\u620f patterns |\n| Test coverage reference | \u2705 | Mentions 80% coverage but focuses on E2E tests |\n\n### Code Cross-Reference Issues\n\n| File | Issue |\n|------|-------|\n| `src/ui/DialogUI.ts` | Current implementation sets `__DIALOG_UI__` with `npcId, npcName, isGenerating, currentText, visible, isInputVisible` - React version must match or tests break |\n| `src/utils/GameStateBridge.ts` | No dialog history support - needs extension as document specifies |\n| `docs/ui/\u5bf9\u8bdd\u7a97\u53e3/rich-text.jsx` | TCM_DATA demo only - production integration unclear |\n| `tests/e2e/npc-dialog.spec.ts` | Tests use `__DIALOG_UI__` global - selector compatibility not addressed |\n\n---\n\n## Final Verdict\n\n- **Status**: **Needs Revision**\n- **Reason**: Critical omissions in migration strategy and error handling. Test compatibility between Phaser and React implementations not addressed. Data source specifications (TCM_DATA, NPC mood/title) missing.\n- **Blocking Issues**:\n  1. Migration transition plan - affects test stability\n  2. GameStateBridge extension interface - needed before implementation\n  3. Error handling specification - affects UX quality\n\n---\n\n## Document Quality Summary\n\n| Aspect | Rating | Comment |\n|--------|--------|---------|\n| Structure | Excellent | Clear sections, logical flow |\n| Technical Depth | Good | Architecture diagram, data flow clear |\n| Implementation Readiness | Medium | Missing key specs for data sources and migration |\n| Test Coverage Planning | Good | E2E criteria specified |\n| Risk Assessment | Good | Risk table provided with mitigation |\n\n**Overall**: Well-structured document with clear problem definition and solution architecture. Needs supplementation for implementation details: migration strategy, error handling, and data source specifications."}], "grading": {"expectations": [{"text": "Output contains table or structured list covering all 8 dimensions (Background, Problem, Solution, Boundaries, Integration, Outcome, Validation Scope, Acceptance Criteria) with status indicators (\u2705/\u26a0\ufe0f/\u274c/\u2753)", "passed": true, "evidence": "Found '## Dimension Analysis' section with table containing all 8 dimensions: Background (\u2705), Problem Definition (\u2705), Solution (\u2705), Boundaries (\u26a0\ufe0f), Integration (\u2705), Expected Outcome (\u2705), Validation Scope (\u2705), Acceptance Criteria (\u2705). Each has status indicator and notes."}, {"text": "Output contains at least one concrete issue with location, risk explanation, and recommendation", "passed": true, "evidence": "Found multiple issues in '## Critical Issues Found' section. Example: 'Migration Transition Plan Missing' with Location: 'Section 2.1 (\u672c\u6b21\u5305\u542b) and Section 3.1 (\u67b6\u6784\u56fe)', Risk: 'During migration, two DialogUI systems could conflict; tests reference __DIALOG_UI__ which is set by current Phaser implementation...', Recommendation: 'Add a Migration Strategy subsection specifying...'"}, {"text": "Each recommendation specifies what to add/change, where in the document, and provides concrete example or guidance", "passed": true, "evidence": "Recommendations include concrete examples. For GameStateBridge extension: 'Provide TypeScript interface for getDialogHistory/setDialogHistory' with full code example: 'interface DialogHistoryEntry { role: \"narration\" | \"npc\" | \"player\" | \"system\"; text: string; name?: string; mood?: string; timestamp: number; }'. Also specifies SSEClient instantiation patterns and error handling specifications."}, {"text": "Output ends with explicit verdict statement (Approved/Needs Revision/Blocked) with reasoning", "passed": true, "evidence": "Found '## Final Verdict' section with: 'Status: **Needs Revision**', 'Reason: Critical omissions in migration strategy and error handling. Test compatibility between Phaser and React implementations not addressed. Data source specifications (TCM_DATA, NPC mood/title) missing.', and 'Blocking Issues: 1. Migration transition plan - affects test stability, 2. GameStateBridge extension interface - needed before implementation, 3. Error handling specification - affects UX quality'"}, {"text": "Output references project architecture, directory structure, naming conventions, or existing systems", "passed": true, "evidence": "Found '## Cross-Reference Verification' section with 'Project Context Checks' table covering: Phaser 3 + TypeScript alignment, Directory structure compliance (docs/superpowers/specs/phase2.5/), Naming convention (2026-05-14-dialog-ui-html-embedding-design.md), Existing systems reference (NPC Agent, ModalUI, HTML\u5c0f\u6e38\u620f patterns). Also 'Code Cross-Reference Issues' table referencing specific files: src/ui/DialogUI.ts, src/utils/GameStateBridge.ts, docs/ui/\u5bf9\u8bdd\u7a97\u53e3/rich-text.jsx, tests/e2e/npc-dialog.spec.ts"}], "summary": {"passed": 5, "failed": 0, "total": 5, "pass_rate": 1.0}, "execution_metrics": {"tool_calls": {"Read": 15, "Grep": 8, "Glob": 5}, "total_tool_calls": 28, "total_steps": 12, "errors_encountered": 0, "output_chars": 7200, "transcript_chars": 118623}, "timing": {"executor_duration_seconds": 146.0, "grader_duration_seconds": 45.0, "total_duration_seconds": 191.0}, "claims": [{"claim": "DialogUI.ts sets __DIALOG_UI__ with npcId, npcName, isGenerating, currentText, visible, isInputVisible", "type": "factual", "verified": true, "evidence": "Verified in src/ui/DialogUI.ts lines 174-181: '(window as any).__DIALOG_UI__ = { npcId: this.config.npcId, npcName: this.config.npcName, isGenerating: () => this.isGenerating, currentText: () => this.currentText, visible: this.visible, isInputVisible: () => this.inputVisible }'"}, {"claim": "GameStateBridge.ts has no dialog history support", "type": "factual", "verified": true, "evidence": "Grep for 'dialog|Dialog' in src/utils/GameStateBridge.ts returned 'No matches found', confirming no dialog-related functionality exists"}, {"claim": "TCM_DATA in design prototype has only 5 herbs, 4 acupoints", "type": "factual", "verified": true, "evidence": "Verified in docs/ui/\u5bf9\u8bdd\u7a97\u53e3/rich-text.jsx: TCM_DATA.herb contains 5 entries (\u7518\u8349, \u751f\u59dc, \u9ec4\u82aa, \u5f53\u5f52, \u9648\u76ae), TCM_DATA.acupoint contains 4 entries (\u8db3\u4e09\u91cc, \u5408\u8c37, \u592a\u51b2, \u5185\u5173)"}, {"claim": "Tests use __DIALOG_UI__ global for selector compatibility", "type": "factual", "verified": true, "evidence": "Verified in tests/e2e/npc-dialog.spec.ts with 10 occurrences of '__DIALOG_UI__' at lines 53, 202, 223, 236, 249, 296, 369, 392, 407, 425"}, {"claim": "Document correctly placed in docs/superpowers/specs/phase2.5/", "type": "factual", "verified": true, "evidence": "Document path is docs/superpowers/specs/phase2.5/2026-05-14-dialog-ui-html-embedding-design.md, matching the expected directory structure for phase 2.5 specifications"}], "user_notes_summary": {"uncertainties": [], "needs_review": [], "workarounds": []}, "eval_feedback": {"suggestions": [{"assertion": "Output contains at least one concrete issue with location, risk explanation, and recommendation", "reason": "The assertion could be strengthened to require issues be categorized by severity (Critical/Major/Minor) to help prioritize revision work. Current output does this well with 'Must Fix Before Implementation', 'Should Fix', and 'Optional Improvements' categories - consider making severity categorization explicit in the assertion."}, {"reason": "No assertion checks whether the review correctly identifies the document's intended audience or implementation readiness level. The output does assess implementation readiness as 'Medium' in Document Quality Summary, but this useful assessment isn't validated by any expectation."}], "overall": "All expectations pass with clear evidence. The review is thorough, well-structured, and provides actionable recommendations with concrete code examples. Claims made about the codebase were verified and found accurate. Minor suggestion: could add assertion for audience/implementation readiness assessment validation."}}}, {"id": "eval-0-without_skill", "prompt": "Review this design document: docs/superpowers/specs/phase2.5/2026-05-14-dialog-ui-html-embedding-design.md", "eval_id": 0, "outputs": [{"name": "review.md", "type": "text", "content": "# Design Document Review: Dialog UI HTML Embedding Design\n\n**Document**: `docs/superpowers/specs/phase2.5/2026-05-14-dialog-ui-html-embedding-design.md`\n**Reviewer**: Claude (Design Review Agent)\n**Date**: 2026-05-15\n**Status**: APPROVED with RECOMMENDATIONS\n\n---\n\n## Executive Summary\n\nThis design document proposes migrating the existing Phaser-based `DialogUI.ts` to a React-based HTML embedding solution (`DialogUI.tsx`), following the established pattern used for Inventory, Decoction, and Diagnosis UIs. The document is well-structured, comprehensive, and aligns with existing architectural patterns in the codebase.\n\n**Overall Rating**: 8.5/10\n\n**Approval Status**: APPROVED for implementation, with minor recommendations addressed before or during implementation.\n\n---\n\n## Document Structure Analysis\n\n### Strengths\n\n1. **Clear Problem Definition**: Section 1 clearly articulates current state, existing capabilities, and deficiencies. The table format makes it easy to understand what needs to change.\n\n2. **Well-Defined Boundaries**: Section 2 explicitly lists what is included and excluded from this phase, preventing scope creep.\n\n3. **Comprehensive Architecture Diagram**: Section 3.1 provides a clear visual representation of the system integration, showing data flow between Phaser and React layers.\n\n4. **Pattern Consistency Verification**: Section 3.2 explicitly compares with existing HTML UI implementations, demonstrating adherence to established patterns.\n\n5. **Concrete Verification Criteria**: Section 5 provides specific acceptance criteria with test methods and pass conditions.\n\n### Minor Issues\n\n1. **Missing File Structure Table**: The document does not include a concrete file creation/modification list (e.g., which files will be created, which will be deprecated).\n\n2. **No Timeline Estimates**: While not critical for design docs, rough implementation time estimates would help with planning.\n\n---\n\n## Technical Feasibility Assessment\n\n### Verified Consistency with Existing Patterns\n\n| Aspect | Design Proposal | Existing Pattern | Match |\n|--------|-----------------|------------------|-------|\n| Entry file naming | `dialog-entry.tsx` | `*-entry.tsx` | YES |\n| Component naming | `DialogUI.tsx` | `*UI.tsx` | YES |\n| CSS file naming | `dialog.css` | `*.css` | YES |\n| Bridge file naming | `dialog-events.ts` | `*-events.ts` | YES |\n| Mounting approach | `createRoot(document.body)` | Same in inventory-entry.tsx | YES |\n| Cleanup pattern | `unmount() + removeChild` | Same in inventory-entry.tsx | YES |\n\n**Assessment**: The proposed architecture follows all established patterns in the codebase.\n\n### Component Complexity Assessment\n\n**Source Files Reviewed**:\n- `/home/lixiang/Desktop/zhongyi_game_v3/src/ui/DialogUI.ts` (422 lines)\n- `/home/lixiang/Desktop/zhongyi_game_v3/docs/ui/\u5bf9\u8bdd\u7a97\u53e3/dialog-scroll.jsx` (349 lines)\n- `/home/lixiang/Desktop/zhongyi_game_v3/docs/ui/\u5bf9\u8bdd\u7a97\u53e3/rich-text.jsx` (105 lines)\n\n**Migration Complexity**: MEDIUM\n\n**Reasons**:\n1. The existing `DialogUI.ts` is a Phaser GameObject Container with SSE integration - migration to React requires careful handling of SSE flow.\n2. Rich text parsing logic (`parseRich` function) needs TypeScript conversion.\n3. Tool Call bridge pattern is critical - current implementation passes callback through config; needs careful event-based replacement.\n4. Global state exposure (`__DIALOG_UI__`, `__DIALOG_ACTIVE__`) needs equivalent in React for E2E testing.\n\n---\n\n## Completeness Check\n\n### Included and Addressed\n\n| Item | Section Reference | Status |\n|------|-------------------|--------|\n| React component migration | Section 2.1 | SPECIFIED |\n| Rich text system | Section 2.1, 4.1 | SPECIFIED |\n| Ancient style CSS | Section 2.1, 4.1 | SPECIFIED |\n| Dialog history storage | Section 2.1, 3.3 | SPECIFIED |\n| SSE stream handling | Section 3.3 | SPECIFIED |\n| Tool Call bridge | Section 3.3 | SPECIFIED |\n| Scene integration | Section 2.1 | SPECIFIED |\n| Acceptance criteria | Section 5 | SPECIFIED |\n| Risk assessment | Section 6 | SPECIFIED |\n| Reference docs | Section 7 | SPECIFIED |\n\n### Not Explicitly Addressed (Recommendations)\n\n| Item | Importance | Recommendation |\n|------|------------|----------------|\n| TCM_DATA TypeScript types | MEDIUM | Define TypeScript interfaces for herb/acupoint/classic/symptom data structures |\n| TCM_DATA location | MEDIUM | Specify where `TCM_DATA` will be stored (separate file or in component) |\n| SSEClient singleton vs new instance | LOW | Current DialogUI creates new SSEClient; clarify if this pattern continues |\n| Error handling UI | MEDIUM | Specify how errors will be displayed in the ancient style UI |\n| Loading states | MEDIUM | Specify how \"\u6b63\u5728\u601d\u8003...\" will be styled in ancient theme |\n| Keyboard focus management | LOW | Section 6 mentions React/Phaser focus conflict but no solution specified |\n\n---\n\n## Design Prototype Quality Assessment\n\n**Files in `docs/ui/\u5bf9\u8bdd\u7a97\u53e3/`**:\n- `dialog-scroll.jsx` - 349 lines, well-structured React component\n- `rich-text.jsx` - 105 lines, reusable rich text parser\n- `styles.css` - Ancient theme styling\n- `\u4e2d\u533b\u53e4\u98ce\u5bf9\u8bdd\u6846.html` - HTML prototype\n\n**Assessment**: The design prototypes are production-ready quality:\n1. Clean separation of concerns (RichText as reusable component)\n2. Proper use of CSS variables for theme consistency\n3. Good accessibility considerations (hover tooltips)\n4. Clean parsing logic for `[[type:term]]` markup\n\n---\n\n## Risk Assessment Review\n\n### Design Document Risks (Section 6)\n\n| Risk | Severity (Doc) | My Assessment | Notes |\n|------|----------------|---------------|-------|\n| SSE stream handling position change | Medium | AGREED | React layer calling SSEClient is correct approach |\n| Test selector change | Medium | AGREED | Will need E2E test updates for new selectors |\n| Dialog history loss | Low | AGREED | GameStateBridge storage is appropriate |\n| Tool Call delay | Low | AGREED | EventBus is standard pattern, <10ms is realistic |\n| React/Phaser focus conflict | Medium | AGREED | But needs explicit solution in implementation |\n\n### Additional Risks Not Mentioned\n\n| Risk | Severity | Mitigation |\n|------|----------|------------|\n| Memory leak from unremoved event listeners | Medium | Ensure cleanup in `hideDialogUI()` removes all EventBus listeners |\n| TCM_DATA size growth | Low | Consider lazy loading or async data fetching for large datasets |\n| Unicode rendering in ancient fonts | Low | Test `Noto Serif SC` and `Ma Shan Zheng` rendering for all TCM terms |\n\n---\n\n## Acceptance Criteria Review\n\n### Functional Criteria (Section 5.1)\n\n| Criterion | Test Method | Assessment |\n|-----------|-------------|------------|\n| Dialog UI display | E2E: NPC-S01 | Valid - `.dialog-scroll` selector matches prototype |\n| NPC info correct | E2E: NPC-S02 | Valid - `.dialog-title` pattern exists in prototype |\n| User input | E2E: NPC-D01 | Valid - input element exists in prototype |\n| Stream response | E2E: NPC-D03 | Valid - but needs SSE integration test |\n| Stop generation | E2E: NPC-D04 | Valid - stop button needs CSS styling |\n| Tool Call trigger | E2E: NPC-TC01 | Valid - event-based bridge test |\n| Dialog history retention | E2E: New test | Needs new test creation |\n\n### Visual Criteria (Section 5.2)\n\nAll criteria are comparison-based, which is appropriate for UI migration.\n\n### Architecture Criteria (Section 5.3)\n\nAll criteria are pattern-consistency checks, which aligns with existing codebase patterns.\n\n### Test Coverage (Section 5.4)\n\n- E2E tests: 19/19 through - reasonable target\n- TypeScript: No compilation errors - standard requirement\n- Build: No runtime errors - standard requirement\n\n---\n\n## Implementation Recommendations\n\n### Before Implementation\n\n1. **Create File Creation Checklist**:\n   ```\n   Files to create:\n   - src/ui/html/dialog-entry.tsx\n   - src/ui/html/DialogUI.tsx\n   - src/ui/html/dialog.css\n   - src/ui/html/dialog-events.ts\n   - src/ui/html/rich-text.ts (or .tsx)\n   - src/data/tcm-data.ts (TypeScript types + data)\n\n   Files to deprecate:\n   - src/ui/DialogUI.ts (keep for reference initially, remove after migration)\n   ```\n\n2. **Define TypeScript Interfaces**:\n   ```typescript\n   interface TCMHerbData {\n     pinyin: string;\n     tag: string;\n     meta: Record<string, string>;\n     body: string;\n   }\n   // Similar for acupoint, classic, symptom\n   ```\n\n3. **Specify Error/L Loading States**: Define CSS classes for:\n   - `.dialog-loading` - \"\u6b63\u5728\u601d\u8003...\" state\n   - `.dialog-error` - Error message display\n\n### During Implementation\n\n1. **Incremental Migration**: Start with basic UI display, then add:\n   - SSE stream handling\n   - Rich text rendering\n   - Tool Call bridge\n   - Dialog history\n\n2. **Test Migration**: Update E2E selectors progressively, not all at once.\n\n3. **Keyboard Focus Solution**: Add explicit handling:\n   ```typescript\n   // In dialog-entry.tsx\n   const handleFocus = () => {\n     // Disable Phaser keyboard input\n     EventBus.emit(DIALOG_EVENTS.INPUT_FOCUS);\n   };\n   const handleBlur = () => {\n     // Re-enable Phaser keyboard input\n     EventBus.emit(DIALOG_EVENTS.INPUT_BLUR);\n   };\n   ```\n\n---\n\n## Final Verdict\n\n### Approval: APPROVED\n\nThe design document is comprehensive, well-structured, and follows established patterns. The proposed migration from Phaser-based DialogUI to React-based DialogUI.tsx is technically sound and aligns with the codebase's architectural direction.\n\n### Required Actions Before Implementation\n\n1. None critical - proceed with implementation.\n\n### Recommended Actions (Optional)\n\n1. Add explicit file creation/modification list\n2. Define TypeScript interfaces for TCM_DATA\n3. Specify error/loading state styling\n4. Add explicit keyboard focus management solution\n\n### Confidence Level\n\n**HIGH** - The design is well-grounded in existing patterns and has comprehensive acceptance criteria. The migration should proceed smoothly following the established entry/component/CSS/bridge pattern.\n\n---\n\n## Appendix: Pattern Reference Summary\n\n### Entry File Pattern (from inventory-entry.tsx)\n\n```typescript\n// Standard pattern:\n// 1. Create container div with unique ID\n// 2. Append to document.body\n// 3. Create React root\n// 4. Render component\n// 5. Return cleanup function (unmount + removeChild)\n\nexport function createXxxUI(options): () => void {\n  const container = document.createElement('div');\n  container.id = 'xxx-ui-root';\n  document.body.appendChild(container);\n\n  const root = createRoot(container);\n  root.render(<XxxUI {...options} />);\n\n  return () => {\n    root.unmount();\n    document.body.removeChild(container);\n  };\n}\n```\n\n### Component Pattern (from dialog-scroll.jsx)\n\n- Use CSS variables for theme consistency\n- RichText as separate reusable component\n- Parse function for `[[type:term]]` markup\n- History state with auto-scroll\n- Input handling with Enter key support\n\n### Bridge Pattern (from existing events.ts files)\n\n- Named exports for event constants\n- EventBus.emit for Phaser\u2192React\n- EventBus.on for React\u2192Phaser\n- Cleanup in hide function"}], "grading": {"expectations": [{"text": "Output contains table or structured list covering all 8 dimensions (Background, Problem, Solution, Boundaries, Integration, Outcome, Validation Scope, Acceptance Criteria) with status indicators (\u2705/\u26a0\ufe0f/\u274c/\u2753)", "passed": false, "evidence": "The output uses a different structure with sections like 'Document Structure Analysis', 'Technical Feasibility Assessment', 'Completeness Check', 'Risk Assessment Review', 'Acceptance Criteria Review'. The 8 specified dimensions (Background, Problem, Solution, Boundaries, Integration, Outcome, Validation Scope, Acceptance Criteria) are NOT explicitly named. Status indicators used are 'SPECIFIED', 'AGREED', 'YES', 'MEDIUM', 'LOW' instead of the required \u2705/\u26a0\ufe0f/\u274c/\u2753 format."}, {"text": "Output contains at least one concrete issue with location, risk explanation, and recommendation", "passed": true, "evidence": "The 'Completeness Check' section lists 6 items 'Not Explicitly Addressed' with Importance column (MEDIUM/LOW), and Recommendation column. For example: 'TCM_DATA TypeScript types | MEDIUM | Define TypeScript interfaces for herb/acupoint/classic/symptom data structures'. The format uses 'Importance' rather than 'Risk explanation', and location is implied (in the document being reviewed) rather than explicitly stated."}, {"text": "Each recommendation specifies what to add/change, where in the document, and provides concrete example or guidance", "passed": true, "evidence": "The 'Implementation Recommendations' section provides concrete examples: (1) 'Create File Creation Checklist' with explicit file list including 'src/ui/html/dialog-entry.tsx', 'src/ui/html/DialogUI.tsx', etc.; (2) 'Define TypeScript Interfaces' with code example showing interface structure; (3) 'Keyboard Focus Solution' with concrete code showing handleFocus/handleBlur functions; (4) 'Specify Error/Loading States' with CSS class names '.dialog-loading' and '.dialog-error'."}, {"text": "Output ends with explicit verdict statement (Approved/Needs Revision/Blocked) with reasoning", "passed": true, "evidence": "The output header states 'Status: APPROVED with RECOMMENDATIONS'. The 'Final Verdict' section explicitly states 'Approval: APPROVED' followed by reasoning: 'The design document is comprehensive, well-structured, and follows established patterns. The proposed migration from Phaser-based DialogUI to React-based DialogUI.tsx is technically sound and aligns with the codebase's architectural direction.' It also includes 'Confidence Level: HIGH' with additional justification."}, {"text": "Output references project architecture, directory structure, naming conventions, or existing systems", "passed": true, "evidence": "Multiple references throughout: (1) 'Pattern Consistency Verification' table comparing naming conventions against existing patterns (entry file naming, component naming, CSS file naming, bridge file naming, mounting approach, cleanup pattern); (2) Source files reviewed with paths: '/home/lixiang/Desktop/zhongyi_game_v3/src/ui/DialogUI.ts', '/home/lixiang/Desktop/zhongyi_game_v3/docs/ui/\u5bf9\u8bdd\u7a97\u53e3/dialog-scroll.jsx'; (3) 'Appendix: Pattern Reference Summary' referencing inventory-entry.tsx pattern; (4) References to SSEClient, GameStateBridge, EventBus systems."}], "summary": {"passed": 4, "failed": 1, "total": 5, "pass_rate": 0.8}, "execution_metrics": {"tool_calls": {"Read": 5, "Bash": 2, "Glob": 2, "Write": 1}, "total_tool_calls": 10, "total_steps": 4, "errors_encountered": 0, "output_chars": 11052, "transcript_chars": 148708}, "timing": {"executor_duration_seconds": 133.1, "grader_duration_seconds": null, "total_duration_seconds": 133.1}, "claims": [{"claim": "The design document proposes migrating DialogUI.ts to React-based DialogUI.tsx", "type": "factual", "verified": true, "evidence": "Confirmed from review.md header: 'Document: docs/superpowers/specs/phase2.5/2026-05-14-dialog-ui-html-embedding-design.md' and Executive Summary describing 'migrating the existing Phaser-based DialogUI.ts to a React-based HTML embedding solution'"}, {"claim": "The existing DialogUI.ts has 422 lines", "type": "factual", "verified": true, "evidence": "Transcript shows tool call to read DialogUI.ts, and review.md states '/home/lixiang/Desktop/zhongyi_game_v3/src/ui/DialogUI.ts (422 lines)"}, {"claim": "Migration complexity is MEDIUM", "type": "quality", "verified": true, "evidence": "Review.md 'Component Complexity Assessment' section provides reasoned justification: SSE integration handling, rich text parsing TypeScript conversion, Tool Call bridge pattern, global state exposure for E2E testing"}, {"claim": "All established patterns are followed", "type": "quality", "verified": true, "evidence": "Pattern Consistency Verification table shows 6/6 pattern matches (YES for all aspects: entry file naming, component naming, CSS file naming, bridge file naming, mounting approach, cleanup pattern)"}], "user_notes_summary": {"uncertainties": [], "needs_review": [], "workarounds": []}, "eval_feedback": {"suggestions": [{"assertion": "Output contains table or structured list covering all 8 dimensions (Background, Problem, Solution, Boundaries, Integration, Outcome, Validation Scope, Acceptance Criteria) with status indicators (\u2705/\u26a0\ufe0f/\u274c/\u2753)", "reason": "The expectation specifies exact dimension names and exact status indicator symbols. The output uses different structure and different indicators. This is a mismatch in format rather than content - the review covers similar content but organizes it differently. Consider either relaxing the format requirement or being more specific about what content must appear in each dimension."}, {"reason": "The expectation for 'concrete issue with location, risk explanation, and recommendation' is satisfied but in a different format. The 'Completeness Check' section has 'Not Explicitly Addressed' table with Importance and Recommendation columns, but no explicit 'Risk explanation' column. The location is implicit (the document being reviewed). Consider making the expectation more flexible about format, or the output could be improved to explicitly state location and risk."}], "overall": "4 of 5 expectations pass. The main failure is format mismatch on the 8-dimension table requirement. The output provides thorough, high-quality review content with concrete recommendations and examples, but organizes it differently than specified. The review demonstrates good understanding of the project architecture and existing patterns."}}}, {"id": "eval-1-with_skill", "prompt": "\u8bc4\u5ba1\u8fd9\u4e2a\u8bbe\u8ba1\u6587\u6863\u7684\u5b8c\u5907\u6027\uff1adocs/superpowers/specs/phase2.5/2026-05-11-dialogui-scroll-style-design.md", "eval_id": 1, "outputs": [{"name": "review.md", "type": "text", "content": "# Design Document Review: docs/superpowers/specs/phase2.5/2026-05-11-dialogui-scroll-style-design.md\n\n## Overall Assessment\n- **Completeness**: 6/8 dimensions complete\n- **Clarity**: Medium\n- **Actionability**: Needs Revision\n\n## Dimension Analysis\n\n| Dimension | Status | Notes |\n|-----------|--------|-------|\n| Background | \u2705 | Clearly explains visual mismatch problem and design reference |\n| Problem Definition | \u2705 | Specific pain point: grey card style vs Chinese ancient scroll theme |\n| Solution | \u26a0\ufe0f | Code snippets provided but missing integration details |\n| Boundaries | \u26a0\ufe0f | Mentions what's preserved but unclear about what's deferred |\n| Integration | \u274c | No migration plan from existing DialogUI.ts to new implementation |\n| Expected Outcome | \u26a0\ufe0f | 70% similarity mentioned but lacks user-facing outcome description |\n| Validation Scope | \u26a0\ufe0f | Only mentions E2E test pass, missing visual validation method |\n| Acceptance Criteria | \u2705 | 4 criteria with test pass rate specified |\n\n---\n\n## Critical Issues Found\n\n### Omissions\n\n1. **Issue**: Missing migration/transition plan from existing implementation\n   **Location**: Section 6 (File Modification Range)\n   **Risk**: Current DialogUI.ts has 422 lines with complex state management (SSEClient, input handling, tool callbacks, global exposure). The design only mentions \"full visual improvement\" without explaining how to preserve these critical functions during refactoring.\n   **Recommendation**: Add a new section \"Migration Strategy\" with:\n   - Step-by-step approach: First add new visual functions (createScrollBar, createPaperBackground), then refactor existing components, finally replace background\n   - List of functions that MUST NOT change: sendMessage, sendMessageWithTools, onChunk, onComplete, onError, stopGeneration, handleSend\n   - Risk mitigation: Keep existing global exposure (__DIALOG_UI__) intact for E2E tests\n\n2. **Issue**: Missing detailed specification for \"\u5bf9\u8bdd\u5386\u53f2\u6eda\u52a8\" feature\n   **Location**: Section 5.2 (New Features)\n   **Risk**: Current DialogUI.ts only displays single response via `contentText.setText(this.currentText)`. The design proposes scrollable history but provides no implementation details. This is a significant functional change, not just visual.\n   **Recommendation**: Add implementation details:\n   - Data structure: How to store multiple message rounds (array of {role, text, timestamp}?)\n   - UI component: Graphics scrollable container vs DOM scrollable div\n   - Scroll behavior: Auto-scroll to bottom on new message, scroll position preservation\n   - Memory limit: Maximum history entries before truncation\n\n3. **Issue**: Missing error handling strategy for new visual components\n   **Location**: Section 3 (Core Visual Elements)\n   **Risk**: Graphics drawing functions (createScrollBar, createPaperBackground) have no fallback if Phaser.Graphics fails or rendering issues occur. Current implementation has error handling in onError() but no visual error states.\n   **Recommendation**: Define fallback behavior:\n   - If gradient fails, use solid color fallback\n   - If container exceeds memory, simplify decorations\n   - Add visual error indicator (e.g., red border) if rendering fails\n\n### Ambiguities\n\n1. **Issue**: \"8\u4e2a\u89c6\u89c9\u5143\u7d20\u4e2d\u7684\u5173\u952e\u8981\u7d20\u5b8c\u6574\u8fd8\u539f\" is vague\n   **Location**: Section 1.2 (Improvement Goals)\n   **Risk**: What exactly are \"\u5173\u952e\u8981\u7d20\"? The design lists 8 elements but similarity estimates range from 70%-95%. Which ones are \"\u5173\u952e\" and must reach 90%+?\n   **Recommendation**: Define priority tiers:\n   - Tier 1 (Must achieve 85%+): \u5ba3\u7eb8\u80cc\u666f, NPC\u5934\u50cf, \u5fc3\u60c5\u6807\u7b7e, \u8f93\u5165\u533a\n   - Tier 2 (Target 75%+): \u6728\u8f74\u88c5\u9970, \u5370\u7ae0, \u91d1\u68d5\u8272\u8fb9\u6846\n   - Tier 3 (Acceptable simplification): \u7ad6\u6392\u6587\u5b57\u6807\u7b7e\n\n2. **Issue**: \"\u6574\u4f53\u98ce\u683c\u4e0e\u539f\u5377\u8f74\u8bbe\u8ba170%+\u76f8\u4f3c\" lacks measurement method\n   **Location**: Section 8 (Acceptance Criteria #1)\n   **Risk**: How will 70% similarity be measured? Subjective judgment by whom? No quantitative metrics provided.\n   **Recommendation**: Define measurable criteria:\n   - Color match: All 8 SCROLL_COLORS values match design spec (exact hex codes)\n   - Layout match: All dimensions match spec table (width 480px, height 320px, Y offset -60px)\n   - Visual comparison: Side-by-side screenshot comparison with dialog-scroll.jsx reference\n   - User feedback: Optional user survey rating (if feasible)\n\n3. **Issue**: \"\u9009\u9879\u5361\u7247 (OptionCard)\" implementation incomplete\n   **Location**: Section 3.8 (OptionCard)\n   **Risk**: Code snippet shows interface but function body is empty. Hover effect mentioned but no specifics. Click handler not defined. How does clicking an option trigger sendMessage?\n   **Recommendation**: Complete the implementation:\n   ```typescript\n   function createOptionCards(scene: Phaser.Scene, options: DialogOption[], onSelect: (opt: DialogOption) => void): Container[] {\n     // Full implementation with:\n     // - Click handler calling onSelect callback\n     // - Hover state colors (background: 0xB3322A with 0.06 alpha)\n     // - Active state after click\n   }\n   ```\n\n### Contradictions\n\n1. **Issue**: Size discrepancy between design spec and reference implementation\n   **Location**: Section 2.1 (Size Adjustment) vs dialog-scroll.jsx\n   **Risk**: Design spec says width 480px, height 320px. Reference dialog-scroll.jsx shows width 460px, height 760px. Which one should be implemented?\n   **Recommendation**: Clarify the source of 480\u00d7320 dimensions. Is this a scaled-down version for the 800\u00d7600 game window? Add explicit calculation showing how 460\u00d7760 was scaled to 480\u00d7320.\n\n2. **Issue**: \"\u7ad6\u6392\u6587\u5b57\u6807\u7b7e\uff08\u7b80\u5316\uff09\" contradicts reference design's vertical text\n   **Location**: Section 3.7 (Simplified Vertical Text) vs dialog-scroll.jsx lines 217-225\n   **Risk**: Reference design uses `writing-mode: vertical-rl` for \"\u5b66\u751f\" label. Design says \"Phaser\u4e0d\u652f\u6301\u7ad6\u6392\u6587\u5b57\" and proposes horizontal simplification. This is a significant visual difference from reference, but no similarity estimate is provided for this element.\n   **Recommendation**: Either:\n   - Add similarity estimate for simplified horizontal label (likely 50%)\n   - Or explore alternative: Pre-rendered rotated text texture, or use Phaser DOM element for this specific label\n\n### Clarification Needed\n\n1. **Issue**: API extension adds `mood`, `title`, `options` but no data source specified\n   **Location**: Section 5.3 (API Extension)\n   **Risk**: Where do these new fields come from? NPC data files? Backend Hermes response? Current NPC config only has npcId, npcName, npcSpriteKey.\n   **Recommendation**: Specify data source:\n   - `mood`: From Hermes backend response (new field in SSE stream?)\n   - `title`: From NPC config file (update `src/data/npcs.ts`?)\n   - `options`: Dynamically generated based on conversation context (LLM output?)\n\n2. **Issue**: \"\u5bcc\u6587\u672c\u9ad8\u4eae [[classic:xxx]] \u663e\u793a\u4e3a\u7ea2\u8272\uff08\u6682\u4e0d\u5b9e\u73b0\u70b9\u51fb\uff09\"\n   **Location**: Section 5.2 (New Features)\n   **Risk**: Current DialogUI.ts has no rich text parsing. This requires significant parsing logic. \"\u6682\u4e0d\u5b9e\u73b0\u70b9\u51fb\" means it's a display-only feature, but the parsing complexity is not acknowledged.\n   **Recommendation**: Clarify scope:\n   - Is rich text parsing part of this design or deferred to Phase 3?\n   - If included, add parsing function spec (regex pattern, color mapping)\n   - Estimate complexity: Low (just regex + color change) or Medium (needs state management)\n\n---\n\n## Recommendations\n\n### Must Fix Before Implementation\n\n1. **Add Migration Strategy Section**\n   - Define which existing functions must remain unchanged\n   - List step-by-step visual refactoring order (P1-P8 is implementation order, need migration order)\n   - Specify how to preserve E2E test compatibility (__DIALOG_UI__ global exposure)\n\n2. **Define Measurable Visual Similarity Criteria**\n   - Replace subjective \"70%\u76f8\u4f3c\" with concrete checklist:\n     - [ ] All SCROLL_COLORS match design hex codes\n     - [ ] All dimensions match spec table\n     - [ ] Screenshot comparison approved by stakeholder\n   - Add visual validation method (who approves, when)\n\n3. **Complete Scrollable History Implementation Spec**\n   - Define message history data structure\n   - Specify scroll container implementation (Phaser vs DOM)\n   - Add scroll behavior rules (auto-scroll, max entries)\n\n### Should Fix (Recommended)\n\n1. **Clarify Data Source for New Config Fields**\n   - Document where `mood`, `title`, `options` come from\n   - Update NPC config files if needed\n\n2. **Resolve Size Discrepancy**\n   - Explain how 460\u00d7760 reference was scaled to 480\u00d7320\n   - Or use reference dimensions if that's the intended design\n\n3. **Complete OptionCard Implementation**\n   - Add click handler spec\n   - Define hover colors explicitly\n   - Show integration with sendMessage()\n\n### Optional Improvements\n\n1. **Add Visual Fallback Strategy**\n   - Define fallback colors/styles if Graphics rendering fails\n   - Add error state visual indicator\n\n2. **Consider DOM Element for Vertical Text**\n   - Instead of simplifying to horizontal, use Phaser DOM for \"\u5b66\u751f\" label\n   - This would achieve higher visual similarity with reference\n\n---\n\n## Clarification Questions\n\nThe following questions require user input before implementation can proceed:\n\n1. **Size Clarification**: The design spec proposes 480\u00d7320 dialog size, but the reference dialog-scroll.jsx uses 460\u00d7760. Was 480\u00d7320 calculated for the 800\u00d7600 game window? Please confirm the intended dimensions and scaling logic.\n\n2. **Data Source for New Fields**: The API extension adds `mood`, `title`, `options` fields. Where should these come from?\n   - Option A: Backend Hermes response (requires backend update)\n   - Option B: Static NPC config files (requires `src/data/npcs.ts` update)\n   - Option C: Dynamically generated by frontend logic\n\n3. **Scrollable History Scope**: Is \"\u5bf9\u8bdd\u5386\u53f2\u6eda\u52a8\" a full multi-round history feature, or just scrollable display for single long response? The reference shows 5-message history, but current implementation only shows one response.\n\n4. **Rich Text Scope**: Should [[classic:xxx]] highlighting be implemented in this phase, or deferred? If included, is it just regex color change, or needs more complex parsing?\n\n---\n\n## Final Verdict\n\n- **Status**: **Needs Revision**\n\n**Reasoning**:\nThe design document has clear background and problem definition, and provides good visual element implementation snippets. However, critical gaps exist:\n\n1. **Integration Gap**: No migration plan from existing 422-line DialogUI.ts with complex state management\n2. **Ambiguous Acceptance**: \"70% similarity\" lacks measurable criteria\n3. **Scope Uncertainty**: New features (scrollable history, rich text) have incomplete specs\n4. **Data Source Missing**: New config fields lack origin specification\n\nThe design is **not ready for implementation** until:\n- Migration strategy is added\n- Measurable visual criteria are defined\n- Scrollable history implementation is detailed\n- Clarification questions are answered\n\n**Estimated Revision Effort**: 2-4 hours to add missing sections and clarify ambiguities.\n\n---\n\n## Appendix: Cross-Reference Analysis\n\n### Alignment with Project Context\n\n| Check | Result | Notes |\n|-------|--------|-------|\n| Phaser 3 architecture | \u2705 | Uses Graphics API correctly |\n| TypeScript patterns | \u2705 | Type interfaces defined |\n| Directory structure | \u2705 | Correct phase2.5 path |\n| Naming convention | \u2705 | Correct date format (2026-05-11) |\n| E2E test reference | \u2705 | Correctly references npc-dialog.spec.ts |\n\n### Potential Conflicts with Existing Code\n\n| Conflict | Severity | Description |\n|----------|----------|-------------|\n| Global exposure change | HIGH | Design doesn't specify preserving __DIALOG_UI__ format used by E2E tests |\n| Input handling change | MEDIUM | New input style may affect handleSend() timing tests |\n| Layout constants change | HIGH | dialogWidth/dialogHeight changes from 600\u00d7200 to 480\u00d7320, affects all positioning |\n\n---\n\n*Review completed following design-doc-reviewer skill methodology*\n*Review date: 2026-05-15*\n*Reviewer: Claude Code Agent*"}], "grading": {"expectations": [{"text": "Output identifies specific problems or gaps, not just confirms what's present", "passed": true, "evidence": "The review.md output identifies 10 specific issues across 4 categories (Omissions: 3 issues, Ambiguities: 3 issues, Contradictions: 2 issues, Clarification Needed: 2 issues). Each issue describes a concrete gap - e.g., 'Missing migration/transition plan from existing implementation', 'Missing detailed specification for scrollable history feature', 'Missing error handling strategy for new visual components'. The review does not simply confirm what's present but actively identifies what's missing or problematic."}, {"text": "Each recommendation specifies exact location, exact issue, and concrete fix (not 'add more details' or 'could be better')", "passed": true, "evidence": "All 10 recommendations follow the required format. Examples:\n\n- Omission #1: Location='Section 6 (File Modification Range)', Issue='No migration plan from 422-line DialogUI.ts with complex state management', Fix='Add new section Migration Strategy with step-by-step approach, list functions that MUST NOT change, risk mitigation for __DIALOG_UI__ global exposure'\n\n- Ambiguity #2: Location='Section 8 (Acceptance Criteria #1)', Issue='70% similarity lacks measurement method', Fix='Define measurable criteria: Color match with exact hex codes, Layout match with spec table, Visual comparison method, User feedback option'\n\n- Contradiction #1: Location='Section 2.1 (Size Adjustment) vs dialog-scroll.jsx', Issue='Size discrepancy (480x320 vs 460x760)', Fix='Clarify source of dimensions, add explicit calculation showing scaling'\n\nAll recommendations provide concrete, actionable fixes with specific implementation details, not vague suggestions."}, {"text": "Output uses Chinese terms (\u9057\u6f0f\u70b9, \u6a21\u7cca\u70b9, \u77db\u76fe\u70b9, \u5f85\u6f84\u6e05\u70b9) to categorize findings", "passed": false, "evidence": "The output uses English section headers instead of the specified Chinese terms:\n- Uses 'Omissions' instead of '\u9057\u6f0f\u70b9'\n- Uses 'Ambiguities' instead of '\u6a21\u7cca\u70b9'\n- Uses 'Contradictions' instead of '\u77db\u76fe\u70b9'\n- Uses 'Clarification Needed' instead of '\u5f85\u6f84\u6e05\u70b9'\n\nWhile the content within issues mentions some Chinese terms (e.g., '8\u4e2a\u89c6\u89c9\u5143\u7d20\u4e2d\u7684\u5173\u952e\u8981\u7d20\u5b8c\u6574\u8fd8\u539f'), the categorization headers themselves do not use the required Chinese terminology as specified in the expectation."}, {"text": "Output is in Chinese or properly bilingual, maintains critical tone in Chinese", "passed": false, "evidence": "The review output is primarily in English with only incidental Chinese terms appearing in quoted content from the design document. The main structure (headings, analysis, recommendations, reasoning) is entirely in English. Examples:\n\n- Overall Assessment: 'Completeness: 6/8 dimensions complete' (English)\n- Critical Issues Found: 'Omissions', 'Ambiguities', 'Contradictions', 'Clarification Needed' (English headers)\n- Recommendations section: 'Must Fix Before Implementation', 'Should Fix (Recommended)' (English)\n- Final Verdict reasoning: 'The design document has clear background and problem definition...' (English)\n\nThe output does not maintain a Chinese critical tone as required. It should have been written primarily in Chinese or properly bilingual with Chinese as the dominant language for the review analysis."}, {"text": "Output includes table or list showing completeness status for each dimension", "passed": true, "evidence": "The output includes a 'Dimension Analysis' table at line 10-19:\n\n| Dimension | Status | Notes |\n|-----------|--------|-------|\n| Background | \u2705 | Clearly explains visual mismatch problem and design reference |\n| Problem Definition | \u2705 | Specific pain point: grey card style vs Chinese ancient scroll theme |\n| Solution | \u26a0\ufe0f | Code snippets provided but missing integration details |\n| Boundaries | \u26a0\ufe0f | Mentions what's preserved but unclear about what's deferred |\n| Integration | \u274c | No migration plan from existing DialogUI.ts to new implementation |\n| Expected Outcome | \u26a0\ufe0f | 70% similarity mentioned but lacks user-facing outcome description |\n| Validation Scope | \u26a0\ufe0f | Only mentions E2E test pass, missing visual validation method |\n| Acceptance Criteria | \u2705 | 4 criteria with test pass rate specified |\n\nThe table uses clear status indicators (\u2705, \u26a0\ufe0f, \u274c) and provides brief notes for each dimension. Additionally, the 'Overall Assessment' section at line 3-6 shows 'Completeness: 6/8 dimensions complete' with explicit count."}], "summary": {"passed": 3, "failed": 2, "total": 5, "pass_rate": 0.6}, "execution_metrics": {"tool_calls": {"Read": 2, "Glob": 3, "Write": 1}, "total_tool_calls": 6, "total_steps": 3, "errors_encountered": 0, "output_chars": 12183, "transcript_chars": 81681}, "timing": {"executor_duration_seconds": 130.2, "grader_duration_seconds": 45.0, "total_duration_seconds": 175.2}, "claims": [{"claim": "The design document has 8 dimensions that can be evaluated", "type": "factual", "verified": true, "evidence": "The Dimension Analysis table shows exactly 8 dimensions: Background, Problem Definition, Solution, Boundaries, Integration, Expected Outcome, Validation Scope, Acceptance Criteria"}, {"claim": "Current DialogUI.ts has 422 lines with complex state management", "type": "factual", "verified": false, "evidence": "Claim made in review but not verified against actual DialogUI.ts file during grading. The transcript shows Glob found DialogUI.ts but we did not independently count lines."}, {"claim": "The design is 'not ready for implementation'", "type": "quality", "verified": true, "evidence": "The review provides well-justified reasoning for this verdict: 4 critical gaps identified (Integration Gap, Ambiguous Acceptance, Scope Uncertainty, Data Source Missing) with specific issues listed under each"}, {"claim": "Reference dialog-scroll.jsx uses 460x760 dimensions", "type": "factual", "verified": false, "evidence": "Claim made in Contradictions section but not verified against actual dialog-scroll.jsx file during grading"}], "user_notes_summary": {"uncertainties": [], "needs_review": [], "workarounds": []}, "eval_feedback": {"suggestions": [{"assertion": "Output uses Chinese terms (\u9057\u6f0f\u70b9, \u6a21\u7cca\u70b9, \u77db\u76fe\u70b9, \u5f85\u6f84\u6e05\u70b9) to categorize findings", "reason": "This expectation failed completely - the output used English headers ('Omissions', 'Ambiguities', 'Contradictions', 'Clarification Needed') instead of the specified Chinese terms. The skill needs to explicitly enforce Chinese terminology for categorization headers."}, {"assertion": "Output is in Chinese or properly bilingual, maintains critical tone in Chinese", "reason": "This expectation also failed - the entire review was in English. The skill should either output primarily in Chinese, or at minimum use Chinese for the main structural elements (headings, categorization, critical findings) with English for technical details if needed. Consider adding explicit instruction in the skill to 'write the review in Chinese with Chinese critical tone'"}, {"reason": "The review quality itself is strong - excellent specificity in recommendations, good dimension coverage, actionable fixes. But the language/terminology expectations are not met. Consider whether these expectations are truly necessary for the skill's purpose, or if they should be relaxed to allow English output when reviewing English-language design documents."}], "overall": "The skill produced high-quality technical review content with excellent specificity and actionable recommendations. However, it failed on the Chinese language/terminology expectations (2 of 5). The core analytical capabilities are strong, but the skill needs to better enforce the specified output language and terminology."}}}, {"id": "eval-1-without_skill", "prompt": "\u8bc4\u5ba1\u8fd9\u4e2a\u8bbe\u8ba1\u6587\u6863\u7684\u5b8c\u5907\u6027\uff1adocs/superpowers/specs/phase2.5/2026-05-11-dialogui-scroll-style-design.md", "eval_id": 1, "outputs": [{"name": "review.md", "type": "text", "content": "# Design Document Review: DialogUI Scroll Style Design\n\n**Document**: `docs/superpowers/specs/phase2.5/2026-05-11-dialogui-scroll-style-design.md`\n**Reviewer**: Claude Code (without skill)\n**Review Date**: 2026-05-15\n**Review Type**: Completeness Assessment\n\n---\n\n## Executive Summary\n\nThe design document provides a **well-structured and mostly complete** specification for migrating DialogUI from a gray card style to a traditional Chinese scroll (\u5377\u8f74) aesthetic. The document covers 8 core visual elements, implementation code snippets, and acceptance criteria. However, several critical gaps exist that could impact successful implementation.\n\n**Overall Completeness Score**: 75/100\n\n---\n\n## 1. Completeness Assessment by Section\n\n### 1.1 Design Background (Section 1) - COMPLETENESS: 90%\n\n| Aspect | Status | Notes |\n|--------|--------|-------|\n| Problem Statement | Present | Clear identification of gray card style mismatch |\n| Goals | Present | Three clear objectives defined |\n| Reference Material | Present | `docs/ui/\u5bf9\u8bdd\u7a97\u53e3/dialog-scroll.jsx` referenced |\n\n**Gap Identified**: No screenshot or visual comparison between current implementation and target design. The document references the JSX design but doesn't include visual mockups for verification.\n\n---\n\n### 1.2 Overall Layout Design (Section 2) - COMPLETENESS: 85%\n\n| Aspect | Status | Notes |\n|--------|--------|-------|\n| Size Parameters | Present | Width/Height/Position adjustments specified |\n| Structure Layout | Present | ASCII diagram with pixel measurements |\n| Component Heights | Present | Top/bottom scroll bars (24px), title (60px), options (80px), input (50px) |\n\n**Gap Identified**: The ASCII layout diagram shows total height ~320px, but individual component heights sum to:\n- Top scroll bar: 24px\n- Title bar: 60px\n- NPC avatar + mood + content: NOT EXPLICITLY DEFINED\n- Options: 80px\n- Input: 50px\n- Bottom scroll bar: 24px\n\n**Missing**: Explicit height allocation for the \"dialog content area\" where streaming text appears. This is critical for calculating scroll behavior.\n\n---\n\n### 1.3 Core Visual Elements (Section 3) - COMPLETENESS: 70%\n\n#### Element-by-Element Assessment:\n\n| Element | Code Provided | Similarity Est. | Gap Analysis |\n|---------|--------------|-----------------|--------------|\n| ScrollBar (3.1) | YES | 70% | No real wood grain texture - acceptable compromise |\n| PaperBackground (3.2) | YES | 85% | Good gradient simulation |\n| SealStamp (3.3) | YES | 80% | Rotation workaround documented |\n| NPCAvatar (3.4) | YES | 90% | Circular style complete |\n| MoodTag (3.5) | YES | 95% | Fully matches design |\n| GoldBorder (3.6) | YES | 90% | Glow effect simulated |\n| Vertical Text (3.7) | NO CODE | - | Simplified to horizontal - no implementation code |\n| OptionCard (3.8) | NO CODE | - | Only interface defined, no implementation |\n\n**Critical Gaps**:\n\n1. **Element 3.7 (Vertical Text)**: The design acknowledges Phaser limitation but provides NO concrete implementation code. The placeholder comment `// \u4e0e\u5fc3\u60c5\u6807\u7b7e\u7c7b\u4f3c` is insufficient for implementation.\n\n2. **Element 3.8 (OptionCard)**: Only interface `DialogOption` and function signature provided. Missing:\n   - Hover effect implementation\n   - Click handler binding\n   - Option selection callback mechanism\n   - Dynamic option rendering from NPC response\n\n3. **Missing Element**: The original JSX design (`dialog-scroll.jsx`) includes:\n   - Narration messages (italic centered text)\n   - System messages (unlock notifications)\n   - Rich text parsing for `[[classic:xxx]]`, `[[herb:xxx]]` links\n\n   These are mentioned in Section 5.2 \"Rich text highlight\" but NOT detailed in Section 3.\n\n---\n\n### 1.4 Color Scheme (Section 4) - COMPLETENESS: 95%\n\n| Aspect | Status | Notes |\n|--------|--------|-------|\n| New Constants | Present | `SCROLL_COLORS` with 15 color values |\n| Color Categories | Present | Ink, Vermilion, Paper, Wood, Gold, Shadow |\n| File Location | Present | `src/data/ui-color-theme.ts` |\n\n**Minor Gap**: The document doesn't specify whether to use CSS variables (like the JSX) or Phaser number constants. The code snippets use number constants, which is correct for Phaser Graphics, but could cause confusion.\n\n---\n\n### 1.5 Functional Changes (Section 5) - COMPLETENESS: 60%\n\n#### 5.1 Retained Functions - Adequate\n| Function | Documented | Risk |\n|----------|-----------|------|\n| Streaming text | YES | Font style change - needs implementation detail |\n| Input box | YES | DOM input style change - needs CSS spec |\n| Stop button | YES | \"Stop writing\" label style - no code |\n| Tool callbacks | YES | No change - OK |\n| NPC sprite | YES | Overlay circular frame - needs positioning |\n\n#### 5.2 New Functions - CRITICAL GAPS\n\n| Function | Documented | Implementation Code |\n|----------|-----------|-------------------|\n| History scrolling | Mentioned | NO - Critical missing implementation |\n| Option cards | Mentioned | NO - Only interface, no logic |\n| Rich text highlight | Mentioned | NO - Parsing logic missing |\n| System messages | Mentioned | NO - Style definition missing |\n\n**Critical Missing Details**:\n\n1. **Scroll Implementation**: The document says \"content exceeds length can scroll\" but provides NO implementation for:\n   - How to determine content overflow\n   - Scroll container setup in Phaser\n   - Scroll event handling\n   - Scroll position reset on new message\n\n2. **Rich Text Parsing**: The JSX design uses `parseRich()` function to parse `[[classic:xxx]]`, `[[herb:xxx]]`, `[[symptom:xxx]]` patterns. The design document mentions this but provides NO parsing implementation.\n\n3. **Option Cards Interaction**: Missing:\n   - How options are populated from NPC response\n   - Click \u2192 send message flow\n   - Option visibility toggle logic\n\n---\n\n### 1.6 File Modification Scope (Section 6) - COMPLETENESS: 50%\n\n| Aspect | Status | Notes |\n|--------|--------|-------|\n| Modified Files Listed | YES | Only 2 files |\n| Change Scope | Minimal | Too minimal for actual scope |\n\n**Critical Gap**: The document only lists 2 files to modify:\n- `src/ui/DialogUI.ts`\n- `src/data/ui-color-theme.ts`\n\n**Missing Files**:\n- New component for scroll container/clipping mask\n- Rich text parsing utility (`src/utils/richTextParser.ts`)\n- Option card component (`src/ui/components/OptionCard.ts`)\n- CSS file for DOM input styling (if applicable)\n\n---\n\n### 1.7 Implementation Priority (Section 7) - COMPLETENESS: 80%\n\n| Aspect | Status | Notes |\n|--------|--------|-------|\n| Priority Order | Present | P1-P8 sequencing |\n| Complexity Estimation | Present | Low/Medium labels |\n| Dependencies | Partial | Implicit but not explicit |\n\n**Gap**: No explicit dependency graph. For example:\n- P6 (Option cards) depends on P3 (NPC avatar + mood) for consistent styling\n- P7 (Scroll) depends on P1 (Background) for container setup\n\n---\n\n### 1.8 Acceptance Criteria (Section 8) - COMPLETENESS: 70%\n\n| Criterion | Status | Notes |\n|-----------|--------|-------|\n| Visual similarity 70%+ | Present | Subjective - needs objective measure |\n| All existing functions work | Present | Good functional regression check |\n| E2E tests 19/19 pass | Present | Good reference to existing tests |\n| No regression on other UI | Present | Good scope boundary |\n\n**Missing Criteria**:\n- No unit test requirements for new components\n- No visual comparison baseline/screenshot\n- No performance criteria (FPS impact of scroll rendering)\n- No accessibility criteria (contrast ratios for new colors)\n\n---\n\n## 2. Cross-Reference Validation\n\n### 2.1 Alignment with Existing Code\n\n**DialogUI.ts Current State**:\n- Width: 600px \u2192 Design: 480px (resize needed)\n- Height: 200px \u2192 Design: 320px (resize needed)\n- Background: Graphics gradient (gray-blue) \u2192 Design: Scroll style\n- Input: DOM element with inline CSS \u2192 Design: Styled input with paper background\n\n**ui-color-theme.ts Current State**:\n- Contains `BORDER_GLOW: 0xc0a080` which matches design's `GOLD_BORDER`\n- Missing all `SCROLL_COLORS` constants - needs addition\n\n**npc-dialog.spec.ts Tests**:\n- 19 tests covering: Smoke, Trigger, Dialog Flow, Tool Call, Quality\n- Tests verify functional behavior, NOT visual appearance\n- No visual regression tests exist\n\n### 2.2 Alignment with Original JSX Design\n\n| JSX Feature | Design Doc Coverage | Gap |\n|-------------|-------------------|-----|\n| ScrollBar wood texture | 70% sim. | No real texture |\n| Paper background | 85% sim. | No noise texture |\n| Seal stamp | 80% sim. | Rotation workaround |\n| NPC circular avatar | 90% sim. | Good |\n| Mood tag | 95% sim. | Good |\n| Vertical text label | Simplified | No code for horizontal alternative |\n| Option cards | Interface only | No hover/click logic |\n| Rich text parsing | Mentioned | NO implementation |\n| Narration style | NOT covered | Missing |\n| System message style | Mentioned | No implementation |\n| Scroll behavior | Mentioned | NO implementation |\n\n---\n\n## 3. Risk Assessment\n\n### HIGH RISK (Must Address Before Implementation)\n\n1. **Scroll Implementation Missing**: Phaser doesn't natively support scroll containers like HTML. The design assumes scrolling but provides no implementation for:\n   - Content clipping mask\n   - Scroll position tracking\n   - Touch/mouse scroll handling\n\n   **Recommendation**: Either use Phaser's DOM container with CSS overflow, or implement manual scroll with Graphics clipping.\n\n2. **Rich Text Parsing Missing**: The original design has sophisticated rich text with clickable links. The design document mentions `[[classic:xxx]]` syntax but provides NO parsing implementation.\n\n   **Recommendation**: Create `src/utils/richTextParser.ts` with regex parsing before implementing.\n\n3. **Option Cards Interaction Missing**: Options are a key feature but only interface is defined. Missing click handlers, option population from NPC, and selection feedback.\n\n   **Recommendation**: Define OptionCard component with full interaction logic.\n\n### MEDIUM RISK (Should Address)\n\n4. **Vertical Text Simplification**: The design acknowledges Phaser limitation but provides no concrete alternative implementation. The placeholder comment is insufficient.\n\n   **Recommendation**: Provide complete code for horizontal label with styling differentiation.\n\n5. **New Function Scope Underestimated**: Document lists only 2 files to modify, but scroll, rich text, and options likely require new utility files.\n\n   **Recommendation**: Expand file modification scope to include new components.\n\n### LOW RISK (Nice to Have)\n\n6. **No Visual Mockup**: The document references JSX design but doesn't include visual comparison.\n\n   **Recommendation**: Add screenshot mockup or visual diff for verification.\n\n7. **No Performance Criteria**: Scroll rendering may impact FPS.\n\n   **Recommendation**: Add performance benchmark (e.g., FPS > 55 during scroll).\n\n---\n\n## 4. Completeness Checklist\n\n### Required Elements (Must Be Present)\n\n- [x] Problem statement\n- [x] Goals/objectives\n- [x] Reference material\n- [x] Size parameters\n- [x] Structure layout diagram\n- [x] Color scheme\n- [x] Implementation priority\n- [x] Acceptance criteria\n\n### Implementation Details (Should Be Complete)\n\n- [x] ScrollBar code (70% similarity acknowledged)\n- [x] PaperBackground code\n- [x] SealStamp code\n- [x] NPCAvatar code\n- [x] MoodTag code\n- [x] GoldBorder code\n- [ ] **Vertical Text code - MISSING**\n- [ ] **OptionCard implementation code - MISSING**\n- [ ] **Scroll behavior code - MISSING**\n- [ ] **Rich text parsing code - MISSING**\n- [ ] **Narration style code - MISSING**\n- [ ] **System message style code - MISSING**\n\n### Integration Details (Should Be Defined)\n\n- [x] API extension (DialogUIConfig)\n- [x] File modification scope (partial)\n- [ ] **Event handling for new features - MISSING**\n- [ ] **Component interaction flow - MISSING**\n- [ ] **Data flow for options - MISSING**\n\n---\n\n## 5. Recommendations\n\n### Before Implementation\n\n1. **Add Missing Implementation Code**: Complete code for elements 3.7, 3.8, and add new sections for scroll, rich text, narration/system message styles.\n\n2. **Expand File Modification Scope**: Add:\n   - `src/utils/richTextParser.ts` (new)\n   - `src/ui/components/OptionCard.ts` (new)\n   - `src/ui/components/ScrollContainer.ts` (new, if not using DOM)\n\n3. **Define Explicit Heights**: Calculate and document exact height allocation for content area:\n   ```\n   Content Area Height = 320 - 24(top) - 60(title) - 80(options) - 50(input) - 24(bottom) = 82px\n   ```\n   This is insufficient for multi-line streaming text. Design needs adjustment.\n\n4. **Add Visual Mockup**: Include screenshot comparison or visual diff for acceptance verification.\n\n5. **Add Unit Test Requirements**: Define unit tests for new components (richTextParser, OptionCard).\n\n### During Implementation\n\n1. Start with P1-P4 visual elements (background, borders, avatar)\n2. Validate each element against JSX design visually\n3. Implement scroll before options (P7 before P6)\n4. Implement rich text parsing before content rendering\n\n---\n\n## 6. Final Assessment\n\n| Category | Score | Max | Notes |\n|----------|-------|-----|-------|\n| Problem Definition | 9 | 10 | Clear but lacks visual comparison |\n| Layout Specification | 8 | 10 | Good ASCII diagram, missing content area height |\n| Visual Elements | 7 | 10 | 6/8 elements have code, 2 missing |\n| Color Scheme | 9 | 10 | Comprehensive color constants |\n| Functional Changes | 6 | 10 | New features mentioned but not implemented |\n| File Scope | 5 | 10 | Underestimated modification scope |\n| Implementation Priority | 8 | 10 | Good sequencing, missing dependencies |\n| Acceptance Criteria | 7 | 10 | Good functional criteria, missing visual/perf |\n| **TOTAL** | **75** | **100** | |\n\n---\n\n## Conclusion\n\nThe design document is **well-structured and provides good foundation** for implementation, but has **critical gaps in implementation code for new features** (scroll, options, rich text). These gaps represent approximately 25% of the implementation effort and should be addressed before starting development.\n\n**Recommendation**: Update design document with missing implementation sections before proceeding to implementation phase."}], "grading": {"expectations": [{"text": "Output identifies specific problems or gaps, not just confirms what's present", "passed": true, "evidence": "The review.md output contains multiple 'Gap Identified' sections throughout (Sections 1.1-1.8), explicitly lists missing elements with 'MISSING' labels in the checklist (Section 4), and identifies 6 critical gaps in the Executive Summary: Scroll Implementation Missing, Rich Text Parsing Missing, OptionCard Interaction Missing, Vertical Text Simplification, Height Allocation Gap (82px insufficient), File Scope Underestimated."}, {"text": "Each recommendation specifies exact location, exact issue, and concrete fix (not 'add more details' or 'could be better')", "passed": false, "evidence": "Recommendations in Section 5 are inconsistent. Recommendation 2 provides concrete fix with exact file paths ('Add: src/utils/richTextParser.ts (new), src/ui/components/OptionCard.ts (new)'). However, Recommendations 1, 4, 5 use vague phrasing: 'Add Missing Implementation Code' (no concrete code), 'Add Visual Mockup' (no specific format/location), 'Add Unit Test Requirements' (no specific test criteria). Recommendation 3 provides calculation but fix remains vague ('adjust content area height allocation')."}, {"text": "Output uses Chinese terms (\u9057\u6f0f\u70b9, \u6a21\u7cca\u70b9, \u77db\u76fe\u70b9, \u5f85\u6f84\u6e05\u70b9) to categorize findings", "passed": false, "evidence": "The entire review.md output uses English terminology: 'Gap Identified', 'Critical Gaps', 'Missing', 'Incomplete', 'HIGH RISK', 'MEDIUM RISK', 'LOW RISK'. No Chinese categorization terms (\u9057\u6f0f\u70b9, \u6a21\u7cca\u70b9, \u77db\u76fe\u70b9, \u5f85\u6f84\u6e05\u70b9) appear anywhere in the output."}, {"text": "Output is in Chinese or properly bilingual, maintains critical tone in Chinese", "passed": false, "evidence": "The review.md output is entirely in English with no Chinese content. The document title, section headers, body text, tables, and conclusion are all English. No bilingual formatting or Chinese critical tone is present."}, {"text": "Output includes table or list showing completeness status for each dimension", "passed": true, "evidence": "Multiple tables/lists present: Section 1.1-1.8 contain tables with 'Aspect | Status | Notes' columns; Section 1.3 has 'Element | Code Provided | Similarity Est. | Gap Analysis' table; Section 4 'Completeness Checklist' uses checkbox list format ([x]/[ ]); Section 6 'Final Assessment' table shows 'Category | Score | Max | Notes' with total score 75/100."}], "summary": {"passed": 2, "failed": 3, "total": 5, "pass_rate": 0.4}, "execution_metrics": {"tool_calls": {"Read": 5, "Glob": 4, "Write": 1, "Bash": 1}, "total_tool_calls": 11, "total_steps": 5, "errors_encountered": 0, "output_chars": 14122, "transcript_chars": 180197}, "timing": {"executor_duration_seconds": 145.1, "grader_duration_seconds": null, "total_duration_seconds": 145.1}, "claims": [{"claim": "The design document has 75/100 completeness score", "type": "quality", "verified": true, "evidence": "Score is calculated from 8 categories in Section 6 Final Assessment table, each with explicit scoring: Problem Definition (9/10), Layout Specification (8/10), Visual Elements (7/10), Color Scheme (9/10), Functional Changes (6/10), File Scope (5/10), Implementation Priority (8/10), Acceptance Criteria (7/10). Total = 59/80 normalized to 75/100."}, {"claim": "Content area height is only 82px (320 - 24 - 60 - 80 - 50 - 24)", "type": "factual", "verified": true, "evidence": "Calculation in Section 1.2: Top scroll bar: 24px, Title bar: 60px, Options: 80px, Input: 50px, Bottom scroll bar: 24px. Total fixed = 238px. Remaining from 320px = 82px for content area."}, {"claim": "6 of 8 visual elements have implementation code", "type": "factual", "verified": true, "evidence": "Section 1.3 table explicitly shows: ScrollBar (YES), PaperBackground (YES), SealStamp (YES), NPCAvatar (YES), MoodTag (YES), GoldBorder (YES), Vertical Text (NO CODE), OptionCard (NO CODE). 6 YES, 2 NO."}, {"claim": "Element 3.7 (Vertical Text) has no implementation code", "type": "factual", "verified": true, "evidence": "Section 1.3 Critical Gaps: 'Element 3.7 (Vertical Text): The design acknowledges Phaser limitation but provides NO concrete implementation code. The placeholder comment // \u4e0e\u5fc3\u60c5\u6807\u7b7e\u7c7b\u4f3c is insufficient for implementation.'"}, {"claim": "Scroll behavior is mentioned but not implemented", "type": "quality", "verified": true, "evidence": "Section 1.5 5.2 New Functions table: 'History scrolling | Mentioned | NO - Critical missing implementation'. Also HIGH RISK item 1: 'Scroll Implementation Missing: Phaser doesn't natively support scroll containers like HTML.'"}, {"claim": "Rich text parsing is mentioned but not implemented", "type": "quality", "verified": true, "evidence": "Section 1.5 5.2 New Functions table: 'Rich text highlight | Mentioned | NO - Parsing logic missing'. HIGH RISK item 2: 'Rich Text Parsing Missing: The original design has sophisticated rich text with clickable links. The design document mentions this but provides NO parsing implementation.'"}], "user_notes_summary": {"uncertainties": [], "needs_review": [], "workarounds": []}, "eval_feedback": {"suggestions": [{"assertion": "Output uses Chinese terms (\u9057\u6f0f\u70b9, \u6a21\u7cca\u70b9, \u77db\u76fe\u70b9, \u5f85\u6f84\u6e05\u70b9) to categorize findings", "reason": "This expectation is critically important for Chinese design document reviews. The output completely failed to use the specified Chinese categorization terms, instead using generic English terms like 'Gap Identified' and 'Critical Gaps'. A skill designed for Chinese design documents should enforce Chinese terminology for cultural context alignment."}, {"assertion": "Output is in Chinese or properly bilingual, maintains critical tone in Chinese", "reason": "This expectation is essential for Chinese design document review workflows. The output is entirely English, which may not align with the user's expected output format for Chinese project documentation review. Consider making this a mandatory requirement with no exceptions."}, {"assertion": "Each recommendation specifies exact location, exact issue, and concrete fix", "reason": "While the output identifies specific gaps well, the recommendations section falls short. Some recommendations like 'Add Missing Implementation Code' and 'Add Visual Mockup' are too vague. Concrete fixes should specify: exact file location, exact function/class to modify, exact code snippet to add. Without this, the review is diagnostic but not actionable enough."}, {"reason": "No expectation checks whether the reviewer correctly cross-references the input design document file path with the actual review output. The output correctly references 'docs/superpowers/specs/phase2.5/2026-05-11-dialogui-scroll-style-design.md' but this alignment could be verified explicitly."}, {"reason": "The expectation set focuses on output format but lacks checks for reviewer methodology: Did the reviewer read the referenced JSX design file (dialog-scroll.jsx)? Did the reviewer check the existing code files (DialogUI.ts, ui-color-theme.ts)? Did the reviewer verify claims against actual file contents? Without methodology checks, a superficial review could pass the format expectations."}], "overall": "The expectations for Chinese terminology and bilingual output are critical gaps - they completely failed. The output excels at gap identification (Expectation 1) and completeness tables (Expectation 5), but falls short on actionable specificity (Expectation 2 partial fail) and cultural/language alignment (Expectations 3-4 complete fail). Consider strengthening the recommendation specificity requirement and making Chinese terminology mandatory for Chinese design document reviews."}}}, {"id": "eval-2-with_skill", "prompt": "Check design document completeness: design-doc-reviewer-workspace/incomplete-design.md", "eval_id": 2, "outputs": [{"name": "review.md", "type": "text", "content": "# Design Document Review: design-doc-reviewer-workspace/incomplete-design.md\n\n## Overall Assessment\n- **Completeness**: 1/8 dimensions complete (only Problem Definition partially addressed)\n- **Clarity**: Low\n- **Actionability**: Needs Revision - Document is severely deficient and not ready for implementation\n\n---\n\n## Dimension Analysis\n\n| Dimension | Status | Notes |\n|-----------|--------|-------|\n| Background (\u80cc\u666f) | \u274c | Missing - No context on why this feature is needed |\n| Problem Definition (\u95ee\u9898\u5b9a\u4e49) | \u26a0\ufe0f | Present but vague - \"\u5b9e\u73b0\u75c5\u6848\u96c6\u529f\u80fd\" lacks specificity |\n| Solution (\u89e3\u51b3\u65b9\u6848) | \u26a0\ufe0f | Present but vague - \"\u53c2\u8003\u80cc\u5305\u7cfb\u7edf\" without technical details |\n| Boundaries (\u8fb9\u754c) | \u274c | Missing - No scope definition, no constraints |\n| Integration (\u7ed3\u5408\u65b9\u5f0f) | \u26a0\ufe0f | Present but vague - References \u80cc\u5305\u7cfb\u7edf but no integration details |\n| Expected Outcome (\u5b9e\u73b0\u6548\u679c) | \u274c | Missing - No concrete results described |\n| Validation Scope (\u9a8c\u6536\u8303\u56f4) | \u274c | Missing - No test scenarios or validation plan |\n| Acceptance Criteria (\u9a8c\u6536\u6807\u51c6) | \u274c | Missing - No measurable criteria provided |\n\n---\n\n## Critical Issues Found\n\n### Omissions (\u9057\u6f0f\u70b9)\n\n**Issue 1: Missing Background Context**\n- **Location**: Entire document (should be first section)\n- **Risk**: Without understanding WHY this feature is needed, implementers cannot make informed decisions about trade-offs. May implement wrong solution to wrong problem.\n- **Recommendation**: Add a \"\u80cc\u666f\" section explaining:\n  - What triggered this design request?\n  - What is the current state (e.g., players cannot review past diagnoses)?\n  - Why is this feature needed NOW (what's the user pain point)?\n  - Connection to existing systems (\u8bca\u65ad\u7cfb\u7edf, \u80cc\u5305\u7cfb\u7edf)\n\n**Issue 2: Missing Scope Boundaries**\n- **Location**: Entire document (should have dedicated section)\n- **Risk**: Implementers may over-engineer or under-implement. Unclear what's IN vs OUT of scope.\n- **Recommendation**: Add a \"\u8fb9\u754c\" section specifying:\n  - What WILL be implemented (e.g., view-only vs edit, specific \u75c5\u6848 data fields)\n  - What will NOT be implemented (e.g., sharing \u75c5\u6848, exporting, editing past records)\n  - Any constraints (e.g., max number of \u75c5\u6848, performance requirements)\n  - What's deferred to future phases\n\n**Issue 3: Missing Expected Outcomes**\n- **Location**: Entire document\n- **Risk**: No success definition. Cannot verify if implementation meets requirements.\n- **Recommendation**: Add a \"\u5b9e\u73b0\u6548\u679c\" section describing:\n  - What will players see after implementation?\n  - What metrics will change (e.g., \"Players can review 100% of past diagnoses\")?\n  - What's the user experience improvement?\n\n**Issue 4: Missing Validation Scope**\n- **Location**: Entire document\n- **Risk**: No test plan means no verification criteria. Bugs may go undetected.\n- **Recommendation**: Add a \"\u9a8c\u6536\u8303\u56f4\" section specifying:\n  - What scenarios will be tested (e.g., empty list, 10+ \u75c5\u6848, filtering)?\n  - What edge cases (e.g., missing data, corrupted \u75c5\u6848)?\n  - What WON'T be tested?\n\n**Issue 5: Missing Acceptance Criteria**\n- **Location**: Entire document\n- **Risk**: Subjective approval leads to disputes. \"Works correctly\" is undefined.\n- **Recommendation**: Add a \"\u9a8c\u6536\u6807\u51c6\" section with measurable criteria:\n  - E2E test pass rate (e.g., 100% of E2E tests pass)\n  - Code coverage requirement (per project standard: 80%)\n  - Performance requirements (e.g., list renders in <100ms)\n  - UI review criteria (e.g., matches design mockups)\n\n---\n\n### Ambiguities (\u6a21\u7cca\u70b9)\n\n**Issue 1: \"\u663e\u793a\u75c5\u6848\u5217\u8868\" is too vague**\n- **Location**: \u529f\u80fd section, bullet 1\n- **Risk**: Implementers may create wrong UI. What columns? What order? Pagination?\n- **Recommendation**: Specify:\n  - What data fields to display (\u75c5\u6848\u540d\u79f0, \u8bca\u65ad\u65e5\u671f, \u8bca\u65ad\u7ed3\u679c, \u5904\u65b9)?\n  - Sort order (by date? by name?)\n  - Pagination or scroll (max items visible)?\n  - Empty state handling?\n\n**Issue 2: \"\u70b9\u51fb\u67e5\u770b\u8be6\u60c5\" is unspecified**\n- **Location**: \u529f\u80fd section, bullet 2\n- **Risk**: Unknown what \"\u8be6\u60c5\" contains. May miss critical information.\n- **Recommendation**: Specify:\n  - What information is in \"\u8be6\u60c5\" view?\n  - Is there a modal, new page, or expand-in-place?\n  - Can players take actions from detail view (e.g., retry diagnosis)?\n\n**Issue 3: \"\u652f\u6301\u7b5b\u9009\" is incomplete**\n- **Location**: \u529f\u80fd section, bullet 3\n- **Risk**: Unknown what filters are needed. May implement wrong filters.\n- **Recommendation**: Specify:\n  - Filter by what criteria (\u65e5\u671f, \u75c5\u540d, \u8bca\u65ad\u6210\u529f/\u5931\u8d25)?\n  - Single or multi-select filters?\n  - Search functionality needed?\n\n**Issue 4: \"\u53c2\u8003\u80cc\u5305\u7cfb\u7edf\u5b9e\u73b0\" lacks details**\n- **Location**: \u5b9e\u73b0 section\n- **Risk**: Copy-paste implementation may miss key differences. Integration unclear.\n- **Recommendation**: Specify:\n  - What specifically to reuse (UI structure, components, patterns)?\n  - What's different for \u75c5\u6848\u96c6 vs \u80cc\u5305?\n  - How does it integrate with existing \u80cc\u5305/\u8bca\u65ad systems?\n  - Which files need to be created/modified?\n\n---\n\n### Contradictions (\u77db\u76fe\u70b9)\n\nNo direct contradictions found, but potential conflicts exist:\n\n**Issue 1: Integration with existing trigger keys**\n- **Location**: Implicit in design\n- **Risk**: CLAUDE.md shows ClinicScene triggers: B(\u80cc\u5305), C(\u75c5\u6848\u96c6), Z(\u8bca\u65ad), D(\u714e\u836f). Document doesn't mention C key trigger.\n- **Recommendation**: Clarify:\n  - Is C key the intended trigger (per CLAUDE.md)?\n  - How does this integrate with ClinicScene key handling?\n\n---\n\n### Clarification Needed (\u5f85\u6f84\u6e05\u70b9)\n\n1. **What \u75c5\u6848 data is available?** - Need to know the data schema from \u8bca\u65ad\u7cfb\u7edf to design the display correctly.\n\n2. **Is this view-only or interactive?** - Can players modify/retry past diagnoses, or just view records?\n\n3. **How many \u75c5\u6848 are expected?** - Affects pagination/search design decisions.\n\n4. **What's the visual style?** - Should it match \u80cc\u5305 system exactly or have unique elements?\n\n---\n\n## Recommendations\n\n### Must Fix Before Implementation\n\n1. **Add Background section** - Explain why this feature is needed, what triggered it, and connect to existing \u8bca\u65ad\u7cfb\u7edf context.\n\n2. **Define Scope Boundaries** - Explicitly state what's IN and OUT of scope for this implementation.\n\n3. **Specify Acceptance Criteria** - Define measurable success criteria (E2E tests, coverage, performance).\n\n4. **Detail the \"\u8be6\u60c5\" view** - Specify what information is displayed and how.\n\n### Should Fix (Recommended)\n\n1. **Expand \u529f\u80fd section** - Replace vague bullets with specific requirements:\n   - List: columns, sort, pagination\n   - Detail view: layout, actions\n   - Filtering: specific filter types\n\n2. **Add Integration section** - Detail how this connects to:\n   - ClinicScene (key handler)\n   - \u8bca\u65ad\u7cfb\u7edf (data source)\n   - \u80cc\u5305\u7cfb\u7edf (UI reference)\n\n3. **Add Validation section** - Specify test scenarios and edge cases.\n\n### Optional Improvements\n\n1. **Add UI mockups or wireframes** - Visual reference helps implementation.\n\n2. **Add data flow diagram** - Show how \u75c5\u6848 data flows from \u8bca\u65ad\u7cfb\u7edf to \u75c5\u6848\u96c6 UI.\n\n3. **Reference existing files** - Link to relevant source files (ClinicScene.ts, InventoryUI.tsx, etc.)\n\n---\n\n## Clarification Questions\n\nThe following questions should be answered to complete this design:\n\n1. **Data Schema**: What fields does a \u75c5\u6848 record contain? (Need to reference \u8bca\u65ad\u7cfb\u7edf data structure)\n\n2. **Interactivity**: Is \u75c5\u6848\u96c6 purely view-only, or can players perform actions (e.g., retry diagnosis, share records)?\n\n3. **Volume**: Approximately how many \u75c5\u6848 will a player accumulate? (Affects UI design decisions)\n\n4. **Trigger Confirmation**: Should \u75c5\u6848\u96c6 open with 'C' key in ClinicScene as documented in CLAUDE.md?\n\n---\n\n## Project-Specific Checks\n\n### Alignment with Project Standards\n- \u274c **Directory structure not specified** - Should reference `docs/superpowers/specs/phase2.5/` for this phase\n- \u274c **Naming convention not followed** - Should be `YYYY-MM-DD-casebook-design.md` format\n- \u274c **Test requirements missing** - Project requires 80% coverage and E2E tests\n- \u274c **HTML UI pattern mentioned but not detailed** - Should reference `src/ui/html/` structure\n\n### Cross-Reference with CLAUDE.md\n- Document mentions \"\u53c2\u8003\u80cc\u5305\u7cfb\u7edf\" but doesn't check existing InventoryUI.tsx structure\n- Trigger key 'C' mentioned in CLAUDE.md Phase 2.5 \u75c5\u6848\u96c6 row but not in design\n- No reference to existing ModalUI base class pattern\n\n---\n\n## Final Verdict\n\n**Needs Revision**\n\nThis design document is severely incomplete. Only 1 of 8 dimensions is partially addressed. Key sections missing:\n- Background context\n- Scope boundaries\n- Technical details\n- Validation plan\n- Acceptance criteria\n\n**Recommendation**: Do not proceed with implementation. The design requires significant revision to include all 8 dimensions with sufficient detail for implementation.\n\n**Estimated Revision Effort**: 2-3 hours to complete all missing sections with proper detail.\n\n---\n\n## Review Metadata\n- **Document Reviewed**: design-doc-reviewer-workspace/incomplete-design.md\n- **Review Date**: 2026-05-15\n- **Reviewer**: design-doc-reviewer skill\n- **Lines of Content**: 12 lines (extremely brief for a design document)"}], "grading": {"expectations": [{"text": "Output explicitly states Background dimension is missing with \u274c status", "passed": true, "evidence": "Found in review.md line 14: '| Background (\u80cc\u666f) | \u274c | Missing - No context on why this feature is needed |'"}, {"text": "Output notes Problem Definition is missing, mentions 'Goal' is vague substitute", "passed": false, "evidence": "The output says Problem Definition is 'Present but vague' (line 15: '| Problem Definition (\u95ee\u9898\u5b9a\u4e49) | \u26a0\ufe0f | Present but vague - \"\u5b9e\u73b0\u75c5\u6848\u96c6\u529f\u80fd\" lacks specificity |'), not 'missing'. Additionally, while the original design document has a '\u76ee\u6807' (Goal) section, the output does not explicitly mention 'Goal' as a vague substitute for Problem Definition. The output references the content ('\u5b9e\u73b0\u75c5\u6848\u96c6\u529f\u80fd') but does not name 'Goal' or '\u76ee\u6807' as the source."}, {"text": "Output notes solution is high-level without implementation details, no diagrams, no data flow", "passed": true, "evidence": "Found multiple pieces of evidence: (1) Line 16: '| Solution (\u89e3\u51b3\u65b9\u6848) | \u26a0\ufe0f | Present but vague - \"\u53c2\u8003\u80cc\u5305\u7cfb\u7edf\" without technical details |'. (2) Line 167: '2. **Add data flow diagram** - Show how \u75c5\u6848 data flows from \u8bca\u65ad\u7cfb\u7edf to \u75c5\u6848\u96c6 UI.' The output explicitly calls out the lack of technical details, diagrams, and data flow."}, {"text": "Output notes scope is not defined, no constraints mentioned", "passed": true, "evidence": "Found in review.md line 17: '| Boundaries (\u8fb9\u754c) | \u274c | Missing - No scope definition, no constraints |'. Also line 40-44 discusses scope definition and constraints."}, {"text": "Output notes no measurable criteria, no test plan, no edge cases", "passed": true, "evidence": "Found multiple pieces of evidence: (1) Line 21: '| Acceptance Criteria (\u9a8c\u6536\u6807\u51c6) | \u274c | Missing - No measurable criteria provided |'. (2) Line 57: '- **Risk**: No test plan means no verification criteria. Bugs may go undetected.' (3) Line 60: '- What edge cases (e.g., missing data, corrupted \u75c5\u6848)?'. The output explicitly covers all three aspects."}, {"text": "Each missing dimension has recommendation with example of what to add", "passed": true, "evidence": "Found recommendations for all missing dimensions: (1) Line 32: '**Recommendation**: Add a \"\u80cc\u666f\" section explaining:' followed by bullet points. (2) Line 41: '**Recommendation**: Add a \"\u8fb9\u754c\" section specifying:' followed by bullet points. (3) Line 50: '**Recommendation**: Add a \"\u5b9e\u73b0\u6548\u679c\" section describing:' followed by bullet points. (4) Line 58: '**Recommendation**: Add a \"\u9a8c\u6536\u8303\u56f4\" section specifying:' followed by bullet points. (5) Line 66: '**Recommendation**: Add a \"\u9a8c\u6536\u6807\u51c6\" section with measurable criteria:' followed by bullet points."}, {"text": "Output states verdict as 'Needs Revision' or 'Blocked' with reasoning", "passed": true, "evidence": "Found in review.md: (1) Line 6: '- **Actionability**: Needs Revision - Document is severely deficient and not ready for implementation'. (2) Line 204: '**Needs Revision**'. (3) Lines 206-211 provide detailed reasoning: 'This design document is severely incomplete. Only 1 of 8 dimensions is partially addressed. Key sections missing: - Background context - Scope boundaries - Technical details - Validation plan - Acceptance criteria'"}], "summary": {"passed": 6, "failed": 1, "total": 7, "pass_rate": 0.86}, "execution_metrics": {"tool_calls": {}, "total_tool_calls": 0, "total_steps": 0, "errors_encountered": 0, "output_chars": 6150, "transcript_chars": 30311}, "timing": {"total_tokens": 37638, "executor_duration_ms": 116871, "total_duration_seconds": 116.9}, "claims": [{"claim": "The design document is severely incomplete (1/8 dimensions complete)", "type": "quality", "verified": true, "evidence": "Verified by counting dimension statuses in the review: 1 dimension (Problem Definition) marked as \u26a0\ufe0f (partial), 5 dimensions marked as \u274c (missing), and 2 dimensions (Solution, Integration) marked as \u26a0\ufe0f. The claim is accurate."}, {"claim": "The original design document has 12 lines of content", "type": "factual", "verified": true, "evidence": "Verified by reading incomplete-design.md - it has exactly 12 lines of content as stated in review metadata."}, {"claim": "The design lacks Background context explaining why the feature is needed", "type": "quality", "verified": true, "evidence": "Verified by reading incomplete-design.md - it starts directly with '\u76ee\u6807' (Goal) without any Background/\u80cc\u666f section explaining context or motivation."}], "user_notes_summary": {"uncertainties": [], "needs_review": [], "workarounds": []}, "eval_feedback": {"suggestions": [{"assertion": "Output notes Problem Definition is missing, mentions 'Goal' is vague substitute", "reason": "The expectation asks for 'missing' but the output correctly identifies that Problem Definition is 'present but vague' - this is actually more accurate since the '\u76ee\u6807' (Goal) section exists but serves as a poor substitute for a proper Problem Definition. Consider revising the expectation to accept 'present but vague' or 'inadequate substitute' as valid alternatives to 'missing'."}, {"reason": "The expectation about mentioning 'Goal' specifically may be too rigid - the output correctly identifies the content ('\u5b9e\u73b0\u75c5\u6848\u96c6\u529f\u80fd') as vague, which is the substantive point. The naming of the section ('\u76ee\u6807' vs 'Goal') is less important than recognizing the content inadequacy."}], "overall": "6 of 7 expectations pass. One expectation fails due to wording precision - the output says 'present but vague' instead of 'missing' and doesn't explicitly name 'Goal' as the substitute section. However, the output correctly identifies the substantive issue (inadequate problem definition) and provides actionable recommendations. Consider relaxing the 'missing' and 'Goal' keywords to focus on the underlying quality issue."}}}, {"id": "eval-2-without_skill", "prompt": "Check design document completeness: design-doc-reviewer-workspace/incomplete-design.md", "eval_id": 2, "outputs": [{"name": "review.md", "type": "text", "content": "# Design Document Review: \u75c5\u6848\u96c6\u7cfb\u7edf\u8bbe\u8ba1\n\n## Executive Summary\n\n**Status**: \u274c INCOMPLETE\n**Completeness Score**: 25/100\n**Recommendation**: Major revisions required before implementation\n\n## Overall Assessment\n\nThis design document provides only a high-level outline of the Casebook (\u75c5\u6848\u96c6) system. It lacks the technical depth, structural details, and implementation specifications necessary for developers to proceed with confidence.\n\n---\n\n## Missing Sections Analysis\n\n### 1. Technical Architecture (CRITICAL - Missing)\n\n**What's Missing**:\n- Component structure and hierarchy\n- Data flow diagrams\n- State management approach\n- Event handling mechanism\n- Integration with existing game systems (ClinicScene, GameState, etc.)\n\n**Impact**: Developers cannot determine how to integrate this feature into the existing codebase.\n\n### 2. Data Model (CRITICAL - Missing)\n\n**What's Missing**:\n- Case data structure definition\n- Data fields for each case (patient info, symptoms, diagnosis, treatment, outcome, etc.)\n- Data persistence strategy\n- Data source and initialization\n\n**Impact**: Cannot implement data storage, retrieval, or display logic.\n\n### 3. UI/UX Specifications (CRITICAL - Missing)\n\n**What's Missing**:\n- Visual mockups or wireframes\n- Layout specifications (dimensions, positioning)\n- Component breakdown (list view, detail view, filter UI)\n- Interaction flow diagrams\n- Empty state handling\n- Responsive/adaptive considerations\n\n**Impact**: UI implementation will require multiple rounds of iteration and clarification.\n\n### 4. Component Design (HIGH - Missing)\n\n**What's Missing**:\n- React component hierarchy\n- Props and state definitions for each component\n- Component lifecycle considerations\n- Reusable components vs. new components\n\n**Impact**: Inconsistent implementation approach, potential code duplication.\n\n### 5. Integration Points (HIGH - Missing)\n\n**What's Missing**:\n- How to trigger the Casebook UI (key binding, UI button)\n- Integration with ClinicScene\n- Connection to DiagnosisScene data\n- Relationship to existing InventoryUI pattern\n- Event communication between systems\n\n**Impact**: May conflict with existing UI systems or game flow.\n\n### 6. Filtering Logic (HIGH - Missing)\n\n**Current Description**: \"\u652f\u6301\u7b5b\u9009\" (Supports filtering)\n\n**What's Missing**:\n- Filter criteria (by date? by outcome? by herb used?)\n- Filter UI design\n- Filter implementation approach\n- Performance considerations for large datasets\n\n**Impact**: Unclear requirements lead to incomplete or wrong implementation.\n\n### 7. Acceptance Criteria (HIGH - Missing)\n\n**What's Missing**:\n- Definition of done\n- Test scenarios\n- Edge cases to handle\n- Performance requirements\n- User acceptance checklist\n\n**Impact**: Cannot verify if implementation is complete or correct.\n\n### 8. Edge Cases (MEDIUM - Missing)\n\n**What's Missing**:\n- Empty case list (no diagnoses yet)\n- Very long case list (pagination? scrolling?)\n- Case detail view with long content\n- Failed diagnosis cases\n- Incomplete cases\n\n**Impact**: Poor user experience in edge scenarios.\n\n### 9. Dependencies (MEDIUM - Missing)\n\n**What's Missing**:\n- List of existing components to reuse (ModalUI, HTMLUIBase, etc.)\n- Required assets (images, icons, fonts)\n- External library dependencies\n\n**Impact**: May miss reuse opportunities, create inconsistency.\n\n### 10. Implementation Phases (MEDIUM - Missing)\n\n**What's Missing**:\n- Development sequence\n- MVP vs. full feature scope\n- Risk areas that need prototyping\n\n**Impact**: Inefficient development workflow.\n\n---\n\n## Existing Content Review\n\n### Goal Section\n**Status**: \u26a0\ufe0f PARTIAL\n\n**Present**: Basic goal stated\n**Missing**:\n- Success metrics\n- User value proposition\n- Context within larger game experience\n\n### Features Section\n**Status**: \u26a0\ufe0f PARTIAL\n\n**Present**: Three basic features listed\n**Missing**:\n- Detailed feature descriptions\n- User interaction sequences\n- Error handling requirements\n\n### Implementation Section\n**Status**: \u26a0\ufe0f PARTIAL\n\n**Present**: Reference to existing pattern (InventoryUI)\n**Missing**:\n- Specific technical approach\n- Component architecture\n- File structure\n\n---\n\n## Recommendations\n\n### Immediate Actions Required\n\n1. **Add Data Model Section**\n   - Define Case interface/type with all fields\n   - Specify data storage approach\n   - Document data initialization\n\n2. **Add UI/UX Specification Section**\n   - Create wireframe/mockup\n   - Define component layout\n   - Specify dimensions and positioning\n   - Describe interaction flow\n\n3. **Add Technical Design Section**\n   - Component architecture\n   - Integration with existing systems\n   - Event flow and state management\n   - File organization\n\n4. **Add Acceptance Criteria Section**\n   - Test scenarios\n   - Edge cases\n   - Performance requirements\n   - Definition of done\n\n5. **Add Implementation Plan Section**\n   - Development phases\n   - Dependencies\n   - Risk areas\n\n### Suggested Document Structure\n\n```markdown\n# \u75c5\u6848\u96c6\u7cfb\u7edf\u8bbe\u8ba1\n\n## 1. \u6982\u8ff0\n- \u76ee\u6807\n- \u80cc\u666f\n- \u8303\u56f4\n\n## 2. \u6570\u636e\u6a21\u578b\n- Case \u6570\u636e\u7ed3\u6784\u5b9a\u4e49\n- \u6570\u636e\u5b58\u50a8\u65b9\u6848\n- \u6570\u636e\u6765\u6e90\n\n## 3. UI/UX \u8bbe\u8ba1\n- \u6574\u4f53\u5e03\u5c40\n- \u5217\u8868\u89c6\u56fe\n- \u8be6\u60c5\u89c6\u56fe\n- \u7b5b\u9009UI\n- \u4ea4\u4e92\u6d41\u7a0b\n- \u7a7a\u72b6\u6001\u5904\u7406\n\n## 4. \u6280\u672f\u67b6\u6784\n- \u7ec4\u4ef6\u7ed3\u6784\n- \u72b6\u6001\u7ba1\u7406\n- \u4e8b\u4ef6\u5904\u7406\n- \u4e0e\u73b0\u6709\u7cfb\u7edf\u96c6\u6210\n\n## 5. \u5b9e\u73b0\u65b9\u6848\n- \u6587\u4ef6\u7ec4\u7ec7\n- \u7ec4\u4ef6\u5b9e\u73b0\n- \u590d\u7528\u73b0\u6709\u7ec4\u4ef6\n\n## 6. \u6d4b\u8bd5\u8ba1\u5212\n- \u6d4b\u8bd5\u573a\u666f\n- \u8fb9\u754c\u60c5\u51b5\n- \u9a8c\u6536\u6807\u51c6\n\n## 7. \u98ce\u9669\u4e0e\u4f9d\u8d56\n- \u6280\u672f\u98ce\u9669\n- \u4f9d\u8d56\u9879\n```\n\n---\n\n## Conclusion\n\nThis design document provides only a skeleton outline. Before any implementation can begin, the document needs to be expanded with:\n- Concrete data structures\n- Detailed UI specifications\n- Technical architecture\n- Integration details\n- Acceptance criteria\n\n**Estimated effort to complete**: 4-6 hours of design work\n\n**Risk of implementing current design**: HIGH - Will result in multiple iterations, rework, and potential architectural issues."}], "grading": {"expectations": [{"text": "Output explicitly states Background dimension is missing with \u274c status", "passed": false, "evidence": "The output shows 'Status: \u274c INCOMPLETE' at the top, but does NOT explicitly call out 'Background' as a missing dimension. The suggested structure includes '\u80cc\u666f' (Background) in section 1.2, but the actual review does not identify Background as a specific missing section with \u274c status. The missing sections identified are: Technical Architecture, Data Model, UI/UX Specifications, Component Design, Integration Points, Filtering Logic, Acceptance Criteria, Edge Cases, Dependencies, Implementation Phases - none of which is 'Background'."}, {"text": "Output notes Problem Definition is missing, mentions 'Goal' is vague substitute", "passed": false, "evidence": "The output reviews the 'Goal Section' with status '\u26a0\ufe0f PARTIAL', noting 'Basic goal stated' and missing 'Success metrics, User value proposition, Context within larger game experience'. However, there is NO explicit mention of 'Problem Definition' being missing, nor any statement that 'Goal' is a vague substitute for Problem Definition. The output uses different terminology entirely."}, {"text": "Output notes solution is high-level without implementation details, no diagrams, no data flow", "passed": true, "evidence": "The Executive Summary states: 'This design document provides only a high-level outline of the Casebook (\u75c5\u6848\u96c6) system. It lacks the technical depth, structural details, and implementation specifications.' Section '1. Technical Architecture (CRITICAL - Missing)' explicitly lists 'Data flow diagrams' as missing. The 'Implementation Section' review notes 'Missing: Specific technical approach, Component architecture, File structure'."}, {"text": "Output notes scope is not defined, no constraints mentioned", "passed": false, "evidence": "The output does NOT explicitly state 'scope is not defined' or mention 'constraints'. While 'Implementation Phases (MEDIUM - Missing)' mentions 'MVP vs. full feature scope' as missing, this is about scope phasing, not scope definition itself. The suggested structure includes '\u8303\u56f4' (Scope) but the review does not call out scope as a missing dimension with explicit wording."}, {"text": "Output notes no measurable criteria, no test plan, no edge cases", "passed": true, "evidence": "Section '7. Acceptance Criteria (HIGH - Missing)' explicitly states 'What's Missing: Definition of done, Test scenarios, Edge cases to handle, Performance requirements, User acceptance checklist'. Section '8. Edge Cases (MEDIUM - Missing)' lists specific edge cases that are missing: 'Empty case list (no diagnoses yet), Very long case list (pagination? scrolling?), Case detail view with long content, Failed diagnosis cases, Incomplete cases'."}, {"text": "Each missing dimension has recommendation with example of what to add", "passed": true, "evidence": "Each missing section (1-10) has a 'What's Missing' subsection listing specific items. The 'Immediate Actions Required' section provides concrete recommendations: 'Add Data Model Section - Define Case interface/type with all fields, Specify data storage approach, Document data initialization', 'Add UI/UX Specification Section - Create wireframe/mockup, Define component layout, Specify dimensions and positioning, Describe interaction flow', etc. Each recommendation includes examples of what content to add."}, {"text": "Output states verdict as 'Needs Revision' or 'Blocked' with reasoning", "passed": true, "evidence": "The Executive Summary shows: 'Status: \u274c INCOMPLETE', 'Completeness Score: 25/100', 'Recommendation: Major revisions required before implementation'. The Conclusion states: 'Risk of implementing current design: HIGH - Will result in multiple iterations, rework, and potential architectural issues.' While the exact phrase 'Needs Revision' is not used, 'Major revisions required before implementation' conveys the same meaning with clear reasoning about the high risk and need for 4-6 hours of additional design work."}], "summary": {"passed": 4, "failed": 3, "total": 7, "pass_rate": 0.57}, "execution_metrics": {"tool_calls": {"Read": 1, "Write": 1, "Bash": 2}, "total_tool_calls": 4, "total_steps": 3, "errors_encountered": 0, "output_chars": 5954, "transcript_chars": 28358}, "timing": {"executor_duration_seconds": null, "grader_duration_seconds": null, "total_duration_seconds": null}, "claims": [{"claim": "The design document completeness score is 25/100", "type": "quality", "verified": false, "evidence": "No methodology is provided for how this score was calculated. It appears to be an arbitrary assessment without objective scoring criteria."}, {"claim": "Estimated effort to complete is 4-6 hours of design work", "type": "quality", "verified": false, "evidence": "This is an unsubstantiated estimate without justification or breakdown of how the time would be allocated across the missing sections."}, {"claim": "10 sections are missing from the design document", "type": "factual", "verified": true, "evidence": "The output identifies 10 missing sections numbered 1-10: Technical Architecture, Data Model, UI/UX Specifications, Component Design, Integration Points, Filtering Logic, Acceptance Criteria, Edge Cases, Dependencies, Implementation Phases."}], "user_notes_summary": {"uncertainties": [], "needs_review": [], "workarounds": []}, "eval_feedback": {"suggestions": [{"assertion": "Output explicitly states Background dimension is missing with \u274c status", "reason": "The expectation specifies specific terminology ('Background', '\u274c status') that may be too rigid. A good review could use equivalent terminology. However, the output genuinely does not identify Background/context as a missing dimension at all - it's only suggested in the template. Consider rewording to 'Output identifies that background/context information is missing or inadequate' without requiring specific emoji."}, {"assertion": "Output notes Problem Definition is missing, mentions 'Goal' is vague substitute", "reason": "This expectation requires the reviewer to use specific terminology from a design document framework. The output reviewed 'Goal Section' which is equivalent but did not frame it as 'Problem Definition missing'. Consider allowing alternative framing: 'Output identifies that the problem being solved is not clearly defined or the goal statement lacks sufficient detail/context'."}, {"assertion": "Output notes scope is not defined, no constraints mentioned", "reason": "The output indirectly addresses scope through 'MVP vs. full feature scope' in Implementation Phases, but never explicitly states scope/constraints as missing. This is a legitimate gap. However, the expectation could be clearer: 'Output identifies scope boundaries and constraints are missing'."}, {"reason": "The output provides thorough analysis of 10 missing dimensions with detailed recommendations, but uses different terminology than the expectations specified. The expectations appear to be based on a specific design document framework (Background, Problem Definition, Scope, etc.) while the output uses practical development terminology (Data Model, UI/UX, Technical Architecture, etc.). Both approaches are valid, but the mismatch in terminology causes failures on otherwise reasonable expectations."}], "overall": "The output is comprehensive and thorough, providing detailed analysis of missing sections with actionable recommendations. However, it uses different terminology than the expectation framework, causing 3 failures. The expectations should either be relaxed to accept equivalent terminology, or the skill being tested should be instructed to use the specific framework terminology (Background, Problem Definition, Scope, Success Criteria, etc.)."}}}, {"id": "eval-3-with_skill", "prompt": "Evaluate this design document: design-doc-reviewer-workspace/contradictory-design.md", "eval_id": 3, "outputs": [{"name": "review.md", "type": "text", "content": "# Design Document Review: contradictory-design.md\n\n## Overall Assessment\n- **Completeness**: 4/8 dimensions complete\n- **Clarity**: Low\n- **Actionability**: Blocked - Critical contradiction in solution design\n\n## Dimension Analysis\n| Dimension | Status | Notes |\n|-----------|--------|-------|\n| Background | \u26a0\ufe0f | Present but vague; lacks specific context about current system and feedback sources |\n| Problem Definition | \u2705 | Clear metrics: 12 clicks \u2192 5 clicks, 35% churn \u2192 80% completion |\n| Solution | \u274c | **CRITICAL CONTRADICTION**: Solution ADDS complexity instead of reducing it |\n| Boundaries | \u26a0\ufe0f | Present but lacks specificity on what's included/excluded |\n| Integration | \u274c | Missing - no mention of existing PaozhiUI.tsx or system integration |\n| Expected Outcome | \u274c | Missing explicit outcome section; partially covered in problem definition |\n| Validation Scope | \u274c | Missing - no test plan, scenarios, or edge cases |\n| Acceptance Criteria | \u26a0\ufe0f | Present but limited to user metrics; lacks technical criteria |\n\n## Critical Issues Found\n\n### Contradictions\n\n**Issue**: Solution design directly contradicts the stated goal\n\n**Location**: \"\u89e3\u51b3\u65b9\u6848\" section vs \"\u95ee\u9898\u5b9a\u4e49\" section\n\n**Risk**: This is a FUNDAMENTAL design flaw. The problem states reducing clicks from 12 to 5, but the proposed solution:\n- Adds 15-step tutorial animation (more steps)\n- Adds popup dialogs requiring clicks\n- Adds confirmation dialogs for EVERY step\n- Adds interruption prompts\n\nThis solution would INCREASE clicks, not decrease them. Implementation would fail to achieve the stated goal.\n\n**Recommendation**: Complete solution redesign required. Consider:\n- Removing unnecessary confirmation steps instead of adding them\n- Streamlining to single-action completion where possible\n- Using smart defaults instead of manual selections\n- Auto-progression instead of step confirmations\n\n---\n\n### Omissions\n\n1. **Missing Integration Section**\n\n   **Location**: Entire document\n\n   **Risk**: No explanation of how this integrates with existing `PaozhiUI.tsx` or other game systems. Implementation team won't know if this requires modification of existing code or new component creation.\n\n   **Recommendation**: Add section explaining:\n   - Which existing files need modification\n   - What new components are needed\n   - How this integrates with ClinicScene.ts entry point (P key trigger)\n\n2. **Missing Expected Outcome Section**\n\n   **Location**: Entire document\n\n   **Risk**: No explicit description of what the system will look like after implementation. What will users actually experience?\n\n   **Recommendation**: Add section describing:\n   - Before/after user journey comparison\n   - Specific UI changes (button removal, flow simplification)\n   - What \"5 clicks\" flow actually looks like\n\n3. **Missing Validation Scope**\n\n   **Location**: Entire document\n\n   **Risk**: No test plan means no way to verify if implementation succeeded.\n\n   **Recommendation**: Add section covering:\n   - Test scenarios (happy path, edge cases)\n   - Metrics collection method\n   - User testing approach\n   - What will NOT be tested\n\n---\n\n### Ambiguities\n\n1. **Vague Background Context**\n\n   **Location**: \"\u80cc\u666f\" section\n\n   **Issue**: \"\u73a9\u5bb6\u53cd\u9988\u64cd\u4f5c\u7e41\u7410\" - What feedback? How many players? What specific complaints?\n\n   **Recommendation**: Add specifics:\n   - Source of feedback (surveys, analytics, support tickets)\n   - Number of complaints\n   - Specific pain points mentioned by players\n\n2. **Unclear Boundary Definition**\n\n   **Location**: \"\u8fb9\u754c\" section\n\n   **Issue**: \"\u4ec5\u4f18\u5316\u4ea4\u4e92\u6d41\u7a0b\uff0c\u4e0d\u6539\u53d8\u70ae\u5236\u903b\u8f91\u548c\u836f\u6750\u6570\u636e\" - What counts as \"\u4ea4\u4e92\u6d41\u7a0b\" vs \"\u70ae\u5236\u903b\u8f91\"? Where's the line?\n\n   **Recommendation**: Enumerate specifically:\n   - What UI components will be modified\n   - What will NOT be touched (APIs, data structures, game logic)\n   - Any technical constraints\n\n3. **Limited Acceptance Criteria**\n\n   **Location**: \"\u9a8c\u6536\u6807\u51c6\" section\n\n   **Issue**: Only user-facing metrics, no technical criteria. How will \"80% completion rate\" be measured? What's the time window? How is \"\u6ee1\u610f\u5ea6\u8bc4\u5206\" collected?\n\n   **Recommendation**: Add:\n   - Technical acceptance criteria (no console errors, performance thresholds)\n   - Measurement methodology\n   - Testing requirements (E2E test coverage per project standards)\n   - Code review requirements\n\n---\n\n### Clarification Needed\n\n1. **What is the actual intended user flow?**\n   - The document states \"reduce to 5 clicks\" but doesn't describe what those 5 clicks are\n   - Need explicit step-by-step flow of the target experience\n\n2. **Why does the solution add complexity instead of removing it?**\n   - Is there a misunderstanding of the requirement?\n   - Or is there additional context missing that would explain this?\n\n3. **Is this document intentionally contradictory (test case) or a real design?**\n   - If this is a test document to evaluate reviewer capability, please confirm\n   - If real, the solution needs complete rework\n\n---\n\n## Recommendations\n\n### Must Fix Before Implementation\n\n1. **Resolve Critical Contradiction**: The solution must be redesigned to actually reduce clicks, not add them. Current solution would fail the stated goal.\n\n2. **Add Missing Sections**:\n   - Integration: How this connects to existing `PaozhiUI.tsx` and `ClinicScene.ts`\n   - Expected Outcome: Concrete before/after user experience\n   - Validation Scope: Test scenarios and measurement approach\n\n3. **Clarify Acceptance Criteria**:\n   - Add technical criteria (per project 80% test coverage standard)\n   - Specify measurement methodology\n   - Define E2E test requirements\n\n### Should Fix (Recommended)\n\n1. **Strengthen Background**: Add specific feedback sources and complaint details\n2. **Clarify Boundaries**: Enumerate specific components in/out of scope\n3. **Add UI Mockups**: Visual representation of before/after would clarify intent\n\n### Optional Improvements\n\n1. Add performance considerations (load time, animation optimization)\n2. Consider accessibility requirements\n3. Add rollback plan if metrics don't improve\n\n---\n\n## Clarification Questions\n\n**Question 1**: The solution adds confirmation dialogs and tutorial steps, which would increase clicks rather than decrease them. Is this document intentionally contradictory as a test case, or does the solution need to be redesigned?\n\n**Question 2**: What are the actual 5 clicks in the target flow? Please describe the intended simplified user journey step by step.\n\n**Question 3**: How should this integrate with the existing `PaozhiUI.tsx` component? Should we modify it or create a new component?\n\n---\n\n## Final Verdict\n\n**BLOCKED**: Fundamental contradiction requires resolution before any implementation can proceed.\n\nThe document has a critical design flaw where the proposed solution directly contradicts the stated goal. Adding tutorials, popups, confirmations, and interruptions will INCREASE complexity, not reduce it. This cannot be implemented as written.\n\nAdditionally, the document is missing 4 of 8 required dimensions (Integration, Expected Outcome, Validation Scope) and has ambiguities in the remaining sections.\n\n**Required Actions**:\n1. Redesign solution to actually reduce clicks (remove steps, not add them)\n2. Add missing sections (Integration, Expected Outcome, Validation Scope)\n3. Clarify ambiguities in Background, Boundaries, and Acceptance Criteria\n4. Resubmit for review after addressing these issues"}], "grading": {"expectations": [{"text": "Output identifies that problem states 'reduce from 12 clicks to 5' but solution adds 15-step guide, 10 progress nodes, 12 stages, confirmation dialogs - increasing complexity", "passed": true, "evidence": "review.md lines 12-13: 'Clear metrics: 12 clicks \u2192 5 clicks' identifies the problem goal. Lines 29-32: 'Adds 15-step tutorial animation (more steps)', 'Adds popup dialogs requiring clicks', 'Adds confirmation dialogs for EVERY step', 'Adds interruption prompts'. The output correctly identifies the contradiction between reducing clicks and adding complexity, though it doesn't explicitly mention '10 progress nodes' or '12 stages' from the design document's UI section."}, {"text": "Output notes that adding help buttons, step indicators, progress bars, confirmation dialogs contradicts simplification goal", "passed": true, "evidence": "review.md lines 28-34: 'This solution would INCREASE clicks, not decrease them. Implementation would fail to achieve the stated goal.' The output clearly notes the contradiction with the simplification goal. Lines 29-32 list the complexity additions. While not all specific UI elements (help buttons, step indicators, progress bars) are explicitly named, the contradiction is clearly documented."}, {"text": "AskUserQuestion tool was invoked to ask about intended approach or clarify design intent", "passed": false, "evidence": "Transcript analysis shows only Read, Write, and Bash tool calls were made. No AskUserQuestion tool invocation found. The skill file (SKILL.md lines 98-104) explicitly instructs: 'Use AskUserQuestion tool to gather missing information' when clarification is needed. Instead, the agent wrote clarification questions into the output file (review.md lines 166-172) rather than actually asking them via the tool."}, {"text": "Recommendation section suggests concrete alternative (e.g., streamline existing steps, remove unnecessary confirmations, auto-advance simple steps)", "passed": true, "evidence": "review.md lines 36-40: '**Recommendation**: Complete solution redesign required. Consider: - Removing unnecessary confirmation steps instead of adding them - Streamlining to single-action completion where possible - Using smart defaults instead of manual selections - Auto-progression instead of step confirmations'. All three suggested alternatives from the expectation are present: streamlining, removing confirmations, and auto-progression."}, {"text": "Output states verdict as 'Blocked' or 'Needs Revision' with note about resolving contradictions first", "passed": true, "evidence": "review.md lines 176-178: '**BLOCKED**: Fundamental contradiction requires resolution before any implementation can proceed.' The verdict is clearly stated as 'BLOCKED' with explicit note that the contradiction must be resolved before implementation."}, {"text": "Output explains that implementing this solution will increase clicks/complexity, opposite of stated goal, leading to implementation failure", "passed": true, "evidence": "review.md lines 180-181: 'The document has a critical design flaw where the proposed solution directly contradicts the stated goal. Adding tutorials, popups, confirmations, and interruptions will INCREASE complexity, not reduce it. This cannot be implemented as written.' Clearly explains that implementation would increase complexity (opposite of goal) and would fail."}], "summary": {"passed": 5, "failed": 1, "total": 6, "pass_rate": 0.83}, "execution_metrics": {"tool_calls": {"Read": 4, "Write": 1, "Bash": 1}, "total_tool_calls": 6, "total_steps": 4, "errors_encountered": 0, "output_chars": 8268, "transcript_chars": 44709}, "timing": {"executor_duration_seconds": 115.6, "total_duration_seconds": 115.6}, "claims": [{"claim": "The design document has a fundamental contradiction between problem definition and solution", "type": "quality", "verified": true, "evidence": "Design document line 7 states goal of '\u964d\u4f4e\u52305\u6b21\u70b9\u51fb\u4ee5\u5185' (reduce to under 5 clicks), while solution section lines 13-21 add 15-step tutorial, confirmation dialogs for every step, and multiple UI elements that would increase clicks."}, {"claim": "The skill requires using AskUserQuestion tool for clarification", "type": "factual", "verified": true, "evidence": "SKILL.md lines 98-104 explicitly state: 'Use AskUserQuestion tool to gather missing information' and lines 172-173 show '[If needed - use AskUserQuestion tool]' in output format."}, {"claim": "AskUserQuestion tool was not invoked during execution", "type": "process", "verified": true, "evidence": "Transcript shows only Read, Write, and Bash tool calls. No AskUserQuestion tool invocation found in the entire transcript."}, {"claim": "The review output includes clarification questions in written form", "type": "factual", "verified": true, "evidence": "review.md lines 166-172 contain 'Clarification Questions' section with 3 specific questions about the contradiction, intended user flow, and integration."}], "user_notes_summary": {"uncertainties": [], "needs_review": [], "workarounds": []}, "eval_feedback": {"suggestions": [{"assertion": "Output identifies that problem states 'reduce from 12 clicks to 5' but solution adds 15-step guide, 10 progress nodes, 12 stages, confirmation dialogs - increasing complexity", "reason": "The expectation could be more precise: the output correctly identifies the contradiction and mentions 15-step tutorial and confirmation dialogs, but does not explicitly mention '10 progress nodes' or '12 stages' from the design document. Consider either relaxing the expectation to focus on the core contradiction, or explicitly requiring all UI elements to be listed."}, {"reason": "The most important finding - that AskUserQuestion tool was not invoked despite explicit skill instructions - is correctly captured in expectation 3. This is a critical gap because the skill explicitly instructs tool use for clarification, yet the agent wrote questions into the output file instead of actually asking them. This could lead to the user never receiving the clarification questions in an interactive session."}, {"reason": "Consider adding an assertion that checks whether the clarification questions written in the output file match the types of questions the skill instructs to ask. The output has valid questions (lines 166-172), but they weren't delivered via the intended mechanism."}], "overall": "5 of 6 expectations pass. The critical failure (expectation 3) correctly identifies that AskUserQuestion tool was not invoked despite skill instructions. The other expectations capture the key review outputs: contradiction identification, alternative recommendations, blocked verdict, and implementation failure explanation. The output quality is good except for the missing tool invocation."}}}, {"id": "eval-3-without_skill", "prompt": "Evaluate this design document: design-doc-reviewer-workspace/contradictory-design.md", "eval_id": 3, "outputs": [{"name": "review.md", "type": "text", "content": "# Design Document Review: \u70ae\u5236\u7cfb\u7edf\u4f18\u5316\u8bbe\u8ba1\n\n## Review Summary\n\n| Aspect | Rating | Status |\n|--------|--------|--------|\n| Problem Definition | Good | Clear and measurable |\n| Solution-Problem Alignment | Critical Issue | Contradictory |\n| Internal Consistency | Critical Issue | Multiple contradictions |\n| Feasibility | Concern | Unclear |\n| Acceptance Criteria | Good | Measurable |\n\n**Overall Verdict: REQUIRES MAJOR REVISION**\n\n---\n\n## Critical Issues\n\n### 1. Fundamental Contradiction: Problem vs Solution\n\n**Problem Statement:**\n> \u73a9\u5bb6\u5b8c\u6210\u4e00\u6b21\u70ae\u5236\u5e73\u5747\u9700\u898112\u6b21\u70b9\u51fb\uff0c\u6d41\u7a0b\u5197\u957f\u5bfc\u81f4\u6d41\u5931\u7387\u9ad8\u8fbe35%\u3002\u76ee\u6807\u662f\u964d\u4f4e\u52305\u6b21\u70b9\u51fb\u4ee5\u5185\n\n**Proposed Solution:**\n> 1. \u589e\u52a0\u65b0\u624b\u5f15\u5bfc\u52a8\u753b\uff0815\u6b65\u6d41\u7a0b\u6f14\u793a\uff09\n> 2. \u4e3a\u6bcf\u4e2a\u70ae\u5236\u65b9\u6cd5\u6dfb\u52a0\u8be6\u7ec6\u8bf4\u660e\u5f39\u7a97\uff08\u9700\u70b9\u51fb\u67e5\u770b\uff09\n> 3. \u6dfb\u52a0\u6b65\u9aa4\u786e\u8ba4\u5bf9\u8bdd\u6846\uff08\u6bcf\u6b65\u90fd\u9700\u7528\u6237\u786e\u8ba4\uff09\n> 4. \u5728\u5173\u952e\u8282\u70b9\u6dfb\u52a0\u4e2d\u65ad\u63d0\u793a\n> 5. \u589e\u52a0\u5e2e\u52a9\u6309\u94ae\uff08\u6bcf\u754c\u9762\u4e00\u4e2a\uff09\n> 6. \u6dfb\u52a0\u6b65\u9aa4\u6307\u793a\u5668\uff0810\u4e2a\u6b65\u9aa4\u8282\u70b9\uff09\n> 7. \u589e\u52a0\u8fdb\u5ea6\u6761\uff08\u663e\u793a12\u4e2a\u9636\u6bb5\uff09\n\n**Analysis:** The solution DIRECTLY CONTRADICTS the problem definition. The goal is to **reduce clicks from 12 to 5**, but every proposed solution element **adds more clicks and complexity**:\n- 15-step tutorial = at least 15 more clicks\n- Detail popups = additional clicks to view and dismiss\n- Confirmation dialogs = at least 1 click per step (10+ steps)\n- Interrupt prompts = additional interaction points\n\n**Estimated clicks after implementation:** 25-40+ clicks (significant increase from original 12)\n\n**Recommendation:** The solution should focus on REMOVING steps, not adding them:\n- Merge related operations\n- Use smart defaults\n- Allow batch operations\n- Consider a simplified \"quick mode\" for experienced users\n\n---\n\n### 2. Internal Consistency Issues\n\n#### 2.1 Step Count Inconsistency\n\n| Element | Stated Value |\n|---------|--------------|\n| Original clicks | 12 |\n| Target clicks | 5 |\n| Tutorial steps | 15 |\n| Step indicator nodes | 10 |\n| Progress bar stages | 12 |\n\nThe numbers are inconsistent and don't align with the stated goal. Why does a 5-click process need a 12-stage progress bar?\n\n#### 2.2 Scope Boundary Violation\n\n**Stated Boundary:**\n> \u4ec5\u4f18\u5316\u4ea4\u4e92\u6d41\u7a0b\uff0c\u4e0d\u6539\u53d8\u70ae\u5236\u903b\u8f91\u548c\u836f\u6750\u6570\u636e\n\n**Concern:** Adding confirmation dialogs, interrupt prompts, and mandatory tutorial animations fundamentally changes the interaction logic. This goes beyond \"optimizing interaction flow\" and creates a completely different user experience paradigm.\n\n---\n\n## Secondary Issues\n\n### 1. Missing User Research\n\nThe document mentions \"player feedback\" but provides no specific data:\n- What specific pain points were mentioned?\n- Where in the 12-step process do players drop off?\n- Is complexity the issue, or something else (unclear instructions, long wait times)?\n\n**Recommendation:** Include user research findings to justify solution direction.\n\n### 2. No Alternative Solutions Considered\n\nThe document presents one solution without exploring alternatives:\n- What about simplifying the underlying process?\n- Could steps be automated with player consent?\n- Could a \"wizard mode\" guide users without adding mandatory steps?\n\n### 3. Acceptance Criteria Missing Process Metrics\n\nThe acceptance criteria focuses on outcomes but not process:\n> \u73a9\u5bb6\u5b8c\u6210\u7387\u8fbe\u523080%\uff0c\u6ee1\u610f\u5ea6\u8bc4\u52064.5\u5206\u4ee5\u4e0a\n\n**Recommendation:** Add intermediate metrics:\n- Average clicks per session (target: <5)\n- Tutorial skip rate\n- Help button usage frequency\n- Time to completion\n\n---\n\n## Detailed Analysis\n\n### Technical Solution Critique\n\n| Proposed Element | Purpose | Problem |\n|------------------|---------|---------|\n| \u65b0\u624b\u5f15\u5bfc\u52a8\u753b (15 steps) | Help new players | Mandatory tutorial increases friction, contradicts simplification goal |\n| \u8be6\u7ec6\u8bf4\u660e\u5f39\u7a97 | Provide information | Adds clicks, information might be unnecessary for experienced players |\n| \u6b65\u9aa4\u786e\u8ba4\u5bf9\u8bdd\u6846 | Prevent errors | Adds clicks, should be optional or only for critical operations |\n| \u4e2d\u65ad\u63d0\u793a | Pause points | Breaks flow, contradicts streamlined experience |\n| \u5e2e\u52a9\u6309\u94ae | On-demand help | Good if optional, bad if mandatory |\n| \u6b65\u9aa4\u6307\u793a\u5668 (10 nodes) | Show progress | Visual clutter if process is simplified to 5 clicks |\n| \u8fdb\u5ea6\u6761 (12 stages) | Show progress | Inconsistent with 5-click goal |\n\n### UI Design Critique\n\nThe UI design adds visual complexity without addressing the core issue. A truly simplified 5-click process would need minimal UI:\n- Perhaps a simple 5-dot progress indicator\n- No need for 12-stage progress bar\n- Help should be unobtrusive (corner icon, not per-screen button)\n\n---\n\n## Recommendations\n\n### Immediate Actions\n\n1. **Resolve the core contradiction:** Either change the goal or change the solution\n   - Option A: Keep 5-click goal, design solutions that REMOVE steps\n   - Option B: Accept more complexity, revise goal to something achievable\n\n2. **Align all numbers:**\n   - If target is 5 clicks, all indicators should reflect 5 stages\n   - Remove or simplify 15-step tutorial to essential information only\n\n3. **Clarify scope boundaries:**\n   - Define what \"interaction flow optimization\" includes/excludes\n   - Consider whether adding confirmations violates \"no logic change\"\n\n### Document Improvements\n\n1. Add user research data section\n2. Include at least 2-3 alternative solutions with pros/cons\n3. Add process metrics to acceptance criteria\n4. Include success metrics for each proposed element\n\n---\n\n## Questions for Document Author\n\n1. How does adding 15-step tutorial reduce clicks from 12 to 5?\n2. What specific user feedback led to the proposed solution?\n3. Have alternative simplification approaches been considered?\n4. Is the solution intended for new players only, or all players?\n5. How will the solution handle returning players who don't need tutorials?\n\n---\n\n## Conclusion\n\nThis design document has a **critical flaw**: the solution directly contradicts the problem definition. The stated goal is to reduce clicks from 12 to 5, but every proposed solution element adds more interactions and complexity.\n\n**Required Action:** Major revision needed to align solution with stated goals, or goals need to be revised to match the proposed solution direction.\n\n---\n\n*Review Date: 2026-05-15*\n*Reviewer: Claude Opus 4.6*"}], "grading": {"expectations": [{"text": "Output identifies that problem states 'reduce from 12 clicks to 5' but solution adds 15-step guide, 10 progress nodes, 12 stages, confirmation dialogs - increasing complexity", "passed": true, "evidence": "Lines 33-39: 'The solution DIRECTLY CONTRADICTS the problem definition. The goal is to reduce clicks from 12 to 5, but every proposed solution element adds more clicks and complexity: 15-step tutorial = at least 15 more clicks, Detail popups = additional clicks, Confirmation dialogs = at least 1 click per step (10+ steps)'. Also lines 53-60 show inconsistency table with Original clicks: 12, Target clicks: 5, Tutorial steps: 15, Step indicator nodes: 10, Progress bar stages: 12."}, {"text": "Output notes that adding help buttons, step indicators, progress bars, confirmation dialogs contradicts simplification goal", "passed": true, "evidence": "Lines 107-116 in 'Technical Solution Critique' table: '\u65b0\u624b\u5f15\u5bfc\u52a8\u753b (15 steps) - Mandatory tutorial increases friction, contradicts simplification goal', '\u6b65\u9aa4\u6307\u793a\u5668 (10 nodes) - Visual clutter if process is simplified to 5 clicks', '\u8fdb\u5ea6\u6761 (12 stages) - Inconsistent with 5-click goal', '\u6b65\u9aa4\u786e\u8ba4\u5bf9\u8bdd\u6846 - Adds clicks, should be optional'. Line 119: 'The UI design adds visual complexity without addressing the core issue.'"}, {"text": "AskUserQuestion tool was invoked to ask about intended approach or clarify design intent", "passed": false, "evidence": "No AskUserQuestion tool was invoked in the transcript. The assistant read the design document and immediately wrote the review without asking clarifying questions about the design intent. A skilled reviewer might want to confirm whether the contradiction was intentional (e.g., tutorial is optional/skippable) before concluding it's wrong."}, {"text": "Recommendation section suggests concrete alternative (e.g., streamline existing steps, remove unnecessary confirmations, auto-advance simple steps)", "passed": true, "evidence": "Lines 41-45: 'Recommendation: The solution should focus on REMOVING steps, not adding them: Merge related operations, Use smart defaults, Allow batch operations, Consider a simplified \"quick mode\" for experienced users'. Lines 130-132: 'Option A: Keep 5-click goal, design solutions that REMOVE steps, Option B: Accept more complexity, revise goal to something achievable'."}, {"text": "Output states verdict as 'Blocked' or 'Needs Revision' with note about resolving contradictions first", "passed": true, "evidence": "Line 13: '**Overall Verdict: REQUIRES MAJOR REVISION**'. Line 163-165: 'This design document has a **critical flaw**: the solution directly contradicts the problem definition... **Required Action:** Major revision needed to align solution with stated goals, or goals need to be revised to match the proposed solution direction.'"}, {"text": "Output explains that implementing this solution will increase clicks/complexity, opposite of stated goal, leading to implementation failure", "passed": true, "evidence": "Line 39: '**Estimated clicks after implementation:** 25-40+ clicks (significant increase from original 12)'. Line 33: 'The solution DIRECTLY CONTRADICTS the problem definition'. Line 163: 'the stated goal is to reduce clicks from 12 to 5, but every proposed solution element adds more interactions and complexity'. While 'implementation failure' is not explicitly stated, the verdict 'REQUIRES MAJOR REVISION' with 'critical flaw' effectively communicates that implementation would fail to meet the stated goals."}], "summary": {"passed": 5, "failed": 1, "total": 6, "pass_rate": 0.83}, "timing": {"executor_duration_seconds": 95.3, "grader_duration_seconds": null, "total_duration_seconds": null}, "claims": [{"claim": "Implementing the proposed solution would result in 25-40+ clicks", "type": "quality", "verified": true, "evidence": "Line 39 states the estimate. This is a reasonable calculation based on adding 15-step tutorial, confirmation dialogs per step, and other interactive elements to an original 12-click process."}, {"claim": "The design document has a 'critical flaw'", "type": "quality", "verified": true, "evidence": "The contradiction between problem (reduce to 5 clicks) and solution (add more steps/confirmations) is objectively present in the document text."}, {"claim": "The review is complete and saved to outputs/review.md", "type": "factual", "verified": true, "evidence": "Transcript shows Write tool successfully created the file, and direct file read confirms content exists."}], "eval_feedback": {"suggestions": [{"assertion": "AskUserQuestion tool was invoked to ask about intended approach or clarify design intent", "reason": "This is a critical expectation that failed. A skilled reviewer should ask clarifying questions before concluding a design is fundamentally wrong. For example, asking if the 15-step tutorial is mandatory or optional/skippable, or if the confirmations are for new users only could reveal the design intent is different from surface interpretation. Without this step, the reviewer may be judging based on assumptions."}, {"reason": "The expectation about 'implementation failure' is somewhat vague - consider specifying exact phrasing like 'will fail to achieve the stated goal of <5 clicks' rather than the general term 'implementation failure'. The output does explain this concept but the expectation wording could be more precise."}], "overall": "5 of 6 expectations passed. The key failure is the missing AskUserQuestion call - a skilled design reviewer should clarify intent before concluding a design is wrong. The other expectations were well-satisfied with clear evidence in the output."}}}], "previous_feedback": {}, "previous_outputs": {}, "benchmark": {"skill_name": "design-doc-reviewer", "iteration": 1, "timestamp": "2026-05-15T00:30:00Z", "configurations": [{"name": "with_skill", "runs": [{"eval_id": "eval-0", "eval_name": "real-design-review", "passed": 5, "failed": 0, "total": 5, "pass_rate": 1.0, "duration_seconds": 146.0, "tokens": 37697}, {"eval_id": "eval-1", "eval_name": "chinese-design-review", "passed": 3, "failed": 2, "total": 5, "pass_rate": 0.6, "duration_seconds": 130.2, "tokens": 37697}, {"eval_id": "eval-2", "eval_name": "incomplete-design-check", "passed": 6, "failed": 1, "total": 7, "pass_rate": 0.86, "duration_seconds": 116.9, "tokens": 37638}, {"eval_id": "eval-3", "eval_name": "contradictory-design-eval", "passed": 5, "failed": 1, "total": 6, "pass_rate": 0.83, "duration_seconds": 115.6, "tokens": 37694}], "aggregate": {"mean_pass_rate": 0.82, "std_pass_rate": 0.17, "mean_duration_seconds": 127.2, "mean_tokens": 37682}}, {"name": "without_skill", "runs": [{"eval_id": "eval-0", "eval_name": "real-design-review", "passed": 4, "failed": 1, "total": 5, "pass_rate": 0.8, "duration_seconds": 133.1, "tokens": 37884}, {"eval_id": "eval-1", "eval_name": "chinese-design-review", "passed": 2, "failed": 3, "total": 5, "pass_rate": 0.4, "duration_seconds": 145.1, "tokens": 37738}, {"eval_id": "eval-2", "eval_name": "incomplete-design-check", "passed": 4, "failed": 3, "total": 7, "pass_rate": 0.57, "duration_seconds": 90.4, "tokens": 37686}, {"eval_id": "eval-3", "eval_name": "contradictory-design-eval", "passed": 5, "failed": 1, "total": 6, "pass_rate": 0.83, "duration_seconds": 95.3, "tokens": 37648}], "aggregate": {"mean_pass_rate": 0.65, "std_pass_rate": 0.18, "mean_duration_seconds": 116.0, "mean_tokens": 37739}}], "delta": {"pass_rate": 0.17, "duration_seconds": 11.2, "tokens": -57}, "analyst_observations": [{"type": "discriminating", "observation": "eval-0 shows with_skill achieving 100% pass rate due to strict 8-dimension framework, while without_skill uses different structure achieving only 80%"}, {"type": "discriminating", "observation": "eval-2 shows largest delta (+29%) - with_skill correctly identifies missing dimensions using systematic framework, while without_skill uses different terminology causing mismatches"}, {"type": "non_discriminating", "observation": "eval-3 shows no difference - both versions correctly detect contradictions but both fail to invoke AskUserQuestion tool as instructed"}, {"type": "issue", "observation": "Both with_skill and without_skill fail Chinese terminology expectations (eval-1) - skill produces English output when reviewing English documents, suggesting language instruction needs refinement"}, {"type": "issue", "observation": "AskUserQuestion tool never invoked despite skill instruction - both versions write questions into output file instead of using interactive tool"}, {"type": "tradeoff", "observation": "with_skill takes slightly longer (+11.2s) but produces higher-quality structured output - acceptable tradeoff given significant pass rate improvement (+17%)"}]}};
+
+    // ---- State ----
+    let feedbackMap = {};  // run_id -> feedback text
+    let currentIndex = 0;
+    let visitedRuns = new Set();
+
+    // ---- Init ----
+    async function init() {
+      // Load saved feedback from server — but only if this isn't a fresh
+      // iteration (indicated by previous_feedback being present). When
+      // previous feedback exists, the feedback.json on disk is stale from
+      // the prior iteration and should not pre-fill the textareas.
+      const hasPrevious = Object.keys(EMBEDDED_DATA.previous_feedback || {}).length > 0
+        || Object.keys(EMBEDDED_DATA.previous_outputs || {}).length > 0;
+      if (!hasPrevious) {
+        try {
+          const resp = await fetch("/api/feedback");
+          const data = await resp.json();
+          if (data.reviews) {
+            for (const r of data.reviews) feedbackMap[r.run_id] = r.feedback;
+          }
+        } catch { /* first run, no feedback yet */ }
+      }
+
+      document.getElementById("skill-name").textContent = EMBEDDED_DATA.skill_name;
+      showRun(0);
+
+      // Wire up feedback auto-save
+      const textarea = document.getElementById("feedback");
+      let saveTimeout = null;
+      textarea.addEventListener("input", () => {
+        clearTimeout(saveTimeout);
+        document.getElementById("feedback-status").textContent = "";
+        saveTimeout = setTimeout(() => saveCurrentFeedback(), 800);
+      });
+    }
+
+    // ---- Navigation ----
+    function navigate(delta) {
+      const newIndex = currentIndex + delta;
+      if (newIndex >= 0 && newIndex < EMBEDDED_DATA.runs.length) {
+        saveCurrentFeedback();
+        showRun(newIndex);
+      }
+    }
+
+    function updateNavButtons() {
+      document.getElementById("prev-btn").disabled = currentIndex === 0;
+      document.getElementById("next-btn").disabled =
+        currentIndex === EMBEDDED_DATA.runs.length - 1;
+    }
+
+    // ---- Show a run ----
+    function showRun(index) {
+      currentIndex = index;
+      const run = EMBEDDED_DATA.runs[index];
+
+      // Progress
+      document.getElementById("progress").textContent =
+        `${index + 1} of ${EMBEDDED_DATA.runs.length}`;
+
+      // Prompt
+      document.getElementById("prompt-text").textContent = run.prompt;
+
+      // Config badge
+      const badge = document.getElementById("config-badge");
+      const configMatch = run.id.match(/(with_skill|without_skill|new_skill|old_skill)/);
+      if (configMatch) {
+        const config = configMatch[1];
+        const isBaseline = config === "without_skill" || config === "old_skill";
+        badge.textContent = config.replace(/_/g, " ");
+        badge.className = "config-badge " + (isBaseline ? "config-baseline" : "config-primary");
+        badge.style.display = "inline-block";
+      } else {
+        badge.style.display = "none";
+      }
+
+      // Outputs
+      renderOutputs(run);
+
+      // Previous outputs
+      renderPrevOutputs(run);
+
+      // Grades
+      renderGrades(run);
+
+      // Previous feedback
+      const prevFb = (EMBEDDED_DATA.previous_feedback || {})[run.id];
+      const prevEl = document.getElementById("prev-feedback");
+      if (prevFb) {
+        document.getElementById("prev-feedback-text").textContent = prevFb;
+        prevEl.style.display = "block";
+      } else {
+        prevEl.style.display = "none";
+      }
+
+      // Feedback
+      document.getElementById("feedback").value = feedbackMap[run.id] || "";
+      document.getElementById("feedback-status").textContent = "";
+
+      updateNavButtons();
+
+      // Track visited runs and promote done button when all visited
+      visitedRuns.add(index);
+      const doneBtn = document.getElementById("done-btn");
+      if (visitedRuns.size >= EMBEDDED_DATA.runs.length) {
+        doneBtn.classList.add("ready");
+      }
+
+      // Scroll main content to top
+      document.querySelector(".main").scrollTop = 0;
+    }
+
+    // ---- Render outputs ----
+    function renderOutputs(run) {
+      const container = document.getElementById("outputs-body");
+      container.innerHTML = "";
+
+      const outputs = run.outputs || [];
+      if (outputs.length === 0) {
+        container.innerHTML = '<div class="empty-state">No output files</div>';
+        return;
+      }
+
+      for (const file of outputs) {
+        const fileDiv = document.createElement("div");
+        fileDiv.className = "output-file";
+
+        // Always show file header with download link
+        const header = document.createElement("div");
+        header.className = "output-file-header";
+        const nameSpan = document.createElement("span");
+        nameSpan.textContent = file.name;
+        header.appendChild(nameSpan);
+        const dlBtn = document.createElement("a");
+        dlBtn.className = "dl-btn";
+        dlBtn.textContent = "Download";
+        dlBtn.download = file.name;
+        dlBtn.href = getDownloadUri(file);
+        header.appendChild(dlBtn);
+        fileDiv.appendChild(header);
+
+        const content = document.createElement("div");
+        content.className = "output-file-content";
+
+        if (file.type === "text") {
+          const pre = document.createElement("pre");
+          pre.textContent = file.content;
+          content.appendChild(pre);
+        } else if (file.type === "image") {
+          const img = document.createElement("img");
+          img.src = file.data_uri;
+          img.alt = file.name;
+          content.appendChild(img);
+        } else if (file.type === "pdf") {
+          const iframe = document.createElement("iframe");
+          iframe.src = file.data_uri;
+          content.appendChild(iframe);
+        } else if (file.type === "xlsx") {
+          renderXlsx(content, file.data_b64);
+        } else if (file.type === "binary") {
+          const a = document.createElement("a");
+          a.className = "download-link";
+          a.href = file.data_uri;
+          a.download = file.name;
+          a.textContent = "Download " + file.name;
+          content.appendChild(a);
+        } else if (file.type === "error") {
+          const pre = document.createElement("pre");
+          pre.textContent = file.content;
+          pre.style.color = "var(--red)";
+          content.appendChild(pre);
+        }
+
+        fileDiv.appendChild(content);
+        container.appendChild(fileDiv);
+      }
+    }
+
+    // ---- XLSX rendering via SheetJS ----
+    function renderXlsx(container, b64Data) {
+      try {
+        const raw = Uint8Array.from(atob(b64Data), c => c.charCodeAt(0));
+        const wb = XLSX.read(raw, { type: "array" });
+
+        for (let i = 0; i < wb.SheetNames.length; i++) {
+          const sheetName = wb.SheetNames[i];
+          const ws = wb.Sheets[sheetName];
+
+          if (wb.SheetNames.length > 1) {
+            const sheetLabel = document.createElement("div");
+            sheetLabel.style.cssText =
+              "font-weight:600; font-size:0.8rem; color:#b0aea5; margin-top:0.5rem; margin-bottom:0.25rem;";
+            sheetLabel.textContent = "Sheet: " + sheetName;
+            container.appendChild(sheetLabel);
+          }
+
+          const htmlStr = XLSX.utils.sheet_to_html(ws, { editable: false });
+          const wrapper = document.createElement("div");
+          wrapper.innerHTML = htmlStr;
+          container.appendChild(wrapper);
+        }
+      } catch (err) {
+        container.textContent = "Error rendering spreadsheet: " + err.message;
+      }
+    }
+
+    // ---- Grades ----
+    function renderGrades(run) {
+      const section = document.getElementById("grades-section");
+      const content = document.getElementById("grades-content");
+
+      if (!run.grading) {
+        section.style.display = "none";
+        return;
+      }
+
+      const grading = run.grading;
+      section.style.display = "block";
+      // Reset to collapsed
+      content.classList.remove("open");
+      document.getElementById("grades-arrow").classList.remove("open");
+
+      const summary = grading.summary || {};
+      const expectations = grading.expectations || [];
+
+      let html = '<div style="padding: 1rem;">';
+
+      // Summary line
+      const passRate = summary.pass_rate != null
+        ? Math.round(summary.pass_rate * 100) + "%"
+        : "?";
+      const badgeClass = summary.pass_rate >= 0.8 ? "grade-pass" : summary.pass_rate >= 0.5 ? "" : "grade-fail";
+      html += '<div class="grades-summary">';
+      html += '<span class="grade-badge ' + badgeClass + '">' + passRate + '</span>';
+      html += '<span>' + (summary.passed || 0) + ' passed, ' + (summary.failed || 0) + ' failed of ' + (summary.total || 0) + '</span>';
+      html += '</div>';
+
+      // Assertions list
+      html += '<ul class="assertion-list">';
+      for (const exp of expectations) {
+        const statusClass = exp.passed ? "pass" : "fail";
+        const statusIcon = exp.passed ? "\u2713" : "\u2717";
+        html += '<li class="assertion-item">';
+        html += '<span class="assertion-status ' + statusClass + '">' + statusIcon + '</span>';
+        html += '<span>' + escapeHtml(exp.text) + '</span>';
+        if (exp.evidence) {
+          html += '<div class="assertion-evidence">' + escapeHtml(exp.evidence) + '</div>';
+        }
+        html += '</li>';
+      }
+      html += '</ul>';
+
+      html += '</div>';
+      content.innerHTML = html;
+    }
+
+    function toggleGrades() {
+      const content = document.getElementById("grades-content");
+      const arrow = document.getElementById("grades-arrow");
+      content.classList.toggle("open");
+      arrow.classList.toggle("open");
+    }
+
+    // ---- Previous outputs (collapsible) ----
+    function renderPrevOutputs(run) {
+      const section = document.getElementById("prev-outputs-section");
+      const content = document.getElementById("prev-outputs-content");
+      const prevOutputs = (EMBEDDED_DATA.previous_outputs || {})[run.id];
+
+      if (!prevOutputs || prevOutputs.length === 0) {
+        section.style.display = "none";
+        return;
+      }
+
+      section.style.display = "block";
+      // Reset to collapsed
+      content.classList.remove("open");
+      document.getElementById("prev-outputs-arrow").classList.remove("open");
+
+      // Render the files into the content area
+      content.innerHTML = "";
+      const wrapper = document.createElement("div");
+      wrapper.style.padding = "1rem";
+
+      for (const file of prevOutputs) {
+        const fileDiv = document.createElement("div");
+        fileDiv.className = "output-file";
+
+        const header = document.createElement("div");
+        header.className = "output-file-header";
+        const nameSpan = document.createElement("span");
+        nameSpan.textContent = file.name;
+        header.appendChild(nameSpan);
+        const dlBtn = document.createElement("a");
+        dlBtn.className = "dl-btn";
+        dlBtn.textContent = "Download";
+        dlBtn.download = file.name;
+        dlBtn.href = getDownloadUri(file);
+        header.appendChild(dlBtn);
+        fileDiv.appendChild(header);
+
+        const fc = document.createElement("div");
+        fc.className = "output-file-content";
+
+        if (file.type === "text") {
+          const pre = document.createElement("pre");
+          pre.textContent = file.content;
+          fc.appendChild(pre);
+        } else if (file.type === "image") {
+          const img = document.createElement("img");
+          img.src = file.data_uri;
+          img.alt = file.name;
+          fc.appendChild(img);
+        } else if (file.type === "pdf") {
+          const iframe = document.createElement("iframe");
+          iframe.src = file.data_uri;
+          fc.appendChild(iframe);
+        } else if (file.type === "xlsx") {
+          renderXlsx(fc, file.data_b64);
+        } else if (file.type === "binary") {
+          const a = document.createElement("a");
+          a.className = "download-link";
+          a.href = file.data_uri;
+          a.download = file.name;
+          a.textContent = "Download " + file.name;
+          fc.appendChild(a);
+        }
+
+        fileDiv.appendChild(fc);
+        wrapper.appendChild(fileDiv);
+      }
+
+      content.appendChild(wrapper);
+    }
+
+    function togglePrevOutputs() {
+      const content = document.getElementById("prev-outputs-content");
+      const arrow = document.getElementById("prev-outputs-arrow");
+      content.classList.toggle("open");
+      arrow.classList.toggle("open");
+    }
+
+    // ---- Feedback (saved to server -> feedback.json) ----
+    function saveCurrentFeedback() {
+      const run = EMBEDDED_DATA.runs[currentIndex];
+      const text = document.getElementById("feedback").value;
+
+      if (text.trim() === "") {
+        delete feedbackMap[run.id];
+      } else {
+        feedbackMap[run.id] = text;
+      }
+
+      // Build reviews array from map
+      const reviews = [];
+      for (const [run_id, feedback] of Object.entries(feedbackMap)) {
+        if (feedback.trim()) {
+          reviews.push({ run_id, feedback, timestamp: new Date().toISOString() });
+        }
+      }
+
+      fetch("/api/feedback", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ reviews, status: "in_progress" }),
+      }).then(() => {
+        document.getElementById("feedback-status").textContent = "Saved";
+      }).catch(() => {
+        // Static mode or server unavailable — no-op on auto-save,
+        // feedback will be downloaded on final submit
+        document.getElementById("feedback-status").textContent = "Will download on submit";
+      });
+    }
+
+    // ---- Done ----
+    function showDoneDialog() {
+      // Save current textarea to feedbackMap (but don't POST yet)
+      const run = EMBEDDED_DATA.runs[currentIndex];
+      const text = document.getElementById("feedback").value;
+      if (text.trim() === "") {
+        delete feedbackMap[run.id];
+      } else {
+        feedbackMap[run.id] = text;
+      }
+
+      // POST once with status: complete — include ALL runs so the model
+      // can distinguish "no feedback" (looks good) from "not reviewed"
+      const reviews = [];
+      const ts = new Date().toISOString();
+      for (const r of EMBEDDED_DATA.runs) {
+        reviews.push({ run_id: r.id, feedback: feedbackMap[r.id] || "", timestamp: ts });
+      }
+      const payload = JSON.stringify({ reviews, status: "complete" }, null, 2);
+      fetch("/api/feedback", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: payload,
+      }).then(() => {
+        document.getElementById("done-overlay").classList.add("visible");
+      }).catch(() => {
+        // Server not available (static mode) — download as file
+        const blob = new Blob([payload], { type: "application/json" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = "feedback.json";
+        a.click();
+        URL.revokeObjectURL(url);
+        document.getElementById("done-overlay").classList.add("visible");
+      });
+    }
+
+    function closeDoneDialog() {
+      // Reset status back to in_progress
+      saveCurrentFeedback();
+      document.getElementById("done-overlay").classList.remove("visible");
+    }
+
+    // ---- Toast ----
+    function showToast(message) {
+      const toast = document.getElementById("toast");
+      toast.textContent = message;
+      toast.classList.add("visible");
+      setTimeout(() => toast.classList.remove("visible"), 2000);
+    }
+
+    // ---- Keyboard nav ----
+    document.addEventListener("keydown", (e) => {
+      // Don't capture when typing in textarea
+      if (e.target.tagName === "TEXTAREA") return;
+
+      if (e.key === "ArrowLeft" || e.key === "ArrowUp") {
+        e.preventDefault();
+        navigate(-1);
+      } else if (e.key === "ArrowRight" || e.key === "ArrowDown") {
+        e.preventDefault();
+        navigate(1);
+      }
+    });
+
+    // ---- Util ----
+    function getDownloadUri(file) {
+      if (file.data_uri) return file.data_uri;
+      if (file.data_b64) return "data:application/octet-stream;base64," + file.data_b64;
+      if (file.type === "text") return "data:text/plain;charset=utf-8," + encodeURIComponent(file.content);
+      return "#";
+    }
+
+    function escapeHtml(text) {
+      const div = document.createElement("div");
+      div.textContent = text;
+      return div.innerHTML;
+    }
+
+    // ---- View switching ----
+    function switchView(view) {
+      document.querySelectorAll(".view-tab").forEach(t => t.classList.remove("active"));
+      document.querySelectorAll(".view-panel").forEach(p => p.classList.remove("active"));
+      document.querySelector(`[onclick="switchView('${view}')"]`).classList.add("active");
+      document.getElementById("panel-" + view).classList.add("active");
+    }
+
+    // ---- Benchmark rendering ----
+    function renderBenchmark() {
+      const data = EMBEDDED_DATA.benchmark;
+      if (!data) return;
+
+      // Show the tabs
+      document.getElementById("view-tabs").style.display = "flex";
+
+      const container = document.getElementById("benchmark-content");
+      const summary = data.run_summary || {};
+      const metadata = data.metadata || {};
+      const notes = data.notes || [];
+
+      let html = "";
+
+      // Header
+      html += "<h2 style='font-family: Poppins, sans-serif; margin-bottom: 0.5rem;'>Benchmark Results</h2>";
+      html += "<p style='color: var(--text-muted); font-size: 0.875rem; margin-bottom: 1.25rem;'>";
+      if (metadata.skill_name) html += "<strong>" + escapeHtml(metadata.skill_name) + "</strong> &mdash; ";
+      if (metadata.timestamp) html += metadata.timestamp + " &mdash; ";
+      if (metadata.evals_run) html += "Evals: " + metadata.evals_run.join(", ") + " &mdash; ";
+      html += (metadata.runs_per_configuration || "?") + " runs per configuration";
+      html += "</p>";
+
+      // Summary table
+      html += '<table class="benchmark-table">';
+
+      function fmtStat(stat, pct) {
+        if (!stat) return "—";
+        const suffix = pct ? "%" : "";
+        const m = pct ? (stat.mean * 100).toFixed(0) : stat.mean.toFixed(1);
+        const s = pct ? (stat.stddev * 100).toFixed(0) : stat.stddev.toFixed(1);
+        return m + suffix + " ± " + s + suffix;
+      }
+
+      function deltaClass(val) {
+        if (!val) return "";
+        const n = parseFloat(val);
+        if (n > 0) return "benchmark-delta-positive";
+        if (n < 0) return "benchmark-delta-negative";
+        return "";
+      }
+
+      // Discover config names dynamically (everything except "delta")
+      const configs = Object.keys(summary).filter(k => k !== "delta");
+      const configA = configs[0] || "config_a";
+      const configB = configs[1] || "config_b";
+      const labelA = configA.replace(/_/g, " ").replace(/\b\w/g, c => c.toUpperCase());
+      const labelB = configB.replace(/_/g, " ").replace(/\b\w/g, c => c.toUpperCase());
+      const a = summary[configA] || {};
+      const b = summary[configB] || {};
+      const delta = summary.delta || {};
+
+      html += "<thead><tr><th>Metric</th><th>" + escapeHtml(labelA) + "</th><th>" + escapeHtml(labelB) + "</th><th>Delta</th></tr></thead>";
+      html += "<tbody>";
+
+      html += "<tr><td><strong>Pass Rate</strong></td>";
+      html += "<td>" + fmtStat(a.pass_rate, true) + "</td>";
+      html += "<td>" + fmtStat(b.pass_rate, true) + "</td>";
+      html += '<td class="' + deltaClass(delta.pass_rate) + '">' + (delta.pass_rate || "—") + "</td></tr>";
+
+      // Time (only show row if data exists)
+      if (a.time_seconds || b.time_seconds) {
+        html += "<tr><td><strong>Time (s)</strong></td>";
+        html += "<td>" + fmtStat(a.time_seconds, false) + "</td>";
+        html += "<td>" + fmtStat(b.time_seconds, false) + "</td>";
+        html += '<td class="' + deltaClass(delta.time_seconds) + '">' + (delta.time_seconds ? delta.time_seconds + "s" : "—") + "</td></tr>";
+      }
+
+      // Tokens (only show row if data exists)
+      if (a.tokens || b.tokens) {
+        html += "<tr><td><strong>Tokens</strong></td>";
+        html += "<td>" + fmtStat(a.tokens, false) + "</td>";
+        html += "<td>" + fmtStat(b.tokens, false) + "</td>";
+        html += '<td class="' + deltaClass(delta.tokens) + '">' + (delta.tokens || "—") + "</td></tr>";
+      }
+
+      html += "</tbody></table>";
+
+      // Per-eval breakdown (if runs data available)
+      const runs = data.runs || [];
+      if (runs.length > 0) {
+        const evalIds = [...new Set(runs.map(r => r.eval_id))].sort((a, b) => a - b);
+
+        html += "<h3 style='font-family: Poppins, sans-serif; margin-bottom: 0.75rem;'>Per-Eval Breakdown</h3>";
+
+        const hasTime = runs.some(r => r.result && r.result.time_seconds != null);
+        const hasErrors = runs.some(r => r.result && r.result.errors > 0);
+
+        for (const evalId of evalIds) {
+          const evalRuns = runs.filter(r => r.eval_id === evalId);
+          const evalName = evalRuns[0] && evalRuns[0].eval_name ? evalRuns[0].eval_name : "Eval " + evalId;
+
+          html += "<h4 style='font-family: Poppins, sans-serif; margin: 1rem 0 0.5rem; color: var(--text);'>" + escapeHtml(evalName) + "</h4>";
+          html += '<table class="benchmark-table">';
+          html += "<thead><tr><th>Config</th><th>Run</th><th>Pass Rate</th>";
+          if (hasTime) html += "<th>Time (s)</th>";
+          if (hasErrors) html += "<th>Crashes During Execution</th>";
+          html += "</tr></thead>";
+          html += "<tbody>";
+
+          // Group by config and render with average rows
+          const configGroups = [...new Set(evalRuns.map(r => r.configuration))];
+          for (let ci = 0; ci < configGroups.length; ci++) {
+            const config = configGroups[ci];
+            const configRuns = evalRuns.filter(r => r.configuration === config);
+            if (configRuns.length === 0) continue;
+
+            const rowClass = ci === 0 ? "benchmark-row-with" : "benchmark-row-without";
+            const configLabel = config.replace(/_/g, " ").replace(/\b\w/g, c => c.toUpperCase());
+
+            for (const run of configRuns) {
+              const r = run.result || {};
+              const prClass = r.pass_rate >= 0.8 ? "benchmark-delta-positive" : r.pass_rate < 0.5 ? "benchmark-delta-negative" : "";
+              html += '<tr class="' + rowClass + '">';
+              html += "<td>" + configLabel + "</td>";
+              html += "<td>" + run.run_number + "</td>";
+              html += '<td class="' + prClass + '">' + ((r.pass_rate || 0) * 100).toFixed(0) + "% (" + (r.passed || 0) + "/" + (r.total || 0) + ")</td>";
+              if (hasTime) html += "<td>" + (r.time_seconds != null ? r.time_seconds.toFixed(1) : "—") + "</td>";
+              if (hasErrors) html += "<td>" + (r.errors || 0) + "</td>";
+              html += "</tr>";
+            }
+
+            // Average row
+            const rates = configRuns.map(r => (r.result || {}).pass_rate || 0);
+            const avgRate = rates.reduce((a, b) => a + b, 0) / rates.length;
+            const avgPrClass = avgRate >= 0.8 ? "benchmark-delta-positive" : avgRate < 0.5 ? "benchmark-delta-negative" : "";
+            html += '<tr class="benchmark-row-avg ' + rowClass + '">';
+            html += "<td>" + configLabel + "</td>";
+            html += "<td>Avg</td>";
+            html += '<td class="' + avgPrClass + '">' + (avgRate * 100).toFixed(0) + "%</td>";
+            if (hasTime) {
+              const times = configRuns.map(r => (r.result || {}).time_seconds).filter(t => t != null);
+              html += "<td>" + (times.length ? (times.reduce((a, b) => a + b, 0) / times.length).toFixed(1) : "—") + "</td>";
+            }
+            if (hasErrors) html += "<td></td>";
+            html += "</tr>";
+          }
+          html += "</tbody></table>";
+
+          // Per-assertion detail for this eval
+          const runsWithExpectations = {};
+          for (const config of configGroups) {
+            runsWithExpectations[config] = evalRuns.filter(r => r.configuration === config && r.expectations && r.expectations.length > 0);
+          }
+          const hasAnyExpectations = Object.values(runsWithExpectations).some(runs => runs.length > 0);
+          if (hasAnyExpectations) {
+            // Collect all unique assertion texts across all configs
+            const allAssertions = [];
+            const seen = new Set();
+            for (const config of configGroups) {
+              for (const run of runsWithExpectations[config]) {
+                for (const exp of (run.expectations || [])) {
+                  if (!seen.has(exp.text)) {
+                    seen.add(exp.text);
+                    allAssertions.push(exp.text);
+                  }
+                }
+              }
+            }
+
+            html += '<table class="benchmark-table" style="margin-top: 0.5rem;">';
+            html += "<thead><tr><th>Assertion</th>";
+            for (const config of configGroups) {
+              const label = config.replace(/_/g, " ").replace(/\b\w/g, c => c.toUpperCase());
+              html += "<th>" + escapeHtml(label) + "</th>";
+            }
+            html += "</tr></thead><tbody>";
+
+            for (const assertionText of allAssertions) {
+              html += "<tr><td>" + escapeHtml(assertionText) + "</td>";
+
+              for (const config of configGroups) {
+                html += "<td>";
+                for (const run of runsWithExpectations[config]) {
+                  const exp = (run.expectations || []).find(e => e.text === assertionText);
+                  if (exp) {
+                    const cls = exp.passed ? "benchmark-delta-positive" : "benchmark-delta-negative";
+                    const icon = exp.passed ? "\u2713" : "\u2717";
+                    html += '<span class="' + cls + '" title="Run ' + run.run_number + ': ' + escapeHtml(exp.evidence || "") + '">' + icon + "</span> ";
+                  } else {
+                    html += "— ";
+                  }
+                }
+                html += "</td>";
+              }
+              html += "</tr>";
+            }
+            html += "</tbody></table>";
+          }
+        }
+      }
+
+      // Notes
+      if (notes.length > 0) {
+        html += '<div class="benchmark-notes">';
+        html += "<h3>Analysis Notes</h3>";
+        html += "<ul>";
+        for (const note of notes) {
+          html += "<li>" + escapeHtml(note) + "</li>";
+        }
+        html += "</ul></div>";
+      }
+
+      container.innerHTML = html;
+    }
+
+    // ---- Start ----
+    init();
+    renderBenchmark();
+  </script>
+</body>
+</html>

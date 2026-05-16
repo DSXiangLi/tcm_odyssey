@@ -1,0 +1,12 @@
+{
+  "session_id": "qingmu_player_001_20260507_092036",
+  "npc_id": "qingmu",
+  "player_id": "player_001",
+  "timestamp_start": "2026-05-07T09:20:36.159017",
+  "user_message": "它的君药是什么？",
+  "tool_calls": [],
+  "full_response": "这位学生，你问\"它的君药\"，却未言明是哪一方剂。\n\n医道之中，方剂众多，君臣佐使各有所别。\n\n你可是在问麻黄汤？桂枝汤？还是银翘散？\n\n不妨先说说你心中所想的是哪一方，青木再为你细细道来。\n\n你可记得《伤寒论》开篇便言\"太阳之为病\"，这太阳病中，最常用的是哪几个方剂？",
+  "timestamp_end": "2026-05-07T09:20:40.547632",
+  "response_duration_ms": 4388,
+  "response_token_count": 134
+}

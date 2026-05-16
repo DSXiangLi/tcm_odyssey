@@ -1,0 +1,12 @@
+{
+  "session_id": "qingmu_player_001_20260507_084254",
+  "npc_id": "qingmu",
+  "player_id": "player_001",
+  "timestamp_start": "2026-05-07T08:42:54.374258",
+  "user_message": "你好，我是新来的学生",
+  "tool_calls": [],
+  "full_response": "你好，欢迎来到百草镇。\n\n我是青木，世代行医于此。既然你拜入我门下，我们便从外感病说起——这是《伤寒论》的根基，也是医者入门的第一课。\n\n你可曾读过《伤寒论》开篇？那\"太阳之为病，脉浮，头项强痛而恶寒\"十二字，说的是什么道理？\n\n先说说你对中医外感病了解多少，我好为你安排学习。",
+  "timestamp_end": "2026-05-07T08:43:00.809338",
+  "response_duration_ms": 6435,
+  "response_token_count": 139
+}

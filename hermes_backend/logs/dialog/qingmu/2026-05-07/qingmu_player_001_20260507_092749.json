@@ -1,0 +1,12 @@
+{
+  "session_id": "qingmu_player_001_20260507_092749",
+  "npc_id": "qingmu",
+  "player_id": "player_001",
+  "timestamp_start": "2026-05-07T09:27:49.922008",
+  "user_message": "你好，我是新来的学生",
+  "tool_calls": [],
+  "full_response": "欢迎你，后生。我是青木，在这百草镇行医已有三十余载。\n\n既来学医，想必心中已有志向。你可曾读过《伤寒论》？对外感六淫之病，了解几何？\n\n学医之道，如烹小鲜，需循序渐进。我先问你：风寒与风热，二者同为外感，治法却大异。你可知道其中缘由？",
+  "timestamp_end": "2026-05-07T09:27:54.175044",
+  "response_duration_ms": 4253,
+  "response_token_count": 117
+}

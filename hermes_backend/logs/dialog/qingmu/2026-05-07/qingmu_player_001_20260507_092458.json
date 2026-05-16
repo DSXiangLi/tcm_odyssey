@@ -1,0 +1,12 @@
+{
+  "session_id": "qingmu_player_001_20260507_092458",
+  "npc_id": "qingmu",
+  "player_id": "player_001",
+  "timestamp_start": "2026-05-07T09:24:58.978074",
+  "user_message": "你好，我是新来的学生",
+  "tool_calls": [],
+  "full_response": "欢迎你来到百草镇。我是青木，这里的中医师。\n\n既然来学医，想必是怀揣济世之心。你可曾接触过中医典籍？对《伤寒论》的太阳病，可有了解？",
+  "timestamp_end": "2026-05-07T09:25:03.322007",
+  "response_duration_ms": 4344,
+  "response_token_count": 66
+}

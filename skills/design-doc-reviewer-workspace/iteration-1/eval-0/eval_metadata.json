@@ -1,0 +1,32 @@
+{
+  "eval_id": 0,
+  "eval_name": "real-design-review",
+  "prompt": "Review this design document: docs/superpowers/specs/phase2.5/2026-05-14-dialog-ui-html-embedding-design.md",
+  "assertions": [
+    {
+      "name": "dimension_analysis_present",
+      "description": "Review includes systematic analysis of 8 dimensions (Background, Problem, Solution, Boundaries, Integration, Outcome, Validation Scope, Acceptance Criteria)",
+      "check": "Output contains table or structured list covering all 8 dimensions with status indicators (✅/⚠️/❌/❓)"
+    },
+    {
+      "name": "issues_identified",
+      "description": "Review identifies specific issues: omissions, ambiguities, contradictions, or clarification points",
+      "check": "Output contains at least one concrete issue with location, risk explanation, and recommendation"
+    },
+    {
+      "name": "actionable_recommendations",
+      "description": "Recommendations are specific and actionable (not generic like 'add more details')",
+      "check": "Each recommendation specifies what to add/change, where in the document, and provides concrete example or guidance"
+    },
+    {
+      "name": "clear_verdict",
+      "description": "Review provides final verdict: Approved, Needs Revision, or Blocked",
+      "check": "Output ends with explicit verdict statement with reasoning"
+    },
+    {
+      "name": "project_context_checks",
+      "description": "Review considers project-specific context (Phaser 3, TypeScript, Hermes-Agent, existing architecture)",
+      "check": "Output references project architecture, directory structure, naming conventions, or existing systems"
+    }
+  ]
+}

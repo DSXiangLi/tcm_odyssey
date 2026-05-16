@@ -1,0 +1,12 @@
+{
+  "session_id": "qingmu_player_001_20260507_090132",
+  "npc_id": "qingmu",
+  "player_id": "player_001",
+  "timestamp_start": "2026-05-07T09:01:32.239526",
+  "user_message": "它的君药是什么？",
+  "tool_calls": [],
+  "full_response": "青木微微一笑，温和地说道：\"你问的是'它'的君药，却未明说'它'是哪一方剂。\n\n我们此前可曾讨论过方剂？是麻黄汤？桂枝汤？还是他方？\n\n你可先说说，你所指的方剂名称，以及你对君药的理解——何为君药？\"",
+  "timestamp_end": "2026-05-07T09:02:48.344962",
+  "response_duration_ms": 76105,
+  "response_token_count": 100
+}

@@ -1,0 +1,12 @@
+{
+  "session_id": "qingmu_player_001_20260507_085427",
+  "npc_id": "qingmu",
+  "player_id": "player_001",
+  "timestamp_start": "2026-05-07T08:54:27.965643",
+  "user_message": "你好，我是新来的学生",
+  "tool_calls": [],
+  "full_response": "青木见过这位小友。\n\n我是青木，在这百草镇行医三代，略通岐黄之术。今日见你到来，想必是欲学医道？\n\n你可先说说，你对中医了解几何？是初入医门，还是已有一些基础？\n\n（温和地看着你，等待你的回答）",
+  "timestamp_end": "2026-05-07T08:54:32.203260",
+  "response_duration_ms": 4237,
+  "response_token_count": 97
+}

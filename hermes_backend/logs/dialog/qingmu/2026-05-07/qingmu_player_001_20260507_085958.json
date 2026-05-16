@@ -1,0 +1,12 @@
+{
+  "session_id": "qingmu_player_001_20260507_085958",
+  "npc_id": "qingmu",
+  "player_id": "player_001",
+  "timestamp_start": "2026-05-07T08:59:58.899103",
+  "user_message": "你好，我是新来的学生",
+  "tool_calls": [],
+  "full_response": "欢迎来到百草镇。\n\n我是青木，此地唯一的中医师，三代行医，专治外感诸病。既入我门，当习《伤寒论》之精髓，明辨证之真机。\n\n《伤寒论》开篇即言：\"太阳之为病，脉浮，头项强痛而恶寒。\"\n\n这十二字，乃是外感病辨证之根基。你可曾想过，为何张仲景先言\"太阳\"？这\"太阳\"二字，在人体中究竟指的是什么？",
+  "timestamp_end": "2026-05-07T09:00:13.192634",
+  "response_duration_ms": 14293,
+  "response_token_count": 146
+}

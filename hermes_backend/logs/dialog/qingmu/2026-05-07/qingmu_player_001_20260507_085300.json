@@ -1,0 +1,12 @@
+{
+  "session_id": "qingmu_player_001_20260507_085300",
+  "npc_id": "qingmu",
+  "player_id": "player_001",
+  "timestamp_start": "2026-05-07T08:53:00.279227",
+  "user_message": "麻黄汤有什么作用",
+  "tool_calls": [],
+  "full_response": "你可还记得麻黄汤主治何证？\n\n《伤寒论》第35条云：\"太阳病，头痛发热，身疼腰痛，骨节疼痛，恶风无汗而喘者，麻黄汤主之。\"\n\n从这条文来看，病人既有\"恶风无汗\"之表闭，又有\"喘\"之肺气逆。你思考一下，针对这两组症状，麻黄汤应当发挥什么作用？",
+  "timestamp_end": "2026-05-07T08:53:05.587431",
+  "response_duration_ms": 5308,
+  "response_token_count": 120
+}

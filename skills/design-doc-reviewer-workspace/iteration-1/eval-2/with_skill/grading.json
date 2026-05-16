@@ -1,0 +1,95 @@
+{
+  "expectations": [
+    {
+      "text": "Output explicitly states Background dimension is missing with ❌ status",
+      "passed": true,
+      "evidence": "Found in review.md line 14: '| Background (背景) | ❌ | Missing - No context on why this feature is needed |'"
+    },
+    {
+      "text": "Output notes Problem Definition is missing, mentions 'Goal' is vague substitute",
+      "passed": false,
+      "evidence": "The output says Problem Definition is 'Present but vague' (line 15: '| Problem Definition (问题定义) | ⚠️ | Present but vague - \"实现病案集功能\" lacks specificity |'), not 'missing'. Additionally, while the original design document has a '目标' (Goal) section, the output does not explicitly mention 'Goal' as a vague substitute for Problem Definition. The output references the content ('实现病案集功能') but does not name 'Goal' or '目标' as the source."
+    },
+    {
+      "text": "Output notes solution is high-level without implementation details, no diagrams, no data flow",
+      "passed": true,
+      "evidence": "Found multiple pieces of evidence: (1) Line 16: '| Solution (解决方案) | ⚠️ | Present but vague - \"参考背包系统\" without technical details |'. (2) Line 167: '2. **Add data flow diagram** - Show how 病案 data flows from 诊断系统 to 病案集 UI.' The output explicitly calls out the lack of technical details, diagrams, and data flow."
+    },
+    {
+      "text": "Output notes scope is not defined, no constraints mentioned",
+      "passed": true,
+      "evidence": "Found in review.md line 17: '| Boundaries (边界) | ❌ | Missing - No scope definition, no constraints |'. Also line 40-44 discusses scope definition and constraints."
+    },
+    {
+      "text": "Output notes no measurable criteria, no test plan, no edge cases",
+      "passed": true,
+      "evidence": "Found multiple pieces of evidence: (1) Line 21: '| Acceptance Criteria (验收标准) | ❌ | Missing - No measurable criteria provided |'. (2) Line 57: '- **Risk**: No test plan means no verification criteria. Bugs may go undetected.' (3) Line 60: '- What edge cases (e.g., missing data, corrupted 病案)?'. The output explicitly covers all three aspects."
+    },
+    {
+      "text": "Each missing dimension has recommendation with example of what to add",
+      "passed": true,
+      "evidence": "Found recommendations for all missing dimensions: (1) Line 32: '**Recommendation**: Add a \"背景\" section explaining:' followed by bullet points. (2) Line 41: '**Recommendation**: Add a \"边界\" section specifying:' followed by bullet points. (3) Line 50: '**Recommendation**: Add a \"实现效果\" section describing:' followed by bullet points. (4) Line 58: '**Recommendation**: Add a \"验收范围\" section specifying:' followed by bullet points. (5) Line 66: '**Recommendation**: Add a \"验收标准\" section with measurable criteria:' followed by bullet points."
+    },
+    {
+      "text": "Output states verdict as 'Needs Revision' or 'Blocked' with reasoning",
+      "passed": true,
+      "evidence": "Found in review.md: (1) Line 6: '- **Actionability**: Needs Revision - Document is severely deficient and not ready for implementation'. (2) Line 204: '**Needs Revision**'. (3) Lines 206-211 provide detailed reasoning: 'This design document is severely incomplete. Only 1 of 8 dimensions is partially addressed. Key sections missing: - Background context - Scope boundaries - Technical details - Validation plan - Acceptance criteria'"
+    }
+  ],
+  "summary": {
+    "passed": 6,
+    "failed": 1,
+    "total": 7,
+    "pass_rate": 0.86
+  },
+  "execution_metrics": {
+    "tool_calls": {},
+    "total_tool_calls": 0,
+    "total_steps": 0,
+    "errors_encountered": 0,
+    "output_chars": 6150,
+    "transcript_chars": 30311
+  },
+  "timing": {
+    "total_tokens": 37638,
+    "executor_duration_ms": 116871,
+    "total_duration_seconds": 116.9
+  },
+  "claims": [
+    {
+      "claim": "The design document is severely incomplete (1/8 dimensions complete)",
+      "type": "quality",
+      "verified": true,
+      "evidence": "Verified by counting dimension statuses in the review: 1 dimension (Problem Definition) marked as ⚠️ (partial), 5 dimensions marked as ❌ (missing), and 2 dimensions (Solution, Integration) marked as ⚠️. The claim is accurate."
+    },
+    {
+      "claim": "The original design document has 12 lines of content",
+      "type": "factual",
+      "verified": true,
+      "evidence": "Verified by reading incomplete-design.md - it has exactly 12 lines of content as stated in review metadata."
+    },
+    {
+      "claim": "The design lacks Background context explaining why the feature is needed",
+      "type": "quality",
+      "verified": true,
+      "evidence": "Verified by reading incomplete-design.md - it starts directly with '目标' (Goal) without any Background/背景 section explaining context or motivation."
+    }
+  ],
+  "user_notes_summary": {
+    "uncertainties": [],
+    "needs_review": [],
+    "workarounds": []
+  },
+  "eval_feedback": {
+    "suggestions": [
+      {
+        "assertion": "Output notes Problem Definition is missing, mentions 'Goal' is vague substitute",
+        "reason": "The expectation asks for 'missing' but the output correctly identifies that Problem Definition is 'present but vague' - this is actually more accurate since the '目标' (Goal) section exists but serves as a poor substitute for a proper Problem Definition. Consider revising the expectation to accept 'present but vague' or 'inadequate substitute' as valid alternatives to 'missing'."
+      },
+      {
+        "reason": "The expectation about mentioning 'Goal' specifically may be too rigid - the output correctly identifies the content ('实现病案集功能') as vague, which is the substantive point. The naming of the section ('目标' vs 'Goal') is less important than recognizing the content inadequacy."
+      }
+    ],
+    "overall": "6 of 7 expectations pass. One expectation fails due to wording precision - the output says 'present but vague' instead of 'missing' and doesn't explicitly name 'Goal' as the substitute section. However, the output correctly identifies the substantive issue (inadequate problem definition) and provides actionable recommendations. Consider relaxing the 'missing' and 'Goal' keywords to focus on the underlying quality issue."
+  }
+}

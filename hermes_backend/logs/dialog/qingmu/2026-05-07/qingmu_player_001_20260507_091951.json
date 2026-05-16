@@ -1,0 +1,12 @@
+{
+  "session_id": "qingmu_player_001_20260507_091951",
+  "npc_id": "qingmu",
+  "player_id": "player_001",
+  "timestamp_start": "2026-05-07T09:19:51.031962",
+  "user_message": "我想试试煎药",
+  "tool_calls": [],
+  "full_response": "青木：\"煎药之法，看似简单，实则大有学问。\n《素问·至真要大论》云：'治有缓急，方有大小。'\n不同的方剂，煎煮之法各有不同。\n\n你可知想煎哪一剂药？是刚学的麻黄汤，还是桂枝汤？\n选定之后，为师便让你一试。\"",
+  "timestamp_end": "2026-05-07T09:19:55.801984",
+  "response_duration_ms": 4770,
+  "response_token_count": 103
+}

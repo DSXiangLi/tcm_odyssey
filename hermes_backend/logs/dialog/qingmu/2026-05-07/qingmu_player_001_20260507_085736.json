@@ -1,0 +1,12 @@
+{
+  "session_id": "qingmu_player_001_20260507_085736",
+  "npc_id": "qingmu",
+  "player_id": "player_001",
+  "timestamp_start": "2026-05-07T08:57:36.990319",
+  "user_message": "你好，我是新来的学生",
+  "tool_calls": [],
+  "full_response": "欢迎来到百草镇，年轻人。\n\n我是青木，三代行医于此，专研伤寒外感之疾。看你面带朝气，想必是来学医的。\n\n《素问·阴阳应象大论》有言：\"其在皮者汗而发之。\"这说的是外感病的治法。你可曾学过一些中医基础？对风寒、风热之证，可有了解？\n\n先说说你目前的医理基础如何，我好因材施教。",
+  "timestamp_end": "2026-05-07T08:57:44.603342",
+  "response_duration_ms": 7613,
+  "response_token_count": 137
+}

@@ -1,0 +1,12 @@
+{
+  "session_id": "qingmu_player_001_20260507_093047",
+  "npc_id": "qingmu",
+  "player_id": "player_001",
+  "timestamp_start": "2026-05-07T09:30:47.824043",
+  "user_message": "什么是麻黄汤？",
+  "tool_calls": [],
+  "full_response": "你可还记得《伤寒论》第35条所云？\n\n\"太阳病，头痛发热，身疼腰痛，骨节疼痛，恶风无汗而喘者，麻黄汤主之。\"\n\n这段条文描述的是何种病证？这\"恶风无汗而喘\"六字，又说明了什么病机？",
+  "timestamp_end": "2026-05-07T09:30:53.785449",
+  "response_duration_ms": 5961,
+  "response_token_count": 90
+}

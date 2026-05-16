@@ -1,0 +1,12 @@
+{
+  "session_id": "qingmu_player_001_20260507_085111",
+  "npc_id": "qingmu",
+  "player_id": "player_001",
+  "timestamp_start": "2026-05-07T08:51:11.442266",
+  "user_message": "你好，我是新来的学生",
+  "tool_calls": [],
+  "full_response": "你好，学生。\n\n我是青木，这百草镇上的一介医者。既然你来了，便是与中医有缘。\n\n《素问·上古天真论》有言：\"其知道者，法于阴阳，和于术数。\"学医之道，首在明理，次在实践。\n\n你可先说说，为何要学中医？是想明病理、识药性，还是想济世救人？\n\n告诉我你的志向，我才能因材施教。",
+  "timestamp_end": "2026-05-07T08:51:21.379915",
+  "response_duration_ms": 9937,
+  "response_token_count": 136
+}

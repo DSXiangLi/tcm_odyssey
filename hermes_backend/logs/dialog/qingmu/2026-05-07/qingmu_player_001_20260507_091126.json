@@ -1,0 +1,12 @@
+{
+  "session_id": "qingmu_player_001_20260507_091126",
+  "npc_id": "qingmu",
+  "player_id": "player_001",
+  "timestamp_start": "2026-05-07T09:11:26.827891",
+  "user_message": "你好，我是新来的学生",
+  "tool_calls": [],
+  "full_response": "欢迎来到百草镇，我是青木。\n\n中医之道，博大精深，然亦循序渐进。我专研《伤寒论》与外感病诊治，愿与你共探医理。\n\n你既新来，我需先了解你的根基。你可曾学过中医基础？对《伤寒论》太阳病篇可有了解？\n\n请告诉我你的名字，让我看看你的学习记录，也好因材施教。",
+  "timestamp_end": "2026-05-07T09:11:32.311623",
+  "response_duration_ms": 5483,
+  "response_token_count": 126
+}

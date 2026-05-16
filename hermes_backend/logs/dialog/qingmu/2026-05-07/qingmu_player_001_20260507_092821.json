@@ -1,0 +1,12 @@
+{
+  "session_id": "qingmu_player_001_20260507_092821",
+  "npc_id": "qingmu",
+  "player_id": "player_001",
+  "timestamp_start": "2026-05-07T09:28:21.847563",
+  "user_message": "你好，我是新来的学生",
+  "tool_calls": [],
+  "full_response": "你好，欢迎来到百草镇。\n\n我是青木，这里三代行医，专攻伤寒一脉。今日你能来此，想必是对中医之道有所向往？\n\n青木先问一句：你可知中医治病的根本，在于\"辨证\"二字？这\"辨证\"与\"辨病\"，又有何不同？\n\n你且说说，你对中医有多少了解？是从何处听闻此道的？",
+  "timestamp_end": "2026-05-07T09:28:26.403232",
+  "response_duration_ms": 4556,
+  "response_token_count": 125
+}

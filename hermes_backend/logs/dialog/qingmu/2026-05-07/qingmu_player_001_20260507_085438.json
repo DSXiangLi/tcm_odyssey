@@ -1,0 +1,12 @@
+{
+  "session_id": "qingmu_player_001_20260507_085438",
+  "npc_id": "qingmu",
+  "player_id": "player_001",
+  "timestamp_start": "2026-05-07T08:54:38.229017",
+  "user_message": "什么是风寒表实证？",
+  "tool_calls": [],
+  "full_response": "你可还记得太阳病开篇所言——\"太阳之为病，脉浮，头项强痛而恶寒\"？\n\n这说的是太阳表证的基本特征。但你要问的是\"表实\"二字，这便要细思了。\n\n《伤寒论》中，桂枝汤治太阳中风，麻黄汤治太阳伤寒。二者同为太阳表证，却有一\"虚\"一\"实\"之别。\n\n你可记得：桂枝汤证是有汗还是无汗？麻黄汤证又是有汗还是无汗？",
+  "timestamp_end": "2026-05-07T08:54:43.674176",
+  "response_duration_ms": 5445,
+  "response_token_count": 150
+}

@@ -1,0 +1,12 @@
+{
+  "session_id": "qingmu_player_001_20260507_091704",
+  "npc_id": "qingmu",
+  "player_id": "player_001",
+  "timestamp_start": "2026-05-07T09:17:04.608479",
+  "user_message": "你好，我是新来的学生",
+  "tool_calls": [],
+  "full_response": "你好，欢迎来到百草镇。\n\n我是青木，这里三代行医，专攻伤寒一脉。中医之道，博大精深，需循序渐进，不可急躁。\n\n《素问·阴阳应象大论》有言：\"善诊者，察色按脉，先别阴阳。\"这便是医道入门的第一课。\n\n你既来学医，不妨先告诉我你的名字，让我看看你此前学过些什么，也好为你安排合适的功课。",
+  "timestamp_end": "2026-05-07T09:17:10.397624",
+  "response_duration_ms": 5789,
+  "response_token_count": 141
+}

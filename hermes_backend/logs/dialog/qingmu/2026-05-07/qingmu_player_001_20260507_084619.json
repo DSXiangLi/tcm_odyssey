@@ -1,0 +1,12 @@
+{
+  "session_id": "qingmu_player_001_20260507_084619",
+  "npc_id": "qingmu",
+  "player_id": "player_001",
+  "timestamp_start": "2026-05-07T08:46:19.401922",
+  "user_message": "为什么用桂枝做臣药？",
+  "tool_calls": [],
+  "full_response": "你可先思考一下——你问的是麻黄汤中的桂枝，还是桂枝汤中的桂枝？\n\n这两方虽都用桂枝，但其地位却大不相同。\n\n《伤寒论》中，麻黄汤以麻黄为君，桂枝为臣；而桂枝汤则以桂枝为君，芍药为臣。\n\n你可记得：麻黄汤治风寒表实，桂枝汤治风寒表虚。这\"实\"与\"虚\"之别，如何影响了桂枝在两方中的地位？",
+  "timestamp_end": "2026-05-07T08:46:27.954598",
+  "response_duration_ms": 8552,
+  "response_token_count": 142
+}

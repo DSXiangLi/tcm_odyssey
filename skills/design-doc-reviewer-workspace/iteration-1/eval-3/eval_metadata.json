@@ -1,0 +1,37 @@
+{
+  "eval_id": 3,
+  "eval_name": "contradictory-design-eval",
+  "prompt": "Evaluate this design document: design-doc-reviewer-workspace/contradictory-design.md",
+  "assertions": [
+    {
+      "name": "detects_click_count_contradiction",
+      "description": "Review detects contradiction between problem (reduce clicks) and solution (add more steps)",
+      "check": "Output explicitly identifies that problem states 'reduce from 12 clicks to 5' but solution adds 15-step guide, 10 progress nodes, 12 stages, confirmation dialogs - increasing complexity"
+    },
+    {
+      "name": "detects_simplification_vs_complexity_contradiction",
+      "description": "Review detects contradiction between goal 'simplify' and solution 'add features'",
+      "check": "Output notes that adding help buttons, step indicators, progress bars, confirmation dialogs contradicts simplification goal"
+    },
+    {
+      "name": "uses_ask_user_question",
+      "description": "Review uses AskUserQuestion tool to clarify contradictory points before final verdict",
+      "check": "AskUserQuestion tool was invoked to ask about intended approach or clarify design intent"
+    },
+    {
+      "name": "provides_alternative_approach",
+      "description": "Review suggests alternative approach to achieve the goal",
+      "check": "Recommendation section suggests concrete alternative (e.g., streamline existing steps, remove unnecessary confirmations, auto-advance simple steps)"
+    },
+    {
+      "name": "verdict_blocked_or_needs_major_revision",
+      "description": "Review gives verdict that design is blocked or needs major revision due to contradictions",
+      "check": "Output states verdict as 'Blocked' or 'Needs Revision' with note about resolving contradictions first"
+    },
+    {
+      "name": "explains_why_contradiction_matters",
+      "description": "Review explains risk: implementing contradictory design will fail to achieve stated goal",
+      "check": "Output explains that implementing this solution will increase clicks/complexity, opposite of stated goal, leading to implementation failure"
+    }
+  ]
+}

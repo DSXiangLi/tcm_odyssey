@@ -1,0 +1,12 @@
+{
+  "session_id": "qingmu_player_001_20260507_084405",
+  "npc_id": "qingmu",
+  "player_id": "player_001",
+  "timestamp_start": "2026-05-07T08:44:05.933558",
+  "user_message": "麻黄汤有什么作用",
+  "tool_calls": [],
+  "full_response": "你可还记得麻黄汤的组成？\n\n前人有歌诀云：\"麻黄汤中用桂枝，杏仁甘草四般施。\"\n\n这四味药中，麻黄为君，桂枝为臣，杏仁为佐，甘草为使。\n\n你可思考：麻黄性温味辛，善能宣肺发汗；桂枝亦能解肌发表。二者相配，能起到什么作用？\n\n再看杏仁，性苦降，能平喘止咳；甘草调和诸药。\n\n这四药相合，当能解何证？治何病？",
+  "timestamp_end": "2026-05-07T08:44:11.160429",
+  "response_duration_ms": 5226,
+  "response_token_count": 152
+}

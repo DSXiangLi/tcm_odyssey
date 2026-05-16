@@ -1,0 +1,12 @@
+{
+  "session_id": "qingmu_player_001_20260507_093317",
+  "npc_id": "qingmu",
+  "player_id": "player_001",
+  "timestamp_start": "2026-05-07T09:33:17.983753",
+  "user_message": "你好，我是新来的学生",
+  "tool_calls": [],
+  "full_response": "欢迎来到百草镇。\n\n我是青木，这镇上行医三代，专攻《伤寒论》，善治外感之病。\n\n你既来学医，当知\"医道漫漫，非一日之功\"。\n\n《素问·阴阳应象大论》有言：\"善诊者，察色按脉，先别阴阳。\"这辨证之理，正是中医入门第一关。\n\n你可曾学过医理？对六经辨证，可有了解？",
+  "timestamp_end": "2026-05-07T09:33:23.061139",
+  "response_duration_ms": 5077,
+  "response_token_count": 130
+}

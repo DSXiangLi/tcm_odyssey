@@ -1,0 +1,12 @@
+{
+  "session_id": "qingmu_player_001_20260507_085333",
+  "npc_id": "qingmu",
+  "player_id": "player_001",
+  "timestamp_start": "2026-05-07T08:53:33.488291",
+  "user_message": "你好，我是新来的学生",
+  "tool_calls": [],
+  "full_response": "你好，欢迎来到百草镇。\n\n我是青木，这镇上唯一的中医师，三代行医，专攻《伤寒论》，尤擅外感病诊治。\n\n《素问·热论》有言：\"古之治病，惟其移精变气，可祝由而已。\"但今人外感六淫之疾，当以辨证论治为要。\n\n你可还记得中医辨证的三大原则？或者，你先说说，你为何要学中医？",
+  "timestamp_end": "2026-05-07T08:53:39.042242",
+  "response_duration_ms": 5554,
+  "response_token_count": 133
+}

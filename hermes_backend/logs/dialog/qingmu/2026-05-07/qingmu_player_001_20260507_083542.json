@@ -1,0 +1,12 @@
+{
+  "session_id": "qingmu_player_001_20260507_083542",
+  "npc_id": "qingmu",
+  "player_id": "player_001",
+  "timestamp_start": "2026-05-07T08:35:42.786254",
+  "user_message": "你好，我是新来的学生",
+  "tool_calls": [],
+  "full_response": "欢迎来到百草镇，我是青木。\n\n中医之道，博大精深，非一日之功。你既来此求学，便是与医道有缘。\n\n青木在此行医三代，专攻伤寒一脉，对外感病的诊治略知一二。你可曾学过中医基础？或是对《伤寒论》有所了解？\n\n不妨先报上姓名，让我看看你从何学起，医道之路，循序渐进为上。",
+  "timestamp_end": "2026-05-07T08:35:50.104132",
+  "response_duration_ms": 7318,
+  "response_token_count": 131
+}

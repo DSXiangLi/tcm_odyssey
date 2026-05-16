@@ -150,6 +150,13 @@ export function DialogUI({ npcId, npcName, playerId, onToolCall, onClose }: Dial
     }
   }, [npcId]);
 
+  // 组件卸载时中止SSE，防止内存泄漏
+  useEffect(() => {
+    return () => {
+      sseClient.current.stop();
+    };
+  }, []);
+
   // 自动滚动到底部
   useEffect(() => {
     if (historyRef.current) {
@@ -190,8 +197,17 @@ export function DialogUI({ npcId, npcName, playerId, onToolCall, onClose }: Dial
         request,
         (chunk) => setCurrentText(prev => prev + chunk),
         (full) => {
-          const npcMsg = { role: 'npc' as const, name: npcName, text: full, timestamp: Date.now() };
-          saveHistory([...messages, playerMsg, npcMsg]);
+          // 使用函数形式更新状态，避免 stale closure
+          setMessages(prev => {
+            const npcMsg = { role: 'npc' as const, name: npcName, text: full, timestamp: Date.now() };
+            const newMessages = [...prev, npcMsg];
+            const trimmed = newMessages.length > MAX_HISTORY
+              ? newMessages.slice(-MAX_HISTORY)
+              : newMessages;
+            const bridge = GameStateBridge.getInstance();
+            bridge.setDialogHistory(npcId, trimmed);
+            return trimmed;
+          });
           setCurrentText('');
           setIsGenerating(false);
         },

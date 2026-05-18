@@ -193,10 +193,13 @@ def stream_chat(request: Dict[str, Any]) -> Generator[Dict[str, Any], None, None
             except json.JSONDecodeError:
                 args = {}
 
-            # Pass player_id context from request if not in args
+            # Pass player_id and npc_id context from request if not in args
             # Some tools like get_learning_progress need player_id
+            # get_npc_memory needs both npc_id and player_id
             if 'player_id' not in args and 'player_id' in request:
                 args['player_id'] = request['player_id']
+            if 'npc_id' not in args and 'npc_id' in request:
+                args['npc_id'] = request['npc_id']
 
             result = registry.execute_tool(name, args)
 

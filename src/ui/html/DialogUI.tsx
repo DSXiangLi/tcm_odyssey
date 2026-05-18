@@ -1,7 +1,7 @@
 // src/ui/html/DialogUI.tsx
 /**
  * 对话UI React组件
- * 古风卷轴风格 + 富文本教学标记 + SSE流式响应 + 对话历史（最多50条）
+ * 古风卷轴风格 + 富文本教学标记 + SSE流式响应 + 对话历史（最多50条）+ Tool Card展示
  */
 
 import React, { useState, useEffect, useRef } from 'react';
@@ -12,6 +12,98 @@ import { TCM_DATA, TCMKind } from './data/tcm-data';
 import { GameStateBridge } from '../../utils/GameStateBridge';
 
 const MAX_HISTORY = 50;
+
+// Tool Call 数据结构（参考 Hermes WebUI）
+interface ToolCallState {
+  name: string;
+  args: Record<string, unknown>;
+  result?: unknown;
+  snippet?: string;        // 结果摘要
+  done: boolean;           // false=运行中, true=完成
+  tid: string;             // 工具调用ID（用于匹配 result）
+}
+
+// 工具图标映射（基于工具名）
+const TOOL_ICONS: Record<string, string> = {
+  get_inventory: '📦',
+  get_learning_progress: '📚',
+  get_case_progress: '📋',
+  trigger_minigame: '🎮',
+  record_weakness: '📝',
+  get_npc_memory: '🧠',
+};
+
+function getToolIcon(name: string): string {
+  return TOOL_ICONS[name] || '⚙️';
+}
+
+// 工具名称显示映射
+const TOOL_NAMES: Record<string, string> = {
+  get_inventory: '背包查询',
+  get_learning_progress: '学习进度',
+  get_case_progress: '病案进度',
+  trigger_minigame: '触发小游戏',
+  record_weakness: '记录薄弱点',
+  get_npc_memory: 'NPC记忆',
+};
+
+function getToolDisplayName(name: string): string {
+  return TOOL_NAMES[name] || name;
+}
+
+// Tool Card 组件
+function ToolCard({ tc }: { tc: ToolCallState }) {
+  const [isOpen, setIsOpen] = useState(false);
+  const hasDetail = tc.snippet || (tc.args && Object.keys(tc.args).length > 0);
+
+  // 格式化结果摘要
+  let displaySnippet = '';
+  if (tc.snippet) {
+    const s = tc.snippet;
+    if (s.length <= 200) {
+      displaySnippet = s;
+    } else {
+      displaySnippet = s.slice(0, 200) + '...';
+    }
+  }
+
+  const cardClass = `tool-card${tc.done ? '' : ' tool-card-running'}`;
+
+  return (
+    <div className="tool-card-row">
+      <div className={cardClass}>
+        <div className="tool-card-header" onClick={() => hasDetail && setIsOpen(!isOpen)}>
+          {!tc.done && <span className="tool-card-running-dot" />}
+          <span className="tool-card-icon">{getToolIcon(tc.name)}</span>
+          <span className="tool-card-name">{getToolDisplayName(tc.name)}</span>
+          <span className="tool-card-preview">{displaySnippet || (tc.done ? '完成' : '执行中...')}</span>
+          {hasDetail && (
+            <span className={`tool-card-toggle${isOpen ? ' open' : ''}`}>▶</span>
+          )}
+        </div>
+        {isOpen && hasDetail && (
+          <div className="tool-card-detail">
+            {tc.args && Object.keys(tc.args).length > 0 && (
+              <div className="tool-card-args">
+                {Object.entries(tc.args).map(([k, v]) => (
+                  <div key={k}>
+                    <span className="tool-arg-key">{k}</span>
+                    <span className="tool-arg-val">{String(v)}</span>
+                  </div>
+                ))}
+              </div>
+            )}
+            {tc.snippet && (
+              <div className="tool-card-result">
+                <pre>{tc.snippet}</pre>
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
 
 export interface DialogUIOptions {
   npcId: string;
@@ -138,6 +230,7 @@ export function DialogUI({ npcId, npcName, playerId, onToolCall, onClose }: Dial
   const [isGenerating, setIsGenerating] = useState(false);
   const [currentText, setCurrentText] = useState('');
   const [error, setError] = useState<string | null>(null);
+  const [toolCalls, setToolCalls] = useState<ToolCallState[]>([]);  // Tool Call状态跟踪
   const historyRef = useRef<HTMLDivElement>(null);
   const sseClient = useRef(new SSEClient());
 
@@ -210,17 +303,49 @@ export function DialogUI({ npcId, npcName, playerId, onToolCall, onClose }: Dial
           });
           setCurrentText('');
           setIsGenerating(false);
+          // 对话完成后清空当前toolCalls
+          setToolCalls([]);
         },
         (err) => {
           setError(`错误: ${err.message}`);
           setIsGenerating(false);
         },
         (name, args) => {
-          // Tool Call通过事件传递给Phaser
+          // Tool Call: 添加到状态列表，显示运行中卡片
+          const tid = `${name}-${Date.now()}`;
+          setToolCalls(prev => [...prev, {
+            name,
+            args: args as Record<string, unknown>,
+            done: false,
+            tid,
+          }]);
+
+          // 同时通过事件传递给Phaser
           const eventBus = EventBus.getInstance();
           const eventData: Record<string, unknown> = { name, args };
           eventBus.emit(DIALOG_EVENTS.TOOL_CALL, eventData);
           if (onToolCall) onToolCall(name, args as Record<string, unknown>);
+        },
+        (result) => {
+          // Tool Result: 更新对应的toolCall状态为完成，显示结果
+          setToolCalls(prev => {
+            // 找到最后一个运行中的tool call并更新
+            const lastRunningIdx = prev.findIndex(tc => !tc.done);
+            if (lastRunningIdx === -1) return prev;
+
+            const snippet = typeof result === 'object'
+              ? JSON.stringify(result, null, 2)
+              : String(result);
+
+            const updated = [...prev];
+            updated[lastRunningIdx] = {
+              ...updated[lastRunningIdx],
+              result,
+              snippet: snippet.length > 300 ? snippet.slice(0, 300) + '...' : snippet,
+              done: true,
+            };
+            return updated;
+          });
         }
       );
     } catch (err) {
@@ -265,6 +390,8 @@ export function DialogUI({ npcId, npcName, playerId, onToolCall, onClose }: Dial
           {/* 对话历史 */}
           <div className="dialog-history" ref={historyRef}>
             {messages.map((msg, i) => <MessageView key={i} msg={msg} />)}
+            {/* Tool Cards - 在生成过程中显示 */}
+            {toolCalls.map((tc, i) => <ToolCard key={tc.tid || i} tc={tc} />)}
             {currentText && (
               <div className="msg-npc">
                 <div className="msg-npc-header">

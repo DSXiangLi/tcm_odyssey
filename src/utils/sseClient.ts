@@ -20,6 +20,13 @@ export interface ToolCallCallback {
 }
 
 /**
+ * Tool result callback interface for handling tool execution results
+ */
+export interface ToolResultCallback {
+  (result: unknown): void;
+}
+
+/**
  * Extended chat request with optional context for scene-aware conversations
  */
 export interface ChatRequest {
@@ -47,13 +54,15 @@ export class SSEClient {
    * @param onComplete 完成回调
    * @param onError 错误回调
    * @param onToolCall 工具调用回调（可选）
+   * @param onToolResult 工具结果回调（可选）
    */
   async chatStream(
     request: ChatRequest,
     onChunk: (text: string) => void,
     onComplete: (fullResponse: string) => void,
     onError: (error: Error) => void,
-    onToolCall?: ToolCallCallback
+    onToolCall?: ToolCallCallback,
+    onToolResult?: ToolResultCallback
   ): Promise<void> {
     this.abortController = new AbortController();
 
@@ -115,8 +124,9 @@ export class SSEClient {
                 onToolCall(parsed.name, parsed.args || {});
               }
 
-              // NEW: Log tool results (optional display)
-              if (parsed.type === 'tool_result') {
+              // NEW: Handle tool results (call callback for UI update)
+              if (parsed.type === 'tool_result' && onToolResult) {
+                onToolResult(parsed.result);
                 console.log('[SSEClient] Tool result:', parsed.result);
               }
             } catch {

@@ -412,3 +412,141 @@
   cursor: pointer;
   font-size: 14px;
 }
+
+/* ── Tool Card 样式（参考 Hermes WebUI）── */
+
+/* Tool Card 行容器 */
+.tool-card-row {
+  margin: 8px 0;
+}
+
+/* Tool Card 主体 */
+.tool-card {
+  background: rgba(120, 90, 50, 0.08);
+  border: 1px solid var(--paper-edge);
+  border-radius: 4px;
+  font-size: 12px;
+}
+
+.tool-card:hover {
+  border-color: var(--ink-faint);
+}
+
+/* Tool Card Header - 可点击 */
+.tool-card-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  cursor: pointer;
+  user-select: none;
+}
+
+/* Tool Card Icon */
+.tool-card-icon {
+  font-size: 14px;
+  flex-shrink: 0;
+}
+
+/* Tool Card Name */
+.tool-card-name {
+  font-family: var(--font-serif);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--ink);
+  flex-shrink: 0;
+}
+
+/* Tool Card Preview - 结果摘要 */
+.tool-card-preview {
+  font-size: 11px;
+  color: var(--ink-faint);
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Tool Card Toggle - 展开/折叠箭头 */
+.tool-card-toggle {
+  font-size: 10px;
+  color: var(--ink-faint);
+  transition: transform 0.18s ease;
+}
+
+.tool-card-toggle.open {
+  transform: rotate(90deg);
+}
+
+/* Tool Card Detail - 展开后的详情 */
+.tool-card-detail {
+  padding: 8px 12px;
+  border-top: 1px solid rgba(120, 90, 50, 0.15);
+  background: rgba(255, 250, 235, 0.3);
+}
+
+/* Tool Card Args - 参数展示 */
+.tool-card-args {
+  margin-bottom: 6px;
+}
+
+.tool-card-args div {
+  font-size: 11px;
+  line-height: 1.6;
+}
+
+.tool-arg-key {
+  color: var(--vermilion);
+  font-weight: 500;
+  margin-right: 4px;
+}
+
+.tool-arg-val {
+  color: var(--ink-soft);
+}
+
+/* Tool Card Result - 结果展示 */
+.tool-card-result {
+  margin-top: 6px;
+}
+
+.tool-card-result pre {
+  font-size: 11px;
+  color: var(--ink-soft);
+  font-family: monospace;
+  white-space: pre-wrap;
+  word-break: break-word;
+  max-height: 120px;
+  overflow-y: auto;
+  margin: 0;
+  line-height: 1.5;
+  background: rgba(120, 90, 50, 0.05);
+  padding: 6px 8px;
+  border-radius: 2px;
+}
+
+/* Tool Card Running - 运行中状态 */
+.tool-card-running {
+  background: rgba(179, 50, 42, 0.08);
+  border-color: var(--vermilion-soft);
+}
+
+.tool-card-running .tool-card-name {
+  color: var(--vermilion);
+}
+
+/* 脉冲动画 - 运行中指示器 */
+.tool-card-running-dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--vermilion);
+  flex-shrink: 0;
+  animation: tool-pulse 1.2s ease-in-out infinite;
+}
+
+@keyframes tool-pulse {
+  0%, 100% { opacity: 0.4; transform: scale(0.9); }
+  50% { opacity: 1; transform: scale(1.1); }
+}

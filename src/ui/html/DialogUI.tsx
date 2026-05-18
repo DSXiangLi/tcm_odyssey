@@ -291,6 +291,13 @@ export function DialogUI({ npcId, npcName, playerId, onToolCall, onClose }: Dial
         (chunk) => setCurrentText(prev => prev + chunk),
         (full) => {
           // 使用函数形式更新状态，避免 stale closure
+          setIsGenerating(false);
+          setCurrentText('');
+
+          // 清空当前 toolCalls（Tool Cards 保留在对话流中）
+          setToolCalls([]);
+
+          // 添加 NPC 消息到历史
           setMessages(prev => {
             const npcMsg = { role: 'npc' as const, name: npcName, text: full, timestamp: Date.now() };
             const newMessages = [...prev, npcMsg];
@@ -301,10 +308,6 @@ export function DialogUI({ npcId, npcName, playerId, onToolCall, onClose }: Dial
             bridge.setDialogHistory(npcId, trimmed);
             return trimmed;
           });
-          setCurrentText('');
-          setIsGenerating(false);
-          // 对话完成后清空当前toolCalls
-          setToolCalls([]);
         },
         (err) => {
           setError(`错误: ${err.message}`);
@@ -390,20 +393,25 @@ export function DialogUI({ npcId, npcName, playerId, onToolCall, onClose }: Dial
           {/* 对话历史 */}
           <div className="dialog-history" ref={historyRef}>
             {messages.map((msg, i) => <MessageView key={i} msg={msg} />)}
-            {/* Tool Cards - 在生成过程中显示 */}
-            {toolCalls.map((tc, i) => <ToolCard key={tc.tid || i} tc={tc} />)}
-            {currentText && (
-              <div className="msg-npc">
+            {/* NPC 正在生成的消息 */}
+            {(currentText || toolCalls.length > 0) && (
+              <div className="msg-npc msg-npc-streaming">
                 <div className="msg-npc-header">
                   <div className="msg-npc-avatar">{npcName.charAt(0)}</div>
                   <div className="msg-npc-name">{npcName}</div>
+                  {isGenerating && <span className="msg-npc-status">生成中...</span>}
                 </div>
-                <div className="msg-npc-text">
-                  <RichText text={currentText} />
-                </div>
+                {/* 先显示已生成的文本 */}
+                {currentText && (
+                  <div className="msg-npc-text">
+                    <RichText text={currentText} />
+                  </div>
+                )}
+                {/* Tool Cards - 在文本之后显示 */}
+                {toolCalls.map((tc, i) => <ToolCard key={tc.tid || i} tc={tc} />)}
               </div>
             )}
-            {isGenerating && (
+            {isGenerating && toolCalls.length === 0 && !currentText && (
               <div className="dialog-loading">
                 生成中... <span className="dialog-stop-btn" onClick={handleStop}>停止</span>
               </div>

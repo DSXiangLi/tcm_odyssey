@@ -63,8 +63,12 @@ async def chat_stream(request: ChatRequest):
         StreamingResponse with SSE chunks.
     """
     async def generate():
+        import asyncio
         for chunk in stream_chat(request.model_dump()):
             yield f"data: {json.dumps(chunk)}\n\n"
+            # Add delay after tool_call to give frontend time to render Tool Card
+            if chunk.get('type') == 'tool_call':
+                await asyncio.sleep(0.5)  # 500ms delay for Tool Card visibility
         yield "data: [DONE]\n\n"
 
     return StreamingResponse(

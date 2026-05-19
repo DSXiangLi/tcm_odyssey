@@ -5,6 +5,7 @@
  */
 
 import React, { useState, useEffect, useRef } from 'react';
+import { flushSync } from 'react-dom';
 import { SSEClient, ChatRequest } from '../../utils/sseClient';
 import { EventBus } from '../../systems/EventBus';
 import { DIALOG_EVENTS, DialogMessage } from './bridge/dialog-events';
@@ -230,9 +231,13 @@ export function DialogUI({ npcId, npcName, playerId, onToolCall, onClose }: Dial
   const [isGenerating, setIsGenerating] = useState(false);
   const [currentText, setCurrentText] = useState('');
   const [error, setError] = useState<string | null>(null);
-  const [toolCalls, setToolCalls] = useState<ToolCallState[]>([]);  // Tool Call状态跟踪
+  const [, forceUpdate] = useState(0);  // 用于强制渲染
   const historyRef = useRef<HTMLDivElement>(null);
   const sseClient = useRef(new SSEClient());
+  const pendingToolCallsRef = useRef<ToolCallState[]>([]);  // 用于同步访问当前 tool calls
+
+  // 调试：每次渲染时输出 tool calls 状态
+  console.log('[DialogUI Render] pendingToolCalls:', pendingToolCallsRef.current.length, 'currentText:', currentText.length, 'isGenerating:', isGenerating);
 
   // 加载历史对话
   useEffect(() => {
@@ -290,17 +295,25 @@ export function DialogUI({ npcId, npcName, playerId, onToolCall, onClose }: Dial
         request,
         (chunk) => setCurrentText(prev => prev + chunk),
         (full) => {
-          // 使用函数形式更新状态，避免 stale closure
+          // 完成时处理
           setIsGenerating(false);
           setCurrentText('');
 
-          // 清空当前 toolCalls（Tool Cards 保留在对话流中）
-          setToolCalls([]);
+          // 将完成的 Tool Calls 转换为消息保存到历史中
+          const completedToolCalls = pendingToolCallsRef.current.filter(tc => tc.done);
+          const toolMessages: DialogMessage[] = completedToolCalls.map(tc => ({
+            role: 'system' as const,
+            text: `⚙️ ${getToolDisplayName(tc.name)}${tc.snippet ? `: ${tc.snippet.slice(0, 100)}...` : ''}`,
+            timestamp: Date.now(),
+          }));
 
-          // 添加 NPC 消息到历史
+          // 清空 ref
+          pendingToolCallsRef.current = [];
+
+          // 添加消息到历史
           setMessages(prev => {
             const npcMsg = { role: 'npc' as const, name: npcName, text: full, timestamp: Date.now() };
-            const newMessages = [...prev, npcMsg];
+            const newMessages = [...prev, ...toolMessages, npcMsg];
             const trimmed = newMessages.length > MAX_HISTORY
               ? newMessages.slice(-MAX_HISTORY)
               : newMessages;
@@ -308,20 +321,31 @@ export function DialogUI({ npcId, npcName, playerId, onToolCall, onClose }: Dial
             bridge.setDialogHistory(npcId, trimmed);
             return trimmed;
           });
+
+          // 强制渲染（清空 Tool Cards）
+          forceUpdate(n => n + 1);
         },
         (err) => {
           setError(`错误: ${err.message}`);
           setIsGenerating(false);
         },
         (name, args) => {
-          // Tool Call: 添加到状态列表，显示运行中卡片
+          // Tool Call: 添加到 ref，使用 flushSync 强制同步渲染
           const tid = `${name}-${Date.now()}`;
-          setToolCalls(prev => [...prev, {
-            name,
-            args: args as Record<string, unknown>,
-            done: false,
-            tid,
-          }]);
+          console.log('[DialogUI] Tool call received:', name, args, 'tid:', tid);
+
+          // 使用 flushSync 确保 DOM 立即更新（避免 React 批处理）
+          flushSync(() => {
+            // 更新 ref
+            pendingToolCallsRef.current.push({
+              name,
+              args: args as Record<string, unknown>,
+              done: false,
+              tid,
+            });
+            // 强制渲染
+            forceUpdate(n => n + 1);
+          });
 
           // 同时通过事件传递给Phaser
           const eventBus = EventBus.getInstance();
@@ -330,25 +354,32 @@ export function DialogUI({ npcId, npcName, playerId, onToolCall, onClose }: Dial
           if (onToolCall) onToolCall(name, args as Record<string, unknown>);
         },
         (result) => {
-          // Tool Result: 更新对应的toolCall状态为完成，显示结果
-          setToolCalls(prev => {
-            // 找到最后一个运行中的tool call并更新
-            const lastRunningIdx = prev.findIndex(tc => !tc.done);
-            if (lastRunningIdx === -1) return prev;
+          // Tool Result: 更新 ref 中对应的 tool call，使用 flushSync 强制同步渲染
+          console.log('[DialogUI] Tool result received:', result);
 
+          const pending = pendingToolCallsRef.current;
+          const lastRunningIdx = pending.findIndex(tc => !tc.done);
+          console.log('[DialogUI] Updating tool call at index:', lastRunningIdx, 'total:', pending.length);
+
+          if (lastRunningIdx !== -1) {
             const snippet = typeof result === 'object'
               ? JSON.stringify(result, null, 2)
               : String(result);
 
-            const updated = [...prev];
-            updated[lastRunningIdx] = {
-              ...updated[lastRunningIdx],
-              result,
-              snippet: snippet.length > 300 ? snippet.slice(0, 300) + '...' : snippet,
-              done: true,
-            };
-            return updated;
-          });
+            // 使用 flushSync 确保 DOM 立即更新（避免 React 批处理）
+            flushSync(() => {
+              pending[lastRunningIdx] = {
+                ...pending[lastRunningIdx],
+                result,
+                snippet: snippet.length > 300 ? snippet.slice(0, 300) + '...' : snippet,
+                done: true,
+              };
+              // 强制渲染
+              forceUpdate(n => n + 1);
+            });
+
+            console.log('[DialogUI] Tool call marked as done:', pending[lastRunningIdx].name);
+          }
         }
       );
     } catch (err) {
@@ -394,7 +425,7 @@ export function DialogUI({ npcId, npcName, playerId, onToolCall, onClose }: Dial
           <div className="dialog-history" ref={historyRef}>
             {messages.map((msg, i) => <MessageView key={i} msg={msg} />)}
             {/* NPC 正在生成的消息 */}
-            {(currentText || toolCalls.length > 0) && (
+            {(currentText || pendingToolCallsRef.current.length > 0) && (
               <div className="msg-npc msg-npc-streaming">
                 <div className="msg-npc-header">
                   <div className="msg-npc-avatar">{npcName.charAt(0)}</div>
@@ -407,11 +438,11 @@ export function DialogUI({ npcId, npcName, playerId, onToolCall, onClose }: Dial
                     <RichText text={currentText} />
                   </div>
                 )}
-                {/* Tool Cards - 在文本之后显示 */}
-                {toolCalls.map((tc, i) => <ToolCard key={tc.tid || i} tc={tc} />)}
+                {/* Tool Cards - 在文本之后显示，直接从 ref 渲染 */}
+                {pendingToolCallsRef.current.map((tc, i) => <ToolCard key={tc.tid || i} tc={tc} />)}
               </div>
             )}
-            {isGenerating && toolCalls.length === 0 && !currentText && (
+            {isGenerating && pendingToolCallsRef.current.length === 0 && !currentText && (
               <div className="dialog-loading">
                 生成中... <span className="dialog-stop-btn" onClick={handleStop}>停止</span>
               </div>

@@ -97,6 +97,11 @@ export class SSEClient {
         const lines = buffer.split('\n\n');
         buffer = lines.pop() || '';
 
+        // Debug: log raw lines being processed
+        if (lines.length > 0) {
+          console.log('[SSEClient] Processing lines:', lines.length, 'first line preview:', lines[0]?.slice(0, 80));
+        }
+
         for (const line of lines) {
           if (line.startsWith('data: ')) {
             const data = line.slice(6);
@@ -119,15 +124,21 @@ export class SSEClient {
                 onChunk(parsed.content);
               }
 
+              // Debug log for SSE events
+              if (parsed.type !== 'text') {
+                console.log('[SSEClient] Received event:', parsed.type, parsed);
+              }
+
               // NEW: Handle tool calls
               if (parsed.type === 'tool_call' && onToolCall) {
+                console.log('[SSEClient] Invoking onToolCall:', parsed.name, parsed.args);
                 onToolCall(parsed.name, parsed.args || {});
               }
 
               // NEW: Handle tool results (call callback for UI update)
               if (parsed.type === 'tool_result' && onToolResult) {
+                console.log('[SSEClient] Invoking onToolResult:', parsed.result);
                 onToolResult(parsed.result);
-                console.log('[SSEClient] Tool result:', parsed.result);
               }
             } catch {
               // 非JSON格式，直接作为文本

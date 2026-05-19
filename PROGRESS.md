@@ -1,8 +1,8 @@
 # 药灵山谷 - 当前进行中状态
 
-**最后更新**: 2026-05-17
+**最后更新**: 2026-05-19
 **核心问题**: "我们正在做什么？进展如何？"
-**当前状态**: Phase 2.5 DialogUI HTML嵌入 - 已完成 ✅
+**当前状态**: Phase 2.5 Tool Card显示修复 - 已完成 ✅
 **当前分支**: `hermes_dev`
 
 ---
@@ -163,7 +163,7 @@ OpenAI Compatible LLM (对话生成)
 
 ---
 
-## 本Session进展：Tool Card显示问题排查 (2026-05-19)
+## 本Session进展：Tool Card显示问题修复 (2026-05-19) ✅
 
 ### 问题现象
 
@@ -181,34 +181,45 @@ DialogUI中Tool Card无法正确显示工具调用状态：
 [DialogUI Render] toolCalls: 0 isGenerating: false  ← 仍然是 0！
 ```
 
-**核心问题**: `tool_call` 和 `tool_result` 在同一个 event loop tick 中处理，React批量更新导致 `tool_result` 回调时 `prev` 仍然是空数组。
+**核心问题**: `tool_call` 和 `tool_result` 在同一个 event loop tick 中处理，React批量更新导致渲染时机错过了中间状态。
 
-### 修复尝试记录
+### 修复方案
 
-| 尝试 | 方案 | 结果 |
-|------|------|------|
-| 1 | 使用useRef同步tool call状态 | 未完全解决 |
-| 2 | 直接从ref渲染Tool Cards | Tool call回调未触发 |
-| 3 | 验证SSE处理逻辑 | ✅ 后端正确返回 |
-| 4 | 检查前端代码加载 | 待确认 |
+**两层修复**:
 
-### 待排查方向
+1. **前端**: 使用 `flushSync` from `react-dom` 强制同步DOM更新
+   - 在 tool_call 回调中使用 `flushSync` 包裹 ref 更新和 forceUpdate
+   - 在 tool_result 回调中使用 `flushSync` 包裹状态更新
 
-1. SSE事件传递链路完整性
-2. React组件事件监听绑定
-3. 前端代码版本一致性
-4. 可能需要重构事件处理为同步模式
+2. **后端**: 添加 500ms 延迟给前端渲染时间
+   - 在 `main.py` 的 async generator 中，yield tool_call 后执行 `asyncio.sleep(0.5)`
+   - 确保 tool_result 事件在前端渲染完成后再发送
+
+### 验证结果
+
+**E2E测试通过**:
+```
+[5500ms] Tool Card found: 1 (running: 1, done: 0)
+Tool Card content: { icon: '📚', name: '学习进度', preview: '执行中...', isRunning: true }
+✓ 2 passed
+```
+
+**关键指标**:
+- Tool Card在DOM中可见 (toolCardCount: 1)
+- 运行状态正确显示 (tool-card-running class)
+- 图标正确 (📚)
+- 名称正确 (学习进度)
+- 状态指示正确 (执行中...)
+
+### 关键提交
+
+| Commit | 描述 |
+|--------|------|
+| `6dd9122` | fix: Tool Card visible during SSE streaming |
 
 ---
 
 ## 下一步 TODO
-
-### 紧急任务
-
-1. **Tool Card显示修复** 🔴
-   - 确认SSE事件是否正确传递到React组件
-   - 检查useEffect事件监听绑定
-   - 考虑使用flushSync强制同步更新
 
 ### Phase 2.5 剩余任务
 

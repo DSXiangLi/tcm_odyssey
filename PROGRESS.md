@@ -219,22 +219,68 @@ Tool Card content: { icon: '📚', name: '学习进度', preview: '执行中...'
 
 ---
 
+## 本Session进展：NPC自主Agent系统设计 (2026-05-19) ✅
+
+### 设计内容
+
+**设计文档**: `docs/superpowers/specs/phase2.5/2026-05-19-npc-autonomous-agent-design.md`
+
+**核心问题**: 如何让NPC从"被动对话"升级为"自主Agent"，能够主动操纵游戏、获取状态、发布任务、给出反馈？
+
+### 三个核心场景
+
+| 优先级 | 场景 | 触发时机 | NPC行为 |
+|--------|------|----------|---------|
+| **P0** | 诊断结束→NPC点评 | DiagnosisScene完成5阶段后 | 分析辨证思路，调用feedback-evaluation生成点评 |
+| **P0** | 对话开始自动查询 | 玩家靠近NPC按空格键 | 自动调用get_npc_memory + get_learning_progress |
+| **P1** | 心跳检查→任务发布 | 进入诊所场景时 | 检查进度/背包，触发trigger_minigame或发布新任务 |
+
+**排除场景**（用户确认）：
+- 煎药结束→NPC反馈：煎药是纯操作小游戏，无需点评
+- 炮制结束→NPC反馈：炮制是纯操作小游戏，无需点评
+
+### Skill覆盖验证
+
+| Skill | 覆盖场景 | 改动需求 |
+|-------|----------|----------|
+| `feedback-evaluation/SKILL.md` | 诊断结束点评 | ✅ 无需改动，已完整定义评分反馈模板 |
+| `tools-guide/SKILL.md` 策略1 | 对话开始自动查询 | ✅ 无需改动 |
+| `tools-guide/SKILL.md` 策略2/5 | 心跳检查任务发布 | 小改：补充策略6 |
+
+### 游戏侧新增组件
+
+| 组件 | 职责 | 文件路径 |
+|------|------|----------|
+| DiagnosisScorer | 评分计算 | `src/utils/DiagnosisScorer.ts` |
+| NPCHeartbeat | 心跳检查 | `src/systems/NPCHeartbeat.ts` |
+| NPCFeedbackBridge | 反馈桥接 | `src/ui/html/bridge/npc-feedback-bridge.ts` |
+
+### 验收标准
+
+- 诊断结束点评触发：完成诊断后NPC对话自动弹出
+- 点评内容符合评分：低分点评指出错误，高分点评肯定+建议
+- 对话开始自动查询：对话开始时NPC调用get_npc_memory
+- 心跳检查触发：进入诊所时NPC调用get_inventory
+
+---
+
 ## 下一步 TODO
 
 ### Phase 2.5 剩余任务
 
-1. **SSE流式处理修复** - 🔴 高优先级
+1. **NPC自主Agent实现** - 🔴 高优先级
+   - 设计文档已完成，按实现清单执行
+   - 估算3个新文件 + 5个修改文件 + E2E测试
+
+2. **SSE流式处理修复** - 🔴 高优先级
    - 用户反馈：NPC回答缺少信息，content未正确处理
-   - 需要详细学习 Hermes 对话流式处理细节
    - 检查 thinking、tool_call、tool_result、content 的完整处理链
 
-2. **工具结果位置修复** - 🔴 高优先级
+3. **工具结果位置修复** - 🔴 高优先级
    - 用户反馈：工具结果展示位置不对
    - 检查 Tool Card 结果渲染布局
 
-3. **种植小游戏** - 入口已存在，待开发
-
-4. **NPC工具使用策略文档** - 调研Hermes官方机制后设计
+4. **种植小游戏** - 入口已存在，待开发
 
 ---
 

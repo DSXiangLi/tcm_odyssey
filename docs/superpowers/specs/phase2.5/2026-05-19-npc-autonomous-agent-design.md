@@ -860,6 +860,143 @@ data: {"type": "done"}
 
 ---
 
+### 6.5 数据持久化机制与NPC数据来源
+
+#### 数据存储架构
+
+```
+┌─────────────────────────────────────────────────────────────────────┐
+│                     游戏数据持久化层级                               │
+├─────────────────────────────────────────────────────────────────────┤
+│                                                                     │
+│  Layer 1: 运行时内存（NPC直接访问）                                  │
+│  ┌─────────────────────────────────────────────────────────────┐   │
+│  │ InventoryManager (单例)                                      │   │
+│  │   - herbs: Record<string, number>                           │   │
+│  │   - seeds: Record<string, number>                           │   │
+│  │   - tools: string[]                                         │   │
+│  │   - knowledgeCards: string[]                                │   │
+│  │                                                              │   │
+│  │ CaseManager (单例)                                           │   │
+│  │   - caseStates: Map<string, CaseState>                      │   │
+│  │   - history: CaseHistoryRecord[]                            │   │
+│  │                                                              │   │
+│  │ GameStateBridge (单例)                                       │   │
+│  │   - playerState: PlayerState                                │   │
+│  │   - dialogHistory: Map<string, DialogMessage[]>             │   │
+│  │   - inventoryCache: InventoryState                          │   │
+│  │   - progressCache: LearningProgress                         │   │
+│  └─────────────────────────────────────────────────────────────┘   │
+│        ↓ NPC通过MCP工具访问此层（实时数据）                          │
+│                                                                     │
+│  Layer 2: 存档管理（持久化）                                         │
+│  ┌─────────────────────────────────────────────────────────────┐   │
+│  │ SaveManager                                                  │   │
+│  │   - saveDataCache: Map<number, SaveData>                    │   │
+│  │   - autoSave触发: task_complete/case_complete/scene_change  │   │
+│  │                                                              │   │
+│  │ SaveData结构:                                                │   │
+│  │   - inventory: { herbs, seeds, tools, knowledge_cards }     │   │
+│  │   - case_history: CaseHistoryRecord[]                       │   │
+│  │   - tasks: TaskProgressSaveData[]                           │   │
+│  │   - experience: ExperienceState                             │   │
+│  └─────────────────────────────────────────────────────────────┘   │
+│        ↓ 自动存档触发时写入                                          │
+│                                                                     │
+│  Layer 3: 浏览器持久化                                               │
+│  ┌─────────────────────────────────────────────────────────────┐   │
+│  │ localStorage                                                  │   │
+│  │   - save_slot_1: JSON.stringify(SaveData)                   │   │
+│  │   - save_slot_2: ...                                         │   │
+│  │   - save_slot_3: ...                                         │   │
+│  │                                                              │   │
+│  │ 加载时: localStorage → SaveManager → 各Manager              │   │
+│  └─────────────────────────────────────────────────────────────┘   │
+│                                                                     │
+└─────────────────────────────────────────────────────────────────────┘
+```
+
+#### NPC数据获取路径
+
+| MCP工具 | 数据来源 | 获取路径 | 说明 |
+|---------|----------|----------|------|
+| `get_inventory` | **InventoryManager** | `InventoryManager.getInstance().exportData()` | 实时内存数据，非localStorage |
+| `get_case_progress` | **CaseManager** | `CaseManager.getInstance().getStatistics()` | 实时内存数据 |
+| `get_learning_progress` | **GameStateBridge** | `GameStateBridge.getInstance().progressCache` | 心跳预查询缓存 |
+| `get_npc_memory` | **GameStateBridge** | `GameStateBridge.getInstance().getDialogHistory()` | 对话历史缓存 |
+| `record_weakness` | **GameStateBridge** | `GameStateBridge.getInstance().weaknessLog` | 新增薄弱点记录 |
+| `trigger_minigame` | **场景切换** | `ClinicScene.handleToolCall()` | 触发Phaser场景 |
+
+#### 关键说明
+
+**NPC不直接访问localStorage**：
+
+```
+错误路径（NPC不采用）:
+NPC → MCP Server → localStorage.getItem('save_slot_1') → 解析JSON
+                      ↑ 数据可能过期（内存已更新）
+
+正确路径（当前实现）:
+NPC → MCP Server → InventoryManager.getInstance().herbs → 实时数据
+                      ↑ 内存中的当前状态，与界面一致
+```
+
+**数据一致性保障**：
+
+```
+游戏操作 → InventoryManager.herbs['mahuang'] += 1
+        ↓
+EventBus.emit('item:acquire')
+        ↓
+SaveManager.autoSave('item_acquire')
+        ↓
+localStorage.setItem('save_slot_1', JSON.stringify(saveData))
+        ↓
+下次加载时恢复一致
+```
+
+#### MCP Server实现参考
+
+```python
+# hermes_backend/tools/game_tools.py (当前实现)
+
+@mcp.tool
+def get_inventory(player_id: str) -> Dict[str, Any]:
+    """获取背包数据 - 从InventoryManager获取实时数据"""
+    # 实际应调用游戏引擎接口，而非直接读取存储
+    inventory_manager = get_inventory_manager()  # 游戏引擎桥接
+    return inventory_manager.export_data()
+
+@mcp.tool
+def get_case_progress(player_id: str) -> Dict[str, Any]:
+    """获取病案进度 - 从CaseManager获取实时数据"""
+    case_manager = get_case_manager()
+    return case_manager.get_statistics()
+
+@mcp.tool
+def get_learning_progress(player_id: str) -> Dict[str, Any]:
+    """获取学习进度 - 从GameStateBridge获取缓存"""
+    bridge = GameStateBridge.getInstance()
+    return bridge.progressCache
+```
+
+#### 自动存档触发时机
+
+```typescript
+// SaveManager.ts 自动存档事件
+- 'task:complete'     → Task完成时
+- 'case:complete'     → 病案完成时（包含评分）
+- 'scene:change'      → 场景切换时
+- 'item:acquire'      → 获得物品时
+- 60秒定时器          → 周期性自动存档
+```
+
+**NPC点评后自动存档**：
+
+诊断游戏结束 → NPC点评 → 记录到 `CaseHistoryRecord.npc_feedback` → EventBus.emit('case:complete') → SaveManager.autoSave()
+
+---
+
 ## 七、验收标准
 
 ### 7.1 功能验收

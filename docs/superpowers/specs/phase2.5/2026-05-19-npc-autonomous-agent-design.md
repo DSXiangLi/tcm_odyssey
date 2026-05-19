@@ -135,12 +135,26 @@ interface DiagnosisScoreResult {
 }
 
 export function calculateDiagnosisScore(
-  userResult: DiagnosisResult,      // 用户诊断结果
+  userResult: DiagnosisResult,      // 用户诊断结果（从DiagnosisUI state获取）
   correctCase: DiagnosisCase        // 原始病案正确答案
 ): DiagnosisScoreResult;
 
 export function formatScoreForNPC(result: DiagnosisScoreResult): string;
 // 格式化为NPC可理解的上下文文本
+
+/**
+ * correctCase参数来源说明：
+ *
+ * 方式一（推荐）：从DiagnosisScene.caseData获取
+ * - DiagnosisScene在init时已通过getCaseById(caseId)获取病案数据
+ * - handleDiagnosisComplete时直接传入this.caseData
+ *
+ * 方式二（备用）：通过EventBus查询CaseManager
+ * - EventBus.emit('GET_CASE_DATA', { caseId })
+ * - CaseManager响应并返回DiagnosisCase
+ *
+ * 采用方式一，因为数据已在场景内，无需额外查询。
+ */
 ```
 
 **评分权重**：
@@ -149,8 +163,11 @@ export function formatScoreForNPC(result: DiagnosisScoreResult): string;
 |------|------|----------|
 | 舌诊 | 20% | 舌色+舌苔+舌型+润燥完全匹配 |
 | 脉诊 | 20% | 脉位+脉势完全匹配 |
+| **问诊** | **不计分** | 收集的症状线索作为辨证参考，不直接评分 |
 | 辨证 | 40% | 证型选项匹配正确答案 |
 | 选方 | 20% | 方剂选择匹配正确答案 |
+
+**问诊不计分原因**：问诊是信息收集阶段，症状线索的正确性由辨证环节验证。收集到关键线索（如"无汗"）会间接影响辨证评分。
 
 ### 4.2 NPCHeartbeat（心跳检查机制）
 
@@ -163,6 +180,28 @@ export function formatScoreForNPC(result: DiagnosisScoreResult): string;
 | 进入诊所场景 | ClinicScene.create() | NPC后台调用get_inventory + get_learning_progress |
 | 对话开始前 | DialogUI挂载时 | 已由tools-guide策略1覆盖 |
 | 完成诊断后 | DiagnosisScene.handleDiagnosisComplete() | 触发NPCFeedbackBridge |
+
+**后台调用实现方式**：
+
+心跳检查采用"预查询+静默注入"机制：
+```
+ClinicScene.create() → NPCHeartbeat.triggerOnSceneEnter()
+        ↓
+调用MCP工具（通过GameStateBridge缓存）：
+  - get_inventory(player_id) → 缓存到 bridge.inventoryCache
+  - get_learning_progress(player_id) → 缓存到 bridge.progressCache
+        ↓
+玩家触发对话时 → DialogUI从缓存读取数据
+        ↓
+NPC收到cached数据 → 判断是否需要主动发言
+```
+
+**优势**：避免对话开始时的工具调用延迟，数据已预加载。
+
+**心跳无变化场景处理**：
+- 进度/背包无变化 → NPC不主动发言，等待玩家触发
+- 有变化但未达标 → NPC在对话开始时提及（如"上次提到的麻黄汤，你准备好了吗？"）
+- 达标触发任务 → NPC主动弹出DialogUI（通过EventBus.emit('NPC_TRIGGER_DIALOG')）
 
 **接口定义**：
 

@@ -284,4 +284,39 @@ Tool Card content: { icon: '📚', name: '学习进度', preview: '执行中...'
 
 ---
 
+## 本Session进展：数据持久化机制确认 (2026-05-19) ✅
+
+### 用户问题
+
+**问题**: 当前的背包数据，游戏状态，病案状态是否有完整数据存储？
+
+### 确认结果
+
+**数据存储是完整的**：
+
+| 数据类型 | 存储位置 | 存储方式 | 状态 |
+|----------|----------|----------|------|
+| **背包数据** | SaveManager → localStorage | `{ herbs, seeds, tools, knowledge_cards }` | ✅ 完整 |
+| **病案历史** | SaveManager → localStorage | `case_history: CaseHistoryRecord[]` | ✅ 完整 |
+| **Task进度** | SaveManager → localStorage | `tasks: TaskProgressSaveData[]` | ✅ 完整 |
+| **经验值** | SaveManager → localStorage | `experience: ExperienceState` | ✅ 完整 |
+| **对话历史** | GameStateBridge → 内存 | `dialogHistory: Map<string, DialogMessage[]>` | ✅ 完整 |
+
+### Section 6.5 补充
+
+**补充内容**：设计文档新增Section 6.5"数据持久化机制与NPC数据来源"
+
+| 新增内容 | 说明 |
+|----------|------|
+| **存储架构图** | 3层架构：运行时内存→SaveManager→localStorage |
+| **NPC数据获取路径表** | MCP工具从InventoryManager/CaseManager获取实时数据 |
+| **关键说明** | NPC不直接访问localStorage，避免数据不一致 |
+| **自动存档触发时机** | case_complete/item_acquire等事件触发SaveManager |
+
+**核心要点**：
+- NPC获取实时内存数据，而非localStorage
+- 存档由SaveManager自动管理，NPC点评后会触发autoSave
+
+---
+
 *本文档由 Claude Code 维护，更新于 2026-05-19*

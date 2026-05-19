@@ -163,14 +163,58 @@ OpenAI Compatible LLM (对话生成)
 
 ---
 
+## 本Session进展：Tool Card显示问题排查 (2026-05-19)
+
+### 问题现象
+
+DialogUI中Tool Card无法正确显示工具调用状态：
+- 工具调用时显示"running"状态
+- 工具结果返回后Tool Card消失或显示错误
+
+### 根本原因分析
+
+通过日志分析发现：
+```
+[DialogUI Render] toolCalls: 0 isGenerating: true
+[DialogUI] Tool call received → setToolCalls
+[DialogUI] Tool result received → setToolCalls
+[DialogUI Render] toolCalls: 0 isGenerating: false  ← 仍然是 0！
+```
+
+**核心问题**: `tool_call` 和 `tool_result` 在同一个 event loop tick 中处理，React批量更新导致 `tool_result` 回调时 `prev` 仍然是空数组。
+
+### 修复尝试记录
+
+| 尝试 | 方案 | 结果 |
+|------|------|------|
+| 1 | 使用useRef同步tool call状态 | 未完全解决 |
+| 2 | 直接从ref渲染Tool Cards | Tool call回调未触发 |
+| 3 | 验证SSE处理逻辑 | ✅ 后端正确返回 |
+| 4 | 检查前端代码加载 | 待确认 |
+
+### 待排查方向
+
+1. SSE事件传递链路完整性
+2. React组件事件监听绑定
+3. 前端代码版本一致性
+4. 可能需要重构事件处理为同步模式
+
+---
+
 ## 下一步 TODO
+
+### 紧急任务
+
+1. **Tool Card显示修复** 🔴
+   - 确认SSE事件是否正确传递到React组件
+   - 检查useEffect事件监听绑定
+   - 考虑使用flushSync强制同步更新
 
 ### Phase 2.5 剩余任务
 
 1. **种植小游戏** - 入口已存在，待开发
-2. **卡片翻转时间调整** - 按用户反馈优化动画等待时间
-3. **NPC工具使用策略文档** - 调研Hermes官方机制后设计
+2. **NPC工具使用策略文档** - 调研Hermes官方机制后设计
 
 ---
 
-*本文档由 Claude Code 维护*
+*本文档由 Claude Code 维护，更新于 2026-05-19*

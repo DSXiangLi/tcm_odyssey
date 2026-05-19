@@ -355,69 +355,507 @@ function formatGameContextPrompt(context: GameContextForNPC): string {
 
 ---
 
-## 六、数据流详解
+## 六、数据流详解与格式定义
 
-### 6.1 诊断结束→NPC点评流程
+### 6.1 场景A：诊断结束 → NPC点评
 
-```
-DiagnosisScene.handleDiagnosisComplete(result)
-        ↓
-DiagnosisScorer.calculate(result, caseData)
-        ↓
-NPCFeedbackBridge.triggerNPCFeedback({
-  type: 'diagnosis',
-  diagnosisResult: { ... }
-})
-        ↓
-showDialogUI({
-  npcId: 'qingmu',
-  gameContext: diagnosisResult,
-  mode: 'feedback'
-})
-        ↓
-DialogUI → 发送contextPrompt给Hermes
-        ↓
-Hermes NPC → 使用feedback-evaluation生成点评
-        ↓
-NPC返回点评文本 → DialogUI渲染显示
-```
-
-### 6.2 对话开始自动查询流程
+#### 数据流转时序
 
 ```
-玩家靠近NPC → 按空格键
-        ↓
-ClinicScene.showDialogWithNPC('qingmu')
-        ↓
-showDialogUI({ npcId, playerId })
-        ↓
-DialogUI挂载 → NPC后台调用：
-  - get_npc_memory(npc_id, player_id)
-  - get_learning_progress(player_id)
-        ↓
-NPC收到数据 → 生成个性化开场：
-  "上次我们谈到麻黄汤的配伍，今天继续..."
+┌──────────────────────────────────────────────────────────────────────┐
+│ 时间线: T0 → T1 → T2 → T3 → T4                                       │
+├──────────────────────────────────────────────────────────────────────┤
+│                                                                      │
+│ T0: DiagnosisUI完成5阶段                                             │
+│     └─→ 输出: DiagnosisResult (用户答案)                             │
+│         见下方格式A1                                                  │
+│                                                                      │
+│ T1: DiagnosisScene.handleDiagnosisComplete()                        │
+│     └─→ 调用 DiagnosisScorer.calculate(userResult, this.caseData)    │
+│         └─→ 输出: DiagnosisScoreResult (评分结果)                    │
+│             见下方格式A2                                              │
+│                                                                      │
+│ T2: NPCFeedbackBridge.triggerNPCFeedback()                          │
+│     └─→ 组装 GameContextForNPC                                       │
+│         └─→ 输出: 完整上下文包                                        │
+│             见下方格式A3                                              │
+│                                                                      │
+│ T3: DialogUI注入contextPrompt                                        │
+│     └─→ 调用 sendInitialContext(contextPrompt)                       │
+│         └─→ 输出: SSE请求体                                           │
+│             见下方格式A4                                              │
+│                                                                      │
+│ T4: Hermes NPC生成点评                                               │
+│     └─→ 响应: SSE文本流                                               │
+│         └─→ 输出: 点评文本                                            │
+│             见下方格式A5                                              │
+└──────────────────────────────────────────────────────────────────────┘
 ```
 
-### 6.3 心跳检查→任务发布流程
+#### 数据格式定义
+
+**格式A1: DiagnosisResult（用户答案）**
+
+```typescript
+// 来源: DiagnosisUI.tsx state → onComplete回调
+{
+  caseId: "case-001",
+  patient: {
+    name: "李秀梅",
+    age: 35,
+    gender: "女",
+    chief: "脘腹胀满、食欲不振半月余"
+  },
+  diagnosis: {
+    tongue: {
+      color: "淡红",        // 用户选择的舌色
+      coating: "白腻",      // 用户选择的舌苔
+      shape: "胖大",        // 用户选择的舌型
+      moisture: "润滑"      // 用户选择的润燥
+    },
+    pulse: {
+      position: "中",       // 用户选择的脉位
+      quality: "濡"         // 用户选择的脉势
+    },
+    symptoms: [
+      "脘腹胀满",
+      "食欲不振",
+      "身倦体重"
+    ],                      // 问诊阶段收集的症状线索
+    syndrome: ["湿阻中焦"], // 用户选择的证型（可多选）
+    prescription: ["平胃散"] // 用户选择的方剂
+  }
+}
+```
+
+**格式A2: DiagnosisScoreResult（评分结果）**
+
+```typescript
+// 来源: DiagnosisScorer.calculate() 返回
+{
+  totalScore: 75,           // 总分（0-100）
+  breakdown: {
+    tongue: {
+      score: 20,            // 舌诊满分20分
+      errors: []            // 正确无错误
+    },
+    pulse: {
+      score: 15,            // 脉诊得分15分（扣5分）
+      errors: ["脉势应为'缓'而非'濡'"]
+    },
+    syndrome: {
+      score: 30,            // 辨证得分30分（扣10分）
+      errors: ["遗漏'脾虚'证型"]
+    },
+    prescription: {
+      score: 10,            // 选方得分10分（扣10分）
+      errors: ["应选'健脾丸'配合平胃散"]
+    }
+  },
+  overallErrors: [
+    "脉诊: 脉势应为'缓'而非'濡'",
+    "辨证: 遗漏'脾虚'证型",
+    "选方: 应选'健脾丸'配合平胃散"
+  ]
+}
+```
+
+**格式A3: GameContextForNPC（完整上下文包）**
+
+```typescript
+// 来源: NPCFeedbackBridge.triggerNPCFeedback() 组装
+{
+  type: "diagnosis",
+  diagnosisResult: {
+    caseId: "case-001",
+    patientName: "李秀梅",
+    
+    // 用户答案（来自A1）
+    userAnswers: {
+      tongue: { color: "淡红", coating: "白腻", shape: "胖大", moisture: "润滑" },
+      pulse: { position: "中", quality: "濡" },
+      symptoms: ["脘腹胀满", "食欲不振", "身倦体重"],
+      syndrome: ["湿阻中焦"],
+      prescription: ["平胃散"]
+    },
+    
+    // 正确答案（来自DiagnosisScene.caseData）
+    correctAnswers: {
+      tongue: { color: "淡红", coating: "白腻", shape: "胖大", moisture: "润滑" },
+      pulse: { position: "中", quality: "缓" },
+      syndrome: ["湿阻中焦", "脾虚"],
+      prescription: ["平胃散", "健脾丸"]
+    },
+    
+    // 评分结果（来自A2）
+    score: {
+      totalScore: 75,
+      breakdown: { ... },
+      overallErrors: [ ... ]
+    }
+  }
+}
+```
+
+**格式A4: SSE请求体（发送给Hermes）**
+
+```typescript
+// 来源: DialogUI.formatGameContextPrompt() 格式化
+// POST /v1/chat/stream
+{
+  npc_id: "qingmu",
+  player_id: "player_001",
+  messages: [
+    {
+      role: "system",
+      content: "[诊断结果反馈请求]
+患者：李秀梅
+评分：75分
+详情：
+- 舌诊：20分（正确）
+- 脉诊：15分（错误：脉势应为'缓'而非'濡'）
+- 辨证：30分（错误：遗漏'脾虚'证型）
+- 选方：10分（错误：应选'健脾丸'配合平胃散）
+
+用户答案：湿阻中焦，选方平胃散
+正确答案：湿阻中焦+脾虚，选方平胃散+健脾丸
+
+请按feedback-evaluation技能标准给出点评，评分等级为70-89分（良好）。"
+    }
+  ],
+  stream: true
+}
+```
+
+**格式A5: NPC点评响应（SSE流）**
+
+```typescript
+// 来源: Hermes NPC SSE返回
+// SSE data chunk示例:
+data: {"text": "辨证方向正确，", "type": "text"}
+data: {"text": "麻黄汤选方得当。", "type": "text"}
+data: {"text": "但你的论述中遗漏了'脉紧'的意义...", "type": "text"}
+data: {"text": "紧脉主寒，与浮脉相合...", "type": "text"}
+data: {"type": "done"}
+```
+
+---
+
+### 6.2 场景B：对话开始自动查询
+
+#### 数据流转时序
 
 ```
-ClinicScene.create()
-        ↓
-NPCHeartbeat.triggerOnSceneEnter('player_001')
-        ↓
-NPC后台调用：
-  - get_inventory(player_id)
-  - get_learning_progress(player_id)
-  - get_case_progress(player_id)
-        ↓
-NPC判断：
-  IF 背包有麻黄汤药材 AND 进度达标:
-    → NPC主动提示"可以煎药了"
-  IF 进度停滞7天:
-    → NPC主动询问复习
-  IF 完成任务:
-    → NPC调用trigger_minigame发布新任务
+┌──────────────────────────────────────────────────────────────────────┐
+│ 时间线: T0 → T1 → T2 → T3                                            │
+├──────────────────────────────────────────────────────────────────────┤
+│                                                                      │
+│ T0: ClinicScene预查询（心跳缓存）                                    │
+│     └─→ NPCHeartbeat.triggerOnSceneEnter()                          │
+│         └─→ MCP调用: get_npc_memory + get_learning_progress         │
+│             └─→ 缓存到 GameStateBridge                               │
+│                 见下方格式B1                                          │
+│                                                                      │
+│ T1: 玩家触发对话                                                     │
+│     └─→ showDialogUI({ npcId, playerId })                           │
+│         └─→ DialogUI从缓存读取数据                                   │
+│             见下方格式B2                                              │
+│                                                                      │
+│ T2: NPC生成个性化开场                                                │
+│     └─→ 基于缓存数据生成开场白                                       │
+│         └─→ 输出: 开场文本                                            │
+│             见下方格式B3                                              │
+│                                                                      │
+│ T3: 玩家输入问题                                                     │
+│     └─→ SSE请求发送                                                   │
+│         └─→ NPC后台调用工具                                          │
+│             见下方格式B4                                              │
+└──────────────────────────────────────────────────────────────────────┘
+```
+
+#### 数据格式定义
+
+**格式B1: 心跳预查询缓存**
+
+```typescript
+// 来源: NPCHeartbeat.triggerOnSceneEnter() → MCP工具返回
+// 存储位置: GameStateBridge.cache
+
+// get_npc_memory返回
+{
+  npc_id: "qingmu",
+  player_id: "player_001",
+  memory: {
+    last_topic: "麻黄汤配伍",       // 上次讨论主题
+    discussed_herbs: ["麻黄", "桂枝", "杏仁"],
+    pending_questions: ["无汗的临床意义"],
+    last_session_date: "2026-05-18"
+  }
+}
+
+// get_learning_progress返回
+{
+  player_id: "player_001",
+  tasks: [
+    {
+      task_id: "mahuang-tang-learning",
+      name: "麻黄汤学习",
+      progress: 0.7,
+      status: "in_progress",
+      next_step: "煎药实践"
+    },
+    {
+      task_id: "guizhi-tang-learning",
+      name: "桂枝汤学习",
+      progress: 0,
+      status: "locked",
+      blocked_by: "mahuang-tang-learning"
+    }
+  ],
+  current_focus: {
+    task_id: "mahuang-tang-learning",
+    days_stagnant: 0    // 停滞天数
+  }
+}
+```
+
+**格式B2: DialogUI读取缓存后的内部状态**
+
+```typescript
+// 来源: DialogUI useEffect初始化
+{
+  cachedMemory: {
+    last_topic: "麻黄汤配伍",
+    pending_questions: ["无汗的临床意义"]
+  },
+  cachedProgress: {
+    current_task: "麻黄汤学习",
+    progress: 0.7
+  }
+}
+```
+
+**格式B3: NPC个性化开场文本**
+
+```typescript
+// 来源: NPC基于缓存数据生成
+"小友，上次我们谈到麻黄汤的配伍，你问到'无汗'的临床意义。
+今天正好继续——无汗二字，可不仅是症状描述...
+你准备好深入理解了吗？"
+
+// 若无上次记忆:
+"欢迎来到青木诊所。我是苏老郎中。
+你想从哪里开始学习？是诊病识症，还是方药配伍？"
+```
+
+**格式B4: 玩家输入后的工具调用**
+
+```typescript
+// 来源: NPC判断需要进一步查询
+// Tool Call请求格式:
+{
+  tool_name: "get_inventory",
+  arguments: {
+    player_id: "player_001",
+    category: "herb"
+  }
+}
+
+// Tool Result返回格式:
+{
+  inventory: [
+    { name: "麻黄", quantity: 3, quality: 90 },
+    { name: "桂枝", quantity: 2, quality: 85 },
+    { name: "杏仁", quantity: 1, quality: 80 }
+  ],
+  total_herbs: 6
+}
+```
+
+---
+
+### 6.3 场景C：心跳检查 → 任务发布
+
+#### 数据流转时序
+
+```
+┌──────────────────────────────────────────────────────────────────────┐
+│ 时间线: T0 → T1 → T2 → T3                                            │
+├──────────────────────────────────────────────────────────────────────┤
+│                                                                      │
+│ T0: ClinicScene.create()                                             │
+│     └─→ NPCHeartbeat.triggerOnSceneEnter("player_001")              │
+│         └─→ 并行调用3个MCP工具                                        │
+│             见下方格式C1                                              │
+│                                                                      │
+│ T1: 数据聚合判断                                                     │
+│     └─→ NPC基于聚合数据判断                                          │
+│         └─→ 输出: 决策结果                                            │
+│             见下方格式C2                                              │
+│                                                                      │
+│ T2: 触发任务发布（如需要）                                           │
+│     └─→ EventBus.emit('NPC_TRIGGER_DIALOG')                         │
+│         └─→ 输出: 任务发布事件                                        │
+│             见下方格式C3                                              │
+│                                                                      │
+│ T3: DialogUI弹出                                                     │
+│     └─→ NPC主动发言                                                   │
+│         └─→ 输出: 任务提示文本                                        │
+│             见下方格式C4                                              │
+└──────────────────────────────────────────────────────────────────────┘
+```
+
+#### 数据格式定义
+
+**格式C1: 心跳聚合查询**
+
+```typescript
+// 来源: NPCHeartbeat.triggerOnSceneEnter() → 3个MCP工具并行
+
+// get_inventory返回
+{
+  player_id: "player_001",
+  herbs: [
+    { name: "麻黄", quantity: 3 },
+    { name: "桂枝", quantity: 2 },
+    { name: "杏仁", quantity: 1 },
+    { name: "甘草", quantity: 2 }
+  ],
+  seeds: [],
+  knowledge: ["麻黄汤组成", "麻黄汤功效"]
+}
+
+// get_learning_progress返回
+{
+  player_id: "player_001",
+  tasks: [
+    { task_id: "mahuang-tang-learning", progress: 1.0, status: "completed" },
+    { task_id: "guizhi-tang-learning", progress: 0, status: "locked" }
+  ],
+  current_focus: null    // 当前无焦点任务
+}
+
+// get_case_progress返回
+{
+  player_id: "player_001",
+  cases: [
+    { case_id: "case-001", status: "completed", score: 85 },
+    { case_id: "case-002", status: "unlocked", score: null },
+    { case_id: "case-003", status: "locked", blocked_by: "case-002" }
+  ]
+}
+```
+
+**格式C2: NPC决策结果**
+
+```typescript
+// 来源: NPC内部判断逻辑（tools-guide策略2/5）
+{
+  decision: "trigger_task",     // 或 "no_action" / "prompt_review"
+  reason: "麻黄汤学习完成，背包有药材，可触发煎药实践",
+  
+  // 触发任务时的具体指令
+  task_to_trigger: {
+    type: "minigame",
+    game_type: "decoction",
+    related_task_id: "mahuang-tang-practice"
+  },
+  
+  // 或无变化时
+  // decision: "no_action",
+  // reason: "进度无变化，等待玩家主动触发"
+}
+```
+
+**格式C3: 任务发布事件**
+
+```typescript
+// 来源: EventBus.emit('NPC_TRIGGER_DIALOG')
+{
+  type: "NPC_TRIGGER_DIALOG",
+  npcId: "qingmu",
+  triggerReason: "task_available",
+  dialogContext: {
+    mode: "proactive",         // NPC主动触发
+    message: "你已掌握麻黄汤的组成，背包里也备齐了药材。
+             不如现在就试试煎药？按D键即可开始。",
+    suggestedAction: {
+      type: "trigger_minigame",
+      game_type: "decoction",
+      formula: "麻黄汤"
+    }
+  }
+}
+```
+
+**格式C4: Tool Call触发场景切换**
+
+```typescript
+// 来源: NPC调用trigger_minigame
+// Tool Call请求:
+{
+  tool_name: "trigger_minigame",
+  arguments: {
+    game_type: "decoction",
+    case_id: null,           // 煎药游戏无需case_id
+    difficulty: 1,
+    formula: "麻黄汤"        // 新增：指定配方
+  }
+}
+
+// Tool Result返回:
+{
+  success: true,
+  message: "煎药游戏启动成功",
+  scene: "DecoctionScene",
+  formula_data: {
+    name: "麻黄汤",
+    herbs: ["麻黄", "桂枝", "杏仁", "甘草"]
+  }
+}
+
+// → 游戏引擎接收tool_result → 执行handleToolCall → 切换场景
+```
+
+---
+
+### 6.4 数据流转总览
+
+```
+┌─────────────────────────────────────────────────────────────────────┐
+│                        数据流向方向                                  │
+├─────────────────────────────────────────────────────────────────────┤
+│                                                                     │
+│  游戏引擎 ────────────────────────────────────────→ Hermes NPC      │
+│     │                                                   ↑          │
+│     │  格式A3/A4/B4/C1                                   │          │
+│     │  (游戏状态/评分/上下文)                             │          │
+│     │                                                   │          │
+│     ↓                                                   │          │
+│  GameStateBridge ────────────────────────────────────┤          │
+│     │                                                   │          │
+│     │  缓存数据(B1/C1)                                   │          │
+│     │                                                   │          │
+│     └───────────────────────────────────────────────────→          │
+│                                                                     │
+│  Hermes NPC ────────────────────────────────────────→ 游戏引擎     │
+│     │                                                   ↑          │
+│     │  格式A5/B3/C4                                     │          │
+│     │  (点评文本/开场白/Tool Call)                        │          │
+│     │                                                   │          │
+│     ↓                                                   │          │
+│  MCP Server ─────────────────────────────────────────┤          │
+│     │                                                   │          │
+│     │  Tool Result (C4)                                 │          │
+│     │                                                   │          │
+│     └───────────────────────────────────────────────────→          │
+│                                                                     │
+└─────────────────────────────────────────────────────────────────────┘
+
+关键协议约定:
+1. 游戏→NPC: 通过DialogUI注入contextPrompt（SSE请求体）
+2. NPC→游戏: 通过Tool Call返回（MCP协议）
+3. 缓存层: GameStateBridge作为数据中转站
 ```
 
 ---

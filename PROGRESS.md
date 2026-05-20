@@ -319,4 +319,37 @@ Tool Card content: { icon: '📚', name: '学习进度', preview: '执行中...'
 
 ---
 
-*本文档由 Claude Code 维护，更新于 2026-05-19*
+## 本Session进展：自动化端到端测试调试 (2026-05-20)
+
+### 问题现象
+
+用户反馈NPC对话无法正常工作，后端日志显示AgentLoop没有输出。
+
+### 调试步骤
+
+**后端调试**：
+- 在 `stream_consumer.py` 添加详细调试日志
+- 重启后端监控 `/tmp/hermes_live.log`
+- 确认新代码是否正确执行
+
+**自动化测试启动**：
+- 用户调用 `example-skills:webapp-testing` 技能
+- 查看 `scripts/with_server.py` 用法（前后端服务器生命周期管理）
+- 创建端到端测试脚本定位问题
+
+### 测试目标
+
+| 检查项 | 期望结果 |
+|--------|----------|
+| NPC对话触发 | 空格键触发对话UI显示 |
+| Tool Card渲染 | running状态正确显示 |
+| SSE流处理 | content正确渲染 |
+| 工具结果返回 | Tool Card状态更新为done |
+
+### 状态
+
+🔧 自动化测试脚本创建中
+
+---
+
+*本文档由 Claude Code 维护，更新于 2026-05-20*

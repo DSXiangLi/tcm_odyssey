@@ -45,10 +45,11 @@ export interface GameContextForNPC {
  * 3. 调用showDialogUI并注入context
  *
  * @param context 游戏上下文（诊断结果或心跳数据）
+ * @param onClose 关闭回调（可选，用于场景切换）
  */
-export function triggerNPCFeedback(context: GameContextForNPC): void {
+export function triggerNPCFeedback(context: GameContextForNPC, onClose?: () => void): void {
   if (context.type === 'diagnosis' && context.diagnosisResult) {
-    triggerDiagnosisFeedback(context.diagnosisResult);
+    triggerDiagnosisFeedback(context.diagnosisResult, onClose);
   }
   // heartbeat类型后续实现
 }
@@ -57,6 +58,7 @@ export function triggerNPCFeedback(context: GameContextForNPC): void {
  * 触发诊断结果反馈
  *
  * @param data 诊断结果数据
+ * @param onClose 关闭回调（可选，用于场景切换）
  */
 function triggerDiagnosisFeedback(data: {
   caseId: string;
@@ -64,7 +66,7 @@ function triggerDiagnosisFeedback(data: {
   userAnswers: DiagnosisResult;
   correctAnswers: DiagnosisCase;
   score?: DiagnosisScoreResult; // 可选，如未传入则计算
-}): void {
+}, onClose?: () => void): void {
   // 计算评分（如未提供）- 使用 ?? 避免 falsy score=0 问题
   const score = data.score ?? calculateDiagnosisScore(data.userAnswers, data.correctAnswers);
 
@@ -87,7 +89,7 @@ function triggerDiagnosisFeedback(data: {
     playerId: 'player_001',
     gameContext: fullContext,
     mode: 'feedback',
-    // onToolCall/onClose 由 DialogUI 内部处理
+    onClose: onClose,  // 关闭回调用于场景切换
   };
 
   // 调用showDialogUI（DialogUIOptions已扩展支持gameContext和mode）

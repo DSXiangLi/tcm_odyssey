@@ -27,6 +27,10 @@ import { DiagnosisCase } from '../ui/html/data/diagnosis-cases';
 import { getCaseById } from '../ui/html/data/diagnosis-cases';
 import type { DiagnosisResult } from '../ui/html/DiagnosisUI';
 
+// NPC Feedback Bridge imports
+import { triggerNPCFeedback } from '../ui/html/bridge/npc-feedback-bridge';
+import { calculateDiagnosisScore } from '../utils/DiagnosisScorer';
+
 export interface DiagnosisSceneConfig {
   caseId: string;           // 必须指定病案 ID
   returnScene?: string;     // 返回场景（默认诊所）
@@ -164,26 +168,30 @@ export class DiagnosisScene extends Phaser.Scene {
   private handleDiagnosisComplete(result: DiagnosisResult): void {
     console.log('DiagnosisScene: 诊断完成', result);
 
-    // 发送诊断完成事件（供 NPC 系统监听）
-    this.eventBus.emit('DIAGNOSIS_COMPLETE', {
-      caseId: this.caseId,
-      result
-    });
+    // 计算评分
+    const score = calculateDiagnosisScore(result, this.caseData!);
 
-    // CaseManager 结果记录（通过 EventBus）
-    // TODO: 后续实现 CaseManager.recordDiagnosisResult 方法
-
-    // 发送事件给 NPC 系统（通过 CustomEvent）
-    window.dispatchEvent(new CustomEvent('game:diagnosis_complete', {
-      detail: {
+    // 触发NPC反馈（注入游戏上下文，传入关闭回调）
+    triggerNPCFeedback({
+      type: 'diagnosis',
+      diagnosisResult: {
         caseId: this.caseId,
         patientName: result.patient.name,
-        diagnosis: result.diagnosis
+        userAnswers: result,
+        correctAnswers: this.caseData!,
+        score: score
       }
-    }));
+    }, () => this.returnToPreviousScene());  // NPC点评完成后返回场景
 
-    // 返回场景（后续由 NPC 触发煎药）
-    this.returnToPreviousScene();
+    // 发送诊断完成事件（供其他系统监听）
+    this.eventBus.emit('DIAGNOSIS_COMPLETE', {
+      caseId: this.caseId,
+      result,
+      score
+    });
+
+    // 不立即返回场景，等待NPC点评完成
+    // NPC对话UI关闭时会调用上面传入的onClose回调
   }
 
   /**

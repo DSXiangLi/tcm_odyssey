@@ -74,6 +74,12 @@ export class GameStateBridge {
   // 对话历史存储（按NPC ID分组，最多50条）
   private dialogHistory: Map<string, DialogMessage[]> = new Map();
 
+  // 新增：心跳预查询缓存
+  private inventoryCache: Record<string, unknown> | null = null;
+  private progressCache: Record<string, unknown> | null = null;
+  private npcMemoryCache: Record<string, unknown> | null = null;
+  private weaknessLog: string[] = []; // 薄弱点记录
+
   private constructor() {
     this.state = {
       mapData: null,
@@ -268,5 +274,74 @@ export class GameStateBridge {
   clearAllDialogHistory(): void {
     this.dialogHistory.clear();
     this.state.timestamp = Date.now();
+  }
+
+  // ==================== 心跳缓存方法 ====================
+
+  /**
+   * 更新背包缓存
+   */
+  updateInventoryCache(inventory: Record<string, unknown>): void {
+    this.inventoryCache = inventory;
+  }
+
+  /**
+   * 获取背包缓存
+   */
+  getInventoryCache(): Record<string, unknown> | null {
+    return this.inventoryCache;
+  }
+
+  /**
+   * 更新学习进度缓存
+   */
+  updateProgressCache(progress: Record<string, unknown>): void {
+    this.progressCache = progress;
+  }
+
+  /**
+   * 获取学习进度缓存
+   */
+  getProgressCache(): Record<string, unknown> | null {
+    return this.progressCache;
+  }
+
+  /**
+   * 更新NPC记忆缓存
+   */
+  updateNpcMemoryCache(memory: Record<string, unknown>): void {
+    this.npcMemoryCache = memory;
+  }
+
+  /**
+   * 获取NPC记忆缓存
+   */
+  getNpcMemoryCache(): Record<string, unknown> | null {
+    return this.npcMemoryCache;
+  }
+
+  /**
+   * 记录薄弱点
+   */
+  recordWeakness(weakness: string): void {
+    if (!this.weaknessLog.includes(weakness)) {
+      this.weaknessLog.push(weakness);
+    }
+  }
+
+  /**
+   * 获取薄弱点记录
+   */
+  getWeaknessLog(): string[] {
+    return this.weaknessLog;
+  }
+
+  /**
+   * 清空缓存（场景切换时）
+   */
+  clearCaches(): void {
+    this.inventoryCache = null;
+    this.progressCache = null;
+    this.npcMemoryCache = null;
   }
 }

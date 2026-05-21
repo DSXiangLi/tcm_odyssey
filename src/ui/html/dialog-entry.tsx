@@ -18,6 +18,7 @@ export function createDialogUI(options: DialogUIOptions): () => void {
   if (!dialogContainer) {
     dialogContainer = document.createElement('div');
     dialogContainer.id = 'dialog-ui-root';
+    dialogContainer.className = 'dialog-root';  // 添加CSS类
     document.body.appendChild(dialogContainer);
   }
 

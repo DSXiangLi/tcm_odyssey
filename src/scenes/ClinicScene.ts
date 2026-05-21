@@ -39,6 +39,8 @@ import { showInventoryUI, hideInventoryUI } from '../ui/html/inventory-entry';
 // Phase 2 S13.4: 新手引导系统
 import { TutorialManager } from '../systems/TutorialManager';
 import { createSceneTipUI, TutorialUI } from '../ui/TutorialUI';
+// Phase 2.5 NPC心跳: 预查询缓存
+import { NPCHeartbeat } from '../systems/NPCHeartbeat';
 
 interface MapData {
   width: number;
@@ -149,6 +151,9 @@ export class ClinicScene extends Phaser.Scene {
       width: this.mapData.width,
       height: this.mapData.height
     });
+
+    // Phase 2.5 NPC心跳：触发预查询缓存
+    this.triggerNPCHeartbeat();
 
     // 创建玩家
     this.createPlayer();
@@ -1122,5 +1127,15 @@ export class ClinicScene extends Phaser.Scene {
         );
       }
     }
+  }
+
+  /**
+   * Phase 2.5 NPC心跳：触发预查询缓存
+   * 在场景进入时预查询玩家状态并缓存到GameStateBridge
+   */
+  private triggerNPCHeartbeat(): void {
+    const heartbeat = NPCHeartbeat.getInstance();
+    heartbeat.triggerOnSceneEnter('player_001');
+    console.log('[ClinicScene] NPC heartbeat triggered for player_001');
   }
 }

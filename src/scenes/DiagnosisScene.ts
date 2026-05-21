@@ -276,6 +276,8 @@ export class DiagnosisScene extends Phaser.Scene {
         caseData: this.caseData,
         returnScene: this.returnScene,
         hasReactUI: !!this.reactRoot,
+        // 暴露handleDiagnosisComplete供E2E测试使用
+        handleDiagnosisComplete: this.handleDiagnosisComplete.bind(this),
       };
     }
   }

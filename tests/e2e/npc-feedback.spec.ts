@@ -68,12 +68,9 @@ test.describe('NPC Autonomous Agent - Feedback Tests', () => {
     // Step 2: Simulate diagnosis completion by calling handleDiagnosisComplete
     // This should trigger NPC feedback via npc-feedback-bridge
     await page.evaluate(() => {
-      const game = (window as any).__PHASER_GAME__;
-      if (!game) return;
-
-      const sceneManager = game.scene;
-      const diagnosisScene = sceneManager.getScene('DiagnosisScene');
-      if (!diagnosisScene) return;
+      // Use the exposed __DIAGNOSIS_SCENE__ interface
+      const diagnosisScene = (window as any).__DIAGNOSIS_SCENE__;
+      if (!diagnosisScene || !diagnosisScene.handleDiagnosisComplete) return;
 
       // Create mock diagnosis result matching case-001 pattern
       // case-001: 李秀梅, 35岁, 女, 主诉:脘腹胀满
@@ -103,17 +100,8 @@ test.describe('NPC Autonomous Agent - Feedback Tests', () => {
         }
       };
 
-      // Call handleDiagnosisComplete via DiagnosisScene instance
-      // Note: handleDiagnosisComplete is private, we need to access via __DIAGNOSIS_SCENE__
-      // or emit the DIAGNOSIS_COMPLETE event
-      const eventBus = (window as any).__EVENT_BUS__;
-      if (eventBus) {
-        eventBus.emit('DIAGNOSIS_COMPLETE', {
-          caseId: 'case-001',
-          result: mockResult,
-          score: { total: 100, breakdown: {} }
-        });
-      }
+      // Call handleDiagnosisComplete directly (now exposed via __DIAGNOSIS_SCENE__)
+      diagnosisScene.handleDiagnosisComplete(mockResult);
     });
 
     // Step 3: Wait for DialogUI to appear (NPC feedback)
@@ -184,12 +172,9 @@ test.describe('NPC Autonomous Agent - Feedback Tests', () => {
 
     // Step 2: Simulate low-score diagnosis (wrong answers)
     await page.evaluate(() => {
-      const game = (window as any).__PHASER_GAME__;
-      if (!game) return;
-
-      const sceneManager = game.scene;
-      const diagnosisScene = sceneManager.getScene('DiagnosisScene');
-      if (!diagnosisScene) return;
+      // Use the exposed __DIAGNOSIS_SCENE__ interface
+      const diagnosisScene = (window as any).__DIAGNOSIS_SCENE__;
+      if (!diagnosisScene || !diagnosisScene.handleDiagnosisComplete) return;
 
       // Wrong diagnosis pattern (should be low score)
       // case-001 correct: b1(湿邪困脾), f1(藿香正气散)
@@ -219,15 +204,8 @@ test.describe('NPC Autonomous Agent - Feedback Tests', () => {
         }
       };
 
-      // Emit diagnosis complete event with wrong result
-      const eventBus = (window as any).__EVENT_BUS__;
-      if (eventBus) {
-        eventBus.emit('DIAGNOSIS_COMPLETE', {
-          caseId: 'case-001',
-          result: wrongResult,
-          score: { total: 20, breakdown: { tongue: 5, pulse: 5, syndrome: 0, prescription: 10 } }
-        });
-      }
+      // Call handleDiagnosisComplete directly (now exposed via __DIAGNOSIS_SCENE__)
+      diagnosisScene.handleDiagnosisComplete(wrongResult);
     });
 
     // Step 3: Wait for DialogUI to appear
@@ -355,17 +333,28 @@ test.describe('NPC Autonomous Agent - Feedback Tests', () => {
 
     // Trigger diagnosis complete
     await page.evaluate(() => {
-      const eventBus = (window as any).__EVENT_BUS__;
-      if (eventBus) {
-        eventBus.emit('DIAGNOSIS_COMPLETE', {
-          caseId: 'case-001',
-          result: {
-            patient: { name: '李秀梅', age: 35, gender: '女', chief: '脘腹胀满' },
-            diagnosis: { syndrome: ['b1'], prescription: ['f1'] }
-          },
-          score: { total: 80, breakdown: {} }
-        });
-      }
+      // Use the exposed __DIAGNOSIS_SCENE__ interface
+      const diagnosisScene = (window as any).__DIAGNOSIS_SCENE__;
+      if (!diagnosisScene || !diagnosisScene.handleDiagnosisComplete) return;
+
+      const mockResult = {
+        caseId: 'case-001',
+        patient: {
+          name: '李秀梅',
+          age: 35,
+          gender: '女',
+          chief: '脘腹胀满'
+        },
+        diagnosis: {
+          tongue: { color: '淡白', coating: '白腻', shape: '胖大有齿痕', moisture: '水滑' },
+          pulse: { position: '关', quality: '濡缓' },
+          symptoms: ['脘腹胀满'],
+          syndrome: ['b1'],
+          prescription: ['f1']
+        }
+      };
+
+      diagnosisScene.handleDiagnosisComplete(mockResult);
     });
 
     // Wait for DialogUI

@@ -166,10 +166,15 @@ export class DiagnosisScene extends Phaser.Scene {
    * 处理诊断完成
    */
   private handleDiagnosisComplete(result: DiagnosisResult): void {
-    console.log('DiagnosisScene: 诊断完成', result);
+    // 防御性检查：确保 caseData 存在
+    if (!this.caseData) {
+      this.eventBus.emit('DIAGNOSIS_ERROR', { caseId: this.caseId, error: 'caseData is null' });
+      this.returnToPreviousScene();
+      return;
+    }
 
     // 计算评分
-    const score = calculateDiagnosisScore(result, this.caseData!);
+    const score = calculateDiagnosisScore(result, this.caseData);
 
     // 触发NPC反馈（注入游戏上下文，传入关闭回调）
     triggerNPCFeedback({
@@ -178,7 +183,7 @@ export class DiagnosisScene extends Phaser.Scene {
         caseId: this.caseId,
         patientName: result.patient.name,
         userAnswers: result,
-        correctAnswers: this.caseData!,
+        correctAnswers: this.caseData,
         score: score
       }
     }, () => this.returnToPreviousScene());  // NPC点评完成后返回场景

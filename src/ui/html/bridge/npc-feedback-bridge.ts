@@ -78,8 +78,8 @@ function triggerDiagnosisFeedback(data: {
   correctAnswers: DiagnosisCase;
   score?: DiagnosisScoreResult; // 可选，如未传入则计算
 }): void {
-  // 计算评分（如未提供）
-  const score = data.score || calculateDiagnosisScore(data.userAnswers, data.correctAnswers);
+  // 计算评分（如未提供）- 使用 ?? 避免 falsy score=0 问题
+  const score = data.score ?? calculateDiagnosisScore(data.userAnswers, data.correctAnswers);
 
   // 组装完整上下文
   const fullContext: GameContextForNPC = {
@@ -100,23 +100,13 @@ function triggerDiagnosisFeedback(data: {
     playerId: 'player_001',
     gameContext: fullContext,
     mode: 'feedback',
-    onToolCall: (name, args) => {
-      console.log('[NPCFeedbackBridge] Tool call:', name, args);
-    },
-    onClose: () => {
-      console.log('[NPCFeedbackBridge] Feedback dialog closed');
-    },
+    // onToolCall/onClose 由 DialogUI 内部处理
   };
 
   // TODO: Task 3将扩展DialogUIOptions接口以接受gameContext和mode
   // 当前使用类型断言以避免TypeScript错误
   // 实际集成将在Task 3-4完成
   showDialogUI(extendedOptions as Parameters<typeof showDialogUI>[0]);
-
-  console.log('[NPCFeedbackBridge] Diagnosis feedback triggered:', {
-    caseId: data.caseId,
-    score: formatScoreForNPC(score, data.patientName, data.userAnswers),
-  });
 }
 
 /**

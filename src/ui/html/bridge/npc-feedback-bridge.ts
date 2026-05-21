@@ -6,6 +6,7 @@
  */
 
 import { showDialogUI } from '../dialog-entry';
+import type { DialogUIOptions } from '../DialogUI';
 import type { DiagnosisResult } from '../DiagnosisUI';
 import type { DiagnosisCase } from '../data/diagnosis-cases';
 import type { DiagnosisScoreResult } from '../../../utils/DiagnosisScorer';
@@ -33,20 +34,6 @@ export interface GameContextForNPC {
     progress: Record<string, unknown>;
     cases: Record<string, unknown>;
   };
-}
-
-/**
- * 扩展的DialogUI选项（Task 3将正式添加到DialogUIOptions接口）
- * 当前用于内部类型检查，实际传递时使用DialogUIOptions
- */
-interface ExtendedDialogUIOptions {
-  npcId: string;
-  npcName: string;
-  playerId: string;
-  gameContext?: GameContextForNPC;
-  mode?: 'normal' | 'feedback';
-  onToolCall?: (name: string, args: Record<string, unknown>) => void;
-  onClose?: () => void;
 }
 
 /**
@@ -93,8 +80,8 @@ function triggerDiagnosisFeedback(data: {
     },
   };
 
-  // 组装扩展选项
-  const extendedOptions: ExtendedDialogUIOptions = {
+  // 使用扩展后的DialogUIOptions
+  const dialogOptions: DialogUIOptions = {
     npcId: 'qingmu',
     npcName: '青木先生',
     playerId: 'player_001',
@@ -103,10 +90,8 @@ function triggerDiagnosisFeedback(data: {
     // onToolCall/onClose 由 DialogUI 内部处理
   };
 
-  // TODO: Task 3将扩展DialogUIOptions接口以接受gameContext和mode
-  // 当前使用类型断言以避免TypeScript错误
-  // 实际集成将在Task 3-4完成
-  showDialogUI(extendedOptions as Parameters<typeof showDialogUI>[0]);
+  // 调用showDialogUI（DialogUIOptions已扩展支持gameContext和mode）
+  showDialogUI(dialogOptions);
 }
 
 /**

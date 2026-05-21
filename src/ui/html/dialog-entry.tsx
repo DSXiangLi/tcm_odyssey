@@ -32,6 +32,8 @@ export function createDialogUI(options: DialogUIOptions): () => void {
       npcId={options.npcId}
       npcName={options.npcName}
       playerId={options.playerId}
+      gameContext={options.gameContext}
+      mode={options.mode}
       onToolCall={options.onToolCall}
       onClose={options.onClose}
     />

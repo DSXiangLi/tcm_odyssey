@@ -6,23 +6,16 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { flushSync } from 'react-dom';
+import ReactMarkdown from 'react-markdown';
 import { SSEClient, ChatRequest } from '../../utils/sseClient';
 import { EventBus } from '../../systems/EventBus';
-import { DIALOG_EVENTS, DialogMessage } from './bridge/dialog-events';
+import { DIALOG_EVENTS, DialogMessage, ToolCallState } from './bridge/dialog-events';
 import { TCM_DATA, TCMKind } from './data/tcm-data';
 import { GameStateBridge } from '../../utils/GameStateBridge';
+import type { GameContextForNPC } from './bridge/npc-feedback-bridge';
+import { formatScoreForNPC } from '../../utils/DiagnosisScorer';
 
 const MAX_HISTORY = 50;
-
-// Tool Call 数据结构（参考 Hermes WebUI）
-interface ToolCallState {
-  name: string;
-  args: Record<string, unknown>;
-  result?: unknown;
-  snippet?: string;        // 结果摘要
-  done: boolean;           // false=运行中, true=完成
-  tid: string;             // 工具调用ID（用于匹配 result）
-}
 
 // 工具图标映射（基于工具名）
 const TOOL_ICONS: Record<string, string> = {
@@ -106,10 +99,34 @@ function ToolCard({ tc }: { tc: ToolCallState }) {
   );
 }
 
+// Thinking展示组件 - 支持完全折叠
+function ThinkingView({ content }: { content: string }) {
+  const [isExpanded, setIsExpanded] = useState(false);
+
+  return (
+    <div className="msg-thinking">
+      <div className="msg-thinking-header" onClick={() => setIsExpanded(!isExpanded)}>
+        <span className="msg-thinking-icon">💭</span>
+        <span className="msg-thinking-label">AI思考过程</span>
+        <span className={`msg-thinking-toggle${isExpanded ? ' open' : ''}`}>▶</span>
+      </div>
+      {isExpanded && (
+        <div className="msg-thinking-content">
+          {content}
+        </div>
+      )}
+    </div>
+  );
+}
+
 export interface DialogUIOptions {
   npcId: string;
   npcName: string;
   playerId: string;
+  /** 游戏上下文，用于feedback模式下向NPC提供游戏状态 */
+  gameContext?: GameContextForNPC;
+  /** 对话模式：normal(普通对话) | feedback(游戏结果反馈) */
+  mode?: 'normal' | 'feedback';
   onToolCall?: (name: string, args: Record<string, unknown>) => void;
   onClose?: () => void;
 }
@@ -169,7 +186,7 @@ function TCMTerm({ kind, term }: { kind: TCMKind; term: string }) {
   );
 }
 
-// 富文本渲染
+// 富文本渲染（用于thinking等纯文本）
 function RichText({ text }: { text: string }) {
   const segments = parseRichText(text);
   return (
@@ -182,6 +199,27 @@ function RichText({ text }: { text: string }) {
         return <span key={i}>{seg.content}</span>;
       })}
     </>
+  );
+}
+
+// Markdown富文本渲染（用于最终回答）
+function MarkdownRichText({ text }: { text: string }) {
+  // 先解析TCM标记，然后将剩余文本交给react-markdown处理
+  const segments = parseRichText(text);
+
+  return (
+    <div className="markdown-content">
+      {segments.map((seg, i) => {
+        if (seg.type === 'text') {
+          // 使用react-markdown渲染纯文本部分
+          return <ReactMarkdown key={i}>{seg.content}</ReactMarkdown>;
+        }
+        if (['herb', 'acupoint', 'classic', 'symptom'].includes(seg.type)) {
+          return <TCMTerm key={i} kind={seg.type as TCMKind} term={seg.content} />;
+        }
+        return <span key={i}>{seg.content}</span>;
+      })}
+    </div>
   );
 }
 
@@ -208,8 +246,19 @@ function MessageView({ msg }: { msg: DialogMessage }) {
           </div>
           {msg.mood && <span className="msg-npc-mood">{msg.mood}</span>}
         </div>
+        {/* 1. 第一轮思考 - tool执行前 */}
+        {msg.preThinking && <ThinkingView content={msg.preThinking} />}
+        {/* 2. Tool Cards */}
+        {msg.toolCalls && msg.toolCalls.length > 0 && (
+          <div className="msg-tool-calls-section">
+            {msg.toolCalls.map((tc, i) => <ToolCard key={tc.tid || i} tc={tc} />)}
+          </div>
+        )}
+        {/* 3. 第二轮思考 - tool执行后 */}
+        {msg.postThinking && <ThinkingView content={msg.postThinking} />}
+        {/* 4. 最终回答文本 */}
         <div className="msg-npc-text">
-          <RichText text={msg.text} />
+          <MarkdownRichText text={msg.text} />
         </div>
       </div>
     );
@@ -225,19 +274,42 @@ function MessageView({ msg }: { msg: DialogMessage }) {
   );
 }
 
-export function DialogUI({ npcId, npcName, playerId, onToolCall, onClose }: DialogUIProps) {
+export function DialogUI({
+  npcId,
+  npcName,
+  playerId,
+  gameContext,
+  mode = 'normal',
+  onToolCall,
+  onClose
+}: DialogUIProps) {
   const [messages, setMessages] = useState<DialogMessage[]>([]);
   const [input, setInput] = useState('');
   const [isGenerating, setIsGenerating] = useState(false);
-  const [currentText, setCurrentText] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [, forceUpdate] = useState(0);  // 用于强制渲染
   const historyRef = useRef<HTMLDivElement>(null);
   const sseClient = useRef(new SSEClient());
-  const pendingToolCallsRef = useRef<ToolCallState[]>([]);  // 用于同步访问当前 tool calls
+  const pendingToolCallsRef = useRef<ToolCallState[]>([]);  // tool calls
+  const feedbackSentRef = useRef<boolean>(false);  // 标记是否已发送feedback初始prompt
 
-  // 调试：每次渲染时输出 tool calls 状态
-  console.log('[DialogUI Render] pendingToolCalls:', pendingToolCallsRef.current.length, 'currentText:', currentText.length, 'isGenerating:', isGenerating);
+  // 分段内容：tool_call之前的内容 vs tool_result之后的内容
+  const preToolThinkingRef = useRef<string>('');   // 第一轮thinking
+  const preToolTextRef = useRef<string>('');       // 第一轮text
+  const postToolThinkingRef = useRef<string>('');  // 第二轮thinking
+  const postToolTextRef = useRef<string>('');      // 第二轮text
+  const hasToolBeenCalledRef = useRef<boolean>(false);  // 标记是否已触发tool
+
+  // 用于UI渲染的state（从ref同步）
+  const [displayThinking, setDisplayThinking] = useState('');
+  const [displayText, setDisplayText] = useState('');
+
+  // 调试：每次渲染时输出状态
+  console.log('[DialogUI Render] hasToolCall:', hasToolBeenCalledRef.current,
+    'preThinking:', preToolThinkingRef.current.length,
+    'preText:', preToolTextRef.current.length,
+    'postThinking:', postToolThinkingRef.current.length,
+    'postText:', postToolTextRef.current.length);
 
   // 加载历史对话
   useEffect(() => {
@@ -260,7 +332,156 @@ export function DialogUI({ npcId, npcName, playerId, onToolCall, onClose }: Dial
     if (historyRef.current) {
       historyRef.current.scrollTop = historyRef.current.scrollHeight;
     }
-  }, [messages, currentText]);
+  }, [messages, displayThinking, displayText]);  // update scroll trigger
+
+  // Feedback模式：自动发送游戏上下文给NPC
+  useEffect(() => {
+    if (mode !== 'feedback' || !gameContext || feedbackSentRef.current || isGenerating) {
+      return;
+    }
+
+    // 标记已发送，防止重复发送
+    feedbackSentRef.current = true;
+
+    // 根据context类型格式化prompt
+    let feedbackPrompt: string;
+    if (gameContext.type === 'diagnosis' && gameContext.diagnosisResult) {
+      const { patientName, userAnswers, score } = gameContext.diagnosisResult;
+      feedbackPrompt = formatScoreForNPC(score, patientName, userAnswers);
+    } else {
+      // heartbeat类型后续实现
+      feedbackPrompt = '[心跳检查请求]\n请检查玩家的学习状态。';
+    }
+
+    // 自动发送prompt（模拟用户发送）
+    setIsGenerating(true);
+    setError(null);
+    const systemMsg = { role: 'system' as const, text: '诊断完成，正在请求导师点评...', timestamp: Date.now() };
+    setMessages([systemMsg]);
+
+    // 清空所有buffer
+    preToolThinkingRef.current = '';
+    preToolTextRef.current = '';
+    postToolThinkingRef.current = '';
+    postToolTextRef.current = '';
+    hasToolBeenCalledRef.current = false;
+    pendingToolCallsRef.current = [];
+    setDisplayThinking('');
+    setDisplayText('');
+
+    const request: ChatRequest = {
+      npc_id: npcId,
+      player_id: playerId,
+      user_message: feedbackPrompt
+    };
+
+    sseClient.current.chatStream(
+      request,
+      // onChunk
+      (chunk) => {
+        if (hasToolBeenCalledRef.current) {
+          postToolTextRef.current += chunk;
+        } else {
+          preToolTextRef.current += chunk;
+        }
+        setDisplayText(preToolTextRef.current + postToolTextRef.current);
+      },
+      // onComplete
+      (full) => {
+        setIsGenerating(false);
+        const preThinking = preToolThinkingRef.current;
+        const postThinking = postToolThinkingRef.current;
+        const savedToolCalls = [...pendingToolCallsRef.current];
+
+        setMessages(prev => {
+          const npcMsg: DialogMessage = {
+            role: 'npc',
+            name: npcName,
+            text: full,
+            preThinking: preThinking,
+            postThinking: postThinking,
+            toolCalls: savedToolCalls,
+            timestamp: Date.now()
+          };
+          const newMessages = [...prev, npcMsg];
+          const trimmed = newMessages.length > MAX_HISTORY
+            ? newMessages.slice(-MAX_HISTORY)
+            : newMessages;
+          const bridge = GameStateBridge.getInstance();
+          bridge.setDialogHistory(npcId, trimmed);
+          return trimmed;
+        });
+
+        // 清空streaming内容
+        preToolThinkingRef.current = '';
+        preToolTextRef.current = '';
+        postToolThinkingRef.current = '';
+        postToolTextRef.current = '';
+        pendingToolCallsRef.current = [];
+        hasToolBeenCalledRef.current = false;
+        setDisplayThinking('');
+        setDisplayText('');
+        forceUpdate(n => n + 1);
+      },
+      // onError
+      (err) => {
+        setError(`错误: ${err.message}`);
+        setIsGenerating(false);
+      },
+      // onToolCall
+      (name, args, tid) => {
+        const toolTid = tid || `${name}-${Date.now()}`;
+        console.log('[DialogUI Feedback] Tool call received:', name, 'tid:', toolTid);
+        hasToolBeenCalledRef.current = true;
+
+        flushSync(() => {
+          pendingToolCallsRef.current.push({
+            name,
+            args: args as Record<string, unknown>,
+            done: false,
+            tid: toolTid,
+          });
+          forceUpdate(n => n + 1);
+        });
+
+        const eventBus = EventBus.getInstance();
+        const eventData: Record<string, unknown> = { name, args };
+        eventBus.emit(DIALOG_EVENTS.TOOL_CALL, eventData);
+        if (onToolCall) onToolCall(name, args as Record<string, unknown>);
+      },
+      // onToolResult
+      (result, tid, snippet) => {
+        console.log('[DialogUI Feedback] Tool result received:', tid);
+        const pending = pendingToolCallsRef.current;
+        const targetIdx = pending.findIndex(tc => tc.tid === tid);
+
+        if (targetIdx !== -1) {
+          const displaySnippet = snippet || (typeof result === 'object'
+            ? JSON.stringify(result, null, 2)
+            : String(result));
+
+          flushSync(() => {
+            pending[targetIdx] = {
+              ...pending[targetIdx],
+              result,
+              snippet: displaySnippet,
+              done: true,
+            };
+            forceUpdate(n => n + 1);
+          });
+        }
+      },
+      // onThinking
+      (thinkingChunk) => {
+        if (hasToolBeenCalledRef.current) {
+          postToolThinkingRef.current += thinkingChunk;
+        } else {
+          preToolThinkingRef.current += thinkingChunk;
+        }
+        setDisplayThinking(preToolThinkingRef.current + postToolThinkingRef.current);
+      }
+    );
+  }, [mode, gameContext, npcId, npcName, playerId, onToolCall, isGenerating]);
 
   // 保存历史（裁剪到50条）
   const saveHistory = (newMessages: DialogMessage[]) => {
@@ -282,7 +503,16 @@ export function DialogUI({ npcId, npcName, playerId, onToolCall, onClose }: Dial
     const playerMsg = { role: 'player' as const, text, timestamp: Date.now() };
     saveHistory([...messages, playerMsg]);
     setIsGenerating(true);
-    setCurrentText('');
+
+    // 清空所有buffer
+    preToolThinkingRef.current = '';
+    preToolTextRef.current = '';
+    postToolThinkingRef.current = '';
+    postToolTextRef.current = '';
+    hasToolBeenCalledRef.current = false;
+    pendingToolCallsRef.current = [];
+    setDisplayThinking('');
+    setDisplayText('');
 
     const request: ChatRequest = {
       npc_id: npcId,
@@ -293,27 +523,40 @@ export function DialogUI({ npcId, npcName, playerId, onToolCall, onClose }: Dial
     try {
       await sseClient.current.chatStream(
         request,
-        (chunk) => setCurrentText(prev => prev + chunk),
+        // onChunk: text内容
+        (chunk) => {
+          if (hasToolBeenCalledRef.current) {
+            // 第二轮：tool之后的text
+            postToolTextRef.current += chunk;
+          } else {
+            // 第一轮：tool之前的text
+            preToolTextRef.current += chunk;
+          }
+          // 更新显示状态（合并pre和post）
+          setDisplayText(preToolTextRef.current + postToolTextRef.current);
+        },
+        // onComplete: 完成时保存消息
         (full) => {
-          // 完成时处理
           setIsGenerating(false);
-          setCurrentText('');
 
-          // 将完成的 Tool Calls 转换为消息保存到历史中
-          const completedToolCalls = pendingToolCallsRef.current.filter(tc => tc.done);
-          const toolMessages: DialogMessage[] = completedToolCalls.map(tc => ({
-            role: 'system' as const,
-            text: `⚙️ ${getToolDisplayName(tc.name)}${tc.snippet ? `: ${tc.snippet.slice(0, 100)}...` : ''}`,
-            timestamp: Date.now(),
-          }));
+          // 分别保存pre和post thinking
+          const preThinking = preToolThinkingRef.current;
+          const postThinking = postToolThinkingRef.current;
+          const savedToolCalls = [...pendingToolCallsRef.current];
+          const fullText = full;
 
-          // 清空 ref
-          pendingToolCallsRef.current = [];
-
-          // 添加消息到历史
+          // 保存NPC消息到历史（分别保存preThinking和postThinking）
           setMessages(prev => {
-            const npcMsg = { role: 'npc' as const, name: npcName, text: full, timestamp: Date.now() };
-            const newMessages = [...prev, ...toolMessages, npcMsg];
+            const npcMsg: DialogMessage = {
+              role: 'npc',
+              name: npcName,
+              text: fullText,
+              preThinking: preThinking,      // 第一轮思考（tool之前）
+              postThinking: postThinking,    // 第二轮思考（tool之后）
+              toolCalls: savedToolCalls,
+              timestamp: Date.now()
+            };
+            const newMessages = [...prev, npcMsg];
             const trimmed = newMessages.length > MAX_HISTORY
               ? newMessages.slice(-MAX_HISTORY)
               : newMessages;
@@ -322,28 +565,39 @@ export function DialogUI({ npcId, npcName, playerId, onToolCall, onClose }: Dial
             return trimmed;
           });
 
-          // 强制渲染（清空 Tool Cards）
+          // 清空所有streaming内容（避免与历史消息重复）
+          preToolThinkingRef.current = '';
+          preToolTextRef.current = '';
+          postToolThinkingRef.current = '';
+          postToolTextRef.current = '';
+          pendingToolCallsRef.current = [];
+          hasToolBeenCalledRef.current = false;
+
+          // 清空显示状态
+          setDisplayThinking('');
+          setDisplayText('');
           forceUpdate(n => n + 1);
         },
+        // onError
         (err) => {
           setError(`错误: ${err.message}`);
           setIsGenerating(false);
         },
-        (name, args) => {
-          // Tool Call: 添加到 ref，使用 flushSync 强制同步渲染
-          const tid = `${name}-${Date.now()}`;
-          console.log('[DialogUI] Tool call received:', name, args, 'tid:', tid);
+        // onToolCall: 标记已触发tool，保存第一轮内容
+        (name, args, tid) => {
+          const toolTid = tid || `${name}-${Date.now()}`;
+          console.log('[DialogUI] Tool call received:', name, 'tid:', toolTid);
 
-          // 使用 flushSync 确保 DOM 立即更新（避免 React 批处理）
+          // 标记已触发tool - 之后的thinking/text都属于第二轮
+          hasToolBeenCalledRef.current = true;
+
           flushSync(() => {
-            // 更新 ref
             pendingToolCallsRef.current.push({
               name,
               args: args as Record<string, unknown>,
               done: false,
-              tid,
+              tid: toolTid,
             });
-            // 强制渲染
             forceUpdate(n => n + 1);
           });
 
@@ -353,33 +607,40 @@ export function DialogUI({ npcId, npcName, playerId, onToolCall, onClose }: Dial
           eventBus.emit(DIALOG_EVENTS.TOOL_CALL, eventData);
           if (onToolCall) onToolCall(name, args as Record<string, unknown>);
         },
-        (result) => {
-          // Tool Result: 更新 ref 中对应的 tool call，使用 flushSync 强制同步渲染
-          console.log('[DialogUI] Tool result received:', result);
+        // onToolResult: 更新对应的tool card
+        (result, tid, snippet) => {
+          console.log('[DialogUI] Tool result received:', tid);
 
           const pending = pendingToolCallsRef.current;
-          const lastRunningIdx = pending.findIndex(tc => !tc.done);
-          console.log('[DialogUI] Updating tool call at index:', lastRunningIdx, 'total:', pending.length);
+          const targetIdx = pending.findIndex(tc => tc.tid === tid);
 
-          if (lastRunningIdx !== -1) {
-            const snippet = typeof result === 'object'
+          if (targetIdx !== -1) {
+            const displaySnippet = snippet || (typeof result === 'object'
               ? JSON.stringify(result, null, 2)
-              : String(result);
+              : String(result));
 
-            // 使用 flushSync 确保 DOM 立即更新（避免 React 批处理）
             flushSync(() => {
-              pending[lastRunningIdx] = {
-                ...pending[lastRunningIdx],
+              pending[targetIdx] = {
+                ...pending[targetIdx],
                 result,
-                snippet: snippet.length > 300 ? snippet.slice(0, 300) + '...' : snippet,
+                snippet: displaySnippet,  // 保存完整内容
                 done: true,
               };
-              // 强制渲染
               forceUpdate(n => n + 1);
             });
-
-            console.log('[DialogUI] Tool call marked as done:', pending[lastRunningIdx].name);
           }
+        },
+        // onThinking: thinking内容
+        (thinkingChunk) => {
+          if (hasToolBeenCalledRef.current) {
+            // 第二轮：tool之后的thinking
+            postToolThinkingRef.current += thinkingChunk;
+          } else {
+            // 第一轮：tool之前的thinking
+            preToolThinkingRef.current += thinkingChunk;
+          }
+          // 更新显示状态（合并pre和post）
+          setDisplayThinking(preToolThinkingRef.current + postToolThinkingRef.current);
         }
       );
     } catch (err) {
@@ -424,25 +685,48 @@ export function DialogUI({ npcId, npcName, playerId, onToolCall, onClose }: Dial
           {/* 对话历史 */}
           <div className="dialog-history" ref={historyRef}>
             {messages.map((msg, i) => <MessageView key={i} msg={msg} />)}
-            {/* NPC 正在生成的消息 */}
-            {(currentText || pendingToolCallsRef.current.length > 0) && (
-              <div className="msg-npc msg-npc-streaming">
+            {/* NPC 正在生成的消息 - 按正确顺序分段渲染 */}
+            {(isGenerating || preToolThinkingRef.current || preToolTextRef.current || pendingToolCallsRef.current.length > 0 || postToolThinkingRef.current || postToolTextRef.current) && (
+              <div className={`msg-npc${isGenerating ? ' msg-npc-streaming' : ''}`}>
                 <div className="msg-npc-header">
                   <div className="msg-npc-avatar">{npcName.charAt(0)}</div>
                   <div className="msg-npc-name">{npcName}</div>
                   {isGenerating && <span className="msg-npc-status">生成中...</span>}
                 </div>
-                {/* 先显示已生成的文本 */}
-                {currentText && (
+
+                {/* 1. 第一轮thinking (tool之前) */}
+                {preToolThinkingRef.current && (
+                  <ThinkingView content={preToolThinkingRef.current} />
+                )}
+
+                {/* 2. 第一轮text (tool之前) */}
+                {preToolTextRef.current && (
                   <div className="msg-npc-text">
-                    <RichText text={currentText} />
+                    <RichText text={preToolTextRef.current} />
                   </div>
                 )}
-                {/* Tool Cards - 在文本之后显示，直接从 ref 渲染 */}
-                {pendingToolCallsRef.current.map((tc, i) => <ToolCard key={tc.tid || i} tc={tc} />)}
+
+                {/* 3. Tool Cards */}
+                {pendingToolCallsRef.current.length > 0 && (
+                  <div className="msg-tool-calls-section">
+                    {pendingToolCallsRef.current.map((tc, i) => <ToolCard key={tc.tid || i} tc={tc} />)}
+                  </div>
+                )}
+
+                {/* 4. 第二轮thinking (tool之后) */}
+                {postToolThinkingRef.current && (
+                  <ThinkingView content={postToolThinkingRef.current} />
+                )}
+
+                {/* 5. 第二轮text (tool之后) */}
+                {postToolTextRef.current && (
+                  <div className="msg-npc-text">
+                    <MarkdownRichText text={postToolTextRef.current} />
+                  </div>
+                )}
               </div>
             )}
-            {isGenerating && pendingToolCallsRef.current.length === 0 && !currentText && (
+            {isGenerating && !preToolThinkingRef.current && !preToolTextRef.current && !postToolThinkingRef.current && !postToolTextRef.current && pendingToolCallsRef.current.length === 0 && (
               <div className="dialog-loading">
                 生成中... <span className="dialog-stop-btn" onClick={handleStop}>停止</span>
               </div>

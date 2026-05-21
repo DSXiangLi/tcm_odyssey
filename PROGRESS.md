@@ -163,7 +163,68 @@ OpenAI Compatible LLM (对话生成)
 
 ---
 
-## 本Session进展：Tool Card显示问题修复 (2026-05-19) ✅
+## 本Session进展：流式效果修复 (2026-05-21) ✅
+
+### 问题现象
+
+DialogUI打字机效果丢失：
+- SSE事件批量处理导致文字一次显示
+- React state批处理加剧问题
+
+### 根本原因分析
+
+```
+后端日志：逐字发送（每chunk 1-3字符，间隔8-15ms）
+前端日志：reader.read()批量读取64行 → 一次处理
+```
+
+**核心问题**: SSEClient批量读取多行后，React state批处理导致无打字机效果。
+
+### 修复方案
+
+1. **SSEClient**: 逐行处理添加15ms delay
+   - 模拟真正的流式打字机效果
+   
+2. **DialogUI**: 完成时清空所有refs
+   - 避免thinking/text重复显示
+
+### 验证结果
+
+- ✅ Thinking和text逐字显示
+- ✅ 打字机效果恢复正常
+- ❌ 工具卡片在回答后消失（新问题发现）
+
+---
+
+## 本Session进展：工具卡片保存问题 (2026-05-21) 🔧
+
+### 问题现象
+
+流式阶段工具卡片正确显示，回答完成后消失。
+
+### 根本原因
+
+```typescript
+// 完成时清空
+pendingToolCallsRef.current = []  // ← 工具卡片消失
+```
+
+工具调用信息未保存到消息历史中。
+
+### 修复方案
+
+1. 扩展DialogMessage接口添加`toolCalls?: ToolCallInfo[]`
+2. 完成时保存工具调用到消息
+3. 历史消息渲染工具卡片
+4. 清空streaming区域避免重复
+
+### 实施状态
+
+正在修改DialogUI.tsx...
+
+---
+
+## 前Session进展：Tool Card显示问题修复 (2026-05-19) ✅
 
 ### 问题现象
 

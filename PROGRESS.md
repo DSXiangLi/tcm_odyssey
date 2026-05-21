@@ -196,7 +196,7 @@ DialogUI打字机效果丢失：
 
 ---
 
-## 本Session进展：工具卡片保存问题 (2026-05-21) 🔧
+## 本Session进展：工具卡片保存问题 (2026-05-21) ✅ 已修复
 
 ### 问题现象
 
@@ -218,9 +218,74 @@ pendingToolCallsRef.current = []  // ← 工具卡片消失
 3. 历史消息渲染工具卡片
 4. 清空streaming区域避免重复
 
-### 实施状态
+### 验证结果
 
-正在修改DialogUI.tsx...
+- ✅ 工具卡片保留在历史消息中
+- ✅ 点击可展开查看工具参数和结果
+
+---
+
+## 本Session进展：显示顺序修复 (2026-05-21) ✅ 已修复
+
+### 问题现象
+
+第二轮思考(postThinking)在最后回答之后消失，第一轮思考(preThinking)重复显示。
+
+### 根本原因
+
+Agent Loop产生两轮思考：
+1. pre-tool thinking（工具执行前）
+2. post-tool thinking（工具执行后）
+
+前端将两轮合并为一个`thinking`字段，导致：
+- 第一轮显示两次（streaming + 历史）
+- 第二轮位置错误（应在tool之后而非tool之前）
+
+### 修复方案
+
+1. **DialogMessage接口**: 添加`preThinking`和`postThinking`字段
+2. **onComplete**: 分别保存两轮思考
+3. **MessageView渲染顺序**: preThinking → ToolCards → postThinking → text
+
+### 验证结果
+
+- ✅ 第一轮思考显示在工具之前
+- ✅ 第二轮思考显示在工具之后
+- ✅ 正确顺序：preThinking → Tools → postThinking → text
+
+---
+
+## 本Session进展：经验教训文档创建 (2026-05-21) ✅
+
+### 文档位置
+
+`docs/superpowers/experience/2026-05-21-hermes-dialog-streaming.md`
+
+### 核心经验教训
+
+| 编号 | 问题 | 教训 |
+|-----|------|------|
+| **E1** | 流式内容合并导致顺序错误 | Agent Loop产生多轮内容，需分段管理 |
+| **E2** | toolCalls保存但未渲染 | 添加新字段时同步更新渲染组件 |
+| **E3** | postThinking位置错误消失 | 按逻辑轮次排序：preThinking→Tools→postThinking→Text |
+| **E4** | 多次修复前端无效 | 先验证后端，再排查前端（分层验证） |
+| **E5** | tool_result匹配失败 | 用tid精确匹配，使用flushSync同步更新 |
+
+### 开发规范建立
+
+**Agent Loop内容分段规范**：
+
+| 内容类型 | 时机 | 变量命名 | 显示位置 |
+|---------|------|---------|---------|
+| 第一轮思考 | tool_call前 | preThinking | tool之前 |
+| 第一轮文本 | tool_call前 | preText | tool之前 |
+| 工具调用 | agent触发 | toolCalls | 中间 |
+| 第二轮思考 | tool_result后 | postThinking | tool之后 |
+| 第二轮文本 | 最终回答 | postText | 最后 |
+
+**数据流检查清单**：
+- 后端：SSE事件顺序正确、tid匹配、分轮发送
+- 前端：pre/post refs分离、onComplete分别保存、MessageView按顺序渲染
 
 ---
 

@@ -478,4 +478,38 @@ Tool Card content: { icon: '📚', name: '学习进度', preview: '执行中...'
 
 ---
 
-*本文档由 Claude Code 维护，更新于 2026-05-20*
+## 本Session进展：工具卡片内容截断修复 (2026-05-22) ✅ 已修复
+
+### 问题现象
+
+用户测试对话UI时发现工具卡片展开后内容有截断。
+
+### 根本原因
+
+两个问题叠加：
+1. **数据层**: snippet在保存时被截断到300字符（第462行）
+2. **样式层**: CSS `.tool-result` max-height仅120px，内容较长时无法显示完整
+
+### 修复方案
+
+1. **DialogUI.tsx**: 移除snippet保存时的截断，保存完整内容
+2. **dialog.css**: `.tool-result` max-height从120px增加到300px，支持滚动
+
+### 验证结果
+
+- ✅ 工具卡片展开后显示完整结果
+- ✅ 长内容可通过滚动查看
+- ✅ 页面热更新自动生效
+
+### 前置修复
+
+本Session还修复了游戏启动问题：
+
+| 问题 | 原因 | 修复 |
+|------|------|------|
+| Vite 504 Outdated Dep | 缓存过期 + React依赖缺失 | 清缓存 + package.json添加react/react-dom/react-markdown |
+| ENOSPC文件监视器超限 | .worktrees目录被监视 | vite.config.ts添加`watch: { ignored: ['.worktrees'] }` |
+
+---
+
+*本文档由 Claude Code 维护，更新于 2026-05-22*

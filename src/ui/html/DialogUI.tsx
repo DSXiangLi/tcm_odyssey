@@ -14,6 +14,7 @@ import { TCM_DATA, TCMKind } from './data/tcm-data';
 import { GameStateBridge } from '../../utils/GameStateBridge';
 import type { GameContextForNPC } from './bridge/npc-feedback-bridge';
 import { formatScoreForNPC } from '../../utils/DiagnosisScorer';
+import { hideDialogUI } from './dialog-entry';
 
 const MAX_HISTORY = 50;
 
@@ -657,6 +658,7 @@ export function DialogUI({
 
   // 关闭
   const handleClose = () => {
+    hideDialogUI();  // 移除Dialog UI容器
     if (onClose) onClose();
   };
 

@@ -13,13 +13,7 @@
  */
 
 import { test, expect } from '@playwright/test';
-
-// ========================================
-// Configuration Constants
-// ========================================
-
-const HERMES_BACKEND_URL = 'http://localhost:8642';
-const FRONTEND_URL = 'http://localhost:3000';
+import { BASE_URL, HERMES_BACKEND_URL, TIMEOUTS } from './utils/npc-test-helpers';
 
 // Set longer timeout for tests involving game loading and SSE streams
 test.setTimeout(60000);
@@ -39,7 +33,7 @@ test.setTimeout(60000);
  */
 async function enterClinicSceneDirect(page: any, waitForInput: boolean = false) {
   // Use URL parameter to directly jump to ClinicScene
-  await page.goto(`${FRONTEND_URL}/?scene=clinic`);
+  await page.goto(`${BASE_URL}/?scene=clinic`);
   await page.waitForSelector('canvas');
 
   if (waitForInput) {
@@ -107,7 +101,7 @@ async function enterGardenScene(page: any) {
  * Game is centered with FIT scaling, game canvas starts at (160, 90)
  */
 async function startGameFromTitle(page: any) {
-  await page.goto(FRONTEND_URL);
+  await page.goto(BASE_URL);
   await page.waitForSelector('canvas');
   await page.waitForTimeout(2000);  // Wait for TitleScene
 
@@ -157,7 +151,7 @@ test.describe('NPC Dialog - Smoke Tests', () => {
   test('NPC-S02: NPC sprite loading', async ({ page }) => {
     // Acceptance: After BootScene, npc_qingmu texture exists
     // Game flow: TitleScene → Tutorial (skipped via JS) → BootScene → TownOutdoorScene
-    await page.goto(FRONTEND_URL);
+    await page.goto(BASE_URL);
     await page.waitForSelector('canvas');
     await page.waitForTimeout(2000);  // Wait for TitleScene
 
@@ -395,7 +389,7 @@ test.describe('NPC Dialog - Dialog Flow Tests', () => {
 
   test('NPC-D04: Stop generation', async ({ page }) => {
     // Acceptance: During response, click "stop", generation stops, shows partial
-    await page.goto(FRONTEND_URL);
+    await page.goto(BASE_URL);
     await startGameFromTitle(page);
 
     // Enter clinic directly
@@ -435,7 +429,7 @@ test.describe('NPC Dialog - Dialog Flow Tests', () => {
 
   test('NPC-D05: Dialog close', async ({ page }) => {
     // Acceptance: Click close/ESC, DialogUI destroys, event NPC_DIALOG_HIDDEN recorded
-    await page.goto(FRONTEND_URL);
+    await page.goto(BASE_URL);
     await startGameFromTitle(page);
 
     // Enter clinic directly

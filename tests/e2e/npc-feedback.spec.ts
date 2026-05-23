@@ -4,12 +4,20 @@
  * Phase 2.5 NPC自主Agent反馈机制
  *
  * Test Coverage:
- * - NPC-SFB-01: Diagnosis feedback triggered after completion
- * - NPC-SFB-02: Heartbeat triggered on ClinicScene enter
- * - NPC-SFB-03: NPC feedback content matches score level
+ * - NPC-SFB-01~07: Basic feedback mechanism tests
+ * - NPC-FB-02~08: Score level keywords and UI state tests
  */
 
 import { test, expect } from '@playwright/test';
+import {
+  TIMEOUTS,
+  simulateDiagnosisComplete,
+  waitForNPCResponse,
+  enterDiagnosisScene,
+  MOCK_DIAGNOSIS_RESULT,
+  MOCK_LOW_SCORE_DIAGNOSIS,
+  DiagnosisResultData
+} from './utils/npc-test-helpers';
 
 // ========================================
 // Configuration Constants
@@ -19,7 +27,7 @@ const HERMES_BACKEND_URL = 'http://localhost:8642';
 const FRONTEND_URL = 'http://localhost:3000';
 
 // Set longer timeout for tests involving game loading and SSE streams
-test.setTimeout(60000);
+test.setTimeout(TIMEOUTS.NPC_RESPONSE);
 
 /**
  * Helper function to enter ClinicScene using URL parameter
@@ -29,21 +37,44 @@ async function enterClinicSceneDirect(page: any) {
   await page.goto(`${FRONTEND_URL}/?scene=clinic`);
   await page.waitForSelector('canvas');
   // Wait for game to load
-  await page.waitForTimeout(3000);
+  await page.waitForTimeout(TIMEOUTS.SCENE_LOAD);
 }
 
-/**
- * Helper function to enter DiagnosisScene directly
- */
-async function enterDiagnosisScene(page: any, caseId: string = 'case-001') {
-  await page.evaluate((id) => {
-    const game = (window as any).__PHASER_GAME__;
-    if (game) {
-      game.scene.start('DiagnosisScene', { caseId: id });
-    }
-  }, caseId);
-  await page.waitForTimeout(2000);
-}
+// ========================================
+// Mock Diagnosis Results with Different Scores
+// ========================================
+
+/** Excellent score result (90+) - all correct */
+const EXCELLENT_RESULT: DiagnosisResultData = MOCK_DIAGNOSIS_RESULT;
+
+/** Good score result (70-89) - minor errors */
+const GOOD_RESULT: DiagnosisResultData = {
+  caseId: 'case-001',
+  patient: { name: '李秀梅', age: 35, gender: '女', chief: '脘腹胀满' },
+  diagnosis: {
+    tongue: { color: '淡白', coating: '白腻', shape: '胖大有齿痕', moisture: '水滑' }, // Correct
+    pulse: { position: '关', quality: '弦' }, // Quality slightly wrong (should be 濡缓)
+    symptoms: ['脘腹胀满'], // Correct
+    syndrome: ['b1'], // Correct
+    prescription: ['f1'] // Correct
+  }
+};
+
+/** Pass score result (60-69) - some errors */
+const PASS_RESULT: DiagnosisResultData = {
+  caseId: 'case-001',
+  patient: { name: '李秀梅', age: 35, gender: '女', chief: '脘腹胀满' },
+  diagnosis: {
+    tongue: { color: '淡白', coating: '黄', shape: '瘦', moisture: '干燥' }, // Most wrong
+    pulse: { position: '关', quality: '濡缓' }, // Correct
+    symptoms: ['脘腹胀满'], // Correct
+    syndrome: ['b1'], // Correct
+    prescription: ['f1'] // Correct
+  }
+};
+
+/** Need improvement score result (<60) - many errors */
+const NEED_IMPROVEMENT_RESULT: DiagnosisResultData = MOCK_LOW_SCORE_DIAGNOSIS;
 
 // ========================================
 // NPC Feedback Tests (NPC-SFB-01~03)
@@ -55,7 +86,7 @@ test.describe('NPC Autonomous Agent - Feedback Tests', () => {
     await page.goto(FRONTEND_URL);
     await page.waitForSelector('canvas');
     // Wait for BootScene to complete asset loading
-    await page.waitForTimeout(3000);
+    await page.waitForTimeout(TIMEOUTS.SCENE_LOAD);
   });
 
   test('NPC-SFB-01: Diagnosis feedback triggered after completion', async ({ page }) => {
@@ -329,7 +360,7 @@ test.describe('NPC Autonomous Agent - Feedback Tests', () => {
   test('NPC-SFB-07: DialogUI cleanup on close', async ({ page }) => {
     // Verify DialogUI is properly cleaned up when closed
     await enterDiagnosisScene(page, 'case-001');
-    await page.waitForSelector('#diagnosis-react-root', { timeout: 5000 });
+    await page.waitForSelector('#diagnosis-react-root', { timeout: TIMEOUTS.DIALOG_UI });
 
     // Trigger diagnosis complete
     await page.evaluate(() => {
@@ -358,7 +389,7 @@ test.describe('NPC Autonomous Agent - Feedback Tests', () => {
     });
 
     // Wait for DialogUI
-    await page.waitForSelector('#dialog-ui-root', { timeout: 10000 });
+    await page.waitForSelector('#dialog-ui-root', { timeout: TIMEOUTS.TOOL_CARD });
 
     // Verify dialog exists
     const dialogExists = await page.locator('#dialog-ui-root').isVisible();
@@ -370,7 +401,7 @@ test.describe('NPC Autonomous Agent - Feedback Tests', () => {
 
     if (closeBtnExists > 0) {
       await closeBtn.click();
-      await page.waitForTimeout(500);
+      await page.waitForTimeout(TIMEOUTS.SHORT);
 
       // Verify dialog is removed
       const dialogRemoved = await page.locator('#dialog-ui-root').isVisible().catch(() => false);
@@ -378,7 +409,191 @@ test.describe('NPC Autonomous Agent - Feedback Tests', () => {
     } else {
       // Fallback: Press Escape
       await page.keyboard.press('Escape');
-      await page.waitForTimeout(500);
+      await page.waitForTimeout(TIMEOUTS.SHORT);
     }
+  });
+
+  // ========================================
+  // Score Level Keywords Tests (NPC-FB-02~05)
+  // ========================================
+
+  test('NPC-FB-02: Excellent score (90+) feedback contains "优秀" keyword', async ({ page }) => {
+    // Enter diagnosis scene
+    await enterDiagnosisScene(page, 'case-001');
+    await page.waitForSelector('#diagnosis-react-root', { timeout: TIMEOUTS.DIALOG_UI });
+
+    // Simulate excellent diagnosis (all correct answers)
+    await simulateDiagnosisComplete(page, EXCELLENT_RESULT);
+
+    // Wait for DialogUI to appear
+    await page.waitForSelector('#dialog-ui-root', { timeout: TIMEOUTS.TOOL_CARD });
+
+    // Wait for NPC response to complete
+    await waitForNPCResponse(page);
+
+    // Verify dialog content contains excellent keyword
+    const dialogContent = page.locator('.dialog-content, .dialog-scroll');
+    const text = await dialogContent.textContent();
+
+    // Check for excellence keyword in feedback
+    expect(text).toContain('优秀');
+    console.log('[NPC-FB-02] Feedback text length:', text?.length);
+  });
+
+  test('NPC-FB-03: Good score (70-89) feedback contains "良好" keyword', async ({ page }) => {
+    // Enter diagnosis scene
+    await enterDiagnosisScene(page, 'case-001');
+    await page.waitForSelector('#diagnosis-react-root', { timeout: TIMEOUTS.DIALOG_UI });
+
+    // Simulate good diagnosis (minor errors)
+    await simulateDiagnosisComplete(page, GOOD_RESULT);
+
+    // Wait for DialogUI to appear
+    await page.waitForSelector('#dialog-ui-root', { timeout: TIMEOUTS.TOOL_CARD });
+
+    // Wait for NPC response to complete
+    await waitForNPCResponse(page);
+
+    // Verify dialog content contains good keyword
+    const dialogContent = page.locator('.dialog-content, .dialog-scroll');
+    const text = await dialogContent.textContent();
+
+    // Check for good keyword in feedback
+    expect(text).toContain('良好');
+    console.log('[NPC-FB-03] Feedback text length:', text?.length);
+  });
+
+  test('NPC-FB-04: Pass score (60-69) feedback contains "合格" keyword', async ({ page }) => {
+    // Enter diagnosis scene
+    await enterDiagnosisScene(page, 'case-001');
+    await page.waitForSelector('#diagnosis-react-root', { timeout: TIMEOUTS.DIALOG_UI });
+
+    // Simulate pass diagnosis (some errors)
+    await simulateDiagnosisComplete(page, PASS_RESULT);
+
+    // Wait for DialogUI to appear
+    await page.waitForSelector('#dialog-ui-root', { timeout: TIMEOUTS.TOOL_CARD });
+
+    // Wait for NPC response to complete
+    await waitForNPCResponse(page);
+
+    // Verify dialog content contains pass keyword
+    const dialogContent = page.locator('.dialog-content, .dialog-scroll');
+    const text = await dialogContent.textContent();
+
+    // Check for pass keyword in feedback
+    expect(text).toContain('合格');
+    console.log('[NPC-FB-04] Feedback text length:', text?.length);
+  });
+
+  test('NPC-FB-05: Need improvement (<60) feedback contains "需加强" keyword', async ({ page }) => {
+    // Enter diagnosis scene
+    await enterDiagnosisScene(page, 'case-001');
+    await page.waitForSelector('#diagnosis-react-root', { timeout: TIMEOUTS.DIALOG_UI });
+
+    // Simulate need-improvement diagnosis (many errors)
+    await simulateDiagnosisComplete(page, NEED_IMPROVEMENT_RESULT);
+
+    // Wait for DialogUI to appear
+    await page.waitForSelector('#dialog-ui-root', { timeout: TIMEOUTS.TOOL_CARD });
+
+    // Wait for NPC response to complete
+    await waitForNPCResponse(page);
+
+    // Verify dialog content contains need-improvement keyword
+    const dialogContent = page.locator('.dialog-content, .dialog-scroll');
+    const text = await dialogContent.textContent();
+
+    // Check for need-improvement keyword in feedback
+    expect(text).toContain('需加强');
+    console.log('[NPC-FB-05] Feedback text length:', text?.length);
+  });
+
+  // ========================================
+  // UI State Tests (NPC-FB-07~08)
+  // ========================================
+
+  test('NPC-FB-07: Return to ClinicScene after feedback', async ({ page }) => {
+    // Enter diagnosis scene
+    await enterDiagnosisScene(page, 'case-001');
+    await page.waitForSelector('#diagnosis-react-root', { timeout: TIMEOUTS.DIALOG_UI });
+
+    // Simulate diagnosis completion
+    await simulateDiagnosisComplete(page, EXCELLENT_RESULT);
+
+    // Wait for DialogUI to appear
+    await page.waitForSelector('#dialog-ui-root', { timeout: TIMEOUTS.TOOL_CARD });
+    await waitForNPCResponse(page);
+
+    // Close the dialog
+    const closeBtn = page.locator('.dialog-close-btn');
+    const count = await closeBtn.count();
+
+    if (count > 0) {
+      await closeBtn.click();
+    } else {
+      await page.keyboard.press('Escape');
+    }
+
+    await page.waitForTimeout(TIMEOUTS.SHORT);
+
+    // Verify dialog is removed
+    const dialogRemoved = await page.locator('#dialog-ui-root').isVisible().catch(() => false);
+    expect(dialogRemoved).toBe(false);
+
+    // Verify we're back in ClinicScene
+    const sceneState = await page.evaluate(() => {
+      const game = (window as any).__PHASER_GAME__;
+      if (!game) return { exists: false };
+
+      const activeScene = game.scene.isActive('ClinicScene');
+      const diagnosisScene = game.scene.isActive('DiagnosisScene');
+
+      return {
+        exists: true,
+        clinicActive: activeScene,
+        diagnosisActive: diagnosisScene
+      };
+    });
+
+    expect(sceneState.exists).toBe(true);
+    // ClinicScene should be active after closing feedback
+    expect(sceneState.clinicActive).toBe(true);
+    // DiagnosisScene should no longer be active
+    expect(sceneState.diagnosisActive).toBe(false);
+  });
+
+  test('NPC-FB-08: Feedback mode UI state', async ({ page }) => {
+    // Enter diagnosis scene
+    await enterDiagnosisScene(page, 'case-001');
+    await page.waitForSelector('#diagnosis-react-root', { timeout: TIMEOUTS.DIALOG_UI });
+
+    // Simulate diagnosis completion
+    await simulateDiagnosisComplete(page, EXCELLENT_RESULT);
+
+    // Wait for DialogUI to appear
+    await page.waitForSelector('#dialog-ui-root', { timeout: TIMEOUTS.TOOL_CARD });
+
+    // Verify dialog has feedback mode indicators
+    const dialogRoot = page.locator('#dialog-ui-root');
+
+    // Check for feedback-related class or attribute
+    const hasFeedbackClass = await dialogRoot.locator('.dialog-feedback, .feedback-mode').count() > 0;
+    const hasModeAttribute = await dialogRoot.getAttribute('data-mode') === 'feedback';
+
+    // Either feedback class or mode attribute should indicate feedback mode
+    expect(hasFeedbackClass || hasModeAttribute).toBe(true);
+
+    // Verify dialog title contains NPC name (青木)
+    const dialogTitle = page.locator('.dialog-title');
+    const titleText = await dialogTitle.textContent();
+    expect(titleText).toContain('青木');
+
+    // Verify no input field in feedback mode (NPC only speaks)
+    const inputField = page.locator('.dialog-input');
+    const inputVisible = await inputField.isVisible().catch(() => false);
+    expect(inputVisible).toBe(false);
+
+    console.log('[NPC-FB-08] Feedback mode UI verified');
   });
 });

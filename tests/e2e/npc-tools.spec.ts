@@ -13,18 +13,13 @@ import {
   closeDialog,
   verifyToolCardVisible,
   verifyToolCardRunning,
-  verifyToolCardComplete
+  verifyToolCardComplete,
+  TIMEOUTS
 } from './utils/npc-test-helpers';
 
 test.setTimeout(120000);
 
 test.describe('NPC MCP Tools Tests', () => {
-  test.beforeEach(async ({ page }) => {
-    await page.goto('http://localhost:3000');
-    await page.waitForSelector('canvas');
-    await page.waitForTimeout(3000);
-  });
-
   // NPC-TL-01: get_inventory触发
   test('NPC-TL-01: get_inventory tool triggered', async ({ page }) => {
     await enterClinicSceneDirect(page);
@@ -90,7 +85,7 @@ test.describe('NPC MCP Tools Tests', () => {
     await enterClinicSceneDirect(page);
     await triggerDialog(page);
 
-    await page.waitForTimeout(3000);
+    await page.waitForTimeout(TIMEOUTS.SCENE_LOAD);
 
     const dialogVisible = await page.locator('#dialog-ui-root').isVisible();
     expect(dialogVisible).toBe(true);
@@ -102,7 +97,7 @@ test.describe('NPC MCP Tools Tests', () => {
     await triggerDialog(page);
 
     await sendUserMessage(page, '查看我的背包');
-    await page.waitForTimeout(500);
+    await page.waitForTimeout(TIMEOUTS.SHORT);
 
     await verifyToolCardRunning(page);
   });
@@ -134,7 +129,7 @@ test.describe('NPC MCP Tools Tests', () => {
     if (toolCards > 0) {
       const header = page.locator('.tool-card-header').first();
       await header.click();
-      await page.waitForTimeout(500);
+      await page.waitForTimeout(TIMEOUTS.SHORT);
 
       const detail = await page.locator('.tool-card-detail').count();
       expect(detail).toBeGreaterThanOrEqual(0);

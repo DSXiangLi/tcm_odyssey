@@ -14,7 +14,7 @@ import { Page, expect } from '@playwright/test';
 const BASE_URL = process.env.E2E_BASE_URL || 'http://localhost:3000';
 
 /** 超时时间常量（避免魔法数字） */
-const TIMEOUTS = {
+export const TIMEOUTS = {
   SCENE_LOAD: 3000,
   DIALOG_UI: 5000,
   NPC_RESPONSE: 60000,

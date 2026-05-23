@@ -12,6 +12,7 @@ import { test, expect } from '@playwright/test';
 import {
   TIMEOUTS,
   BASE_URL,
+  HERMES_BACKEND_URL,
   simulateDiagnosisComplete,
   waitForNPCResponse,
   enterDiagnosisSceneDirect,
@@ -24,8 +25,7 @@ import {
 // Configuration Constants
 // ========================================
 
-/** Hermes Backend URL (NPC Agent Service) */
-const HERMES_BACKEND_URL = 'http://localhost:8642';
+// HERMES_BACKEND_URL now imported from helpers with env var support
 
 // Set longer timeout for tests involving game loading and SSE streams
 test.setTimeout(TIMEOUTS.NPC_RESPONSE);

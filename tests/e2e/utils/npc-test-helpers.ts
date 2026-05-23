@@ -13,6 +13,9 @@ import { Page, expect } from '@playwright/test';
 /** 可配置的基础URL（支持环境变量覆盖） */
 export const BASE_URL = process.env.E2E_BASE_URL || 'http://localhost:3000';
 
+/** Hermes Backend URL (NPC Agent Service) */
+export const HERMES_BACKEND_URL = process.env.HERMES_BACKEND_URL || 'http://localhost:8642';
+
 /** 超时时间常量（避免魔法数字） */
 export const TIMEOUTS = {
   SCENE_LOAD: 3000,

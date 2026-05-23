@@ -19,11 +19,6 @@ import {
 test.setTimeout(60000);
 
 test.describe('NPC Heartbeat Tests', () => {
-  test.beforeEach(async ({ page }) => {
-    await page.goto('http://localhost:3000');
-    await page.waitForSelector('canvas');
-  });
-
   // NPC-HB-01: ClinicScene进入触发心跳
   test('NPC-HB-01: Heartbeat triggered on ClinicScene enter', async ({ page }) => {
     await enterClinicSceneDirect(page);

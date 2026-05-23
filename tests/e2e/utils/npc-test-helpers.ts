@@ -11,7 +11,7 @@ import { Page, expect } from '@playwright/test';
 // ========================================
 
 /** 可配置的基础URL（支持环境变量覆盖） */
-const BASE_URL = process.env.E2E_BASE_URL || 'http://localhost:3000';
+export const BASE_URL = process.env.E2E_BASE_URL || 'http://localhost:3000';
 
 /** 超时时间常量（避免魔法数字） */
 export const TIMEOUTS = {
@@ -163,6 +163,23 @@ export async function enterGardenSceneDirect(page: Page): Promise<void> {
   await page.goto(`${BASE_URL}/?scene=garden`);
   await page.waitForSelector('canvas');
   await page.waitForTimeout(TIMEOUTS.SCENE_LOAD);
+}
+
+/**
+ * 进入诊断场景（先导航到页面再切换场景）
+ */
+export async function enterDiagnosisSceneDirect(page: Page, caseId: string = 'case-001'): Promise<void> {
+  await page.goto(BASE_URL);
+  await page.waitForSelector('canvas');
+  await page.waitForTimeout(TIMEOUTS.SCENE_LOAD);
+  // Switch to DiagnosisScene via game API
+  await page.evaluate((id) => {
+    const game = (window as any).__PHASER_GAME__;
+    if (game) {
+      game.scene.start('DiagnosisScene', { caseId: id });
+    }
+  }, caseId);
+  await page.waitForTimeout(TIMEOUTS.MEDIUM);
 }
 
 // ========================================

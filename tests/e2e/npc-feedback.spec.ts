@@ -11,9 +11,10 @@
 import { test, expect } from '@playwright/test';
 import {
   TIMEOUTS,
+  BASE_URL,
   simulateDiagnosisComplete,
   waitForNPCResponse,
-  enterDiagnosisScene,
+  enterDiagnosisSceneDirect,
   MOCK_DIAGNOSIS_RESULT,
   MOCK_LOW_SCORE_DIAGNOSIS,
   DiagnosisResultData
@@ -23,8 +24,8 @@ import {
 // Configuration Constants
 // ========================================
 
+/** Hermes Backend URL (NPC Agent Service) */
 const HERMES_BACKEND_URL = 'http://localhost:8642';
-const FRONTEND_URL = 'http://localhost:3000';
 
 // Set longer timeout for tests involving game loading and SSE streams
 test.setTimeout(TIMEOUTS.NPC_RESPONSE);
@@ -34,7 +35,7 @@ test.setTimeout(TIMEOUTS.NPC_RESPONSE);
  * BootScene supports ?scene=clinic to directly jump to ClinicScene after asset loading
  */
 async function enterClinicSceneDirect(page: any) {
-  await page.goto(`${FRONTEND_URL}/?scene=clinic`);
+  await page.goto(`${BASE_URL}/?scene=clinic`);
   await page.waitForSelector('canvas');
   // Wait for game to load
   await page.waitForTimeout(TIMEOUTS.SCENE_LOAD);
@@ -82,61 +83,19 @@ const NEED_IMPROVEMENT_RESULT: DiagnosisResultData = MOCK_LOW_SCORE_DIAGNOSIS;
 
 test.describe('NPC Autonomous Agent - Feedback Tests', () => {
 
-  test.beforeEach(async ({ page }) => {
-    await page.goto(FRONTEND_URL);
-    await page.waitForSelector('canvas');
-    // Wait for BootScene to complete asset loading
-    await page.waitForTimeout(TIMEOUTS.SCENE_LOAD);
-  });
-
   test('NPC-SFB-01: Diagnosis feedback triggered after completion', async ({ page }) => {
     // Step 1: Start DiagnosisScene directly with case-001
-    await enterDiagnosisScene(page, 'case-001');
+    await enterDiagnosisSceneDirect(page, 'case-001');
 
     // Wait for React UI to mount
-    await page.waitForSelector('#diagnosis-react-root', { timeout: 5000 });
+    await page.waitForSelector('#diagnosis-react-root', { timeout: TIMEOUTS.DIALOG_UI });
 
     // Step 2: Simulate diagnosis completion by calling handleDiagnosisComplete
     // This should trigger NPC feedback via npc-feedback-bridge
-    await page.evaluate(() => {
-      // Use the exposed __DIAGNOSIS_SCENE__ interface
-      const diagnosisScene = (window as any).__DIAGNOSIS_SCENE__;
-      if (!diagnosisScene || !diagnosisScene.handleDiagnosisComplete) return;
-
-      // Create mock diagnosis result matching case-001 pattern
-      // case-001: 李秀梅, 35岁, 女, 主诉:脘腹胀满
-      // Correct pattern: 湿邪困脾证 (b1), 藿香正气散 (f1)
-      const mockResult = {
-        caseId: 'case-001',
-        patient: {
-          name: '李秀梅',
-          age: 35,
-          gender: '女',
-          chief: '脘腹胀满'
-        },
-        diagnosis: {
-          tongue: {
-            color: '淡白',
-            coating: '白腻',
-            shape: '胖大有齿痕',
-            moisture: '水滑'
-          },
-          pulse: {
-            position: '关',
-            quality: '濡缓'
-          },
-          symptoms: ['脘腹胀满', '恶心呕吐', '大便溏泄'],
-          syndrome: ['b1'],  // 正确辨证
-          prescription: ['f1']  // 正确选方
-        }
-      };
-
-      // Call handleDiagnosisComplete directly (now exposed via __DIAGNOSIS_SCENE__)
-      diagnosisScene.handleDiagnosisComplete(mockResult);
-    });
+    await simulateDiagnosisComplete(page, EXCELLENT_RESULT);
 
     // Step 3: Wait for DialogUI to appear (NPC feedback)
-    await page.waitForSelector('#dialog-ui-root', { timeout: 10000 });
+    await page.waitForSelector('#dialog-ui-root', { timeout: TIMEOUTS.TOOL_CARD });
 
     // Step 4: Verify DialogUI is visible with feedback mode
     const dialogRoot = page.locator('#dialog-ui-root');
@@ -144,7 +103,7 @@ test.describe('NPC Autonomous Agent - Feedback Tests', () => {
 
     // Check dialog scroll container exists
     const dialogScroll = page.locator('.dialog-scroll');
-    await expect(dialogScroll).toBeVisible({ timeout: 5000 });
+    await expect(dialogScroll).toBeVisible({ timeout: TIMEOUTS.DIALOG_UI });
 
     // Check NPC name is displayed
     const dialogTitle = page.locator('.dialog-title');
@@ -198,49 +157,14 @@ test.describe('NPC Autonomous Agent - Feedback Tests', () => {
 
   test('NPC-SFB-03: NPC feedback content matches score level', async ({ page }) => {
     // Step 1: Enter DiagnosisScene
-    await enterDiagnosisScene(page, 'case-001');
-    await page.waitForSelector('#diagnosis-react-root', { timeout: 5000 });
+    await enterDiagnosisSceneDirect(page, 'case-001');
+    await page.waitForSelector('#diagnosis-react-root', { timeout: TIMEOUTS.DIALOG_UI });
 
     // Step 2: Simulate low-score diagnosis (wrong answers)
-    await page.evaluate(() => {
-      // Use the exposed __DIAGNOSIS_SCENE__ interface
-      const diagnosisScene = (window as any).__DIAGNOSIS_SCENE__;
-      if (!diagnosisScene || !diagnosisScene.handleDiagnosisComplete) return;
-
-      // Wrong diagnosis pattern (should be low score)
-      // case-001 correct: b1(湿邪困脾), f1(藿香正气散)
-      // Wrong: b2(风寒表实), f2(麻黄汤)
-      const wrongResult = {
-        caseId: 'case-001',
-        patient: {
-          name: '李秀梅',
-          age: 35,
-          gender: '女',
-          chief: '脘腹胀满'
-        },
-        diagnosis: {
-          tongue: {
-            color: '红',  // Wrong - should be 淡白
-            coating: '黄',  // Wrong - should be 白腻
-            shape: '瘦',
-            moisture: '干燥'
-          },
-          pulse: {
-            position: '寸',  // Wrong - should be 关
-            quality: '数'   // Wrong - should be 濡缓
-          },
-          symptoms: [],  // Empty symptoms
-          syndrome: ['b2'],  // Wrong syndrome
-          prescription: ['f2']  // Wrong prescription
-        }
-      };
-
-      // Call handleDiagnosisComplete directly (now exposed via __DIAGNOSIS_SCENE__)
-      diagnosisScene.handleDiagnosisComplete(wrongResult);
-    });
+    await simulateDiagnosisComplete(page, NEED_IMPROVEMENT_RESULT);
 
     // Step 3: Wait for DialogUI to appear
-    await page.waitForSelector('#dialog-ui-root', { timeout: 10000 });
+    await page.waitForSelector('#dialog-ui-root', { timeout: TIMEOUTS.TOOL_CARD });
 
     // Step 4: Verify DialogUI structure exists
     const dialogRoot = page.locator('#dialog-ui-root');
@@ -248,7 +172,7 @@ test.describe('NPC Autonomous Agent - Feedback Tests', () => {
 
     // Step 5: Verify NPC is in feedback mode (dialog exists)
     const dialogScroll = page.locator('.dialog-scroll');
-    await expect(dialogScroll).toBeVisible({ timeout: 5000 });
+    await expect(dialogScroll).toBeVisible({ timeout: TIMEOUTS.DIALOG_UI });
 
     // Step 6: Check dialog title shows NPC name
     const dialogTitle = page.locator('.dialog-title');
@@ -334,8 +258,8 @@ test.describe('NPC Autonomous Agent - Feedback Tests', () => {
 
   test('NPC-SFB-06: DiagnosisScene exposes correct global interface', async ({ page }) => {
     // Verify DiagnosisScene exposes __DIAGNOSIS_SCENE__ for testing
-    await enterDiagnosisScene(page, 'case-001');
-    await page.waitForTimeout(2000);
+    await enterDiagnosisSceneDirect(page, 'case-001');
+    await page.waitForTimeout(TIMEOUTS.MEDIUM);
 
     const diagnosisState = await page.evaluate(() => {
       const diagnosisScene = (window as any).__DIAGNOSIS_SCENE__;
@@ -359,34 +283,11 @@ test.describe('NPC Autonomous Agent - Feedback Tests', () => {
 
   test('NPC-SFB-07: DialogUI cleanup on close', async ({ page }) => {
     // Verify DialogUI is properly cleaned up when closed
-    await enterDiagnosisScene(page, 'case-001');
+    await enterDiagnosisSceneDirect(page, 'case-001');
     await page.waitForSelector('#diagnosis-react-root', { timeout: TIMEOUTS.DIALOG_UI });
 
-    // Trigger diagnosis complete
-    await page.evaluate(() => {
-      // Use the exposed __DIAGNOSIS_SCENE__ interface
-      const diagnosisScene = (window as any).__DIAGNOSIS_SCENE__;
-      if (!diagnosisScene || !diagnosisScene.handleDiagnosisComplete) return;
-
-      const mockResult = {
-        caseId: 'case-001',
-        patient: {
-          name: '李秀梅',
-          age: 35,
-          gender: '女',
-          chief: '脘腹胀满'
-        },
-        diagnosis: {
-          tongue: { color: '淡白', coating: '白腻', shape: '胖大有齿痕', moisture: '水滑' },
-          pulse: { position: '关', quality: '濡缓' },
-          symptoms: ['脘腹胀满'],
-          syndrome: ['b1'],
-          prescription: ['f1']
-        }
-      };
-
-      diagnosisScene.handleDiagnosisComplete(mockResult);
-    });
+    // Trigger diagnosis complete using imported constant
+    await simulateDiagnosisComplete(page, EXCELLENT_RESULT);
 
     // Wait for DialogUI
     await page.waitForSelector('#dialog-ui-root', { timeout: TIMEOUTS.TOOL_CARD });
@@ -419,7 +320,7 @@ test.describe('NPC Autonomous Agent - Feedback Tests', () => {
 
   test('NPC-FB-02: Excellent score (90+) feedback contains "优秀" keyword', async ({ page }) => {
     // Enter diagnosis scene
-    await enterDiagnosisScene(page, 'case-001');
+    await enterDiagnosisSceneDirect(page, 'case-001');
     await page.waitForSelector('#diagnosis-react-root', { timeout: TIMEOUTS.DIALOG_UI });
 
     // Simulate excellent diagnosis (all correct answers)
@@ -442,7 +343,7 @@ test.describe('NPC Autonomous Agent - Feedback Tests', () => {
 
   test('NPC-FB-03: Good score (70-89) feedback contains "良好" keyword', async ({ page }) => {
     // Enter diagnosis scene
-    await enterDiagnosisScene(page, 'case-001');
+    await enterDiagnosisSceneDirect(page, 'case-001');
     await page.waitForSelector('#diagnosis-react-root', { timeout: TIMEOUTS.DIALOG_UI });
 
     // Simulate good diagnosis (minor errors)
@@ -465,7 +366,7 @@ test.describe('NPC Autonomous Agent - Feedback Tests', () => {
 
   test('NPC-FB-04: Pass score (60-69) feedback contains "合格" keyword', async ({ page }) => {
     // Enter diagnosis scene
-    await enterDiagnosisScene(page, 'case-001');
+    await enterDiagnosisSceneDirect(page, 'case-001');
     await page.waitForSelector('#diagnosis-react-root', { timeout: TIMEOUTS.DIALOG_UI });
 
     // Simulate pass diagnosis (some errors)
@@ -488,7 +389,7 @@ test.describe('NPC Autonomous Agent - Feedback Tests', () => {
 
   test('NPC-FB-05: Need improvement (<60) feedback contains "需加强" keyword', async ({ page }) => {
     // Enter diagnosis scene
-    await enterDiagnosisScene(page, 'case-001');
+    await enterDiagnosisSceneDirect(page, 'case-001');
     await page.waitForSelector('#diagnosis-react-root', { timeout: TIMEOUTS.DIALOG_UI });
 
     // Simulate need-improvement diagnosis (many errors)
@@ -515,7 +416,7 @@ test.describe('NPC Autonomous Agent - Feedback Tests', () => {
 
   test('NPC-FB-07: Return to ClinicScene after feedback', async ({ page }) => {
     // Enter diagnosis scene
-    await enterDiagnosisScene(page, 'case-001');
+    await enterDiagnosisSceneDirect(page, 'case-001');
     await page.waitForSelector('#diagnosis-react-root', { timeout: TIMEOUTS.DIALOG_UI });
 
     // Simulate diagnosis completion
@@ -565,7 +466,7 @@ test.describe('NPC Autonomous Agent - Feedback Tests', () => {
 
   test('NPC-FB-08: Feedback mode UI state', async ({ page }) => {
     // Enter diagnosis scene
-    await enterDiagnosisScene(page, 'case-001');
+    await enterDiagnosisSceneDirect(page, 'case-001');
     await page.waitForSelector('#diagnosis-react-root', { timeout: TIMEOUTS.DIALOG_UI });
 
     // Simulate diagnosis completion

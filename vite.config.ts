@@ -6,10 +6,16 @@ export default defineConfig({
   base: './',
   server: {
     port: 3000,
-    open: true
+    open: true,
+    watch: {
+      ignored: ['**/.worktrees/**', '**/node_modules/**', '**/__pycache__/**']
+    }
   },
   build: {
     outDir: 'dist',
     assetsDir: 'assets'
+  },
+  optimizeDeps: {
+    include: ['react', 'react-dom', 'react-markdown']
   }
 })

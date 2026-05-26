@@ -21,6 +21,7 @@ class DialogLogger:
         self.log_dir = Path(log_dir)
         self.current_session: Dict[str, Any] = {}
         self.text_buffer: str = ""
+        self.thinking_buffer: str = ""  # NEW: separate buffer for reasoning content
 
     def start_session(self, npc_id: str, player_id: str, user_message: str) -> str:
         """开始对话会话
@@ -41,9 +42,11 @@ class DialogLogger:
             "timestamp_start": datetime.now().isoformat(),
             "user_message": user_message,
             "tool_calls": [],
-            "full_response": ""
+            "full_response": "",
+            "full_thinking": ""  # NEW: store complete thinking content
         }
         self.text_buffer = ""
+        self.thinking_buffer = ""
         return session_id
 
     def log_tool_call(self, name: str, args: dict, result: dict):
@@ -62,13 +65,17 @@ class DialogLogger:
             "timestamp": datetime.now().isoformat()
         })
 
-    def accumulate_text(self, text: str):
+    def accumulate_text(self, text: str, is_reasoning: bool = False):
         """累积响应文本
 
         Args:
             text: SSE流中的文本片段
+            is_reasoning: 是否为推理/思考内容
         """
-        self.text_buffer += text
+        if is_reasoning:
+            self.thinking_buffer += text
+        else:
+            self.text_buffer += text
 
     def end_session(self, token_count: int = None) -> str:
         """结束对话会话并保存日志
@@ -84,6 +91,7 @@ class DialogLogger:
 
         self.current_session["timestamp_end"] = datetime.now().isoformat()
         self.current_session["full_response"] = self.text_buffer
+        self.current_session["full_thinking"] = self.thinking_buffer  # NEW: save thinking content
 
         # 计算持续时间
         start_time = datetime.fromisoformat(self.current_session["timestamp_start"])
@@ -108,6 +116,7 @@ class DialogLogger:
 
         # 清空缓冲
         self.text_buffer = ""
+        self.thinking_buffer = ""
         self.current_session = {}
 
         return str(file_path)

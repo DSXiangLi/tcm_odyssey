@@ -136,7 +136,7 @@ npx playwright test tests/e2e/diagnosis-html-ui.spec.ts --workers=1
 
 ### Phase 2: AI视觉验收
 
-使用 webapp-testing 技能：
+使用 webwright 技能：
 1. 启动游戏，进入诊断场景
 2. 截取舌诊/脉诊/问诊/辨证/选方各阶段截图
 3. AI评估各阶段视觉质量

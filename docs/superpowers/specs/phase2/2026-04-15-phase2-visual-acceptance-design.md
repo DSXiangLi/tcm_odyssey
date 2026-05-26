@@ -590,7 +590,7 @@ git branch -D dev
 
 | Skill | 用途 | 集成时机 |
 |-------|------|---------|
-| **webapp-testing** | Web应用端到端测试 | 截图采集阶段 - 启动浏览器、模拟操作、采集截图 |
+| **webwright** | Web应用端到端测试 | 截图采集阶段 - 启动浏览器、模拟操作、采集截图 |
 | **e2e-testing** | E2E测试框架 | 截图控制器实现 - 复用Playwright基础设施 |
 | **systematic-debugging** | 系统化调试 | 评估失败时 - 根因分析而非猜测 |
 | **verification-loop** | 验证循环 | 修改执行后 - 编译验证、测试验证 |
@@ -603,7 +603,7 @@ git branch -D dev
 ┌─────────────────────────────────────────────────────────────────────┐
 │                     Skill集成自动化流程                               │
 ├─────────────────────────────────────────────────────────────────────┤
-│  1. webapp-testing → 启动浏览器，模拟玩家操作，采集截图集             │
+│  1. webwright → 启动浏览器，模拟玩家操作，采集截图集             │
 │  2. visual_evaluator → Qwen VL评估，生成报告                        │
 │  3. modification_executor → 解析建议，修改代码                        │
 │  4. verification-loop → 编译验证 + 测试验证                          │
@@ -616,7 +616,7 @@ git branch -D dev
 
 #### 截图采集阶段
 
-**调用**: `example-skills:webapp-testing`
+**调用**: `webwright`
 
 **配置要点**:
 ```typescript
@@ -672,10 +672,10 @@ const screenshotConfig = {
 
 | 场景 | Skill组合 | 效果 |
 |-----|----------|------|
-| **首次截图采集** | webapp-testing + e2e-testing | 一次性采集全部35张截图 |
+| **首次截图采集** | webwright + e2e-testing | 一次性采集全部35张截图 |
 | **修改验证失败** | systematic-debugging + verification-loop | 根因分析 → 修复 → 验证闭环 |
 | **新模块开发** | tdd-workflow + verify | 测试先行，确保质量 |
-| **循环迭代优化** | verification-loop + webapp-testing | 修改 → 验证 → 截图 → 评估 |
+| **循环迭代优化** | verification-loop + webwright | 修改 → 验证 → 截图 → 评估 |
 
 ---
 
@@ -706,7 +706,7 @@ const screenshotConfig = {
 
 | ID | 类别 | 问题 | 解决方案 | 效果 | 关联Skill |
 |----|-----|------|---------|------|----------|
-| E001 | 截图 | Canvas元素无法用DOM选择器定位 | 使用page.evaluate访问游戏全局状态 | 成功采集 | webapp-testing |
+| E001 | 截图 | Canvas元素无法用DOM选择器定位 | 使用page.evaluate访问游戏全局状态 | 成功采集 | webwright |
 | E002 | 评估 | Qwen VL对像素风格识别不准 | 增加像素风格描述Prompt上下文 | 准确率提升15% | - |
 | E003 | 修改 | 页面evaluate无法访问Node.js常量 | 在浏览器环境内定义本地常量 | 测试通过 | systematic-debugging |
 | ... | ... | ... | ... | ... | ... |

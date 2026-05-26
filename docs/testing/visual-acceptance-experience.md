@@ -12,7 +12,7 @@
 
 | ID | 类别 | 问题 | 解决方案 | 效果 | 关联Skill | 日期 |
 |----|-----|------|---------|------|----------|------|
-| E001 | 截图采集 | Canvas元素无法用DOM选择器定位 | 使用page.evaluate访问游戏全局状态 | 成功采集35张截图 | webapp-testing | 2026-04-06 |
+| E001 | 截图采集 | Canvas元素无法用DOM选择器定位 | 使用page.evaluate访问游戏全局状态 | 成功采集35张截图 | webwright | 2026-04-06 |
 | E002 | 状态暴露 | 测试无法读取游戏内部状态 | 暴露Manager实例到window全局 | 测试通过率提升85% | - | 2026-04-06 |
 | E003 | 常量访问 | page.evaluate无法访问Node.js常量 | 在浏览器环境内定义本地常量 | 编译通过 | systematic-debugging | 2026-04-15 |
 | E004 | 测试隔离 | 多线程测试导致状态竞争 | 强制单线程执行(workers:1) | 测试稳定通过 | e2e-testing | 2026-04-06 |
@@ -275,7 +275,7 @@ const unwalkableSamples = [
 
 | Skill | 使用次数 | 成功场景 | 主要用途 |
 |-------|---------|---------|---------|
-| webapp-testing | 15+ | 截图采集、E2E测试 | 浏览器操作模拟 |
+| webwright | 15+ | 截图采集、E2E测试 | 浏览器操作模拟 |
 | systematic-debugging | 5+ | 编译失败、测试失败、评估失败 | 根因分析 |
 | verification-loop | 10+ | 修改验证、测试验证 | 验证闭环 |
 | e2e-testing | 20+ | 全部E2E测试 | Playwright框架 |

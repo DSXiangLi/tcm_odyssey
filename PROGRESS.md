@@ -459,7 +459,7 @@ Tool Card content: { icon: '📚', name: '学习进度', preview: '执行中...'
 - 确认新代码是否正确执行
 
 **自动化测试启动**：
-- 用户调用 `example-skills:webapp-testing` 技能
+- 用户调用 `webwright` 技能
 - 查看 `scripts/with_server.py` 用法（前后端服务器生命周期管理）
 - 创建端到端测试脚本定位问题
 

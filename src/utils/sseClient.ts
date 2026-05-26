@@ -14,16 +14,25 @@ export interface SSEOptions {
 
 /**
  * Tool call callback interface for handling NPC tool invocations
+ * Now includes tid for matching tool_result
  */
 export interface ToolCallCallback {
-  (name: string, args: object): void;
+  (name: string, args: object, tid?: string): void;
 }
 
 /**
  * Tool result callback interface for handling tool execution results
+ * Now includes tid for matching tool_call and snippet for preview
  */
 export interface ToolResultCallback {
-  (result: unknown): void;
+  (result: unknown, tid?: string, snippet?: string): void;
+}
+
+/**
+ * Thinking callback interface for handling AI reasoning content
+ */
+export interface ThinkingCallback {
+  (content: string): void;
 }
 
 /**
@@ -55,6 +64,7 @@ export class SSEClient {
    * @param onError 错误回调
    * @param onToolCall 工具调用回调（可选）
    * @param onToolResult 工具结果回调（可选）
+   * @param onThinking AI思考内容回调（可选）
    */
   async chatStream(
     request: ChatRequest,
@@ -62,7 +72,8 @@ export class SSEClient {
     onComplete: (fullResponse: string) => void,
     onError: (error: Error) => void,
     onToolCall?: ToolCallCallback,
-    onToolResult?: ToolResultCallback
+    onToolResult?: ToolResultCallback,
+    onThinking?: ThinkingCallback
   ): Promise<void> {
     this.abortController = new AbortController();
 
@@ -102,7 +113,16 @@ export class SSEClient {
           console.log('[SSEClient] Processing lines:', lines.length, 'first line preview:', lines[0]?.slice(0, 80));
         }
 
-        for (const line of lines) {
+        // 为了打字机效果，逐行处理并添加小delay
+        for (let i = 0; i < lines.length; i++) {
+          const line = lines[i];
+
+          // 添加小delay模拟打字机效果（每chunk 20-50ms）
+          // 只在thinking/text事件时添加delay，其他事件立即处理
+          if (i > 0 && lines.length > 1) {
+            // 使用Promise.delay来异步等待
+            await new Promise(resolve => setTimeout(resolve, 15));
+          }
           if (line.startsWith('data: ')) {
             const data = line.slice(6);
             if (data === '[DONE]') {
@@ -124,21 +144,31 @@ export class SSEClient {
                 onChunk(parsed.content);
               }
 
-              // Debug log for SSE events
-              if (parsed.type !== 'text') {
-                console.log('[SSEClient] Received event:', parsed.type, parsed);
+              // Debug log for ALL SSE events (including text/thinking for investigation)
+              console.log('[SSEClient] Received event:', parsed.type, {
+                ...(parsed.type === 'tool_call' ? { name: parsed.name, tid: parsed.tid, args: parsed.args } : {}),
+                ...(parsed.type === 'tool_result' ? { tid: parsed.tid, snippet: parsed.snippet?.slice(0, 50) } : {}),
+                ...(parsed.type === 'text' ? { content: parsed.content?.slice(0, 30) } : {}),
+                ...(parsed.type === 'thinking' ? { content: parsed.content?.slice(0, 30) } : {}),
+                ...(parsed.type === 'session_end' ? { session_id: parsed.session_id } : {}),
+              });
+
+              // NEW: Handle thinking/reasoning content
+              if (parsed.type === 'thinking' && parsed.content && onThinking) {
+                console.log('[SSEClient] Thinking chunk:', parsed.content.slice(0, 50));
+                onThinking(parsed.content);
               }
 
-              // NEW: Handle tool calls
+              // NEW: Handle tool calls - pass tid for matching
               if (parsed.type === 'tool_call' && onToolCall) {
-                console.log('[SSEClient] Invoking onToolCall:', parsed.name, parsed.args);
-                onToolCall(parsed.name, parsed.args || {});
+                console.log('[SSEClient] Invoking onToolCall:', parsed.name, parsed.tid, parsed.args);
+                onToolCall(parsed.name, parsed.args || {}, parsed.tid);
               }
 
-              // NEW: Handle tool results (call callback for UI update)
+              // NEW: Handle tool results - pass tid and snippet for matching and preview
               if (parsed.type === 'tool_result' && onToolResult) {
-                console.log('[SSEClient] Invoking onToolResult:', parsed.result);
-                onToolResult(parsed.result);
+                console.log('[SSEClient] Invoking onToolResult:', parsed.tid, parsed.snippet);
+                onToolResult(parsed.result, parsed.tid, parsed.snippet);
               }
             } catch {
               // 非JSON格式，直接作为文本

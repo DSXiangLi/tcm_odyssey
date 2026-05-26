@@ -1,70 +1,43 @@
-# Handover - Session 2026-05-16
+# Handover - 2026-05-24
 
-**任务类型**: 基金演示幻灯片卡片翻转UI修复（临时任务）
-**项目主线状态**: Phase 2.5 Hermes NPC后端基础完成 ✅，DialogUI设计+计划同步完成，待实现
+## 下一步指令（明确todo）
 
----
+**启动后立即执行**:
+1. 将测试文件添加到 `.gitignore` - 编辑 `.gitignore` 添加测试相关文件规则
+2. 提交代码改动到 GitHub - `git add . && git commit -m "feat: transparent background in edit mode"`
+3. 更新 README.md 图片展示 - 将 asset 中的效果图添加到 README，并排展示功能图和效果图
 
-## 本次Session成果
-
-### 卡片翻转UI修复 ✅ 已完成
-
-**修复内容**:
-| 修复项 | 详情 |
-|--------|------|
-| 翻转等待时间调整 | 过去20%，回来30%（用户确认） |
-| 标签样式升级 | 金色魔法印章风格，增加发光动画 |
-| Screen3 fallback内容 | 更新与md文件一致 |
-| Screen1_left2推荐内容 | 更新为有色金属ETF天弘 |
-| Screen3_3背面图片 | 新增screen3_3_back.png用于翻转对比 |
-
-**Git提交**: 已提交并推送
+**可选检查**:
+- 验证文本框编辑模式背景透明效果是否正常
+- 确认图片大小测试是否需要继续
 
 ---
 
-## zhongyi_game_v3 项目状态
+## 当前进展状态
 
-**当前分支**: `hermes_dev`
-**当前进度**: Phase 2.5
-
-### 待处理任务（优先级）
-
-| 任务 | 状态 | 说明 |
-|------|------|------|
-| **DialogUI HTML嵌入** | ⏳ 设计+计划完成 | 待执行实现计划（11个Task） |
-| Phase 2.5 病案集 | ⏳ | 设计完成，待执行（C键触发） |
-| Phase 2.5 炮制 | ⏳ | 设计完成，待执行（P键触发） |
-| Phase 2.5 种植 | ⏳ | 入口已存在，待开发 |
-| NPC后端扩展 | 待定 | 更多NPC角色、工具增强 |
+- 文本框编辑模式背景透明 ✅ 完成
+- 测试文件gitignore配置 ⏳ 未完成（用户多次中断）
+- GitHub代码提交 ⏳ 未完成（用户多次中断）
+- README图片展示 ⏳ 未完成（用户多次中断）
 
 ---
 
-## 下次Session执行步骤
+## 待处理队列
 
-1. 确认是否继续基金幻灯片相关工作，或切换到zhongyi_game主线
-2. 如切换主线，从DialogUI HTML嵌入Task 1开始执行
-3. 参考 `docs/superpowers/plans/2026-05-14-dialog-ui-html-embedding.md`
-
----
-
-## PROGRESS 摘要
-
-- Hermes NPC后端基础设施已完成（6工具、4API端点、19/19测试通过）
-- DialogUI HTML嵌入方案设计+计划文档同步完成
-- 当前分支: `hermes_dev`
+| 优先级 | 任务 | 状态 | 验证方式 |
+|--------|------|------|----------|
+| P0 | 测试文件添加到.gitignore | ⏳ 待执行 | git status 不显示测试文件 |
+| P0 | 代码改动提交GitHub | ⏳ 待执行 | git log 有新提交记录 |
+| P0 | README.md图片展示 | ⏳ 待执行 | README 包含并排展示的效果图 |
+| P1 | NPC E2E测试实现计划 | 待定 | docs/superpowers/plans/xxx-plan.md 存在 |
+| P2 | NPC E2E测试实现执行 | 待定 | 测试通过验证 |
 
 ---
 
-## STATE 摘要
+## 参考文档链接
+- 项目文档: [CLAUDE.md](./CLAUDE.md)
+- 进度文档: [PROGRESS.md](./PROGRESS.md)
 
-- Phase 1-2 全部完成 ✅
-- Phase 2.5 部分完成：UI基础、煎药、诊断、NPC验收、背包 ✅
-
----
-
-## 参考文档
-
-- [设计文档](docs/superpowers/specs/phase2.5/2026-05-14-dialog-ui-html-embedding-design.md)
-- [计划文档](docs/superpowers/plans/2026-05-14-dialog-ui-html-embedding.md)
-- [PROGRESS.md](PROGRESS.md) - 进行中任务详情
-- [STATE.md](STATE.md) - 已完成阶段详情
+## 启动命令
+项目开发: `npm run dev`
+测试运行: `npm run test:e2e`

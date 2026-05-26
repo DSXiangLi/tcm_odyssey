@@ -598,4 +598,27 @@ tests/e2e/
 
 ---
 
-*本文档由 Claude Code 维护，更新于 2026-05-23*
+## 本Session进展：webwright插件安装与文档更新 (2026-05-27) ✅
+
+### 变更内容
+
+1. **webwright插件安装**
+   - 替代已废弃的 webapp-testing
+   - 技能调用方式：直接使用 `webwright`（无 `:run` 后缀）
+
+2. **文档技能引用更新**
+   - 更新4个文件，将 `webapp-testing` 替换为 `webwright`
+   - 统一调用方式为 `webwright`（用户纠正：无 `:run` 后缀）
+
+### 更新文件
+
+| 文件 | 变更内容 |
+|------|----------|
+| PROGRESS.md | webwright 替换 webapp-testing |
+| docs/superpowers/specs/phase2/2026-04-15-phase2-visual-acceptance-design.md | webwright 替换 webapp-testing |
+| docs/superpowers/specs/phase2-5/2026-04-29-diagnosis-test-acceptance.md | webwright 替换 webapp-testing |
+| docs/testing/visual-acceptance-experience.md | webwright 替换 webapp-testing |
+
+---
+
+*本文档由 Claude Code 维护，更新于 2026-05-27*

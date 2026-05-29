@@ -497,8 +497,9 @@ export class ClinicScene extends Phaser.Scene {
     this.player.setDepth(10);
 
     // Phase 1.5: 诊所缩放后与药园尺寸一致，玩家缩放也保持一致
-    // 44×24瓦片场景，玩家缩放0.35（与药园相同）
-    this.player.setScale(0.35);
+    // 44×24瓦片场景，玩家使用默认缩放（与室外一致）
+    // 不再额外设置setScale，保持与BootScene.getPlayerScale()一致
+    // this.player.setScale(0.35);  // 已移除
 
     this.gameStateBridge.updatePlayerState({
       x: this.player.x,
@@ -970,16 +971,34 @@ export class ClinicScene extends Phaser.Scene {
       } else {
         this.nearbyHintText?.setVisible(false);
 
-        // 空格键返回室外（当不在NPC附近时）
-        if (this.spaceKey && Phaser.Input.Keyboard.JustDown(this.spaceKey) && !this.isTransitioning) {
-          this.eventBus.emit(GameEvents.SCENE_SWITCH, {
-            from: SCENES.CLINIC,
-            to: SCENES.TOWN_OUTDOOR
-          });
+        // 空格键返回室外（只有站在门口时才能退出）
+        // 门口位置：玩家出生点 (24, 22) 瓦片坐标
+        const doorTileX = CLINIC_SCALED_CONFIG.playerSpawnPoint.x;
+        const doorTileY = CLINIC_SCALED_CONFIG.playerSpawnPoint.y;
+        const doorPixelX = doorTileX * TILE_SIZE + TILE_SIZE / 2 + this.mapOffsetX;
+        const doorPixelY = doorTileY * TILE_SIZE + TILE_SIZE / 2 + this.mapOffsetY;
+        const distanceToDoor = Phaser.Math.Distance.Between(
+          this.player.x, this.player.y,
+          doorPixelX, doorPixelY
+        );
+        const doorTriggerDistance = TILE_SIZE * 1.5;  // 1.5瓦片距离内可退出
 
-          this.isTransitioning = true;
-          this.registry.set('spawnPoint', { x: 60, y: 10 });
-          this.scene.start(SCENES.TOWN_OUTDOOR);
+        if (distanceToDoor < doorTriggerDistance) {
+          // 显示门口提示
+          this.nearbyHintText?.setText('按空格键离开诊所');
+          this.nearbyHintText?.setPosition(this.player.x, this.player.y - 30);
+          this.nearbyHintText?.setVisible(true);
+
+          if (this.spaceKey && Phaser.Input.Keyboard.JustDown(this.spaceKey) && !this.isTransitioning) {
+            this.eventBus.emit(GameEvents.SCENE_SWITCH, {
+              from: SCENES.CLINIC,
+              to: SCENES.TOWN_OUTDOOR
+            });
+
+            this.isTransitioning = true;
+            this.registry.set('spawnPoint', { x: 60, y: 10 });
+            this.scene.start(SCENES.TOWN_OUTDOOR);
+          }
         }
       }
     }

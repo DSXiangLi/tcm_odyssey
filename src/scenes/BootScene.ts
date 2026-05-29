@@ -22,9 +22,9 @@ import { HERBS_DATA } from '../data/inventory-data';
 // 切分后每方向sprite sheet为894x298（3帧横向）
 const PLAYER_FRAME_WIDTH = 298;   // 每帧宽度
 const PLAYER_FRAME_HEIGHT = 298;  // 每帧高度
-// 缩放比例：将224x298像素缩放到合适游戏尺寸
-// 目标高度约64像素（2个瓦片高），按高度缩放
-const PLAYER_SCALE = 64 / PLAYER_FRAME_HEIGHT; // 298 * 0.214 = 64像素
+// 缩放比例：放大50%后约96像素高度（3个瓦片）
+// 原始：64/298≈0.214，放大50%：0.214*1.5≈0.321
+const PLAYER_SCALE = (64 / PLAYER_FRAME_HEIGHT) * 1.5; // 约0.321，显示高度约96像素
 
 export class BootScene extends Phaser.Scene {
   private loadingText!: Phaser.GameObjects.Text;
@@ -77,12 +77,24 @@ export class BootScene extends Phaser.Scene {
    * Phase 2 S3: 加载NPC精灵图素材
    */
   private loadNPCSprites(): void {
-    // 加载teacher2精灵图（用于NPC占位）
-    // qingmu使用teacher2_down作为NPC图像
-    this.load.image('npc_qingmu', 'assets/sprites/npc/teacher2_down.png');
-    this.load.image('npc_laozhang', 'assets/sprites/npc/teacher2_down.png');  // Placeholder
-    this.load.image('npc_neighbor', 'assets/sprites/npc/teacher2_down.png');  // Placeholder
-    console.log('[BootScene] NPC sprites loaded');
+    // NPC精灵图配置：每帧224x298，4帧横向排列
+    const NPC_FRAME_WIDTH = 224;
+    const NPC_FRAME_HEIGHT = 298;
+
+    // 使用spritesheet加载，以便正确裁剪帧
+    this.load.spritesheet('npc_qingmu', 'assets/sprites/npc/teacher2_down.png', {
+      frameWidth: NPC_FRAME_WIDTH,
+      frameHeight: NPC_FRAME_HEIGHT
+    });
+    this.load.spritesheet('npc_laozhang', 'assets/sprites/npc/teacher2_down.png', {
+      frameWidth: NPC_FRAME_WIDTH,
+      frameHeight: NPC_FRAME_HEIGHT
+    });
+    this.load.spritesheet('npc_neighbor', 'assets/sprites/npc/teacher2_down.png', {
+      frameWidth: NPC_FRAME_WIDTH,
+      frameHeight: NPC_FRAME_HEIGHT
+    });
+    console.log('[BootScene] NPC sprites loaded as spritesheets');
   }
 
   /**

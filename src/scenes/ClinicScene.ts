@@ -245,12 +245,14 @@ export class ClinicScene extends Phaser.Scene {
       triggerDistance: qingmuConfig.triggerDistance
     });
 
-    // 创建NPC sprite（使用加载的精灵图）
+    // 创建NPC sprite（使用加载的精灵图第一帧）
     this.npcSprite = this.add.image(
       qingmuConfig.position.x,
       qingmuConfig.position.y,
-      qingmuConfig.spriteKey
+      qingmuConfig.spriteKey,
+      0  // 使用第一帧（帧索引0）
     );
+    // NPC显示尺寸：64x64像素（与之前一致）
     this.npcSprite.setDisplaySize(64, 64);
     this.npcSprite.setDepth(5);
 

@@ -219,7 +219,7 @@ zhongyi_game_v3/hermes/
 
 ## 5. 实施要点
 
-### 5.1 关键发现：插件系统自动发现 Tools
+### 5.1 关键发现 1：插件系统自动发现 Tools
 
 **Hermes Agent 插件发现来源（按优先级）：**
 1. Bundled plugins: `hermes-agent/plugins/<name>/`
@@ -228,6 +228,39 @@ zhongyi_game_v3/hermes/
 4. Pip plugins: `hermes_agent.plugins` entry-points
 
 **这意味着：Tools 可以像 Skills 一样通过 HERMES_HOME 自动发现！**
+
+### 5.1.1 关键发现 2：工具加载机制（非渐进式）
+
+**源码分析（model_tools.py 第263-389行）：**
+
+```python
+def get_tool_definitions(...):
+    # 缓存完整工具定义
+    if quiet_mode:
+        cache_key = (
+            frozenset(enabled_toolsets),
+            frozenset(disabled_toolsets),
+            registry._generation,
+            cfg_fp,
+        )
+        cached = _tool_defs_cache.get(cache_key)
+        ...
+
+    # 返回完整 schema，不是概览
+    filtered_tools = registry.get_definitions(tools_to_include, quiet=quiet_mode)
+    return filtered_tools  # List[Dict[str, Any]] - 完整定义
+```
+
+**关键结论：**
+- ❌ **不使用渐进式加载**（无"概览→详细"两阶段）
+- ✅ 工具定义在初始化时一次性加载
+- ✅ API 调用传递完整工具 schema：`"tools": self.tools`
+- ⚠️ 所有工具 schema 完整发送给 LLM（token 消耗较多）
+
+**影响：**
+- 游戏工具数量适中（6个），不会造成过大的 schema 开销
+- 工具注册后立即可用，无需额外触发
+- 建议：为每个工具提供简洁但完整的 schema
 
 ### 5.2 游戏集成架构（最终方案）
 
@@ -364,12 +397,310 @@ HERMES_HOME/skills/guided_questioning/SKILL.md
 
 ---
 
-## 7. 下一步
+## 7. 详细实施方案
 
-- 确认以上分析正确后，进入详细设计阶段
-- 设计 Skills 格式转换方案
-- 设计 Tools 迁移方案
-- 设计 NPC 选择方案
+### 7.1 Skills 格式转换方案
+
+**当前状态（游戏）：**
+```
+hermes/skills/
+    ├── guided_questioning.md
+    ├── case_analysis.md
+    ├── feedback_evaluation.md
+    └── tcm-knowledge/
+        ├── herbs/
+        ├── formulas/
+        └── syndromes/
+```
+
+**目标状态（Hermes 标准）：**
+```
+HERMES_HOME/skills/
+    ├── guided_questioning/
+    │   └── SKILL.md           # 移动自 guided_questioning.md
+    ├── case_analysis/
+    │   └── SKILL.md           # 移动自 case_analysis.md
+    ├── feedback_evaluation/
+    │   └── SKILL.md           # 移动自 feedback_evaluation.md
+    └── tcm-knowledge/
+        └── herbs/
+        └── formulas/
+        └── syndromes/
+```
+
+**转换脚本（可自动化）：**
+```bash
+#!/bin/bash
+# convert_skills.sh
+
+HERMES_SKILLS="hermes/skills"
+TARGET_SKILLS="$HERMES_HOME/skills"
+
+for skill_file in "$HERMES_SKILLS"/*.md; do
+    skill_name=$(basename "$skill_file" .md)
+    mkdir -p "$TARGET_SKILLS/$skill_name"
+    mv "$skill_file" "$TARGET_SKILLS/$skill_name/SKILL.md"
+    echo "✅ Converted: $skill_file → $TARGET_SKILLS/$skill_name/SKILL.md"
+done
+
+# 保留子目录结构（tcm-knowledge 等）
+cp -r "$HERMES_SKILLS/tcm-knowledge" "$TARGET_SKILLS/"
+echo "✅ Copied: tcm-knowledge directory"
+```
+
+### 7.2 Tools 迁移方案（详细）
+
+**方案 A：创建插件目录（推荐）**
+
+优势：
+- ✅ 符合 Hermes 插件架构标准
+- ✅ 工具自动发现，无需修改官方代码
+- ✅ 清晰的边界：游戏工具独立维护
+- ✅ 可以独立启用/禁用工具集
+
+**实施步骤：**
+
+1. **创建插件目录结构：**
+```bash
+mkdir -p hermes/plugins/tcm-game
+```
+
+2. **创建 plugin.yaml：**
+```yaml
+name: tcm-game
+version: 1.0.0
+description: "中医游戏工具集成 - 背包、进度、病案、小游戏触发"
+author: zhongyi-team
+kind: standalone
+provides_tools:
+  toolsets:
+    - tcm_game
+  tools:
+    - get_inventory
+    - get_learning_progress
+    - get_case_progress
+    - trigger_minigame
+    - record_weakness
+    - get_npc_memory
+```
+
+3. **迁移工具定义（__init__.py）：**
+
+从 `hermes_backend/tools/game_tools.py` 提取：
+- Schema 定义（`*_SCHEMA`）
+- Handler 函数（`*_handler`）
+- 注册逻辑（使用 `ctx.register_tool`）
+
+4. **Handler 实现适配：**
+
+当前 handler 依赖：
+- `hermes_backend/game_state/game_store.py` → MockGameStore
+- 游戏状态查询接口
+
+测试环境需要：
+- Mock 数据源（用于 WebUI 测试）
+- 或连接真实游戏后端（可选）
+
+**方案 B：工具直接迁移到 hermes-agent/tools/（不推荐）**
+
+问题：
+- ❌ 需要修改官方代码库
+- ❌ 违背"不修改官方代码"要求
+- ❌ 工具升级和维护困难
+
+### 7.3 NPC 选择方案
+
+**方案 1：单 NPC 测试（推荐用于初期测试）**
+
+启动时指定一个 NPC：
+```bash
+HERMES_HOME=/path/to/zhongyi_game_v3/hermes/npcs/qingmu \
+    python -m hermes_webui
+```
+
+结构：
+```
+hermes/npcs/qingmu/
+    ├── SOUL.md         → 加载为 NPC 身份
+    ├── USER.md         → 加载为玩家观察
+    ├── MEMORY.md       → 加载为教学心得
+    ├── SYLLABUS.md     → 加载为教学大纲
+    ├── skills/         → NPC 专属 Skills
+    └── plugins/        → NPC 专属 Tools（可选）
+```
+
+**方案 2：NPC 选择脚本（推荐用于多 NPC 测试）**
+
+创建启动脚本：
+```bash
+#!/bin/bash
+# start_npc_test.sh
+
+NPC_NAME=${1:-qingmu}
+HERMES_BASE="/home/lixiang/Desktop/zhongyi_game_v3/hermes"
+
+export HERMES_HOME="$HERMES_BASE/npcs/$NPC_NAME"
+
+echo "🚀 Starting Hermes WebUI with NPC: $NPC_NAME"
+echo "   HERMES_HOME: $HERMES_HOME"
+
+cd ~/Desktop/hermes-webui
+./start.sh
+```
+
+使用：
+```bash
+# 测试青木先生
+./start_npc_test.sh qingmu
+
+# 测试老张
+./start_npc_test.sh laozhang
+
+# 测试邻居
+./start_npc_test.sh neighbor
+```
+
+**方案 3：WebUI NPC 选择器（可选扩展）**
+
+如果需要在 WebUI 内动态切换 NPC，可以：
+- 创建"NPC Gallery"插件
+- 提供 `switch_npc` 工具
+- Handler 修改 HERMES_HOME 并重启 Agent
+
+当前阶段推荐方案 1/2，保持简单。
+
+### 7.4 GameState 集成方案
+
+**测试环境 Mock 数据：**
+
+```python
+# hermes/plugins/tcm-game/mock_state.py
+
+class MockGameState:
+    """测试用的游戏状态 Mock"""
+
+    def get_inventory(self):
+        return {
+            "items": [
+                {"name": "当归", "quantity": 5, "quality": "优质"},
+                {"name": "黄芪", "quantity": 3, "quality": "普通"},
+            ],
+            "capacity": 20
+        }
+
+    def get_learning_progress(self):
+        return {
+            "total_cases": 10,
+            "completed_cases": 3,
+            "accuracy": 0.75,
+            "weak_areas": ["辨证", "方剂配伍"]
+        }
+
+    def get_case_progress(self, case_id: str):
+        return {
+            "case_id": case_id,
+            "diagnosis_stage": 3,
+            "herbs_selected": ["当归", "白芍"],
+            "score": 80
+        }
+```
+
+**生产环境真实数据（可选）：**
+
+如果需要连接真实游戏后端：
+```python
+# hermes/plugins/tcm-game/api_client.py
+
+import requests
+
+class GameAPIClient:
+    """连接游戏后端 API"""
+
+    BASE_URL = "http://localhost:8642"
+
+    def get_inventory(self):
+        resp = requests.get(f"{self.BASE_URL}/api/inventory")
+        return resp.json()
+
+    def get_learning_progress(self):
+        resp = requests.get(f"{self.BASE_URL}/api/progress")
+        return resp.json()
+```
+
+当前阶段推荐使用 Mock 数据，确保测试稳定独立。
+
+---
+
+## 8. 实施路线图
+
+### Phase 1：基础集成（第 1 天）
+
+| 任务 | 预计时间 | 验收标准 |
+|------|---------|---------|
+| 创建插件目录结构 | 30 min | `hermes/plugins/tcm-game/` 存在 |
+| 编写 plugin.yaml | 30 min | Schema 定义完整 |
+| 迁移工具定义 | 2 hour | 所有工具 schema 定义 |
+| 编写 Mock Handler | 2 hour | 工具可调用，返回 Mock 数据 |
+| 验证自动发现 | 30 min | WebUI 启动后工具可见 |
+
+### Phase 2：Skills 适配（第 0.5 天）
+
+| 任务 | 预计时间 | 验收标准 |
+|------|---------|---------|
+| Skills 目录转换 | 30 min | 所有 Skill 有 SKILL.md |
+| Skills 内容验证 | 30 min | 内容正确，无格式错误 |
+| Skills 加载测试 | 30 min | WebUI 启动后 Skills 注入 |
+
+### Phase 3：NPC 配置（第 0.5 天）
+
+| 任务 | 预计时间 | 验收标准 |
+|------|---------|---------|
+| NPC 配置结构整理 | 30 min | SOUL/USER/MEMORY/SYLLABUS |
+| NPC 启动脚本 | 30 min | 可指定 NPC 启动 |
+| NPC 测试验证 | 30 min | NPC 性格/记忆正确加载 |
+
+### Phase 4：完整测试（第 1 天）
+
+| 任务 | 预计时间 | 验收标准 |
+|------|---------|---------|
+| 工具调用测试 | 2 hour | 所有工具正确响应 |
+| NPC 对话测试 | 2 hour | NPC 正确使用工具/Skills |
+| 边界情况测试 | 1 hour | 错误处理正常 |
+| 文档完善 | 1 hour | 使用说明完整 |
+
+---
+
+## 9. 验收标准
+
+### 9.1 功能验收
+
+| 功能 | 测试方法 | 预期结果 |
+|------|---------|---------|
+| NPC 配置加载 | 启动 WebUI，查看 System Prompt | 包含 SOUL/USER/MEMORY |
+| Skills 加载 | 启动 WebUI，查看 System Prompt | Skills 内容注入 |
+| 工具自动发现 | WebUI 界面，查看可用工具列表 | 显示 6 个游戏工具 |
+| 工具调用测试 | 在对话中请求查询背包 | 返回 Mock 数据 |
+| NPC 性格测试 | 与 NPC 对话，观察风格 | 符合 SOUL 定义 |
+| Skills 应用测试 | 询问病案分析 | NPC 应用 Skills 方法 |
+
+### 9.2 架构验收
+
+| 要求 | 验收方法 | 预期结果 |
+|------|---------|---------|
+| 不修改官方代码 | git diff hermes-agent | 无变更 |
+| 不修改官方 WebUI | git diff hermes-webui | 无变更 |
+| 自动发现机制 | 检查加载日志 | 无手动注册代码 |
+| 环境变量控制 | 切换 HERMES_HOME | NPC 配置切换 |
+
+---
+
+## 10. 后续优化方向
+
+1. **多 NPC 动态切换**：WebUI 内 NPC 选择器
+2. **真实游戏状态**：连接游戏后端 API（替代 Mock）
+3. **Skills 丰富化**：添加更多中医教学 Skills
+4. **工具扩展**：添加更多游戏交互工具
+5. **测试自动化**：E2E 测试脚本集成
 
 ---
 

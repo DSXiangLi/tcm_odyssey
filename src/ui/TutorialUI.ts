@@ -583,8 +583,8 @@ export class TutorialUI {
    * - 阴影: 16px强阴影
    */
   private showSkipConfirmDialog(): void {
-    const dialogWidth = 350;
-    const dialogHeight = 180;
+    const dialogWidth = 500;  // 增加宽度以容纳完整文字
+    const dialogHeight = 200;  // 增加高度以容纳多行文字
     const textMaxWidth = dialogWidth - 60;  // 文字宽度约束公式
 
     // 创建弹窗容器

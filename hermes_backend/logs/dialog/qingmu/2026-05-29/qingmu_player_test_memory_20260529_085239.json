@@ -1,0 +1,27 @@
+{
+  "session_id": "qingmu_player_test_memory_20260529_085239",
+  "npc_id": "qingmu",
+  "player_id": "player_test_memory",
+  "timestamp_start": "2026-05-29T08:52:39.135917",
+  "user_message": "你好",
+  "tool_calls": [
+    {
+      "seq": 1,
+      "name": "get_learning_progress",
+      "args": {
+        "player_id": "player_test_memory",
+        "npc_id": "qingmu"
+      },
+      "result": {
+        "tasks": [],
+        "statistics": {}
+      },
+      "timestamp": "2026-05-29T08:52:44.039345"
+    }
+  ],
+  "full_response": "你好。我是青木，百草镇的一名医者。\n\n看你面生，想来是初涉医道吧？《素问》有言：\"上工治未病\"，学医之道，贵在循序渐进。\n\n你可曾想过，为何外感病要从\"表\"与\"里\"来辨？风寒侵袭人体，先从何处而入？",
+  "full_thinking": "玩家向我问好。作为青木先生，我应该以温和的方式回应，并开始引导式教学。我应该先了解学生的学习进度，以便针对性地教学。\n\n让我先查询玩家的学习进度。看起来这是一个新玩家，还没有学习进度。让我以青木先生的身份回应，使用古朴典雅的语言风格，并给出引导式的回应。",
+  "timestamp_end": "2026-05-29T08:52:48.995681",
+  "response_duration_ms": 9859,
+  "response_token_count": 99
+}

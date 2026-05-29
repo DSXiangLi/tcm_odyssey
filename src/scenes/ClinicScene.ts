@@ -252,8 +252,11 @@ export class ClinicScene extends Phaser.Scene {
       qingmuConfig.spriteKey,
       0  // 使用第一帧（帧索引0）
     );
-    // NPC显示尺寸：64x64像素（与之前一致）
-    this.npcSprite.setDisplaySize(64, 64);
+    // NPC显示尺寸：保持原始宽高比(224/298≈0.75)
+    // 显示高度约85像素，宽度约64像素
+    const NPC_DISPLAY_HEIGHT = 85;
+    const NPC_DISPLAY_WIDTH = Math.round(NPC_DISPLAY_HEIGHT * (224 / 298));
+    this.npcSprite.setDisplaySize(NPC_DISPLAY_WIDTH, NPC_DISPLAY_HEIGHT);
     this.npcSprite.setDepth(5);
 
     // 添加NPC名字标签
@@ -498,10 +501,9 @@ export class ClinicScene extends Phaser.Scene {
     });
     this.player.setDepth(10);
 
-    // Phase 1.5: 诊所缩放后与药园尺寸一致，玩家缩放也保持一致
-    // 44×24瓦片场景，玩家使用默认缩放（与室外一致）
-    // 不再额外设置setScale，保持与BootScene.getPlayerScale()一致
-    // this.player.setScale(0.35);  // 已移除
+    // Phase 1.5: 诊所内玩家放大50%（更符合室内家具比例）
+    // 室外场景使用默认缩放(64像素)，室内放大到96像素
+    this.player.setScale(0.214 * 1.5);  // 约0.321
 
     this.gameStateBridge.updatePlayerState({
       x: this.player.x,

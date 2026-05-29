@@ -100,32 +100,51 @@ discover_builtin_tools()  # 自动扫描 tools/*.py，触发模块导入时的 r
 
 ---
 
-## 3. 游戏现有配置结构
+## 3. 游戏NPC配置结构（最终方案）
 
-### 3.1 NPC 配置目录
+**每个NPC独立配置目录，包含完整的skills和tools：**
 
 ```
-zhongyi_game_v3/hermes/
-    ├── npcs/qingmu/
-    │   ├── SOUL.md          # 身份性格
-    │   ├── USER.md          # 对玩家观察
-    │   ├── MEMORY.md        # 教学心得
-    │   └── SYLLABUS.md      # 教学大纲
-    │
-    ├── skills/
-    │   ├── guided_questioning.md  # 引导式提问技巧
-    │   ├── case_analysis.md       # 病案分析方法
-    │   ├── feedback_evaluation.md # 评分反馈模板
-    │   └── tcm-knowledge/
-    │       ├── herbs/
-    │       ├── formulas/
-    │       └── syndromes/
-    │
-    └── npcs/laozhang/  # 老张（药园）
-    └── npcs/neighbor/  # 邻居（家）
+zhongyi_game_v3/hermes/npcs/
+    ├── qingmu/                      # 青木先生（诊所NPC）
+    │   ├── SOUL.md                  # 身份性格
+    │   ├── USER.md                  # 对玩家观察
+    │   ├── MEMORY.md                # 教学心得
+    │   ├── SYLLABUS.md              # 教学大纲
+    │   │
+    │   ├── skills/                  # NPC专属Skills
+    │   │   ├── guided_questioning/
+    │   │   │   └── SKILL.md         # 引导式提问技巧
+    │   │   ├── case_analysis/
+    │   │   │   └ SKILL.md           # 病案分析方法
+    │   │   ├── feedback_evaluation/
+    │   │   │    SKILL.md           # 评分反馈模板
+    │   │   └── tcm-knowledge/       # 中医知识库
+    │   │       ├── herbs/
+    │   │       ├── formulas/
+    │   │       └ syndromes/
+    │   │
+    │   └── plugins/                 # NPC专属Tools
+    │   │   └ tcm-game/
+    │   │   │   ├── plugin.yaml      # 插件manifest
+    │   │   │   └ and __init__.py      # 工具注册
+    │   │
+    │   └── laozhang/                # 老张（药园NPC）
+    │   │   ├── SOUL.md
+    │   │   ├── USER.md
+    │   │   ├── MEMORY.md
+    │   │   ├── skills/
+    │   │   └ and plugins/
+    │   │
+    │   └── neighbor/                # 邻居（家NPC）
+    │   │   ├── SOUL.md
+    │   │   ├── USER.md
+    │   │   ├── MEMORY.md
+    │   │   ├── skills/
+    │   │   └ and plugins/
 ```
 
-### 3.2 游戏工具定义（当前在 hermes_backend/tools/game_tools.py）
+### 3.1 游戏工具定义（当前在 hermes_backend/tools/game_tools.py）
 
 | 工具名称 | 功能描述 | emoji |
 |----------|----------|-------|
@@ -135,6 +154,11 @@ zhongyi_game_v3/hermes/
 | `trigger_minigame` | 启动指定小游戏 | 🎮 |
 | `record_weakness` | 记录学习弱点 | 📝 |
 | `get_npc_memory` | 获取NPC对玩家的观察记录 | 🧠 |
+
+**关键设计：**
+- ✅ **NPC完全独立**：每个NPC有独立的skills和plugins
+- ✅ **环境变量控制**：`HERMES_HOME`直接指向NPC目录
+- ✅ **无需额外选择器**：启动时指定NPC路径即可
 
 ---
 
@@ -155,7 +179,21 @@ zhongyi_game_v3/hermes/
 - Tools 通过 `discover_builtin_tools()` 自动发现
 - **只需正确设置环境变量和工具位置，无需修改官方代码**
 
-**集成架构：**
+**简化架构：每次只测试一个 NPC**
+
+通过 `HERMES_HOME` 直接指向特定 NPC 目录，无需额外的 NPC 选择变量：
+
+```
+# 启动青木先生测试
+HERMES_HOME=/path/to/zhongyi_game_v3/hermes/npcs/qingmu
+
+# 启动老张测试
+HERMES_HOME=/path/to/zhongyi_game_v3/hermes/npcs/laozhang
+```
+
+这样前端每次只和一个智能体对话，结构最简单。
+
+**集成架构（简化版）：**
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
@@ -173,46 +211,38 @@ zhongyi_game_v3/hermes/
 │                                                              │
 │  核心机制：                                                  │
 │  - HERMES_HOME 环境变量定位配置目录                          │
-│  - discover_builtin_tools() 自动发现工具                     │
-│  - agent/prompt_builder.py 加载 SOUL/Skills                  │
+│  - 自动加载 HERMES_HOME/SOUL.md, USER.md, MEMORY.md          │
+│  - 自动扫描 HERMES_HOME/skills/*/SKILL.md                    │
+│  - 自动发现 HERMES_HOME/plugins/*/plugin.yaml                │
 └─────────────────────────────────────────────────────────────┘
                           │
-                          │ HERMES_HOME=/path/to/zhongyi_game_v3/hermes
+                          │ HERMES_HOME=/path/to/hermes/npcs/qingmu
                           │
                           ▼
 ┌─────────────────────────────────────────────────────────────┐
-│                  游戏配置目录 (hermes/)                        │
+│              单个 NPC 配置目录 (hermes/npcs/qingmu/)           │
 │                                                              │
-│  ├── npcs/qingmu/                                           │
-│  │   ├── SOUL.md      → 自动加载为 NPC 身份                  │
-│  │   ├── USER.md      → 自动加载为玩家观察                   │
-│  │   ├── MEMORY.md    → 自动加载为教学心得                   │
-│  │   └── SYLLABUS.md  → 自动加载为教学大纲                   │
+│  ├── SOUL.md         → 自动加载为 NPC 身份                    │
+│  ├── USER.md         → 自动加载为玩家观察                     │
+│  ├── MEMORY.md       → 自动加载为教学心得                     │
+│  ├── SYLLABUS.md     → 自动加载为教学大纲                     │
 │  │                                                          │
 │  ├── skills/                                                │
-│  │   ├── guided_questioning.md  → 自动加载为 Skill          │
-│  │   ├── case_analysis.md       → 自动加载为 Skill          │
-│  │   └── feedback_evaluation.md → 自动加载为 Skill          │
+│  │   ├── guided_questioning/SKILL.md  → 自动加载为 Skill      │
+│  │   ├── case_analysis/SKILL.md       → 自动加载为 Skill      │
+│  │   └── feedback_evaluation/SKILL.md → 自动加载为 Skill      │
 │  │                                                          │
-│  └── ...其他 NPC                                             │
+│  └── plugins/tcm-game/              → 游戏插件目录             │
+│      ├── plugin.yaml                → 插件 manifest            │
+│      └── __init__.py                → 工具注册函数             │
 └─────────────────────────────────────────────────────────────┘
-                          │
-                          │ Tools 需放到 hermes-agent/tools/
-                          │
-                          ▼
-┌─────────────────────────────────────────────────────────────┐
-│              hermes-agent/tools/game_tools.py (迁移)          │
-│                                                              │
-│  游戏工具注册：                                              │
-│  - get_inventory                                            │
-│  - get_learning_progress                                    │
-│  - get_case_progress                                        │
-│  - trigger_minigame                                         │
-│  - record_weakness                                          │
-│  - get_npc_memory                                           │
-│                                                              │
-│  通过 discover_builtin_tools() 自动发现                      │
-└─────────────────────────────────────────────────────────────┘
+```
+
+**关键优势：**
+- ✅ **最简化架构**：只用一个环境变量 `HERMES_HOME`
+- ✅ **官方机制复用**：无需任何修改，原生支持
+- ✅ **NPC 独立隔离**：每个 NPC 有独立的 skills 和 tools 配置
+- ✅ **清晰边界**：一次只测试一个智能体
 ```
 
 ---
@@ -355,9 +385,9 @@ def register(ctx) -> None:
 ### 5.6 启动命令
 
 ```bash
-# 启动 Hermes WebUI，加载游戏配置
+# 启动 Hermes WebUI，测试青木先生
 cd ~/Desktop/hermes-webui
-HERMES_HOME=/home/lixiang/Desktop/zhongyi_game_v3/hermes ./start.sh
+HERMES_HOME=/home/lixiang/Desktop/zhongyi_game_v3/hermes/npcs/qingmu ./start.sh
 ```
 
 ### 5.3 Skills 格式适配
@@ -376,24 +406,31 @@ HERMES_HOME/skills/guided_questioning/SKILL.md
 
 ---
 
-## 6. 待确认事项
+## 6. 待确认事项（已解决）
 
-### 6.1 NPC 选择问题
+### 6.1 NPC 选择问题 ✅ 已解决
 
-- 当前设计假设启动一个 NPC（青木先生）
-- SOUL.md 加载机制：Hermes Agent 默认加载 `HERMES_HOME/SOUL.md`
-- 游戏有多 NPC：需要确认如何处理多 NPC 选择
+**最终方案：环境变量直接指向NPC目录**
 
-**可能方案：**
-- 方案 1：每次启动只测试一个 NPC，切换 NPC 需修改 HERMES_HOME
-- 方案 2：将 NPC 配置合并到一个 SOUL.md（不推荐）
-- 方案 3：创建 NPC 选择入口脚本
+```bash
+HERMES_HOME=/path/to/hermes/npcs/qingmu  # 直接指向NPC目录
+```
 
-### 6.2 GameStateBridge 集成
+**优势：**
+- ✅ 无需额外选择器
+- ✅ 每个NPC完全独立
+- ✅ 使用原生机制（零修改）
 
-- 游戏工具需要访问游戏状态（背包、进度等）
-- 当前 hermes_backend 使用 MockGameStore
-- 需要确认：测试时使用 Mock 数据还是真实游戏状态
+### 6.2 GameState 集成方案（已确认）
+
+**测试环境：使用 Mock 数据（推荐）**
+- 稳定可靠，不依赖游戏运行状态
+- 可以快速验证工具调用逻辑
+- 参见 7.4 GameState Mock 实现
+
+**生产环境：可选连接真实游戏后端（扩展）**
+- 如果需要真实状态，可通过 HTTP API 连接游戏后端
+- 当前阶段优先使用 Mock
 
 ---
 
@@ -508,50 +545,48 @@ provides_tools:
 - ❌ 违背"不修改官方代码"要求
 - ❌ 工具升级和维护困难
 
-### 7.3 NPC 选择方案
+### 7.3 NPC 配置方案（已简化）
 
-**方案 1：单 NPC 测试（推荐用于初期测试）**
+**启动方式：直接指定NPC目录**
 
-启动时指定一个 NPC：
 ```bash
+# 测试青木先生
 HERMES_HOME=/path/to/zhongyi_game_v3/hermes/npcs/qingmu \
-    python -m hermes_webui
+    cd ~/Desktop/hermes-webui && ./start.sh
+
+# 测试老张
+HERMES_HOME=/path/to/zhongyi_game_v3/hermes/npcs/laozhang \
+    cd ~/Desktop/hermes-webui && ./start.sh
+
+# 测试邻居
+HERMES_HOME=/path/to/zhongyi_game_v3/hermes/npcs/neighbor \
+    cd ~/Desktop/hermes-webui && ./start.sh
 ```
 
-结构：
-```
-hermes/npcs/qingmu/
-    ├── SOUL.md         → 加载为 NPC 身份
-    ├── USER.md         → 加载为玩家观察
-    ├── MEMORY.md       → 加载为教学心得
-    ├── SYLLABUS.md     → 加载为教学大纲
-    ├── skills/         → NPC 专属 Skills
-    └── plugins/        → NPC 专属 Tools（可选）
-```
+**启动脚本（可选简化）：**
 
-**方案 2：NPC 选择脚本（推荐用于多 NPC 测试）**
-
-创建启动脚本：
 ```bash
 #!/bin/bash
 # start_npc_test.sh
 
 NPC_NAME=${1:-qingmu}
-HERMES_BASE="/home/lixiang/Desktop/zhongyi_game_v3/hermes"
+HERMES_BASE="/home/lixiang/Desktop/zhongyi_game_v3/hermes/npcs"
 
-export HERMES_HOME="$HERMES_BASE/npcs/$NPC_NAME"
+export HERMES_HOME="$HERMES_BASE/$NPC_NAME"
 
 echo "🚀 Starting Hermes WebUI with NPC: $NPC_NAME"
 echo "   HERMES_HOME: $HERMES_HOME"
+echo "   NPC配置: SOUL, USER, MEMORY, Skills, Tools"
 
 cd ~/Desktop/hermes-webui
 ./start.sh
 ```
 
-使用：
+**使用示例：**
+
 ```bash
-# 测试青木先生
-./start_npc_test.sh qingmu
+# 默认测试青木先生
+./start_npc_test.sh
 
 # 测试老张
 ./start_npc_test.sh laozhang
@@ -560,14 +595,11 @@ cd ~/Desktop/hermes-webui
 ./start_npc_test.sh neighbor
 ```
 
-**方案 3：WebUI NPC 选择器（可选扩展）**
-
-如果需要在 WebUI 内动态切换 NPC，可以：
-- 创建"NPC Gallery"插件
-- 提供 `switch_npc` 工具
-- Handler 修改 HERMES_HOME 并重启 Agent
-
-当前阶段推荐方案 1/2，保持简单。
+**关键优势：**
+- ✅ **零修改官方代码**：完全使用原生机制
+- ✅ **NPC完全隔离**：每个NPC独立skills/tools配置
+- ✅ **启动简单**：只需一个环境变量
+- ✅ **扩展灵活**：新增NPC只需创建新目录
 
 ### 7.4 GameState 集成方案
 

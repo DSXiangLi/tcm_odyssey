@@ -22,9 +22,9 @@ import { HERBS_DATA } from '../data/inventory-data';
 // 切分后每方向sprite sheet为894x298（3帧横向）
 const PLAYER_FRAME_WIDTH = 298;   // 每帧宽度
 const PLAYER_FRAME_HEIGHT = 298;  // 每帧高度
-// 缩放比例：放大50%后约96像素高度（3个瓦片）
-// 原始：64/298≈0.214，放大50%：0.214*1.5≈0.321
-const PLAYER_SCALE = (64 / PLAYER_FRAME_HEIGHT) * 1.5; // 约0.321，显示高度约96像素
+// 缩放比例：目标高度约64像素（2个瓦片高），按高度缩放
+// 这是室外场景的标准缩放，室内场景可额外放大
+const PLAYER_SCALE = 64 / PLAYER_FRAME_HEIGHT; // 298 * 0.214 = 64像素
 
 export class BootScene extends Phaser.Scene {
   private loadingText!: Phaser.GameObjects.Text;

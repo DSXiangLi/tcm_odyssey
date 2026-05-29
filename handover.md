@@ -1,4 +1,4 @@
-# Handover - 2026-05-24
+# Handover - 2026-05-29
 
 ## 下一步指令（明确todo）
 
@@ -16,9 +16,9 @@
 
 - NPC E2E测试策略设计 ✅ 完成
 - NPC自主Agent设计 ✅ 完成
+- TutorialUI跳过引导弹窗修复 ✅ 完成
 - NPC E2E测试实现计划 ⏳ 进行中（上次session截断）
-- NPC E2E测试实现执行 ❌ 待计划完成后执行---
-
+- NPC E2E测试实现执行 ❌ 待计划完成后执行
 
 ---
 
@@ -35,6 +35,21 @@
 
 ---
 
+## 本Session技术讨论记录
+
+**主题**: Hermes Agent Plugin 与 Tools 关系
+
+**核心发现**:
+- Tools 可通过 HERMES_HOME/plugins/<name>/ 自动发现
+- Plugin 是工具箱（声明元数据），Tools 是具体执行单元
+- Plugin 目录结构：plugin.yaml + __init__.py（含 Tool 函数）
+
+**加载机制**（用户提问，待验证）:
+- 是否渐进式加载：先加载 plugin.yaml 元数据，调用时再加载具体 Tool？
+- 需后续查看 Hermes 源码确认
+
+---
+
 ## 参考文档链接
 
 - **NPC E2E测试设计**: `docs/superpowers/specs/phase2.5/2026-05-23-npc-e2e-test-strategy-design.md`
@@ -48,7 +63,7 @@
 
 ```bash
 # 启动 Hermes backend
-cd hermes_backend && uvicorn main:app --reload --port 8642
+cd hermes_backend && python3 main.py
 
 # 启动 Vite dev server（另一终端）
 npm run dev

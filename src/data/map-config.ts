@@ -138,93 +138,21 @@ export const TOWN_OUTDOOR_CONFIG: MapConfig = {
 
   // 可行走瓦片集合 - 从遮罩分析获取，并添加门瓦片、spawnPoint和连接路径
   walkableTiles: (() => {
+    // Phase 1.5修复: 只使用基于遮罩层分析的可行走瓦片
+    // 不再手动添加路径，确保与原始遮罩层定义一致
     const baseSet = new Set(
       TOWN_WALKABLE_CONFIG.walkableTiles.map(t => `${t.x},${t.y}`)
     );
 
-    // 添加门本身和门周围更大区域到可行走集合（确保玩家能接近门和从门返回）
+    // 只添加门本身（确保玩家能进入室内）
     const doorPositions = [
       DOOR_POSITIONS.garden,
       DOOR_POSITIONS.clinic,
       DOOR_POSITIONS.home
     ];
 
-    // spawnPoint列表（从室内返回时的室外出生点）
-    const spawnPoints = [
-      { x: 15, y: 10 },  // 药园spawnPoint
-      { x: 60, y: 10 },  // 诊所spawnPoint
-      { x: 61, y: 37 }   // 家spawnPoint
-    ];
-
-    // 默认出生点（硬编码避免循环引用）
-    const defaultSpawn = { x: 47, y: 24 };
-
     for (const door of doorPositions) {
-      // 添加门本身
       baseSet.add(`${door.tileX},${door.tileY}`);
-
-      // 添加门周围5x5区域（让玩家能从更远的距离接近门）
-      for (let dx = -2; dx <= 2; dx++) {
-        for (let dy = -2; dy <= 2; dy++) {
-          baseSet.add(`${door.tileX + dx},${door.tileY + dy}`);
-        }
-      }
-    }
-
-    // 添加所有spawnPoint及其周围区域（确保返回室外时玩家在可行走区域）
-    for (const spawn of spawnPoints) {
-      baseSet.add(`${spawn.x},${spawn.y}`);
-      // spawnPoint周围3x3区域
-      for (let dx = -1; dx <= 1; dx++) {
-        for (let dy = -1; dy <= 1; dy++) {
-          baseSet.add(`${spawn.x + dx},${spawn.y + dy}`);
-        }
-      }
-    }
-
-    // 添加默认出生点周围区域
-    baseSet.add(`${defaultSpawn.x},${defaultSpawn.y}`);
-    for (let dx = -2; dx <= 2; dx++) {
-      for (let dy = -2; dy <= 2; dy++) {
-        baseSet.add(`${defaultSpawn.x + dx},${defaultSpawn.y + dy}`);
-      }
-    }
-
-    // 添加从出生点到各门的连接路径（解决路径不连通问题）
-    // 路径1: 从出生点(47,24)到诊所门(60,8) - 宽带路径覆盖
-    // 添加y=24横向路径（宽5格）
-    for (let x = 45; x <= 63; x++) {
-      baseSet.add(`${x},24`);
-    }
-    // 添加x=45到x=63多条纵向路径（修复：覆盖整个横向路径范围）
-    for (let x = 45; x <= 63; x++) {
-      for (let y = 8; y <= 24; y++) {
-        baseSet.add(`${x},${y}`);
-      }
-    }
-
-    // 路径2: 从出生点(47,24)到药园门(15,8) - 宽带路径覆盖
-    // 添加y=24横向路径（向西延伸）
-    for (let x = 13; x <= 47; x++) {
-      baseSet.add(`${x},24`);
-    }
-    // 添加x=13到x=47多条纵向路径（修复：覆盖整个横向路径范围）
-    for (let x = 13; x <= 47; x++) {
-      for (let y = 8; y <= 24; y++) {
-        baseSet.add(`${x},${y}`);
-      }
-    }
-
-    // 路径3: 从出生点(47,24)到家门(61,35) - 宽带路径覆盖
-    // 添加x=47纵向路径（宽5格）
-    for (let x = 45; x <= 49; x++) {
-      for (let y = 24; y <= 37; y++) {
-        baseSet.add(`${x},${y}`);
-      }
-    }
-    // 添加y=35横向路径
-    for (let x = 45; x <= 63; x++) {
-      baseSet.add(`${x},35`);
     }
 
     return baseSet;

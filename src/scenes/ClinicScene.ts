@@ -290,100 +290,84 @@ export class ClinicScene extends Phaser.Scene {
   }
 
   /**
-   * Phase 2 S3: 显示欢迎对话
+   * Phase 2 S3: 显示欢迎对话（简化版占位弹窗）
+   * 进入诊所时显示简单的欢迎提示，接近NPC后按空格才触发真正的对话
    */
-  private async showWelcomeDialog(): Promise<void> {
+  private showWelcomeDialog(): void {
     if (this.dialogShown) return;
     this.dialogShown = true;
 
-    // 检查Hermes服务是否可用
-    const isAvailable = await this.npcSystem.checkConnection();
-
-    if (!isAvailable) {
-      // Hermes服务不可用，显示占位文字
-      console.warn('[ClinicScene] Hermes service not available, showing placeholder dialog');
-      this.showPlaceholderDialog();
-      return;
-    }
-
-    // 使用React DialogUI显示欢迎对话
-    this.dialogCleanup = showDialogUI({
-      npcId: 'qingmu',
-      npcName: '青木先生',
-      playerId: 'player_001',
-      onToolCall: (name: string, args: Record<string, unknown>) => this.handleToolCall(name, args),
-      onClose: () => {
-        console.log('[ClinicScene] Welcome dialog closed');
-        if (this.dialogCleanup) {
-          this.dialogCleanup();
-          this.dialogCleanup = null;
-        }
-        this.dialogShown = false;  // 重置状态，允许再次触发对话
-      }
-    });
+    // 显示简化的占位欢迎弹窗（不依赖Hermes连接）
+    this.showPlaceholderWelcome();
   }
 
   /**
-   * Phase 2 S3: 显示占位对话（当Hermes不可用时）
+   * 显示简化的欢迎提示弹窗
+   * 用户可以点击关闭或按空格关闭
    */
-  private showPlaceholderDialog(): void {
-    const placeholderText = '你好，欢迎来到青木诊所。\n我是一名老中医，愿意传授你中医知识。\n请多多学习，勤加练习。';
+  private showPlaceholderWelcome(): void {
+    const welcomeText = '欢迎来到青木诊所！\n走近青木先生，按空格键开始对话。';
 
-    // 创建简单的文本框
+    // 创建弹窗背景
     const dialogBg = this.add.rectangle(
       this.cameras.main.width / 2,
-      this.cameras.main.height - 120,
-      600, 200, 0x333333, 0.9
+      this.cameras.main.height - 80,
+      500, 100, 0x333333, 0.85
     );
     dialogBg.setOrigin(0.5);
     dialogBg.setScrollFactor(0);
     dialogBg.setDepth(100);
 
-    const nameText = this.add.text(
-      this.cameras.main.width / 2 - 250,
-      this.cameras.main.height - 180,
-      '青木先生',
-      { fontSize: '20px', color: '#ffffff', fontStyle: 'bold' }
-    );
-    nameText.setScrollFactor(0);
-    nameText.setDepth(100);
-
+    // 添加欢迎文字
     const contentText = this.add.text(
-      this.cameras.main.width / 2 - 250,
-      this.cameras.main.height - 150,
-      placeholderText,
-      { fontSize: '16px', color: '#ffffff', wordWrap: { width: 500 } }
-    );
-    contentText.setScrollFactor(0);
-    contentText.setDepth(100);
-
-    // 添加提示文字
-    const hintText = this.add.text(
       this.cameras.main.width / 2,
-      this.cameras.main.height - 40,
-      '[Hermes服务未连接，显示占位对话]',
-      { fontSize: '12px', color: '#ff6600' }
+      this.cameras.main.height - 80,
+      welcomeText,
+      {
+        fontSize: '18px',
+        color: '#ffcc00',
+        align: 'center',
+        wordWrap: { width: 480 }
+      }
     );
-    hintText.setOrigin(0.5);
-    hintText.setScrollFactor(0);
-    hintText.setDepth(100);
+    contentText.setOrigin(0.5);
+    contentText.setScrollFactor(0);
+    contentText.setDepth(101);
 
-    // 暴露占位对话状态到全局（供测试访问）
-    this.exposePlaceholderDialogToGlobal(placeholderText);
-  }
+    // 保存引用以便关闭
+    const placeholderElements = [dialogBg, contentText];
 
-  /**
-   * Phase 2 S3: 暴露占位对话状态到全局（供测试访问）
-   */
-  private exposePlaceholderDialogToGlobal(text: string): void {
+    // 点击弹窗关闭
+    dialogBg.setInteractive();
+    dialogBg.on('pointerdown', () => {
+      this.closePlaceholderWelcome(placeholderElements);
+    });
+
+    // 3秒后自动关闭
+    this.time.delayedCall(3000, () => {
+      this.closePlaceholderWelcome(placeholderElements);
+    });
+
+    // 暴露到全局（供测试访问）
     if (typeof window !== 'undefined') {
       (window as any).__DIALOG_UI__ = {
         npcId: 'qingmu',
         npcName: '青木先生',
         visible: true,
-        currentText: () => text,
+        currentText: () => welcomeText,
         isPlaceholder: true
       };
+    }
+  }
+
+  /**
+   * 关闭占位欢迎弹窗
+   */
+  private closePlaceholderWelcome(elements: Phaser.GameObjects.GameObject[]): void {
+    elements.forEach(el => el.destroy());
+    this.dialogShown = false;
+    if (typeof window !== 'undefined') {
+      (window as any).__DIALOG_UI__ = null;
     }
   }
 

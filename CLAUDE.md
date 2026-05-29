@@ -191,5 +191,6 @@ npx playwright test tests/e2e/npc-dialog-reset.spec.ts
 | 2026-05-04 | 背包透明背景 | HTML小游戏需透明背景嵌入主游戏 |
 | 2026-05-07 | HTML游戏尺寸超出窗口 | 游戏窗口尺寸必须从配置文件确认，不能凭猜测 |
 | 2026-05-08 | 退出按钮超出窗口 | 退出按钮必须在内容容器(1150×680)内定位，不能在全屏层上 |
+| 2026-05-29 | NPC对话无法再次触发 | dialogShown状态需在所有关闭场景重置：wake/onClose/startMinigame/shutdown |
 
 > **详细复盘**: `docs/superpowers/experience/` 目录

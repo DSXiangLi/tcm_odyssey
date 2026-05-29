@@ -136,6 +136,53 @@ zhongyi_game_v3/
 5. 提交时确保只有有意义的变更，没有临时文件
 ```
 
+## NPC对话系统启动方案
+
+### 服务启动
+
+```bash
+# 1. 启动Hermes后端（NPC Agent服务）
+cd hermes_backend && python3 main.py
+
+# 2. 启动游戏前端
+npm run dev
+```
+
+### 端口配置
+
+| 服务 | 端口 | 检查命令 |
+|------|------|----------|
+| 游戏前端 | 3000 | `curl http://localhost:3000` |
+| Hermes后端 | 8642 | `curl http://localhost:8642/health` |
+
+### NPC对话触发机制
+
+**触发方式**：
+1. **欢迎对话（自动）**：进入诊所1秒后自动显示青木先生欢迎对话
+2. **用户触发（空格键）**：靠近NPC（距离<100像素），屏幕显示黄色提示"按空格键对话"，按空格触发
+
+**关键状态**：
+- `dialogShown`：对话显示状态标志，防止重复触发
+- `dialogCleanup`：对话清理函数，用于关闭对话UI
+
+**状态重置点**（修复后）：
+- wake事件：场景唤醒时重置
+- onClose回调：对话关闭时重置
+- startMinigameFromTool：工具调用启动小游戏时重置
+- shutdown：场景销毁时重置
+
+### 测试验证
+
+```bash
+# 运行NPC对话测试
+npx playwright test tests/e2e/npc-dialog.spec.ts
+
+# 运行对话状态重置测试
+npx playwright test tests/e2e/npc-dialog-reset.spec.ts
+```
+
+---
+
 ## 经验教训索引
 
 | 日期 | 问题 | 关键教训 |

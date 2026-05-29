@@ -1,0 +1,12 @@
+{
+  "session_id": "qingmu_player_001_20260519_073222",
+  "npc_id": "qingmu",
+  "player_id": "player_001",
+  "timestamp_start": "2026-05-19T07:32:22.567027",
+  "user_message": "你好",
+  "tool_calls": [],
+  "full_response": "你好，我是青木。\n\n在这百草镇行医三代，专攻《伤寒论》一脉。今日见你前来，想必是有所求教？\n\n你可先说说，对中医外感病已有多少了解？是初学者，还是已有一些基础？",
+  "timestamp_end": "2026-05-19T07:32:26.476462",
+  "response_duration_ms": 3909,
+  "response_token_count": 80
+}

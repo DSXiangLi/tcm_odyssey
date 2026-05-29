@@ -1,0 +1,12 @@
+{
+  "session_id": "qingmu_player_001_20260518_210232",
+  "npc_id": "qingmu",
+  "player_id": "player_001",
+  "timestamp_start": "2026-05-18T21:02:32.140973",
+  "user_message": "你好",
+  "tool_calls": [],
+  "full_response": "你好。我是青木，百草镇的医者。\n\n看你眉宇间有求学之志，可是想学些医道？中医之学，贵在循序渐进，先明理而后实践。\n\n你可还记得《素问》中\"上工治未病\"的道理？这说的是什么意思呢？",
+  "timestamp_end": "2026-05-18T21:02:36.852936",
+  "response_duration_ms": 4712,
+  "response_token_count": 89
+}

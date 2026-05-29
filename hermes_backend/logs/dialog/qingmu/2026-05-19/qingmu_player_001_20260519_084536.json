@@ -1,0 +1,36 @@
+{
+  "session_id": "qingmu_player_001_20260519_084536",
+  "npc_id": "qingmu",
+  "player_id": "player_001",
+  "timestamp_start": "2026-05-19T08:45:36.106127",
+  "user_message": "我的背包中有哪些信息",
+  "tool_calls": [
+    {
+      "seq": 1,
+      "name": "get_inventory",
+      "args": {
+        "player_id": "player_001",
+        "npc_id": "qingmu"
+      },
+      "result": {
+        "herbs": [
+          {
+            "id": "mahuang",
+            "name": "麻黄",
+            "quantity": 5
+          },
+          {
+            "id": "guizhi",
+            "name": "桂枝",
+            "quantity": 3
+          }
+        ]
+      },
+      "timestamp": "2026-05-19T08:45:44.037746"
+    }
+  ],
+  "full_response": "我来帮你查询一下背包中的信息。",
+  "timestamp_end": "2026-05-19T08:45:44.538519",
+  "response_duration_ms": 8432,
+  "response_token_count": 15
+}

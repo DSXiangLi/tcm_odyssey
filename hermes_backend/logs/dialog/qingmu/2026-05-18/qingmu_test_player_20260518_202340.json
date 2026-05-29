@@ -1,0 +1,12 @@
+{
+  "session_id": "qingmu_test_player_20260518_202340",
+  "npc_id": "qingmu",
+  "player_id": "test_player",
+  "timestamp_start": "2026-05-18T20:23:40.730296",
+  "user_message": "你好",
+  "tool_calls": [],
+  "full_response": "你好，我是青木。\n\n今日风和日丽，正宜习医。不知你对中医外感病有多少了解？《伤寒论》开篇便言\"太阳之为病，脉浮，头项强痛而恶寒\"，你可还记得这是何意？",
+  "timestamp_end": "2026-05-18T20:23:44.467878",
+  "response_duration_ms": 3739,
+  "response_token_count": 75
+}

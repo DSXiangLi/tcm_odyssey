@@ -1,0 +1,12 @@
+{
+  "session_id": "qingmu_test_player_20260518_202555",
+  "npc_id": "qingmu",
+  "player_id": "test_player",
+  "timestamp_start": "2026-05-18T20:25:55.689099",
+  "user_message": "你好",
+  "tool_calls": [],
+  "full_response": "你好，吾乃青木。\n\n百草镇行医三代，专攻伤寒之学。今日你既来此，想必对医道有所向往？\n\n你可还记得《伤寒论》开篇所言：\"太阳之为病，脉浮，头项强痛而恶寒。\"\n\n这寥寥数语，道出了外感病的什么道理？",
+  "timestamp_end": "2026-05-18T20:26:06.331696",
+  "response_duration_ms": 10643,
+  "response_token_count": 98
+}

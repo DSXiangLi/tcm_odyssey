@@ -1,0 +1,25 @@
+{
+  "session_id": "qingmu_test_20260518_210522",
+  "npc_id": "qingmu",
+  "player_id": "test",
+  "timestamp_start": "2026-05-18T21:05:22.571229",
+  "user_message": "我想种点黄芪",
+  "tool_calls": [
+    {
+      "seq": 1,
+      "name": "get_inventory",
+      "args": {
+        "player_id": "test",
+        "npc_id": "qingmu"
+      },
+      "result": {
+        "herbs": []
+      },
+      "timestamp": "2026-05-18T21:05:26.301044"
+    }
+  ],
+  "full_response": "我来帮你看看种植黄芪的事。让我先瞧瞧你背包里有什么。",
+  "timestamp_end": "2026-05-18T21:05:26.301223",
+  "response_duration_ms": 3730,
+  "response_token_count": 26
+}

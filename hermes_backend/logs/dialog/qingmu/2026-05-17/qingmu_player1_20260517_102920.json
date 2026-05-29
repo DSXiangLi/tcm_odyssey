@@ -1,0 +1,12 @@
+{
+  "session_id": "qingmu_player1_20260517_102920",
+  "npc_id": "qingmu",
+  "player_id": "player1",
+  "timestamp_start": "2026-05-17T10:29:20.479983",
+  "user_message": "老师，什么是太阳病？",
+  "tool_calls": [],
+  "full_response": "青木：\"你可还记得《伤寒论》开篇第一条？\n\n'太阳之为病，脉浮，头项强痛而恶寒。'\n\n这十二个字，便是太阳病的总纲。你且细思——\n\n脉浮，说明病在何处？\n头项强痛，又意味着什么？\n恶寒一症，又揭示了何种病机？\n\n这三者合参，当如何理解太阳病的本质？\"",
+  "timestamp_end": "2026-05-17T10:29:27.252573",
+  "response_duration_ms": 6772,
+  "response_token_count": 125
+}

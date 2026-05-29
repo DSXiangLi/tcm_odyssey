@@ -1,0 +1,51 @@
+{
+  "session_id": "qingmu_test_20260519_074421",
+  "npc_id": "qingmu",
+  "player_id": "test",
+  "timestamp_start": "2026-05-19T07:44:21.512138",
+  "user_message": "查看学习进度",
+  "tool_calls": [
+    {
+      "seq": 1,
+      "name": "get_learning_progress",
+      "args": {
+        "player_id": "test",
+        "npc_id": "qingmu"
+      },
+      "result": {
+        "tasks": [],
+        "statistics": {}
+      },
+      "timestamp": "2026-05-19T07:44:25.273859"
+    },
+    {
+      "seq": 2,
+      "name": "get_case_progress",
+      "args": {
+        "player_id": "test",
+        "npc_id": "qingmu"
+      },
+      "result": {
+        "cases": [],
+        "unlock_conditions": {}
+      },
+      "timestamp": "2026-05-19T07:44:25.274749"
+    },
+    {
+      "seq": 3,
+      "name": "get_inventory",
+      "args": {
+        "player_id": "test",
+        "npc_id": "qingmu"
+      },
+      "result": {
+        "herbs": []
+      },
+      "timestamp": "2026-05-19T07:44:25.275683"
+    }
+  ],
+  "full_response": "我来帮你查看学习进度。",
+  "timestamp_end": "2026-05-19T07:44:25.276456",
+  "response_duration_ms": 3764,
+  "response_token_count": 11
+}

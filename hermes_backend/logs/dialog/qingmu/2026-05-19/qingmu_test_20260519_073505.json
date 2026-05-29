@@ -1,0 +1,26 @@
+{
+  "session_id": "qingmu_test_20260519_073505",
+  "npc_id": "qingmu",
+  "player_id": "test",
+  "timestamp_start": "2026-05-19T07:35:05.989994",
+  "user_message": "看看我的学习进度",
+  "tool_calls": [
+    {
+      "seq": 1,
+      "name": "get_learning_progress",
+      "args": {
+        "player_id": "test",
+        "npc_id": "qingmu"
+      },
+      "result": {
+        "tasks": [],
+        "statistics": {}
+      },
+      "timestamp": "2026-05-19T07:35:13.121462"
+    }
+  ],
+  "full_response": "我来帮你查看一下学习进度。",
+  "timestamp_end": "2026-05-19T07:35:13.121622",
+  "response_duration_ms": 7131,
+  "response_token_count": 13
+}

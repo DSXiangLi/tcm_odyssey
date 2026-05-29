@@ -1,0 +1,12 @@
+{
+  "session_id": "qingmu_player_001_20260518_204532",
+  "npc_id": "qingmu",
+  "player_id": "player_001",
+  "timestamp_start": "2026-05-18T20:45:32.797620",
+  "user_message": "你好",
+  "tool_calls": [],
+  "full_response": "你好，我是青木。\n\n欢迎来到百草镇。老朽在此行医三代，专研《伤寒论》一脉，尤擅外感病诊治。\n\n你既来此求学，想必对医道有所向往。《素问·著至教论》有言：\"上知天文，下知地理，中知人事，可以长久。\"医之为道，博大精深，需循序渐进。\n\n你可还记得，中医外感病辨证，首当分辨的是什么？",
+  "timestamp_end": "2026-05-18T20:45:38.105620",
+  "response_duration_ms": 5308,
+  "response_token_count": 139
+}

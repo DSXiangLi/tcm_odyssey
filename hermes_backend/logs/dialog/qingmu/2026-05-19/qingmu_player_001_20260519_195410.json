@@ -1,0 +1,12 @@
+{
+  "session_id": "qingmu_player_001_20260519_195410",
+  "npc_id": "qingmu",
+  "player_id": "player_001",
+  "timestamp_start": "2026-05-19T19:54:10.183007",
+  "user_message": "你好",
+  "tool_calls": [],
+  "full_response": "欢迎来到百草镇。我是青木，在此行医三代，专攻伤寒外感之证。\n\n看你眉宇间颇有求知之色，想必是来学习医道的？《伤寒论》有云：\"观其脉证，知犯何逆，随证治之。\"这便是辨证论治的精髓。\n\n你可先说说，对外感病了解几何？从何学起？",
+  "timestamp_end": "2026-05-19T19:54:17.086334",
+  "response_duration_ms": 6903,
+  "response_token_count": 111
+}

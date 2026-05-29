@@ -1,0 +1,25 @@
+{
+  "session_id": "qingmu_test_20260518_214001",
+  "npc_id": "qingmu",
+  "player_id": "test",
+  "timestamp_start": "2026-05-18T21:40:01.296061",
+  "user_message": "查看我的背包",
+  "tool_calls": [
+    {
+      "seq": 1,
+      "name": "get_inventory",
+      "args": {
+        "player_id": "test",
+        "npc_id": "qingmu"
+      },
+      "result": {
+        "herbs": []
+      },
+      "timestamp": "2026-05-18T21:40:05.281303"
+    }
+  ],
+  "full_response": "",
+  "timestamp_end": "2026-05-18T21:40:05.281449",
+  "response_duration_ms": 3985,
+  "response_token_count": 0
+}

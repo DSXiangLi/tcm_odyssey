@@ -116,11 +116,12 @@ export class ClinicScene extends Phaser.Scene {
     // S13.4: 检查是否应该显示场景提示
     this.checkAndShowSceneTip();
 
-    // ⭐ 关键修复：订阅wake事件，确保从sleep状态唤醒时重置isTransitioning
+    // ⭐ 关键修复：订阅wake事件，确保从sleep状态唤醒时重置交互状态
     this.events.on('wake', () => {
       this.isTransitioning = false;
+      this.dialogShown = false;  // 重置对话显示状态，允许再次触发欢迎对话
       this.gameStateBridge.updateCurrentScene(SCENES.CLINIC);
-      console.log('[ClinicScene] wake event received, isTransitioning reset to false');
+      console.log('[ClinicScene] wake event received, isTransitioning and dialogShown reset to false');
     });
 
     // ⭐ Phase 2.5修复：监听子场景退出事件，重置isTransitioning
@@ -317,6 +318,7 @@ export class ClinicScene extends Phaser.Scene {
           this.dialogCleanup();
           this.dialogCleanup = null;
         }
+        this.dialogShown = false;  // 重置状态，允许再次触发对话
       }
     });
   }
@@ -405,6 +407,7 @@ export class ClinicScene extends Phaser.Scene {
           this.dialogCleanup();
           this.dialogCleanup = null;
         }
+        this.dialogShown = false;  // 重置状态，允许再次触发对话
       }
     });
   }
@@ -434,6 +437,7 @@ export class ClinicScene extends Phaser.Scene {
       this.dialogCleanup();
       this.dialogCleanup = null;
     }
+    this.dialogShown = false;  // 重置状态，返回后可以再次触发对话
 
     switch (gameType) {
       case 'inquiry':

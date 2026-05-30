@@ -110,10 +110,10 @@ zhongyi_game_v3/hermes/npcs/
     │   ├── SOUL.md                  # 身份性格
     │   ├── USER.md                  # 对玩家观察
     │   ├── MEMORY.md                # 教学心得
-    │   ├── SYLLABUS.md              # 教学大纲
     │   │
     │   ├── skills/                  # NPC专属Skills
-    │   │   ├── guided_questioning/
+    │   │   ├── teaching_syllabus/
+    │   │   │   └ SKILL.md           # 教学大纲（核心教学能力）
     │   │   │   └── SKILL.md         # 引导式提问技巧
     │   │   ├── case_analysis/
     │   │   │   └ SKILL.md           # 病案分析方法
@@ -159,6 +159,13 @@ zhongyi_game_v3/hermes/npcs/
 - ✅ **NPC完全独立**：每个NPC有独立的skills和plugins
 - ✅ **环境变量控制**：`HERMES_HOME`直接指向NPC目录
 - ✅ **无需额外选择器**：启动时指定NPC路径即可
+- ✅ **教学大纲统一为Skill**：所有教学NPC默认加载 `teaching_syllabus/SKILL.md`
+
+**设计理由：教学大纲作为Skill**
+- 教学大纲是NPC教学能力的核心指导文档
+- Skills是指导性文档，教学大纲符合这个定位
+- 所有教学NPC都需要教学大纲，作为Skill统一加载更合理
+- 与其他Skills（引导式提问、病案分析等）保持一致的加载机制
 
 ---
 
@@ -225,9 +232,9 @@ HERMES_HOME=/path/to/zhongyi_game_v3/hermes/npcs/laozhang
 │  ├── SOUL.md         → 自动加载为 NPC 身份                    │
 │  ├── USER.md         → 自动加载为玩家观察                     │
 │  ├── MEMORY.md       → 自动加载为教学心得                     │
-│  ├── SYLLABUS.md     → 自动加载为教学大纲                     │
 │  │                                                          │
 │  ├── skills/                                                │
+│  │   ├── teaching_syllabus/SKILL.md   → 自动加载为教学大纲      │
 │  │   ├── guided_questioning/SKILL.md  → 自动加载为 Skill      │
 │  │   ├── case_analysis/SKILL.md       → 自动加载为 Skill      │
 │  │   └── feedback_evaluation/SKILL.md → 自动加载为 Skill      │
@@ -301,9 +308,9 @@ HERMES_HOME=zhongyi_game_v3/hermes
     │   ├── SOUL.md         → 自动加载为 NPC 身份
     │   ├── USER.md         → 自动加载为玩家观察
     │   ├── MEMORY.md       → 自动加载为教学心得
-    │   └── SYLLABUS.md     → 自动加载为教学大纲
     │
     ├── skills/
+    │   ├── teaching_syllabus/SKILL.md   → 自动加载为教学大纲
     │   ├── guided_questioning/SKILL.md  → 自动加载为 Skill
     │   ├── case_analysis/SKILL.md       → 自动加载为 Skill
     │   └── feedback_evaluation/SKILL.md → 自动加载为 Skill
@@ -687,7 +694,7 @@ class GameAPIClient:
 
 | 任务 | 预计时间 | 验收标准 |
 |------|---------|---------|
-| NPC 配置结构整理 | 30 min | SOUL/USER/MEMORY/SYLLABUS |
+| NPC 配置结构整理 | 30 min | SOUL/USER/MEMORY/teaching_syllabus/SKILL.md |
 | NPC 启动脚本 | 30 min | 可指定 NPC 启动 |
 | NPC 测试验证 | 30 min | NPC 性格/记忆正确加载 |
 

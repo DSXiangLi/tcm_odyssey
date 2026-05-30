@@ -253,8 +253,8 @@ export class ClinicScene extends Phaser.Scene {
       0  // 使用第一帧（帧索引0）
     );
     // NPC显示尺寸：保持原始宽高比(224/298≈0.75)
-    // 显示高度约85像素，宽度约64像素
-    const NPC_DISPLAY_HEIGHT = 85;
+    // 再放大15%，显示高度约98像素，宽度约73像素
+    const NPC_DISPLAY_HEIGHT = Math.round(85 * 1.15);  // 约98像素
     const NPC_DISPLAY_WIDTH = Math.round(NPC_DISPLAY_HEIGHT * (224 / 298));
     this.npcSprite.setDisplaySize(NPC_DISPLAY_WIDTH, NPC_DISPLAY_HEIGHT);
     this.npcSprite.setDepth(5);
@@ -501,9 +501,9 @@ export class ClinicScene extends Phaser.Scene {
     });
     this.player.setDepth(10);
 
-    // Phase 1.5: 诊所内玩家放大50%（更符合室内家具比例）
-    // 室外场景使用默认缩放(64像素)，室内放大到96像素
-    this.player.setScale(0.214 * 1.5);  // 约0.321
+    // Phase 1.5: 诊所内玩家放大50%后再放大15%（更符合室内家具比例）
+    // 室外场景使用默认缩放(64像素)，室内放大到约110像素
+    this.player.setScale(0.214 * 1.5 * 1.15);  // 约0.369
 
     this.gameStateBridge.updatePlayerState({
       x: this.player.x,

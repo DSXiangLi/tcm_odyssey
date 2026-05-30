@@ -25,7 +25,7 @@ export const NPC_REGISTRY: NPCConfig[] = [
     id: 'qingmu',
     name: '青木先生',
     sceneId: SCENES.CLINIC,
-    position: { x: 392, y: 342 },  // 向右向下移动6步（每步32像素）
+    position: { x: 392, y: 278 },  // 向右向下移动6步，再向上移动2步
     triggerDistance: 100,
     spriteKey: 'npc_qingmu',
     welcomeMessage: '欢迎来到青木诊所。',

@@ -235,7 +235,7 @@
 - 尺寸: 44×44像素
 - 样式: 朱砂色背景(#8b3a1c)，墨色边框(#1a1410)
 
-**规范文档**: [HTML小游戏接入规范](docs/superpowers/specs/html-game-spec.md)
+**规范文档**: [HTML小游戏接入规范](docs/superpowers/specs/phase2-5/html-game-spec.md)
 
 ---
 

@@ -14,7 +14,16 @@ def migrate_from_tasks_json():
         print("[Migration] TASKS.json not found, skipping")
         return
 
-    data = json.load(open(tasks_json_path))
+    try:
+        with open(tasks_json_path) as f:
+            data = json.load(f)
+    except json.JSONDecodeError as e:
+        print(f"[Migration] TASKS.json malformed: {e}")
+        return
+    except Exception as e:
+        print(f"[Migration] Error reading TASKS.json: {e}")
+        return
+
     conn = get_db()
 
     player_id = data['player_id']

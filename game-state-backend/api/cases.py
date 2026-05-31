@@ -88,4 +88,5 @@ async def complete_case(request: CompleteCaseRequest):
             "recorded_at": now
         }
     except Exception as e:
+        conn.rollback()
         raise HTTPException(status_code=400, detail=str(e))

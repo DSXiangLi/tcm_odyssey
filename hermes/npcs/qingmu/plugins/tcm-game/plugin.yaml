@@ -1,0 +1,15 @@
+name: tcm-game
+version: 1.0.0
+description: "中医游戏工具集成 - 背包、进度、病案、小游戏触发"
+author: zhongyi-team
+kind: standalone
+provides_tools:
+  toolsets:
+    - tcm_game
+  tools:
+    - get_inventory
+    - get_learning_progress
+    - get_case_progress
+    - trigger_minigame
+    - record_weakness
+    - get_npc_memory

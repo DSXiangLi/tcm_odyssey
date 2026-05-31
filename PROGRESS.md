@@ -650,4 +650,36 @@ tests/e2e/
 
 ---
 
-*本文档由 Claude Code 维护，更新于 2026-05-29*
+## 进行中：游戏状态后端实施计划编写 (Phase 3) ⏳
+
+### 开始时间
+**开始**: 2026-05-31 16:20
+
+### 背景
+Phase 3 文档目录重组完成，游戏状态后端设计文档已通过自检。
+
+### 已完成步骤
+1. ✅ 设计文档编写完成（2026-05-31-game-state-backend-design.md）
+2. ✅ 设计文档自检通过（无placeholder，scope清晰）
+3. ✅ 文档目录重组（phase2-5→phase3，9个NPC文档迁移）
+4. ✅ Git提交（commit: 231b8c0）
+
+### 当前任务
+- ⏳ 编写实施计划（使用writing-plans技能）
+
+### 设计核心
+- 游戏状态后端端口：8643
+- SQLite数据存储
+- 5个核心表：npc_tasks, npc_task_todos, npc_cases, npc_experience, npc_weakness
+- 9个API接口（查询+操作）
+- Hermes Backend工具调整（HTTP查询）
+- 前端推送逻辑（保持简单）
+
+### 下一步
+1. 完成实施计划编写
+2. 提交到Git
+3. 使用design-doc-reviewer审核
+
+---
+
+*本文档由 Claude Code 维护，更新于 2026-05-31*

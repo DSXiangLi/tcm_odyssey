@@ -40,20 +40,24 @@ def get_learning_progress_handler(args: dict, **kw) -> dict:
     player_id = args.get("player_id", "player_001")
     task_type = args.get("task_type", "all")
 
-    response = requests.get(
-        f"http://localhost:8643/api/tasks/{player_id}",
-        timeout=5
-    )
-    data = response.json()
+    try:
+        response = requests.get(
+            f"http://localhost:8643/api/tasks/{player_id}",
+            timeout=5
+        )
+        response.raise_for_status()
+        data = response.json()
 
-    # Filter by task_type if needed
-    if task_type != "all":
-        data["tasks"] = [
-            t for t in data["tasks"]
-            if t["type"] == task_type
-        ]
+        # Filter by task_type if needed
+        if task_type != "all":
+            data["tasks"] = [
+                t for t in data["tasks"]
+                if t["type"] == task_type
+            ]
 
-    return data
+        return data
+    except requests.exceptions.RequestException as e:
+        return {"error": f"Game backend unavailable: {str(e)}"}
 
 registry.register(
     name="get_learning_progress",
@@ -91,20 +95,24 @@ def get_case_progress_handler(args: dict, **kw) -> dict:
     player_id = args.get("player_id", "player_001")
     case_id = args.get("case_id", "all")
 
-    response = requests.get(
-        f"http://localhost:8643/api/cases/{player_id}",
-        timeout=5
-    )
-    data = response.json()
+    try:
+        response = requests.get(
+            f"http://localhost:8643/api/cases/{player_id}",
+            timeout=5
+        )
+        response.raise_for_status()
+        data = response.json()
 
-    # Filter by case_id if needed
-    if case_id != "all":
-        data["cases"] = [
-            c for c in data["cases"]
-            if c["case_id"] == case_id
-        ]
+        # Filter by case_id if needed
+        if case_id != "all":
+            data["cases"] = [
+                c for c in data["cases"]
+                if c["case_id"] == case_id
+            ]
 
-    return data
+        return data
+    except requests.exceptions.RequestException as e:
+        return {"error": f"Game backend unavailable: {str(e)}"}
 
 registry.register(
     name="get_case_progress",
@@ -247,12 +255,16 @@ RECORD_WEAKNESS_SCHEMA = {
 
 def record_weakness_handler(args: dict, **kw) -> dict:
     """Record weakness via game state backend."""
-    response = requests.post(
-        "http://localhost:8643/api/weakness/record",
-        json=args,
-        timeout=5
-    )
-    return response.json()
+    try:
+        response = requests.post(
+            "http://localhost:8643/api/weakness/record",
+            json=args,
+            timeout=5
+        )
+        response.raise_for_status()
+        return response.json()
+    except requests.exceptions.RequestException as e:
+        return {"error": f"Game backend unavailable: {str(e)}"}
 
 registry.register(
     name="record_weakness",
@@ -324,12 +336,16 @@ CREATE_TASK_SCHEMA = {
 
 def create_task_handler(args: dict, **kw) -> dict:
     """Create new task via game state backend."""
-    response = requests.post(
-        "http://localhost:8643/api/task/create",
-        json=args,
-        timeout=5
-    )
-    return response.json()
+    try:
+        response = requests.post(
+            "http://localhost:8643/api/task/create",
+            json=args,
+            timeout=5
+        )
+        response.raise_for_status()
+        return response.json()
+    except requests.exceptions.RequestException as e:
+        return {"error": f"Game backend unavailable: {str(e)}"}
 
 registry.register(
     name="create_task",
@@ -369,12 +385,16 @@ UPDATE_TODO_SCHEMA = {
 
 def update_todo_handler(args: dict, **kw) -> dict:
     """Update todo mastery via game state backend."""
-    response = requests.post(
-        "http://localhost:8643/api/todo/update",
-        json=args,
-        timeout=5
-    )
-    return response.json()
+    try:
+        response = requests.post(
+            "http://localhost:8643/api/todo/update",
+            json=args,
+            timeout=5
+        )
+        response.raise_for_status()
+        return response.json()
+    except requests.exceptions.RequestException as e:
+        return {"error": f"Game backend unavailable: {str(e)}"}
 
 registry.register(
     name="update_todo",

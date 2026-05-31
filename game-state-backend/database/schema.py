@@ -24,7 +24,8 @@ CREATE TABLE IF NOT EXISTS todos (
     mastery REAL DEFAULT 0.0,
     status TEXT NOT NULL,
     updated_at TEXT NOT NULL,
-    FOREIGN KEY (task_id) REFERENCES tasks(task_id)
+    FOREIGN KEY (task_id) REFERENCES tasks(task_id),
+    UNIQUE(task_id, todo_id)
 );
 
 -- Case_history表（病案记录）

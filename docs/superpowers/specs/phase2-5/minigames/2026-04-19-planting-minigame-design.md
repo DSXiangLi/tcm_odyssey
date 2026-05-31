@@ -501,7 +501,7 @@ interface QuizScore {
 - [UI组件系统设计](../2026-04-19-ui-component-system-design.md)
 - [炮制游戏设计](./2026-04-19-processing-minigame-design.md)
 - [煎药游戏设计](./2026-04-19-decoction-minigame-design.md)
-- [游戏核心设计理念](../../2026-04-05-game-design-v3.0.md) - "操作中记忆"章节
+- [游戏核心设计理念](../2026-04-05-game-design-v3.0.md) - "操作中记忆"章节
 
 ---
 

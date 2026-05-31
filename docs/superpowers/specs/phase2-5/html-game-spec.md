@@ -177,5 +177,5 @@ height: min(680px, 85vh);
 
 ## 参考链接
 
-- 经验教训: [docs/superpowers/experience/2026-05-08-close-button-position.md](../experience/2026-05-08-close-button-position.md)
+- 经验教训: [docs/superpowers/experience/2026-05-08-close-button-position.md](../../experience/2026-05-08-close-button-position.md)
 - 项目主文档: [CLAUDE.md](../../CLAUDE.md)

@@ -46,36 +46,35 @@ async def update_experience(request: UpdateExperienceRequest):
     conn = get_db()
     now = datetime.utcnow().isoformat() + "Z"
 
-    total_gain = request.prescription_exp + request.syndrome_exp + request.diagnosis_exp
+    # Get current experience (if exists)
+    current = conn.execute(
+        "SELECT * FROM experience WHERE player_id = ?",
+        (request.player_id,)
+    ).fetchone()
 
+    # Calculate new totals
+    total_gain = request.prescription_exp + request.syndrome_exp + request.diagnosis_exp
+    new_total = (current['total_experience'] if current else 0) + total_gain
+    new_level = new_total // 500 + 1
+
+    new_prescription = (current['prescription_exp'] if current else 0) + request.prescription_exp
+    new_syndrome = (current['syndrome_exp'] if current else 0) + request.syndrome_exp
+    new_diagnosis = (current['diagnosis_exp'] if current else 0) + request.diagnosis_exp
+
+    # Insert with explicit values (no subqueries)
     conn.execute("""
         INSERT OR REPLACE INTO experience
         (player_id, total_experience, level, prescription_exp, syndrome_exp, diagnosis_exp, updated_at)
-        VALUES (
-            ?,
-            COALESCE((SELECT total_experience FROM experience WHERE player_id = ?), 0) + ?,
-            COALESCE((SELECT level FROM experience WHERE player_id = ?), 1),
-            COALESCE((SELECT prescription_exp FROM experience WHERE player_id = ?), 0) + ?,
-            COALESCE((SELECT syndrome_exp FROM experience WHERE player_id = ?), 0) + ?,
-            COALESCE((SELECT diagnosis_exp FROM experience WHERE player_id = ?), 0) + ?,
-            ?
-        )
+        VALUES (?, ?, ?, ?, ?, ?, ?)
     """, (
-        request.player_id, request.player_id, total_gain,
-        request.player_id, request.player_id, request.prescription_exp,
-        request.player_id, request.syndrome_exp, request.player_id, request.diagnosis_exp,
-        now
+        request.player_id, new_total, new_level,
+        new_prescription, new_syndrome, new_diagnosis, now
     ))
 
     conn.commit()
 
-    row = conn.execute(
-        "SELECT total_experience FROM experience WHERE player_id = ?",
-        (request.player_id,)
-    ).fetchone()
-
     return {
         "status": "updated",
-        "total_experience": row['total_experience'],
-        "level": row['total_experience'] // 500 + 1  # Simple level calculation
+        "total_experience": new_total,
+        "level": new_level
     }

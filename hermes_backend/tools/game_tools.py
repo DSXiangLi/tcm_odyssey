@@ -2,6 +2,7 @@
 """Game state tools for Hermes Backend."""
 import json
 import os
+import requests
 from typing import Dict, Any, List
 
 from tools.registry import registry
@@ -35,11 +36,24 @@ GET_LEARNING_PROGRESS_SCHEMA = {
 }
 
 def get_learning_progress_handler(args: dict, **kw) -> dict:
-    """Handle get_learning_progress tool call."""
-    player_id = args["player_id"]
+    """Query tasks from game state backend."""
+    player_id = args.get("player_id", "player_001")
     task_type = args.get("task_type", "all")
-    store = get_game_store()
-    return store.get_player_tasks(player_id, task_type)
+
+    response = requests.get(
+        f"http://localhost:8643/api/tasks/{player_id}",
+        timeout=5
+    )
+    data = response.json()
+
+    # Filter by task_type if needed
+    if task_type != "all":
+        data["tasks"] = [
+            t for t in data["tasks"]
+            if t["type"] == task_type
+        ]
+
+    return data
 
 registry.register(
     name="get_learning_progress",
@@ -73,11 +87,24 @@ GET_CASE_PROGRESS_SCHEMA = {
 }
 
 def get_case_progress_handler(args: dict, **kw) -> dict:
-    """Handle get_case_progress tool call."""
-    player_id = args["player_id"]
+    """Query case history from game state backend."""
+    player_id = args.get("player_id", "player_001")
     case_id = args.get("case_id", "all")
-    store = get_game_store()
-    return store.get_case_progress(player_id, case_id)
+
+    response = requests.get(
+        f"http://localhost:8643/api/cases/{player_id}",
+        timeout=5
+    )
+    data = response.json()
+
+    # Filter by case_id if needed
+    if case_id != "all":
+        data["cases"] = [
+            c for c in data["cases"]
+            if c["case_id"] == case_id
+        ]
+
+    return data
 
 registry.register(
     name="get_case_progress",
@@ -219,14 +246,13 @@ RECORD_WEAKNESS_SCHEMA = {
 }
 
 def record_weakness_handler(args: dict, **kw) -> dict:
-    """Handle record_weakness tool call."""
-    store = get_game_store()
-    return store.add_weakness(
-        args["player_id"],
-        args["task_id"],
-        args["weakness_type"],
-        args["details"]
+    """Record weakness via game state backend."""
+    response = requests.post(
+        "http://localhost:8643/api/weakness/record",
+        json=args,
+        timeout=5
     )
+    return response.json()
 
 registry.register(
     name="record_weakness",
@@ -270,6 +296,92 @@ registry.register(
     schema=GET_NPC_MEMORY_SCHEMA,
     handler=get_npc_memory_handler,
     emoji="🧠"
+)
+
+# ========================================
+# Tool 7: create_task
+# ========================================
+
+CREATE_TASK_SCHEMA = {
+    "name": "create_task",
+    "description": "为玩家创建新的学习任务",
+    "parameters": {
+        "type": "object",
+        "properties": {
+            "player_id": {"type": "string", "description": "玩家唯一标识"},
+            "task_id": {"type": "string", "description": "任务唯一标识"},
+            "title": {"type": "string", "description": "任务标题"},
+            "type": {
+                "type": "string",
+                "enum": ["prescription", "syndrome"],
+                "description": "任务类型"
+            },
+            "blocked_by": {"type": "string", "description": "依赖的任务ID"}
+        },
+        "required": ["player_id", "task_id", "title", "type"]
+    }
+}
+
+def create_task_handler(args: dict, **kw) -> dict:
+    """Create new task via game state backend."""
+    response = requests.post(
+        "http://localhost:8643/api/task/create",
+        json=args,
+        timeout=5
+    )
+    return response.json()
+
+registry.register(
+    name="create_task",
+    toolset="tcm_game",
+    schema=CREATE_TASK_SCHEMA,
+    handler=create_task_handler,
+    emoji="➕"
+)
+
+# ========================================
+# Tool 8: update_todo
+# ========================================
+
+UPDATE_TODO_SCHEMA = {
+    "name": "update_todo",
+    "description": "更新玩家对某个知识点的掌握程度",
+    "parameters": {
+        "type": "object",
+        "properties": {
+            "task_id": {"type": "string", "description": "任务ID"},
+            "todo_id": {"type": "string", "description": "知识点ID"},
+            "mastery": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 1,
+                "description": "掌握程度"
+            },
+            "status": {
+                "type": "string",
+                "enum": ["pending", "in_progress", "completed"],
+                "description": "状态"
+            }
+        },
+        "required": ["task_id", "todo_id", "mastery"]
+    }
+}
+
+def update_todo_handler(args: dict, **kw) -> dict:
+    """Update todo mastery via game state backend."""
+    response = requests.post(
+        "http://localhost:8643/api/todo/update",
+        json=args,
+        timeout=5
+    )
+    return response.json()
+
+registry.register(
+    name="update_todo",
+    toolset="tcm_game",
+    schema=UPDATE_TODO_SCHEMA,
+    handler=update_todo_handler,
+    emoji="📈"
 )
 
 def register_all_tools():

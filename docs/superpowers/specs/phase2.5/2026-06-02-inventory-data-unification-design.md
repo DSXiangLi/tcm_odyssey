@@ -3,7 +3,7 @@
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task.
 
 **日期**: 2026-06-02
-**版本**: v1.0
+**版本**: v2.0
 **目标**: 统一前后端数据源，建立游戏数据更新机制
 
 ---
@@ -14,11 +14,12 @@
 
 | 数据节点 | 前端数据源 | Hermes Backend数据源 | 问题 |
 |---------|-----------|---------------------|------|
-| **背包药材** | `inventory-herbs.ts` 静态数据（80+药材） | `MockGameStore` 内存数据（2药材） | **严重不一致** |
-| **NPC记忆** | 无 | `MockUserStore` 内存数据 | **前端无数据源** |
+| **背包药材** | `inventory-herbs.ts` 静态数据（86药材） | `MockGameStore` 内存数据（2药材） | **严重不一致** |
 | 学习进度 | game-state-backend API ✅ | game-state-backend API ✅ | 正常 |
 | 病案进度 | game-state-backend API ✅ | game-state-backend API ✅ | 正常 |
 | 弱点记录 | game-state-backend API ✅ | game-state-backend API ✅ | 正常 |
+
+> **NPC记忆**: Hermes Backend自主总结，无需额外存储机制。
 
 ### 2. 缺少数据更新机制
 
@@ -33,9 +34,7 @@
 
 ## 设计方案
 
-### Phase 1: 背包数据统一（当前实施）
-
-#### 1.1 数据库表结构
+### 1. 数据库表结构扩展
 
 **game-state-backend 新增 `inventory` 表**：
 
@@ -59,21 +58,25 @@ CREATE TABLE IF NOT EXISTS inventory (
 CREATE INDEX idx_inventory_player ON inventory(player_id);
 ```
 
-#### 1.2 数据迁移
+### 2. 数据迁移
 
 从 `src/ui/html/data/inventory-herbs.ts` 的 `_herbRows` 数组迁移：
 - 86条药材记录
 - 完整字段：id, name, cat, xing, wei, gui, rarity, rawCount, pieceCount
 - 默认玩家ID：`player_001`
 
-#### 1.3 API接口
+### 3. API接口
 
-**game-state-backend 新增**：
+**game-state-backend 新增接口**（端口8643）：
 
 | 接口 | 方法 | 说明 |
 |------|------|------|
 | `/api/inventory/{player_id}` | GET | 获取玩家全部药材 |
 | `/api/inventory/{player_id}/{herb_id}` | GET | 获取单个药材详情 |
+| `/api/inventory/update` | POST | 更新药材数量（加减） |
+| `/api/cases/complete` | POST | 记录诊断完成结果 |
+
+#### 3.1 GET /api/inventory/{player_id}
 
 **响应格式**：
 ```json
@@ -100,7 +103,43 @@ CREATE INDEX idx_inventory_player ON inventory(player_id);
 }
 ```
 
-#### 1.4 Hermes Backend对接
+#### 3.2 POST /api/inventory/update
+
+**请求格式**：
+```json
+{
+  "player_id": "player_001",
+  "herb_id": "mahuang",
+  "raw_count_delta": -5,
+  "piece_count_delta": +5
+}
+```
+
+**响应格式**：
+```json
+{
+  "status": "updated",
+  "herb_id": "mahuang",
+  "raw_count": 7,
+  "piece_count": 13
+}
+```
+
+#### 3.3 POST /api/cases/complete
+
+**请求格式**：
+```json
+{
+  "player_id": "player_001",
+  "case_id": "case_001",
+  "diagnosis": "风寒表实",
+  "prescription": "麻黄汤",
+  "score": 88,
+  "completed_at": "2026-06-02T10:30:00Z"
+}
+```
+
+### 4. Hermes Backend对接
 
 修改 `hermes_backend/tools/game_tools.py` 的 `get_inventory_handler`：
 
@@ -119,147 +158,108 @@ def get_inventory_handler(args: dict, **kw) -> dict:
         return {"error": f"Game backend unavailable: {str(e)}"}
 ```
 
-#### 1.5 前端对接
+### 5. 前端数据流
 
-ClinicScene调用API并通过事件传递给InventoryUI：
-- 模式与学习进度数据流一致（API→Phaser→HTML UI）
-- InventoryUI改为接收props渲染，不再静态导入
+#### 5.1 背包数据统一
 
----
+**当前**：InventoryUI静态导入 `inventory-herbs.ts`
 
-### Phase 2: NPC记忆数据统一（后续实施）
+**改为**：ClinicScene调用API → 事件传递 → InventoryUI渲染
 
-#### 2.1 数据库表结构
-
-**game-state-backend 新增 `npc_memory` 表**：
-
-```sql
-CREATE TABLE IF NOT EXISTS npc_memory (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    npc_id TEXT NOT NULL,
-    player_id TEXT NOT NULL,
-    learning_style TEXT,
-    preferred_topics TEXT,
-    difficulty_level TEXT DEFAULT 'beginner',
-    last_topic TEXT,
-    pending_question TEXT,
-    updated_at TEXT NOT NULL,
-    UNIQUE(npc_id, player_id)
-);
-
-CREATE TABLE IF NOT EXISTS npc_interactions (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    npc_id TEXT NOT NULL,
-    player_id TEXT NOT NULL,
-    date TEXT NOT NULL,
-    topic TEXT NOT NULL,
-    outcome TEXT NOT NULL,
-    created_at TEXT NOT NULL
-);
+```
+ClinicScene.init() 
+  → fetch GET /api/inventory/{player_id}
+  → localStorage缓存（备用）
+  → 监听 'clinic:showInventory' 事件
+  → 发送 'inventory:data' 事件携带药材数据
+  → InventoryUI接收props渲染
 ```
 
-#### 2.2 API接口
+#### 5.2 游戏完成数据更新
 
-| 接口 | 方法 | 说明 |
-|------|------|------|
-| `/api/memory/{npc_id}/{player_id}` | GET | 获取NPC对玩家的记忆 |
-| `/api/memory/{npc_id}/{player_id}` | PUT | 更新NPC记忆 |
-
----
-
-### Phase 3: 游戏数据更新机制（后续实施）
-
-#### 3.1 诊断完成 → 病案进度
-
-**事件**: `diagnosis:complete`
-
-**数据流**:
+**诊断完成**：
 ```
-前端DiagnosisUI完成 → emit事件 → ClinicScene接收
-→ fetch POST /api/cases/complete → game-state-backend更新case_history表
+DiagnosisUI完成 → emit 'diagnosis:complete' 携带结果
+→ ClinicScene接收 → fetch POST /api/cases/complete
+→ game-state-backend更新case_history表
 ```
 
-**API**: `POST /api/cases/complete`
-```json
-{
-  "player_id": "player_001",
-  "case_id": "case_001",
-  "diagnosis": "风寒表实",
-  "prescription": "麻黄汤",
-  "score": 88,
-  "completed_at": "2026-06-02T10:30:00Z"
-}
+**煎药完成**：
+```
+DecoctionUI完成 → emit 'decoction:complete' 携带方剂ID
+→ ClinicScene接收 → fetch POST /api/todo/update（复用现有）
+→ game-state-backend更新todos表mastery字段
 ```
 
-#### 3.2 煎药完成 → 知识点掌握度
-
-**事件**: `decoction:complete`
-
-**数据流**:
+**炮制完成**：
 ```
-前端DecoctionUI完成 → emit事件 → ClinicScene接收
-→ fetch POST /api/todo/update → game-state-backend更新todos表mastery字段
+PaozhiUI完成 → emit 'paozhi:complete' 携带药材ID和数量变化
+→ GardenScene接收 → fetch POST /api/inventory/update
+→ game-state-backend更新inventory表
 ```
 
-**API**: 已存在 `POST /api/todo/update`（复用）
-
-#### 3.3 炮制完成 → 背包药材数量
-
-**事件**: `paozhi:complete`
-
-**数据流**:
+**种植完成**：
 ```
-前端PaozhiUI完成 → emit事件 → GardenScene接收
-→ fetch POST /api/inventory/update → game-state-backend更新inventory表
+PlantingUI完成 → emit 'planting:complete' 携带药材ID和收获数量
+→ GardenScene接收 → fetch POST /api/inventory/update
+→ game-state-backend更新inventory表
 ```
 
-**API**: `POST /api/inventory/update`
-```json
-{
-  "player_id": "player_001",
-  "herb_id": "mahuang",
-  "raw_count_delta": -5,
-  "piece_count_delta": +5
-}
-```
+### 6. 种植游戏事件补充
 
-#### 3.4 种植完成 → 背包药材数量
+**新增事件定义** `src/ui/html/bridge/planting-events.ts`：
 
-**新增事件**: `planting:complete`
+```typescript
+export const PLANTING_EVENTS = {
+  START: 'planting:start',
+  COMPLETE: 'planting:complete',  // 种植完成（携带收获信息）
+};
 
-**数据流**:
-```
-前端PlantingUI完成 → emit事件 → GardenScene接收
-→ fetch POST /api/inventory/update → game-state-backend更新inventory表
-```
-
-**API**: 复用 `POST /api/inventory/update`
-```json
-{
-  "player_id": "player_001",
-  "herb_id": "mahuang",
-  "raw_count_delta": +10
+export interface PlantingCompletePayload {
+  herb_id: string;
+  harvest_count: number;
+  quality: number;  // 1-3品质等级
 }
 ```
 
 ---
 
-## 实施顺序
+## 实施任务清单
 
-| Phase | 内容 | 优先级 | 预估工作量 |
-|-------|------|-------|-----------|
-| **Phase 1** | 背包数据统一 | **高（当前）** | 2-3小时 |
-| Phase 2 | NPC记忆统一 | 中 | 1-2小时 |
-| Phase 3 | 游戏数据更新机制 | 中 | 3-4小时 |
+### Task 1: 数据库扩展
+- 创建 `inventory` 表
+- 编写数据迁移脚本（inventory-herbs.ts → SQLite）
+
+### Task 2: API接口开发
+- 实现 `GET /api/inventory/{player_id}`
+- 实现 `POST /api/inventory/update`
+- 实现 `POST /api/cases/complete`
+
+### Task 3: Hermes Backend对接
+- 修改 `get_inventory_handler` 调用game-state-backend API
+
+### Task 4: 前端背包UI改造
+- ClinicScene调用API获取数据
+- InventoryUI改为接收props渲染
+
+### Task 5: 游戏完成数据写入
+- ClinicScene监听诊断/煎药完成事件，调用API
+- GardenScene监听炮制/种植完成事件，调用API
+
+### Task 6: 种植事件补充
+- 创建 `planting-events.ts`
+- PlantingUI发射完成事件
 
 ---
 
 ## 成功标准
 
-1. Hermes Backend `get_inventory` 返回与前端一致的86条药材数据
-2. 前端InventoryUI从API渲染，不再静态导入
-3. NPC对话中提及背包内容与实际显示一致
-4. 游戏完成后数据写入数据库，下次启动可恢复
+1. ✅ Hermes Backend `get_inventory` 返回86条药材数据
+2. ✅ 前端InventoryUI从API渲染，数据与NPC查询一致
+3. ✅ 诊断完成后病案进度表更新
+4. ✅ 煎药完成后知识点掌握度更新
+5. ✅ 炮制完成后背包生药→片药数量变化
+6. ✅ 种植完成后背包药材数量增加
 
 ---
 

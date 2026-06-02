@@ -29,6 +29,15 @@ npm-debug.log*
 .env.local
 .env.*.local
 
+# Sensitive files - API keys, credentials, auth tokens
+**/auth.json
+**/config.yaml
+**/models_dev_cache.json
+*.key
+*.pem
+secrets/
+credential*
+
 # Cache
 .cache/
 .npm/
@@ -39,3 +48,4 @@ npm-debug.log*
 *.tmp
 *.temp
 --connect-timeout.superpowers/
+.env

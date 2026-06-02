@@ -38,7 +38,7 @@ async def health_check():
     return {
         "status": "ok",
         "database": "player_progress.db",
-        "tables": ["tasks", "todos", "case_history", "experience", "weakness_log"]
+        "tables": ["tasks", "todos", "case_history", "experience", "weakness_log", "inventory"]
     }
 
 # Include API routers

@@ -67,6 +67,25 @@ CREATE INDEX IF NOT EXISTS idx_tasks_player ON tasks(player_id);
 CREATE INDEX IF NOT EXISTS idx_todos_task ON todos(task_id);
 CREATE INDEX IF NOT EXISTS idx_cases_player ON case_history(player_id);
 CREATE INDEX IF NOT EXISTS idx_weakness_player ON weakness_log(player_id);
+
+-- Inventory表（背包药材）
+CREATE TABLE IF NOT EXISTS inventory (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    player_id TEXT NOT NULL,
+    herb_id TEXT NOT NULL,
+    name TEXT NOT NULL,
+    category TEXT NOT NULL,
+    xing TEXT,
+    wei TEXT,
+    gui TEXT,
+    rarity INTEGER DEFAULT 1,
+    raw_count INTEGER DEFAULT 0,
+    piece_count INTEGER DEFAULT 0,
+    updated_at TEXT NOT NULL,
+    UNIQUE(player_id, herb_id)
+);
+
+CREATE INDEX IF NOT EXISTS idx_inventory_player ON inventory(player_id);
 """
 
 def init_database(conn):

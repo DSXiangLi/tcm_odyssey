@@ -147,11 +147,32 @@ GET_INVENTORY_SCHEMA = {
 }
 
 def get_inventory_handler(args: dict, **kw) -> dict:
-    """Handle get_inventory tool call."""
-    player_id = args["player_id"]
+    """Query inventory from game state backend API."""
+    player_id = args.get("player_id", "player_001")
     category = args.get("category", "herbs")
-    store = get_game_store()
-    return store.get_inventory(player_id, category)
+
+    try:
+        response = requests.get(
+            f"http://localhost:8643/api/inventory/{player_id}",
+            timeout=5
+        )
+        response.raise_for_status()
+        data = response.json()
+
+        # Return full data for 'all', or filter by category
+        if category == "all":
+            return data
+        elif category == "herbs":
+            return {
+                "herbs": data["herbs"],
+                "statistics": data["statistics"]
+            }
+        else:
+            # Other categories not implemented yet
+            return {"error": f"Category '{category}' not supported"}
+
+    except requests.exceptions.RequestException as e:
+        return {"error": f"Game backend unavailable: {str(e)}"}
 
 registry.register(
     name="get_inventory",

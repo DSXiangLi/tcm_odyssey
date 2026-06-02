@@ -722,4 +722,55 @@ npm run dev
 
 ---
 
-*本文档由 Claude Code 维护，更新于 2026-06-01*
+## 本Session进展：Hermes-Agent架构对比分析 (2026-06-02) ✅
+
+### 研究背景
+
+对比分析Hermes-Agent与OpenClaw两个Agent框架的架构设计差异。
+
+### 关键发现
+
+**Skills指令拼接方案**（用户纠正）：
+
+两个框架采用相同机制：
+```
+System Prompt → 技能索引（name + description）
+Agent调用 → read工具/skill_view工具
+Tool Result → SKILL.md完整内容
+```
+
+Hermes示例：
+```python
+# agent/prompt_builder.py
+"If a skill is relevant to your task, you MUST load it with skill_view(name)..."
+```
+
+OpenClaw同理：
+```typescript
+// system-prompt.ts
+"If exactly one skill clearly applies: read its SKILL.md with ${readToolName}..."
+```
+
+### 核心差异对比
+
+| 维度 | Hermes-Agent | OpenClaw |
+|------|--------------|----------|
+| **设计哲学** | 用户显式控制 | 系统自动稳定 |
+| **配置粒度** | 60+函数参数精细化 | 配置文件+Profile隐式管理 |
+| **工具发现** | AST静态分析（无框架依赖） | Pi框架+7级策略层级 |
+| **Skills加载** | Tool Result动态加载（渐进披露） | 相同机制（Tool Result） |
+| **委托深度** | MAX_DEPTH=1（扁平可控） | 可配置（递归委托） |
+| **持久化** | 无（实时响应优先） | JSONL transcript+Lane序列化 |
+| **恢复机制** | 无持久化恢复 | Subagent Registry持久恢复 |
+
+### 文档产出
+
+**文档路径**: `docs/superpowers/specs/phase3/hermes-agent-architecture-comparison-analysis.md`
+
+### 状态
+
+✅ 研究完成，无代码变更
+
+---
+
+*本文档由 Claude Code 维护，更新于 2026-06-02*

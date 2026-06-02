@@ -11,7 +11,6 @@ router = APIRouter(prefix="/api/inventory", tags=["inventory"])
 
 
 class InventoryUpdateRequest(BaseModel):
-    """Request model for inventory update."""
     player_id: str
     herb_id: str
     raw_count_delta: Optional[int] = 0

@@ -7,7 +7,7 @@
 import React, { useState, useMemo, useEffect, useCallback } from 'react';
 import {
   HERB_CATEGORIES,
-  HERBS,
+  HERBS as STATIC_HERBS,
   HERB_IMAGES,
   FORMULAS,
   TOOLS,
@@ -319,24 +319,46 @@ function CenterDial({ active, setActive }: { active: ViewType; setActive: (v: Vi
 // 摘要面板
 // ============================================================
 function SummaryPanel({ active }: { active: ViewType }) {
+  const [herbs, setHerbs] = useState<HerbData[]>(STATIC_HERBS);
+
+  useEffect(() => {
+    fetch('http://localhost:8643/api/inventory/player_001')
+      .then(res => res.json())
+      .then(data => {
+        const converted = data.herbs.map((h: any) => ({
+          id: h.id,
+          name: h.name,
+          cat: h.category,
+          xing: h.xing || '',
+          wei: h.wei || '',
+          gui: h.gui || '',
+          rarity: h.rarity,
+          rawCount: h.raw_count,
+          pieceCount: h.piece_count,
+        }));
+        setHerbs(converted);
+      })
+      .catch(err => console.error('[SummaryPanel] API fetch failed:', err));
+  }, []);
+
   const fan = FAN_ITEMS.find(f => f.id === active);
   const stats = useMemo(() => {
     if (active === 'piece') {
-      const total = HERBS.reduce((s, h) => s + h.pieceCount, 0);
-      const owned = HERBS.filter(h => h.pieceCount > 0).length;
-      const topHerbs = HERBS.slice().sort((a, b) => b.pieceCount - a.pieceCount).slice(0, 3).map(h => h.name).join('·');
+      const total = herbs.reduce((s, h) => s + h.pieceCount, 0);
+      const owned = herbs.filter(h => h.pieceCount > 0).length;
+      const topHerbs = herbs.slice().sort((a, b) => b.pieceCount - a.pieceCount).slice(0, 3).map(h => h.name).join('·');
       return [
-        { label: '已藏种数', value: `${owned} / ${HERBS.length}` },
+        { label: '已藏种数', value: `${owned} / ${herbs.length}` },
         { label: '饮片总量', value: total + ' 剂' },
         { label: '常用之品', value: topHerbs },
       ];
     }
     if (active === 'raw') {
-      const total = HERBS.reduce((s, h) => s + h.rawCount, 0);
-      const owned = HERBS.filter(h => h.rawCount > 0).length;
-      const rareHerbs = HERBS.filter(h => h.rarity >= 4 && h.rawCount > 0).map(h => h.name).join('·') || '尚无';
+      const total = herbs.reduce((s, h) => s + h.rawCount, 0);
+      const owned = herbs.filter(h => h.rawCount > 0).length;
+      const rareHerbs = herbs.filter(h => h.rarity >= 4 && h.rawCount > 0).map(h => h.name).join('·') || '尚无';
       return [
-        { label: '已采种数', value: `${owned} / ${HERBS.length}` },
+        { label: '已采种数', value: `${owned} / ${herbs.length}` },
         { label: '药材总量', value: total + ' 株' },
         { label: '稀世之物', value: rareHerbs },
       ];
@@ -473,13 +495,34 @@ function SummaryPanel({ active }: { active: ViewType }) {
 function HerbView({ mode, onHover, onLeave, onImageClick }: { mode: 'piece' | 'raw'; onHover: (herb: HerbData, e: React.MouseEvent) => void; onLeave: () => void; onImageClick: (herb: HerbData) => void }) {
   const [filter, setFilter] = useState<string>('all');
   const [showEmpty, setShowEmpty] = useState(true);
+  const [herbs, setHerbs] = useState<HerbData[]>(STATIC_HERBS);
+
+  useEffect(() => {
+    fetch('http://localhost:8643/api/inventory/player_001')
+      .then(res => res.json())
+      .then(data => {
+        const converted = data.herbs.map((h: any) => ({
+          id: h.id,
+          name: h.name,
+          cat: h.category,
+          xing: h.xing || '',
+          wei: h.wei || '',
+          gui: h.gui || '',
+          rarity: h.rarity,
+          rawCount: h.raw_count,
+          pieceCount: h.piece_count,
+        }));
+        setHerbs(converted);
+      })
+      .catch(err => console.error('[HerbView] API fetch failed:', err));
+  }, []);
 
   const byCategory = useMemo(() => {
     const map: Record<string, HerbData[]> = {};
     HERB_CATEGORIES.forEach(c => map[c.id] = []);
-    HERBS.forEach(h => { if (map[h.cat]) map[h.cat].push(h); });
+    herbs.forEach(h => { if (map[h.cat]) map[h.cat].push(h); });
     return map;
-  }, []);
+  }, [herbs]);
 
   const visibleCats = filter === 'all'
     ? HERB_CATEGORIES

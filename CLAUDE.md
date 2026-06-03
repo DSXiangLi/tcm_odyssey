@@ -194,3 +194,61 @@ npx playwright test tests/e2e/npc-dialog-reset.spec.ts
 | 2026-05-29 | NPC对话无法再次触发 | dialogShown状态需在所有关闭场景重置：wake/onClose/startMinigame/shutdown |
 
 > **详细复盘**: `docs/superpowers/experience/` 目录
+
+---
+
+## 🔴 安全规范（重要！必须遵守）
+
+### 敏感信息绝对禁止提交到 Git
+
+**以下文件/内容严禁提交到代码仓库：**
+
+| 类型 | 文件 | 原因 |
+|------|------|------|
+| API Keys | `.env`, `auth.json`, `config.yaml` | 包含认证凭证 |
+| 私钥/证书 | `*.key`, `*.pem`, `*.crt` | 安全认证文件 |
+| 凭证目录 | `secrets/`, `credentials/` | 敏感配置集合 |
+| 缓存文件 | `models_dev_cache.json` | 可能包含模型信息 |
+
+### 代码安全检查清单
+
+每次提交前必须确认：
+
+```
+- [ ] .env 文件未被提交
+- [ ] auth.json 未被提交
+- [ ] 无硬编码 API key/token/password
+- [ ] 日志不输出敏感信息
+- [ ] API key 从环境变量读取 (os.getenv)
+```
+
+### 正确的敏感信息处理方式
+
+```python
+# ✅ 正确：从环境变量读取
+api_key = os.getenv("GLM_API_KEY")
+
+# ❌ 错误：硬编码
+api_key = "YOUR_API_KEY_HERE"
+```
+
+### .gitignore 已配置规则
+
+```gitignore
+.env
+**/auth.json
+**/config.yaml
+**/models_dev_cache.json
+*.key
+*.pem
+secrets/
+credential*
+```
+
+### 发现敏感信息泄露时的处理
+
+1. **立即停止** - 不要继续提交
+2. **从 git 移除** - `git rm --cached <file>`
+3. **添加到 .gitignore**
+4. **更换 API key** - 泄露的凭证必须立即更换
+5. **提交安全修复** - 单独 commit 说明安全问题

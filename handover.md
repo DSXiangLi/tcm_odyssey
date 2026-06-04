@@ -3,30 +3,30 @@
 ## 下一步指令（明确todo）
 
 **启动后立即执行**:
-1. 验证 Hermes Backend 工具调用是否返回真实数据
-   - 方式：在游戏中触发NPC对话（空格键），观察Tool Card显示内容
-   - 检查点：工具结果应包含game-state-backend返回的真实学习进度/背包数据
-2. 检查 game-state-backend 服务状态 - `curl http://localhost:8643/health`
-   - 验证方式：返回 `{"status":"ok",...}`
-3. 继续Phase 2.5剩余小游戏开发（病案集C键/炮制P键）
+1. 选择下一个Phase 2.5功能开发：
+   - 病案集（C键触发） - 设计完成，待实施
+   - 炮制（P键触发） - 设计完成，待实施
+   - 种植（G键触发） - 入口已存在，待开发
+2. 验证服务状态：
+   - game-state-backend: `curl http://localhost:8643/health`
+   - Hermes Backend: `curl http://localhost:8642/health`
+   - Frontend: `curl http://localhost:3000`
 
 **可选检查**:
 - 检查Git提交历史：`git log --oneline -10`
-- 检查game-state-backend数据库：`sqlite3 ../game-state-backend-dev/game-state-backend/data/player_progress.db "SELECT * FROM npc_tasks LIMIT 5"`
+- 检查inventory数据：`curl http://localhost:8643/api/inventory/player_001 | jq '.statistics'`
 
 ---
 
 ## 当前进展状态
 
-- 游戏黑屏问题 ✅ 已修复（Vite缓存过期，清理后重启）
-- 游戏状态后端设计文档 ✅ 完成
-- 游戏状态后端实施计划 ✅ 完成
-- 游戏状态后端实现 ✅ 完成（Task 1-10全部通过）
-- Hermes Backend工具调整 ✅ 完成（HTTP调用game-state-backend）
-- 验证合规报告 ✅ 完成（5/7通过，已知问题记录）
-- Git提交 ✅ 完成（4个提交：实施/修复/验证/文档）
-- 文档目录重组 ✅ 完成（phase2-5→phase3，9个NPC文档迁移）
-- Hermes与OpenClaw架构对比 ✅ 完成（System Prompt三层结构对比文档）
+- ✅ Inventory数据统一完成（用户验收通过，已合并到master）
+- ✅ 自动化测试100%通过（11个E2E测试）
+- ✅ 数据一致性验证（麻黄raw_count=12）
+- ✅ 分支开发规范实施（feature → 验收 → merge）
+- 游戏黑屏问题 ✅ 已修复（Vite缓存过期）
+- 游戏状态后端设计/实施 ✅ 完成
+- Hermes Backend工具调整 ✅ 完成
 
 ---
 
@@ -34,20 +34,18 @@
 
 | 优先级 | 任务 | 状态 | 验证方式 |
 |--------|------|------|----------|
-| P0 | 验证工具调用真实数据 | 待执行 | 游戏中触发NPC对话观察Tool Card |
-| P1 | game-state-backend服务启动 | 待执行 | `curl localhost:8643/health` |
-| P2 | Phase 2.5病案集小游戏 | 设计完成 | C键触发，待实现 |
-| P2 | Phase 2.5炮制小游戏 | 设计完成 | P键触发，待实现 |
-| P3 | Phase 2.5种植小游戏 | 入口已存在 | G键触发，待开发 |
+| P0 | Inventory数据统一 | ✅ 已完成 | 用户验收通过，已合并 |
+| P1 | Phase 2.5病案集小游戏 | 设计完成 | C键触发，待实现 |
+| P1 | Phase 2.5炮制小游戏 | 设计完成 | P键触发，待实现 |
+| P2 | Phase 2.5种植小游戏 | 入口已存在 | G键触发，待开发 |
 
 ---
 
 ## 参考文档链接
 
 - [背包数据统一设计](docs/superpowers/specs/phase2.5/2026-06-02-inventory-data-unification-design.md)
-- [背包数据统一计划](docs/superpowers/plans/2026-06-02-inventory-data-unification-plan.md)
-- [Hermes与OpenClaw对比](docs/superpowers/specs/phase3/2026-06-04-hermes-openclaw-architecture-comparison.md)
-- [System Prompt对比](docs/superpowers/specs/phase3/2026-06-04-system-prompt-construction-comparison.md)
+- [背包数据统一验收报告](docs/superpowers/experience/2026-06-04-inventory-data-unification-verification-report.md)
+- [背包数据合并完成](docs/superpowers/experience/2026-06-04-inventory-merge-complete-report.md)
 
 ## 启动命令
 

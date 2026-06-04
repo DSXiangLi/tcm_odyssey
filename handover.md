@@ -35,17 +35,22 @@
 | 优先级 | 任务 | 状态 | 验证方式 |
 |--------|------|------|----------|
 | P0 | Inventory数据统一 | ✅ 已完成 | 用户验收通过，已合并 |
-| P1 | Phase 2.5病案集小游戏 | 设计完成 | C键触发，待实现 |
-| P1 | Phase 2.5炮制小游戏 | 设计完成 | P键触发，待实现 |
-| P2 | Phase 2.5种植小游戏 | 入口已存在 | G键触发，待开发 |
+| P1 | 病案集（C键） | ✅ 已完成 | CasebookScene.ts已实现 |
+| P1 | 炮制（P键） | ✅ 已完成 | PaozhiUI.tsx已实现 |
+| P2 | 种植（G键） | ⏳ 待开发 | 入口已存在，功能待实现 |
 
 ---
 
 ## 参考文档链接
 
+### 已完成功能
 - [背包数据统一设计](docs/superpowers/specs/phase2.5/2026-06-02-inventory-data-unification-design.md)
 - [背包数据统一验收报告](docs/superpowers/experience/2026-06-04-inventory-data-unification-verification-report.md)
-- [背包数据合并完成](docs/superpowers/experience/2026-06-04-inventory-merge-complete-report.md)
+- [病案集HTML嵌入设计](docs/superpowers/specs/phase2-5/2026-05-07-casebook-embedding-design.md)
+- [炮制HTML嵌入设计](docs/superpowers/specs/phase2-5/2026-05-07-paozhi-embedding-design.md)
+
+### 待开发功能
+- [种植小游戏设计](docs/superpowers/specs/phase2-5/minigames/2026-04-19-planting-minigame-design.md)
 
 ## 启动命令
 

@@ -1,4 +1,4 @@
-# Handover - 2026-06-01
+# Handover - 2026-06-04
 
 ## 下一步指令（明确todo）
 
@@ -26,6 +26,7 @@
 - 验证合规报告 ✅ 完成（5/7通过，已知问题记录）
 - Git提交 ✅ 完成（4个提交：实施/修复/验证/文档）
 - 文档目录重组 ✅ 完成（phase2-5→phase3，9个NPC文档迁移）
+- Hermes与OpenClaw架构对比 ✅ 完成（System Prompt三层结构对比文档）
 
 ---
 
@@ -33,42 +34,30 @@
 
 | 优先级 | 任务 | 状态 | 验证方式 |
 |--------|------|------|----------|
-| P0 | 验证工具调用真实数据 | ⏳ 待验证 | 观察NPC对话Tool Card内容 |
-| P1 | game-state-backend实现 | ✅ 完成 | 验证报告确认 |
-| P2 | Phase 2.5病案集设计 | ✅ 设计完成 | 设计文档存在 |
-| P3 | Phase 2.5炮制设计 | ✅ 设计完成 | 设计文档存在 |
-| P4 | Phase 2.5病案集开发 | ❌ 待处理 | C键触发UI |
-| P5 | Phase 2.5炮制开发 | ❌ 待处理 | P键触发UI |
-| P6 | Phase 3 NPC Agent设计 | ⏳ 进行中 | phase3目录下设计文档 |
+| P0 | 验证工具调用真实数据 | 待执行 | 游戏中触发NPC对话观察Tool Card |
+| P1 | game-state-backend服务启动 | 待执行 | `curl localhost:8643/health` |
+| P2 | Phase 2.5病案集小游戏 | 设计完成 | C键触发，待实现 |
+| P2 | Phase 2.5炮制小游戏 | 设计完成 | P键触发，待实现 |
+| P3 | Phase 2.5种植小游戏 | 入口已存在 | G键触发，待开发 |
 
 ---
 
 ## 参考文档链接
-- 设计文档：`docs/superpowers/specs/phase3/2026-05-31-game-state-backend-design.md`
-- 实施计划：`docs/superpowers/plans/2026-05-31-game-state-backend-implementation.md`
-- 验证报告：`docs/superpowers/experience/2026-05-31-task10-verification-compliance-review.md`
-- NPC Agent设计：`docs/superpowers/specs/phase3/` 目录下文档
 
----
+- [背包数据统一设计](docs/superpowers/specs/phase2.5/2026-06-02-inventory-data-unification-design.md)
+- [背包数据统一计划](docs/superpowers/plans/2026-06-02-inventory-data-unification-plan.md)
+- [Hermes与OpenClaw对比](docs/superpowers/specs/phase3/2026-06-04-hermes-openclaw-architecture-comparison.md)
+- [System Prompt对比](docs/superpowers/specs/phase3/2026-06-04-system-prompt-construction-comparison.md)
 
 ## 启动命令
+
 ```bash
-# 1. 启动游戏状态后端（如果未运行）
-cd ../game-state-backend-dev/game-state-backend
-python3 main.py
-# 端口: 8643
+# 1. 启动Hermes后端（NPC Agent服务）
+cd hermes_backend && python3 main.py
 
-# 2. 启动 Hermes Backend
-cd /home/lixiang/Desktop/zhongyi_game_v3/hermes_backend
-python3 main.py
-# 端口: 8642
-
-# 3. 启动游戏前端
-cd /home/lixiang/Desktop/zhongyi_game_v3
+# 2. 启动游戏前端
 npm run dev
-# 端口: 3000
 
-# 注意：如果遇到504 Outdated Optimize Dep错误，执行：
-rm -rf node_modules/.vite
-npm run dev
+# 3. 启动game-state-backend（可选，如需真实数据）
+cd ../game-state-backend-dev/game-state-backend && python3 main.py
 ```

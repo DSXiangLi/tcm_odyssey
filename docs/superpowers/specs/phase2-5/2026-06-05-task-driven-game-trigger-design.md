@@ -315,6 +315,78 @@ ALTER TABLE tasks ADD COLUMN reward TEXT;
 | **病案管理** | GET /api/cases/{player_id} | 查询病案历史 | Hermes Backend |
 | | POST /api/cases/update | 更新病案记录 | DiagnosisScene |
 
+### 5.2 API响应格式统一标准
+
+#### 成功响应格式
+
+```json
+{
+  "success": true,
+  "status": "created/updated/completed",
+  "data": {
+    "task_id": "xxx",
+    ...
+  },
+  "timestamp": "2026-06-05T10:30:00Z"
+}
+```
+
+#### 错误响应格式（统一）
+
+```json
+{
+  "success": false,
+  "error": {
+    "code": "ERROR_CODE",
+    "message": "Human-readable error message",
+    "details": {}
+  },
+  "timestamp": "2026-06-05T10:30:00Z"
+}
+```
+
+#### 错误码体系
+
+| 错误码 | 含义 | HTTP状态码 | 示例 |
+|--------|------|-----------|------|
+| `TASK_NOT_FOUND` | 任务不存在 | 404 | task_id无效 |
+| `TASK_ALREADY_COMPLETED` | 任务已完成 | 409 | 重复完成 |
+| `CONCURRENT_UPDATE_CONFLICT` | 并发冲突 | 409 | 乐观锁冲突 |
+| `INVALID_REWARD_FORMAT` | 奖励格式错误 | 400 | reward字段无效 |
+| `HERB_NOT_FOUND` | 药材不存在 | 404 | herb_id无效 |
+| `DATABASE_ERROR` | 数据库错误 | 500 | SQLite错误 |
+| `INVALID_REQUEST` | 请求参数错误 | 400 | 缺少必填字段 |
+
+#### 前端错误处理逻辑
+
+```typescript
+async function handleAPIError(response: Response): Promise<void> {
+  const data = await response.json();
+
+  if (!data.success) {
+    const errorCode = data.error.code;
+
+    switch (errorCode) {
+      case 'TASK_ALREADY_COMPLETED':
+        console.warn('任务已完成，无需重复操作');
+        break;
+
+      case 'CONCURRENT_UPDATE_CONFLICT':
+        // 重试逻辑
+        await retryOperation();
+        break;
+
+      case 'HERB_NOT_FOUND':
+        console.error('药材不存在:', data.error.details.herb_id);
+        break;
+
+      default:
+        console.error('API错误:', data.error.message);
+    }
+  }
+}
+```
+
 ### 5.2 任务管理API详细设计
 
 #### POST /api/task/create（扩展）
@@ -896,6 +968,10 @@ CREATE TABLE IF NOT EXISTS case_history (
 │  │   └ init(taskId, caseId)                             ││
 │  │   └ POST /api/task/update                            ││
 │  │   └ POST /api/cases/update                           ││
+│  │ - PaozhiScene                                         ││
+│  │   └ init(taskId, recipeId)                           ││
+│  │   └ POST /api/task/update (status='completed', score)││
+│  │   └ POST /api/inventory/update (发放奖励)             ││
 │  └──────────────────────────────────────────────────────┘│
 └────────────────────────────────────────────────────────────┘
 ```
@@ -1718,9 +1794,49 @@ export async handleDiagnosisComplete(result: DiagnosisResult): Promise<void> {
 }
 ```
 
+**PaozhiScene.ts**：
+```typescript
+// src/scenes/PaozhiScene.ts
+
+export interface PaozhiSceneConfig {
+  recipeId?: string;
+  taskId?: string;
+  reward?: RewardConfig;  // 新增：奖励配置
+}
+
+export class PaozhiScene extends Phaser.Scene {
+  private taskId: string | null = null;
+  private reward: RewardConfig | null = null;
+
+  init(data: PaozhiSceneConfig): void {
+    this.recipeId = data.recipeId || null;
+    this.taskId = data.taskId || null;
+    this.reward = data.reward || null;  // 接收奖励
+  }
+
+  private async handleGameComplete(result: ScoreResultData): Promise<void> {
+    const gameState = GameStateManager.getInstance();
+
+    // ✅ 联合API（任务完成+奖励发放）
+    await gameState.fetchAPI('/api/task/complete_with_reward', {
+      method: 'POST',
+      body: JSON.stringify({
+        task_id: this.taskId,
+        score: result.totalScore
+      })
+    });
+
+    // 触发缓存刷新
+    EventBus.emit('INVENTORY_UPDATED', {
+      playerId: gameState.getPlayerId()
+    });
+  }
+}
+```
+
 ---
 
-## 十二、数据流动完整验证
+## 十三、测试用例设计（完整）
 
 ### 8.1 正向流程验证：NPC创建任务
 
@@ -2033,17 +2149,23 @@ test('任务已完成→再次完成失败', async ({ page }) => {
 
 ## 十四、实施计划（修订）
 
-### 14.1 阶段划分（修订）
+### 14.1 阶段划分（修订+实际工作量）
 
-| 阶段 | 任务 | 工作量 | 优先级 |
-|------|------|--------|--------|
-| **Phase 1** | 任务系统扩展 | 3小时 | P0 |
-| **Phase 2** | Hermes工具扩展 | 30分钟 | P0 |
-| **Phase 3** | GameStateManager实现 | 1小时 | P0 |
-| **Phase 4** | 游戏UI更新 | 2小时 | P0 |
-| **Phase 5** | ClinicScene查询 | 30分钟 | P0 |
-| **Phase 6** | E2E测试 | 2小时 | P1 |
-| **总计** | | **~9小时** | |
+| 阶段 | 任务 | 文档估算 | 实际工作量 | 优先级 | 理由 |
+|------|------|----------|-----------|--------|------|
+| **Phase 1** | 任务系统扩展 | 3小时 | **8小时（1天）** | P0 | 9个API+数据库迁移测试 |
+| **Phase 2** | Hermes工具扩展 | 30分钟 | **30分钟** | P0 | 工具扩展简单 |
+| **Phase 3** | GameStateManager实现 | 1小时 | **1.5小时** | P0 | 需集成测试 |
+| **Phase 4** | 游戏UI更新 | 2小时 | **2.5小时** | P0 | 需测试兼容性 |
+| **Phase 5** | ClinicScene查询 | 30分钟 | **30分钟** | P0 | 查询逻辑简单 |
+| **Phase 6** | E2E测试 | 2小时 | **3小时** | P1 | E2E测试编写耗时 |
+| **总计** | | **9小时** | **~14小时（2天）** | | |
+
+**工作量差异原因**：
+- 数据库迁移测试耗时（验证ALTER TABLE、数据迁移）
+- 7个API实现+测试耗时（每个API至少30分钟）
+- E2E测试编写耗时（并发测试+边界场景）
+- GameStateManager集成测试耗时（验证player_id统一管理）
 
 ### 14.2 详细任务（修订）
 
@@ -2110,7 +2232,90 @@ test('任务已完成→再次完成失败', async ({ page }) => {
 
 ---
 
-## 十六、后续扩展（修订）
+## 十七、验收标准
+
+### 17.1 功能验收标准
+
+**API端点验收**：
+- [ ] POST /api/task/create：创建任务成功，返回正确格式，task_id UNIQUE约束生效
+- [ ] GET /api/tasks/{player_id}：查询所有任务，返回完整任务列表
+- [ ] GET /api/task/{task_id}：查询单个任务，返回任务详情（包含reward字段）
+- [ ] GET /api/tasks/{player_id}/pending_game：查询pending游戏任务，返回最新pending任务
+- [ ] POST /api/task/update：更新任务状态，乐观锁生效，并发冲突检测
+- [ ] POST /api/task/complete_with_reward：联合事务原子性保证，任务完成+奖励发放
+- [ ] GET /api/inventory/{player_id}：查询背包，返回最新数据
+- [ ] POST /api/inventory/update：更新背包，delta正确累加
+- [ ] GET /api/cases/{player_id}：查询病案历史，返回完整记录
+- [ ] POST /api/cases/update：更新病案，记录诊断结果
+
+**数据流动验收**：
+- [ ] NPC创建任务：create_task工具调用成功，tasks表写入记录
+- [ ] ClinicScene查询：pending_game API返回正确任务配置
+- [ ] 游戏启动：任务状态更新为in_progress，游戏参数正确传递
+- [ ] 游戏完成：任务状态更新为completed，score正确记录
+- [ ] 奖励发放：inventory表药材数量增加，符合reward配置
+- [ ] NPC感知：get_learning_progress返回已完成任务，get_inventory返回新背包
+
+### 17.2 并发验收标准
+
+**乐观锁机制验收**：
+- [ ] 同一任务并发完成：第一个请求成功，第二个返回冲突错误
+- [ ] version字段正确更新：每次更新version+1
+- [ ] 冲突重试机制：前端重试3次后成功
+
+**联合事务验收**：
+- [ ] 任务完成+奖励发放原子性：联合API要么全部成功，要么全部失败
+- [ ] 事务ROLLBACK生效：失败时数据不变
+- [ ] 并发发放奖励：两次发放都成功，数据累加正确
+
+### 17.3 测试验收标准
+
+**E2E测试覆盖**：
+- [ ] 测试覆盖率 ≥ 80%（Playwright覆盖率报告）
+- [ ] 基础流程测试：任务创建→游戏→更新（5个场景）
+- [ ] 并发测试：乐观锁验证（2个场景）
+- [ ] 数据一致性测试：NPC查询验证（3个场景）
+- [ ] 边界场景测试：无奖励、重复完成（4个场景）
+- [ ] EventBus验证：INVENTORY_UPDATED事件触发测试
+
+**测试通过率**：
+- [ ] 所有测试通过率 100%（CI/CD绿标）
+- [ ] 并发测试通过率 100%（无数据不一致）
+- [ ] 边界场景测试通过率 100%（无遗漏场景）
+
+### 17.4 性能验收标准
+
+**API性能**：
+- [ ] API响应时间 < 200ms（95%请求，p95延迟）
+- [ ] 数据库查询优化：索引生效，查询时间 < 50ms
+- [ ] 并发处理性能：10并发请求无阻塞
+
+**前端性能**：
+- [ ] GameStateBridge缓存生效：减少50% API调用
+- [ ] 游戏启动延迟 < 100ms（ClinicScene查询到游戏启动）
+
+### 17.5 兼容性验收标准
+
+**向后兼容性**：
+- [ ] trigger_minigame工具软废弃：调用返回错误提示，不报错
+- [ ] 现有NPC对话流程不受影响
+- [ ] 现有游戏场景参数扩展向后兼容（可选参数）
+
+### 17.6 评审流程
+
+**阶段评审**：
+1. Phase 1完成后：运行数据库迁移测试，验证表结构正确
+2. Phase 3完成后：验证GameStateManager集成，player_id统一管理
+3. Phase 4完成后：运行游戏UI测试，验证数据更新API调用
+4. Phase 6完成后：运行完整E2E测试套件，验证数据流动闭环
+
+**最终评审**：
+- 所有验收标准达成 → 进入用户验收阶段
+- 用户验收确认 → 合并到master分支
+
+---
+
+## 十八、后续扩展（修订）
 
 ### 12.1 Phase 3扩展方向
 

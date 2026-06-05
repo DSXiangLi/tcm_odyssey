@@ -297,9 +297,123 @@ ALTER TABLE tasks ADD COLUMN reward TEXT;
 
 ---
 
-## 五、API设计
+## 五、完整API套件设计
 
-### 5.1 新增API端点
+### 5.1 API全景图
+
+#### 核心API分类
+
+| 分类 | API端点 | 用途 | 调用方 |
+|------|---------|------|--------|
+| **任务管理** | POST /api/task/create | 创建新任务 | Hermes Backend |
+| | GET /api/tasks/{player_id} | 查询所有任务 | Hermes Backend |
+| | GET /api/task/{task_id} | 查询单个任务详情 | 游戏场景（获取奖励配置）|
+| | GET /api/tasks/{player_id}/pending_game | 查询待执行游戏任务 | ClinicScene |
+| | POST /api/task/update | 更新任务状态/评分 | 游戏场景 |
+| **背包管理** | GET /api/inventory/{player_id} | 查询背包 | Hermes Backend + InventoryUI |
+| | POST /api/inventory/update | 更新背包药材 | 游戏场景（发放奖励）|
+| **病案管理** | GET /api/cases/{player_id} | 查询病案历史 | Hermes Backend |
+| | POST /api/cases/update | 更新病案记录 | DiagnosisScene |
+
+### 5.2 任务管理API详细设计
+
+#### POST /api/task/create（扩展）
+
+**用途**：创建新任务（包括游戏任务）
+
+**请求**：
+```json
+{
+  "player_id": "player_001",
+  "task_id": "task_decoction_mahuangtang_001",
+  "title": "煎制麻黄汤",
+  "type": "game_task",
+  "game_type": "decoction",
+  "game_config": "{\"prescriptionId\": \"mahuangtang\"}",
+  "reward": "{\"herbs\": [{\"herb_id\": \"mahuang\", \"delta\": 3}]}",
+  "blocked_by": null
+}
+```
+
+**响应**：
+```json
+{
+  "status": "created",
+  "task_id": "task_decoction_mahuangtang_001",
+  "created_at": "2026-06-05T10:00:00Z"
+}
+```
+
+#### GET /api/tasks/{player_id}
+
+**用途**：查询玩家所有任务（已有，无需扩展）
+
+**响应**：
+```json
+{
+  "tasks": [
+    {
+      "task_id": "task_prescription_mahuangtang",
+      "title": "学习麻黄汤组成",
+      "type": "prescription",
+      "status": "completed",
+      "progress": 1.0
+    },
+    {
+      "task_id": "task_decoction_mahuangtang_001",
+      "title": "煎制麻黄汤",
+      "type": "game_task",
+      "game_type": "decoction",
+      "status": "pending",
+      "score": 0.0
+    }
+  ]
+}
+```
+
+#### GET /api/task/{task_id}（新增）
+
+**用途**：查询单个任务详情（游戏场景获取奖励配置）
+
+**请求**：
+```http
+GET /api/task/task_decoction_mahuangtang_001
+```
+
+**响应**：
+```json
+{
+  "task": {
+    "task_id": "task_decoction_mahuangtang_001",
+    "title": "煎制麻黄汤",
+    "type": "game_task",
+    "game_type": "decoction",
+    "game_config": "{\"prescriptionId\": \"mahuangtang\"}",
+    "reward": "{\"herbs\": [{\"herb_id\": \"mahuang\", \"delta\": 3}]}",
+    "status": "in_progress",
+    "score": 0.0,
+    "created_at": "2026-06-05T10:00:00Z",
+    "updated_at": "2026-06-05T10:15:00Z"
+  }
+}
+```
+
+**实现逻辑**：
+```python
+@router.get("/task/{task_id}")
+async def get_task_detail(task_id: str):
+    """查询单个任务详情"""
+    conn = get_db()
+    row = conn.execute(
+        "SELECT * FROM tasks WHERE task_id = ?",
+        (task_id,)
+    ).fetchone()
+
+    if not row:
+        return {"error": "Task not found"}
+
+    return {"task": dict(row)}
+```
 
 #### GET /api/tasks/{player_id}/pending_game
 
@@ -317,12 +431,8 @@ GET /api/tasks/player_001/pending_game
     "task_id": "task_decoction_mahuangtang_001",
     "title": "煎制麻黄汤",
     "game_type": "decoction",
-    "game_config": {
-      "prescriptionId": "mahuangtang"
-    },
-    "reward": {
-      "herbs": [{"herb_id": "mahuang", "delta": 3}]
-    },
+    "game_config": "{\"prescriptionId\": \"mahuangtang\"}",
+    "reward": "{\"herbs\": [{\"herb_id\": \"mahuang\", \"delta\": 3}]}",
     "status": "pending",
     "created_at": "2026-06-05T10:00:00Z"
   }
@@ -331,12 +441,19 @@ GET /api/tasks/player_001/pending_game
 
 **逻辑**：
 ```python
-rows = conn.execute("""
-    SELECT * FROM tasks
-    WHERE player_id = ? AND status = 'pending' AND game_type IS NOT NULL
-    ORDER BY created_at DESC
-    LIMIT 1
-""", (player_id,)).fetchall()
+@router.get("/tasks/{player_id}/pending_game")
+async def get_pending_game_tasks(player_id: str):
+    """获取pending游戏任务"""
+    conn = get_db()
+
+    rows = conn.execute("""
+        SELECT * FROM tasks
+        WHERE player_id = ? AND status = 'pending' AND game_type IS NOT NULL
+        ORDER BY created_at DESC
+        LIMIT 1
+    """, (player_id,)).fetchall()
+
+    return {"pending_game": dict(rows[0]) if rows else None}
 ```
 
 #### POST /api/task/update
@@ -362,40 +479,658 @@ rows = conn.execute("""
 }
 ```
 
-**逻辑**：
+**实现逻辑（带并发控制）**：
 ```python
-now = datetime.utcnow().isoformat() + "Z"
-conn.execute("""
-    UPDATE tasks
-    SET progress = ?, status = ?, score = ?, updated_at = ?
-    WHERE task_id = ?
-""", (request.progress, request.status, request.score, now, request.task_id))
+@router.post("/task/update")
+async def update_task(request: UpdateTaskRequest):
+    """更新任务进度和状态（带乐观锁）"""
+    conn = get_db()
+    now = datetime.utcnow().isoformat() + "Z"
+
+    # 先查询当前状态（乐观锁检查）
+    current = conn.execute(
+        "SELECT status, version FROM tasks WHERE task_id = ?",
+        (request.task_id,)
+    ).fetchone()
+
+    if not current:
+        return {"error": "Task not found"}
+
+    # 状态转换验证
+    if current['status'] == 'completed':
+        return {"error": "Task already completed"}
+
+    # 更新任务（带版本号）
+    conn.execute("""
+        UPDATE tasks
+        SET progress = ?, status = ?, score = ?, updated_at = ?, version = version + 1
+        WHERE task_id = ? AND version = ?
+    """, (request.progress, request.status, request.score, now, request.task_id, current['version']))
+
+    conn.commit()
+
+    # 检查更新是否成功（并发冲突检测）
+    updated = conn.execute(
+        "SELECT version FROM tasks WHERE task_id = ?",
+        (request.task_id,)
+    ).fetchone()
+
+    if updated['version'] != current['version'] + 1:
+        return {"error": "Concurrent update conflict"}
+
+    return {"status": "updated", "task_id": request.task_id, "updated_at": now}
 ```
 
-### 5.2 扩展现有API
+### 5.3 背包管理API详细设计
 
-#### POST /api/task/create（扩展）
+#### GET /api/inventory/{player_id}
 
-**新增参数**：
+**用途**：查询玩家背包（已有，无需扩展）
+
+**响应**：
 ```json
 {
   "player_id": "player_001",
-  "task_id": "task_decoction_mahuangtang_001",
-  "title": "煎制麻黄汤",
-  "type": "game_task",
-  "game_type": "decoction",
-  "game_config": {
-    "prescriptionId": "mahuangtang"
-  },
-  "reward": {
-    "herbs": [{"herb_id": "mahuang", "delta": 3}]
+  "herbs": [
+    {
+      "id": "mahuang",
+      "name": "麻黄",
+      "raw_count": 5,
+      "piece_count": 0
+    }
+  ]
+}
+```
+
+#### POST /api/inventory/update
+
+**用途**：更新背包药材数量（发放奖励）
+
+**请求格式（关键：匹配当前API）**：
+```json
+{
+  "player_id": "player_001",
+  "updates": [
+    {"herb_id": "mahuang", "delta": 3},
+    {"herb_id": "guizhi", "delta": 2}
+  ]
+}
+```
+
+**响应**：
+```json
+{
+  "status": "updated",
+  "player_id": "player_001",
+  "updated_count": 2
+}
+```
+
+**注意**：reward字段格式必须匹配此API的请求格式！
+
+### 5.4 病案管理API详细设计
+
+#### GET /api/cases/{player_id}
+
+**用途**：查询玩家病案历史
+
+**请求**：
+```http
+GET /api/cases/player_001
+```
+
+**响应**：
+```json
+{
+  "cases": [
+    {
+      "case_id": "case-001",
+      "syndrome": "风寒表实证",
+      "score": 85,
+      "completed_at": "2026-06-05T10:30:00Z"
+    }
+  ]
+}
+```
+
+#### POST /api/cases/update（新增）
+
+**用途**：诊断完成时更新病案历史
+
+**请求**：
+```json
+{
+  "player_id": "player_001",
+  "case_id": "case-001",
+  "syndrome": "风寒表实证",
+  "score": 85,
+  "completed_at": "2026-06-05T10:30:00Z"
+}
+```
+
+**响应**：
+```json
+{
+  "status": "updated",
+  "case_id": "case-001"
+}
+```
+
+**实现逻辑**：
+```python
+@router.post("/cases/update")
+async def update_case_history(request: UpdateCaseRequest):
+    """更新病案历史"""
+    conn = get_db()
+
+    # 检查是否已存在
+    existing = conn.execute(
+        "SELECT * FROM case_history WHERE player_id = ? AND case_id = ?",
+        (request.player_id, request.case_id)
+    ).fetchone()
+
+    if existing:
+        # 更新现有记录
+        conn.execute("""
+            UPDATE case_history
+            SET score = ?, completed_at = ?
+            WHERE player_id = ? AND case_id = ?
+        """, (request.score, request.completed_at, request.player_id, request.case_id))
+    else:
+        # 创建新记录
+        conn.execute("""
+            INSERT INTO case_history (player_id, case_id, syndrome, score, completed_at)
+            VALUES (?, ?, ?, ?, ?)
+        """, (request.player_id, request.case_id, request.syndrome, request.score, request.completed_at))
+
+    conn.commit()
+
+    return {"status": "updated", "case_id": request.case_id}
+```
+
+---
+
+## 六、后端表关系设计
+
+### 6.1 核心表结构关系图
+
+```
+┌─────────────────┐
+│   players       │
+│  - player_id    │
+└─────────────────┘
+       │
+       ├──────────────────┬──────────────────┬──────────────────┐
+       │                  │                  │                  │
+       ↓                  ↓                  ↓                  ↓
+┌──────────────┐  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐
+│   tasks      │  │  inventory   │  │case_history  │  │   todos      │
+│ - player_id  │  │ - player_id  │  │ - player_id  │  │ - player_id  │
+│ - task_id    │  │ - herb_id    │  │ - case_id    │  │ - todo_id    │
+│ - game_type  │  │ - raw_count  │  │ - syndrome   │  │ - topic      │
+│ - reward ⚠️  │  │ - piece_count│  │ - score      │  │ - mastery    │
+│ - score      │  └──────────────┘  └──────────────┘  └──────────────┘
+│ - version    │         ↑                 ↑
+└──────────────┘         │                 │
+       │                 │                 │
+       │  奖励发放        │  诊断任务记录     │
+       └─────────────────┘─────────────────┘
+
+⚠️ reward字段存储JSON，与inventory表的herb_id关联
+```
+
+### 6.2 tasks表关系详解
+
+#### tasks ↔ inventory（奖励发放）
+
+**关系类型**：间接关联（通过reward字段）
+
+**数据流**：
+```
+tasks表存储奖励配置：
+  reward = '{"herbs": [{"herb_id": "mahuang", "delta": 3}]}'
+
+↓ 游戏完成时
+
+POST /api/inventory/update
+  updates = [{"herb_id": "mahuang", "delta": 3}]
+
+↓ 数据库更新
+
+inventory表：
+  mahuang.raw_count += 3
+```
+
+**关联机制**：
+- tasks.reward → JSON解析 → 提取herb_id → 更新inventory.herb_id记录
+
+**查询一致性**：
+```python
+# NPC查询背包时，检查是否有任务奖励未发放
+def get_inventory_with_pending_rewards(player_id):
+    inventory = get_inventory(player_id)
+    pending_tasks = get_pending_game_tasks(player_id)
+
+    # 返回背包 + 待发放奖励提示
+    return {
+        "inventory": inventory,
+        "pending_rewards": [
+            {"task_id": t.task_id, "reward": t.reward}
+            for t in pending_tasks
+        ]
+    }
+```
+
+#### tasks ↔ case_history（诊断任务记录）
+
+**关系类型**：直接关联（通过case_id）
+
+**数据流**：
+```
+tasks表：
+  game_type = 'diagnosis'
+  game_config = '{"case_id": "case-001"}'
+
+↓ 诊断完成时
+
+POST /api/task/update（更新任务状态）
+POST /api/cases/update（更新病案历史）
+  case_id = JSON.parse(game_config).case_id
+  score = 任务评分
+```
+
+**关联机制**：
+- tasks.game_config → JSON解析 → 提取case_id → 创建case_history记录
+
+**一致性保证**：
+```python
+# 诊断完成时，同时更新任务和病案历史（事务）
+def complete_diagnosis_task(player_id, task_id, case_id, score):
+    conn = get_db()
+    conn.execute("BEGIN TRANSACTION")
+
+    # 更新任务状态
+    conn.execute("""
+        UPDATE tasks SET status='completed', score=? WHERE task_id=?
+    """, (score, task_id))
+
+    # 更新病案历史
+    conn.execute("""
+        INSERT OR REPLACE INTO case_history
+        (player_id, case_id, score, completed_at)
+        VALUES (?, ?, ?, ?)
+    """, (player_id, case_id, score, datetime.utcnow()))
+
+    conn.execute("COMMIT")
+```
+
+#### tasks ↔ todos（知识点关联）
+
+**关系类型**：间接关联（通过任务类型）
+
+**数据流**：
+```
+tasks表：
+  type = 'prescription'（方剂学习）
+  title = '学习麻黄汤'
+
+↓ 任务完成时
+
+todos表更新：
+  topic = '麻黄汤组成'
+  mastery += 0.2（任务完成提升掌握度）
+```
+
+**关联机制**：
+- 任务完成 → 触发知识点掌握度更新
+
+### 6.3 表扩展字段汇总
+
+#### tasks表完整结构（扩展后）
+
+```sql
+CREATE TABLE IF NOT EXISTS tasks (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    player_id TEXT NOT NULL,
+    task_id TEXT NOT NULL UNIQUE,
+    title TEXT NOT NULL,
+    type TEXT NOT NULL,          -- 'prescription', 'syndrome', 'game_task'
+    status TEXT NOT NULL,        -- 'pending', 'in_progress', 'completed'
+    progress REAL DEFAULT 0.0,
+    blocked_by TEXT,
+    created_at TEXT NOT NULL,
+    updated_at TEXT NOT NULL,
+
+    -- 新增字段
+    game_type TEXT,              -- 'decoction', 'diagnosis', 'processing'
+    game_config TEXT,            -- JSON: {prescriptionId, case_id, recipeId}
+    score REAL DEFAULT 0.0,      -- 游戏评分（0-100）
+    reward TEXT,                 -- JSON: {herbs: [{herb_id, delta}], experience}
+    version INTEGER DEFAULT 0    -- 乐观锁版本号（并发控制）
+);
+```
+
+#### inventory表（无需扩展，已有）
+
+```sql
+CREATE TABLE IF NOT EXISTS inventory (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    player_id TEXT NOT NULL,
+    herb_id TEXT NOT NULL,
+    raw_count REAL DEFAULT 0.0,
+    piece_count REAL DEFAULT 0.0,
+    UNIQUE(player_id, herb_id)
+);
+```
+
+#### case_history表（需要创建）
+
+```sql
+CREATE TABLE IF NOT EXISTS case_history (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    player_id TEXT NOT NULL,
+    case_id TEXT NOT NULL,
+    syndrome TEXT NOT NULL,
+    score REAL DEFAULT 0.0,
+    completed_at TEXT NOT NULL,
+    UNIQUE(player_id, case_id)
+);
+```
+
+---
+
+## 七、模块间数据通信架构
+
+### 7.1 模块通信全景图
+
+```
+┌────────────────────────────────────────────────────────────┐
+│                    Hermes Backend (NPC Agent)              │
+│  ┌──────────────────────────────────────────────────────┐│
+│  │ MCP工具层                                             ││
+│  │ - create_task(game_task) → POST /api/task/create     ││
+│  │ - get_learning_progress → GET /api/tasks/{player_id} ││
+│  │ - get_inventory → GET /api/inventory/{player_id}     ││
+│  │ - get_case_progress → GET /api/cases/{player_id}     ││
+│  └──────────────────────────────────────────────────────┘│
+└────────────────────────────────────────────────────────────┘
+                        ↓ HTTP API调用
+┌────────────────────────────────────────────────────────────┐
+│               game-state-backend (FastAPI + SQLite)        │
+│  ┌──────────────────────────────────────────────────────┐│
+│  │ 数据层                                                ││
+│  │ - tasks表（任务状态、奖励配置）                         ││
+│  │ - inventory表（背包药材）                              ││
+│  │ - case_history表（病案历史）                           ││
+│  └──────────────────────────────────────────────────────┘│
+│  ┌──────────────────────────────────────────────────────┐│
+│  │ API层                                                 ││
+│  │ - POST /api/task/create                              ││
+│  │ - GET /api/task/{task_id}                            ││
+│  │ - GET /api/tasks/{player_id}/pending_game            ││
+│  │ - POST /api/task/update                              ││
+│  │ - GET /api/inventory/{player_id}                     ││
+│  │ - POST /api/inventory/update                         ││
+│  │ - GET /api/cases/{player_id}                         ││
+│  │ - POST /api/cases/update                             ││
+│  └──────────────────────────────────────────────────────┘│
+└────────────────────────────────────────────────────────────┘
+                        ↓ 前端查询/更新
+┌────────────────────────────────────────────────────────────┐
+│                    游戏前端 (Phaser 3 + React)              │
+│  ┌──────────────────────────────────────────────────────┐│
+│  │ 状态管理层                                            ││
+│  │ - GameStateManager（player_id管理，解决硬编码问题）     ││
+│  │ - GameStateBridge（数据缓存，减少API调用）             ││
+│  └──────────────────────────────────────────────────────┘│
+│  ┌──────────────────────────────────────────────────────┐│
+│  │ 场景层                                                ││
+│  │ - ClinicScene                                         ││
+│  │   └─ GET /api/tasks/{player_id}/pending_game          ││
+│  │   └─ POST /api/task/update (status='in_progress')    ││
+│  │ - DecoctionScene                                      ││
+│  │   └ init(taskId, prescriptionId)                     ││
+│  │   └ POST /api/task/update (status='completed', score)││
+│  │   └ POST /api/inventory/update (发放奖励)             ││
+│  │ - DiagnosisScene                                      ││
+│  │   └ init(taskId, caseId)                             ││
+│  │   └ POST /api/task/update                            ││
+│  │   └ POST /api/cases/update                           ││
+│  └──────────────────────────────────────────────────────┘│
+└────────────────────────────────────────────────────────────┘
+```
+
+### 7.2 关键通信路径详解
+
+#### 路径1：NPC创建任务 → ClinicScene查询
+
+**时序图**：
+```
+时间轴：
+T0  NPC对话结束
+    └ Hermes Backend调用create_task(game_task)
+    └ POST http://localhost:8643/api/task/create
+    └ game-state-backend写入tasks表（status='pending')
+
+T1  ClinicScene初始化（玩家进入诊所）
+    └ GET http://localhost:8643/api/tasks/{player_id}/pending_game
+    └ game-state-backend返回pending游戏任务
+    └ ClinicScene缓存任务配置
+
+T2  玩家按D键启动煎药
+    └ ClinicScene调用startDecoction(config)
+     POST http://localhost:8643/api/task/update (status='in_progress')
+    └ Phaser场景切换：launch(SCENES.DECOCTION, config)
+```
+
+**数据包格式**：
+```typescript
+// ClinicScene → game-state-backend（查询）
+GET /api/tasks/player_001/pending_game
+
+// game-state-backend → ClinicScene（响应）
+{
+  "pending_game": {
+    "task_id": "task_dec_mahuangtang_001",
+    "game_type": "decoction",
+    "game_config": "{\"prescriptionId\": \"mahuangtang\"}",
+    "reward": "{\"herbs\": [{\"herb_id\": \"mahuang\", \"delta\": 3}]}"
+  }
+}
+
+// ClinicScene → DecoctionScene（场景切换）
+{
+  "prescriptionId": "mahuangtang",
+  "taskId": "task_dec_mahuangtang_001",
+  "reward": [{"herb_id": "mahuang", "delta": 3}]
+}
+```
+
+#### 路径2：游戏完成 → 数据更新（事务）
+
+**时序图**：
+```
+时间轴：
+T0  煎药游戏完成，评分85分
+    └ DecoctionScene.handleGameComplete()
+
+T1  更新任务状态
+    └ POST http://localhost:8643/api/task/update
+     body: {task_id, progress: 1.0, status: 'completed', score: 85}
+    └ game-state-backend更新tasks表
+
+T2  发放奖励
+    ┌ 方式A：查询任务奖励配置（推荐）
+    │   GET http://localhost:8643/api/task/{task_id}
+    │   解析reward字段 → {herbs: [{herb_id, delta}]}
+    │  └ POST http://localhost:8643/api/inventory/update
+    │   body: {player_id, updates: reward.herbs}
+    │
+    └ 方式B：从场景参数获取（简化）
+    │   reward从init参数获取
+    │  \ POST http://localhost:8643/api/inventory/update
+
+T3  数据更新完成
+    └ game-state-backend:
+    └ tasks表：status='completed', score=85
+    └ inventory表：mahuang.raw_count += 3
+```
+
+**并发处理（乐观锁）**：
+```python
+# game-state-backend API层
+def update_task_with_lock(task_id, progress, status, score):
+    conn = get_db()
+    conn.execute("BEGIN TRANSACTION")
+
+    # 查询当前版本
+    current = conn.execute(
+        "SELECT status, version FROM tasks WHERE task_id=?",
+        (task_id,)
+    ).fetchone()
+
+    # 状态验证
+    if current['status'] == 'completed':
+        raise Exception("Task already completed")
+
+    # 更新（带版本检查）
+    updated = conn.execute("""
+        UPDATE tasks
+        SET progress=?, status=?, score=?, version=version+1
+        WHERE task_id=? AND version=?
+    """, (progress, status, score, task_id, current['version']))
+
+    if updated.rowcount == 0:
+        raise Exception("Concurrent update conflict")
+
+    conn.execute("COMMIT")
+```
+
+#### 路径3：NPC感知变化 → 点评
+
+**时序图**：
+```
+时间轴：
+T0  下次NPC对话开始
+     Hermes Backend调用get_learning_progress
+     GET http://localhost:8643/api/tasks/{player_id}
+     返回已完成任务（task_id='task_dec_mahuangtang_001', score=85）
+
+T1  NPC查询背包变化
+     Hermes Backend调用get_inventory
+    \ GET http://localhost:8643/api/inventory/{player_id}
+    \ 返回新背包数据（mahuang.raw_count=8，原5+3）
+
+T2  NPC生成点评
+    \ NPC Agent基于数据生成对话：
+    \ "你煎制麻黄汤得分85分，表现不错！"
+    \ "背包里多了3份麻黄，可以继续学习其他方剂。"
+```
+
+### 7.3 GameStateManager设计（解决硬编码player_id）
+
+**问题**：当前代码硬编码`player_id='player_001'`
+
+**解决方案**：GameStateManager统一管理
+
+```typescript
+// src/systems/GameStateManager.ts（新增）
+
+export class GameStateManager {
+  private static instance: GameStateManager;
+  private playerId: string;
+
+  private constructor() {
+    // 从本地存储或登录系统获取player_id
+    this.playerId = localStorage.getItem('player_id') || 'player_001';
+  }
+
+  static getInstance(): GameStateManager {
+    if (!GameStateManager.instance) {
+      GameStateManager.instance = new GameStateManager();
+    }
+    return GameStateManager.instance;
+  }
+
+  getPlayerId(): string {
+    return this.playerId;
+  }
+
+  setPlayerId(id: string): void {
+    this.playerId = id;
+    localStorage.setItem('player_id', id);
+  }
+
+  // 统一API调用方法
+  async fetchAPI(endpoint: string, options?: RequestInit): Promise<any> {
+    const url = `http://localhost:8643${endpoint}`;
+    const defaultOptions = {
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Player-ID': this.playerId  // 统一添加player_id到请求头
+      }
+    };
+
+    return fetch(url, { ...defaultOptions, ...options });
+  }
+}
+
+// 使用示例（替代硬编码）
+// ❌ 错误：硬编码
+fetch('http://localhost:8643/api/tasks/player_001/pending_game')
+
+// ✅ 正确：使用GameStateManager
+const gameState = GameStateManager.getInstance();
+gameState.fetchAPI(`/api/tasks/${gameState.getPlayerId()}/pending_game`)
+```
+
+### 7.4 GameStateBridge缓存设计（减少API调用）
+
+**当前问题**：每次查询都调用API，浪费资源
+
+**优化方案**：缓存机制
+
+```typescript
+// src/bridge/GameStateBridge.ts（扩展）
+
+export class GameStateBridge {
+  private inventoryCache: Map<string, InventoryData> = new Map();
+  private taskCache: Map<string, TaskData> = new Map();
+  private cacheExpiry: number = 30000; // 30秒缓存
+
+  async getInventory(playerId: string): Promise<InventoryData> {
+    const cached = this.inventoryCache.get(playerId);
+    const now = Date.now();
+
+    if (cached && cached.timestamp && now - cached.timestamp < this.cacheExpiry) {
+      return cached.data;
+    }
+
+    // 缓存过期，重新获取
+    const data = await gameState.fetchAPI(`/api/inventory/${playerId}`);
+    this.inventoryCache.set(playerId, { data, timestamp: now });
+
+    return data;
+  }
+
+  // 任务完成后刷新缓存
+  invalidateCache(playerId: string): void {
+    this.inventoryCache.delete(playerId);
+    this.taskCache.delete(playerId);
+  }
+
+  // EventBus监听任务完成事件
+  setupEventListeners(): void {
+    EventBus.on('TASK_COMPLETED', (event) => {
+      this.invalidateCache(event.playerId);
+    });
   }
 }
 ```
 
 ---
 
-## 六、Hermes Backend工具扩展
+## 八、Hermes Backend工具扩展
 
 ### 6.1 create_task工具扩展
 
@@ -501,20 +1236,329 @@ TRIGGER_MINIGAME_SCHEMA = {
 
 ---
 
-## 七、前端实现设计
+## 九、并发处理与事务保证
 
-### 7.1 ClinicScene查询pending任务
+### 9.1 并发场景分析
+
+**潜在冲突场景**：
+
+| 场景 | 冲突类型 | 影响 |
+|------|----------|------|
+| 同一任务多次完成 | 状态冲突 | 任务状态不一致，重复奖励发放 |
+| 多个NPC同时创建任务 | ID冲突 | task_id UNIQUE约束失败 |
+| 游戏完成+NPC查询并发 | 读脏数据 | NPC查询到未完成的任务 |
+| 奖励发放+背包查询并发 | 读脏数据 | NPC查询到旧背包数据 |
+
+### 9.2 tasks表并发控制
+
+**方案：乐观锁（version字段）**
+
+```sql
+-- tasks表增加version字段
+ALTER TABLE tasks ADD COLUMN version INTEGER DEFAULT 0;
+
+-- 更新时检查版本
+UPDATE tasks
+SET status='completed', score=85, version=version+1
+WHERE task_id='task_xxx' AND version=0;
+
+-- 如果更新失败（rowcount=0），说明版本不匹配，存在并发冲突
+```
+
+**API层实现**：
+```python
+@router.post("/task/update")
+async def update_task(request: UpdateTaskRequest):
+    conn = get_db()
+
+    # 事务开始
+    conn.execute("BEGIN TRANSACTION")
+
+    # 查询当前版本
+    current = conn.execute(
+        "SELECT status, version FROM tasks WHERE task_id = ?",
+        (request.task_id,)
+    ).fetchone()
+
+    if not current:
+        conn.execute("ROLLBACK")
+        return {"error": "Task not found"}
+
+    # 状态验证
+    if current['status'] == 'completed':
+        conn.execute("ROLLBACK")
+        return {"error": "Task already completed"}
+
+    # 乐观锁更新
+    updated = conn.execute("""
+        UPDATE tasks
+        SET progress = ?, status = ?, score = ?, updated_at = ?, version = version + 1
+        WHERE task_id = ? AND version = ?
+    """, (request.progress, request.status, request.score, now, request.task_id, current['version']))
+
+    # 检查是否成功
+    if updated.rowcount == 0:
+        conn.execute("ROLLBACK")
+        return {"error": "Concurrent update conflict - please retry"}
+
+    conn.execute("COMMIT")
+
+    return {"status": "updated", "task_id": request.task_id}
+```
+
+### 9.3 奖励发放事务保证
+
+**问题**：任务完成和奖励发放是两个独立API调用，存在中间失败风险
+
+**方案：联合事务**
+
+```python
+@router.post("/task/complete_with_reward")
+async def complete_task_with_reward(request: CompleteTaskRequest):
+    """任务完成+奖励发放联合事务（原子性保证）"""
+
+    conn = get_db()
+    conn.execute("BEGIN TRANSACTION")
+
+    try:
+        # 1. 查询任务详情（包含奖励配置）
+        task = conn.execute(
+            "SELECT * FROM tasks WHERE task_id = ?",
+            (request.task_id,)
+        ).fetchone()
+
+        if not task or task['status'] == 'completed':
+            raise Exception("Invalid task state")
+
+        # 2. 更新任务状态
+        conn.execute("""
+            UPDATE tasks
+            SET status='completed', score=?, progress=1.0, version=version+1
+            WHERE task_id=? AND version=?
+        """, (request.score, request.task_id, task['version']))
+
+        # 3. 解析奖励配置
+        reward = json.loads(task['reward']) if task['reward'] else None
+
+        # 4. 发放奖励（原子性）
+        if reward and reward.get('herbs'):
+            for herb in reward['herbs']:
+                conn.execute("""
+                    UPDATE inventory
+                    SET raw_count = raw_count + ?
+                    WHERE player_id = ? AND herb_id = ?
+                """, (herb['delta'], task['player_id'], herb['herb_id']))
+
+        # 5. 提交事务
+        conn.execute("COMMIT")
+
+        return {
+            "status": "completed",
+            "task_id": request.task_id,
+            "reward_granted": reward
+        }
+
+    except Exception as e:
+        conn.execute("ROLLBACK")
+        return {"error": str(e)}
+```
+
+**前端调用方式**：
+```typescript
+// 方式A：联合API（推荐，原子性保证）
+await fetch('http://localhost:8643/api/task/complete_with_reward', {
+  method: 'POST',
+  body: JSON.stringify({task_id, score: 85})
+});
+
+// 方式B：分步调用（需要重试机制）
+try {
+  await updateTask(task_id, score);
+  await grantReward(task_id);
+} catch (e) {
+  // 重试逻辑...
+}
+```
+
+### 9.4 脏数据读取处理
+
+**问题**：NPC查询时可能读到未提交的数据
+
+**方案：隔离级别 + 缓存刷新**
+
+```python
+# game-state-backend启动时设置隔离级别
+conn = sqlite3.connect('game_state.db')
+conn.execute("PRAGMA read_uncommitted = OFF")  # 禁止脏读
+```
+
+**前端缓存刷新机制**：
+```typescript
+// EventBus触发刷新
+EventBus.on('TASK_COMPLETED', (event) => {
+  GameStateBridge.getInstance().invalidateCache(event.playerId);
+});
+
+// NPC心跳刷新（NPCHeartbeat.ts已有）
+setInterval(() => {
+  GameStateBridge.getInstance().refreshCache();
+}, 30000);
+```
+
+---
+
+## 十、奖励发放机制详解
+
+### 10.1 reward字段格式设计（关键）
+
+**格式定义**：
+```json
+{
+  "herbs": [
+    {"herb_id": "mahuang", "delta": 3},
+    {"herb_id": "guizhi", "delta": 2}
+  ],
+  "experience": 10
+}
+```
+
+**关键约束**：
+- ✅ `herb_id` 必须匹配 inventory表的herb_id字段
+- ✅ `delta` 正数表示增加，负数表示消耗
+- ✅ 格式必须匹配 POST /api/inventory/update 的请求格式
+
+**NPC创建任务时的reward生成逻辑**：
+```python
+# Hermes Backend: create_task工具
+def create_game_task(prescription_id):
+    # 查询方剂组成
+    prescription = get_prescription(prescription_id)
+
+    # 生成奖励：煎药成功获得方剂中的药材
+    reward = {
+        "herbs": [
+            {"herb_id": herb.id, "delta": 3}
+            for herb in prescription.herbs[:2]  # 前两种药材，各+3
+        ],
+        "experience": 10
+    }
+
+    return reward
+```
+
+### 10.2 前端奖励发放实现
+
+**方式A：从任务查询获取奖励（推荐）**
+```typescript
+// DecoctionScene.ts
+private async grantRewardFromTask(): Promise<void> {
+  // 1. 查询任务详情
+  const taskResponse = await fetch(
+    `http://localhost:8643/api/task/${this.taskId}`
+  );
+  const task = taskResponse.json().task;
+
+  // 2. 解析奖励
+  const reward = JSON.parse(task.reward || '{}');
+
+  // 3. 发放奖励
+  if (reward.herbs && reward.herbs.length > 0) {
+    await fetch('http://localhost:8643/api/inventory/update', {
+      method: 'POST',
+      body: JSON.stringify({
+        player_id: GameStateManager.getInstance().getPlayerId(),
+        updates: reward.herbs  // ⚠️ 格式匹配API
+      })
+    });
+
+    // 4. 触发缓存刷新
+    EventBus.emit('INVENTORY_UPDATED', {playerId: this.playerId});
+  }
+}
+```
+
+**方式B：从场景参数获取奖励（简化）**
+```typescript
+// ClinicScene.ts启动游戏时传递奖励
+scene.launch(SCENES.DECOCTION, {
+  prescriptionId: config.prescriptionId,
+  taskId: task.task_id,
+  reward: JSON.parse(task.reward)  // 传递奖励对象
+});
+
+// DecoctionScene.ts接收并发放
+init(data: DecoctionSceneConfig): void {
+  this.reward = data.reward;
+}
+
+onComplete(): void {
+  if (this.reward && this.reward.herbs) {
+    // 直接发放奖励
+    this.grantReward(this.reward.herbs);
+  }
+}
+```
+
+### 10.3 奖励发放失败处理
+
+**失败场景**：
+1. API调用失败（网络错误）
+2. herb_id不存在（数据库错误）
+3. 事务冲突（并发错误）
+
+**重试机制**：
+```typescript
+async function grantRewardWithRetry(herbs: HerbReward[], maxRetries = 3): Promise<void> {
+  for (let attempt = 1; attempt <= maxRetries; attempt++) {
+    try {
+      const response = await fetch('http://localhost:8643/api/inventory/update', {
+        method: 'POST',
+        body: JSON.stringify({
+          player_id: GameStateManager.getInstance().getPlayerId(),
+          updates: herbs
+        })
+      });
+
+      if (response.ok) {
+        EventBus.emit('INVENTORY_UPDATED');
+        return;  // 成功
+      }
+
+      throw new Error(`API failed: ${response.status}`);
+    } catch (error) {
+      console.warn(`Reward grant attempt ${attempt} failed:`, error);
+
+      if (attempt === maxRetries) {
+        // 最终失败，记录到本地存储，下次恢复
+        localStorage.setItem('pending_reward', JSON.stringify(herbs));
+        console.error('Reward grant failed after all retries');
+      }
+
+      await sleep(1000 * attempt);  // 延迟重试
+    }
+  }
+}
+```
+
+---
+
+## 十一、前端实现设计
+
+### 11.1 ClinicScene查询pending任务
 
 **新增方法**：
 ```typescript
 // src/scenes/ClinicScene.ts
 
 /**
- * 查询当前pending游戏任务
+ * 查询当前pending游戏任务（使用GameStateManager）
  */
 private async getPendingGameTask(): Promise<GameTaskConfig | null> {
   try {
-    const response = await fetch('http://localhost:8643/api/tasks/player_001/pending_game');
+    const gameState = GameStateManager.getInstance();
+    const response = await gameState.fetchAPI(
+      `/api/tasks/${gameState.getPlayerId()}/pending_game`
+    );
     const data = await response.json();
     return data.pending_game || null;
   } catch (error) {
@@ -537,7 +1581,8 @@ private async startDecoction(): void {
 
   this.scene.launch(SCENES.DECOCTION, {
     prescriptionId: config.prescriptionId,
-    taskId: pendingTask?.task_id  // 传递task_id供游戏完成时更新
+    taskId: pendingTask?.task_id,
+    reward: JSON.parse(pendingTask?.reward || '{}')  // 传递奖励
   });
 
   // 更新任务状态为in_progress
@@ -550,15 +1595,15 @@ private async startDecoction(): void {
  * 更新任务状态
  */
 private async updateTaskStatus(taskId: string, status: string): void {
-  await fetch('http://localhost:8643/api/task/update', {
+  const gameState = GameStateManager.getInstance();
+  await gameState.fetchAPI('/api/task/update', {
     method: 'POST',
-    headers: {'Content-Type': 'application/json'},
     body: JSON.stringify({task_id: taskId, status: status})
   });
 }
 ```
 
-### 7.2 游戏场景完成时更新任务
+### 11.2 游戏场景完成时更新任务
 
 **DecoctionScene.ts**：
 ```typescript
@@ -566,31 +1611,46 @@ private async updateTaskStatus(taskId: string, status: string): void {
 
 export interface DecoctionSceneConfig {
   prescriptionId?: string;
-  taskId?: string;  // 新增：任务ID
+  taskId?: string;
+  reward?: RewardConfig;  // 新增：奖励配置
 }
 
 export class DecoctionScene extends Phaser.Scene {
   private taskId: string | null = null;
+  private reward: RewardConfig | null = null;
 
   init(data: DecoctionSceneConfig): void {
     this.prescriptionId = data.prescriptionId || null;
-    this.taskId = data.taskId || null;  // 接收任务ID
+    this.taskId = data.taskId || null;
+    this.reward = data.reward || null;  // 接收奖励
   }
 
-  private handleGameComplete(result: ScoreResultData): void {
-    // ✅ 更新任务状态
-    if (this.taskId) {
-      this.updateTask(this.taskId, result.totalScore);
-    }
+  private async handleGameComplete(result: ScoreResultData): Promise<void> {
+    const gameState = GameStateManager.getInstance();
 
-    // ✅ 发放奖励
-    this.grantReward();
-  }
-
-  private async updateTask(taskId: string, score: number): void {
-    await fetch('http://localhost:8643/api/task/update', {
+    // ✅ 方式A：联合API（推荐）
+    await gameState.fetchAPI('/api/task/complete_with_reward', {
       method: 'POST',
-      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({
+        task_id: this.taskId,
+        score: result.totalScore
+      })
+    });
+
+    // ✅ 方式B：分步调用（备用）
+    // await this.updateTask(this.taskId, result.totalScore);
+    // await this.grantReward();
+
+    // 触发缓存刷新
+    EventBus.emit('INVENTORY_UPDATED', {
+      playerId: gameState.getPlayerId()
+    });
+  }
+
+  private async updateTask(taskId: string, score: number): Promise<void> {
+    const gameState = GameStateManager.getInstance();
+    await gameState.fetchAPI('/api/task/update', {
+      method: 'POST',
       body: JSON.stringify({
         task_id: taskId,
         progress: 1.0,
@@ -600,19 +1660,17 @@ export class DecoctionScene extends Phaser.Scene {
     });
   }
 
-  private async grantReward(): void {
-    // 查询任务奖励配置
-    const task = await this.getTaskInfo(this.taskId);
-    if (task?.reward?.herbs) {
-      await fetch('http://localhost:8643/api/inventory/update', {
-        method: 'POST',
-        headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({
-          player_id: 'player_001',
-          updates: task.reward.herbs
-        })
-      });
-    }
+  private async grantReward(): Promise<void> {
+    if (!this.reward || !this.reward.herbs) return;
+
+    const gameState = GameStateManager.getInstance();
+    await gameState.fetchAPI('/api/inventory/update', {
+      method: 'POST',
+      body: JSON.stringify({
+        player_id: gameState.getPlayerId(),
+        updates: this.reward.herbs
+      })
+    });
   }
 }
 ```
@@ -623,19 +1681,37 @@ export class DecoctionScene extends Phaser.Scene {
 
 export interface DiagnosisSceneConfig {
   caseId?: string;
-  taskId?: string;  // 新增：任务ID
+  taskId?: string;
 }
 
-private handleDiagnosisComplete(result: DiagnosisResult): void {
+export async handleDiagnosisComplete(result: DiagnosisResult): Promise<void> {
+  const gameState = GameStateManager.getInstance();
   const score = calculateDiagnosisScore(result, this.caseData);
 
   // ✅ 更新任务状态
   if (this.taskId) {
-    this.updateTask(this.taskId, score.totalScore);
+    await gameState.fetchAPI('/api/task/update', {
+      method: 'POST',
+      body: JSON.stringify({
+        task_id: this.taskId,
+        progress: 1.0,
+        status: 'completed',
+        score: score.totalScore
+      })
+    });
   }
 
   // ✅ 更新病案历史
-  this.updateCaseHistory(this.caseId, score.totalScore);
+  await gameState.fetchAPI('/api/cases/update', {
+    method: 'POST',
+    body: JSON.stringify({
+      player_id: gameState.getPlayerId(),
+      case_id: this.caseId,
+      syndrome: this.caseData.syndrome,
+      score: score.totalScore,
+      completed_at: new Date().toISOString()
+    })
+  });
 
   // ✅ 触发NPC反馈
   triggerNPCFeedback({...});
@@ -644,7 +1720,7 @@ private handleDiagnosisComplete(result: DiagnosisResult): void {
 
 ---
 
-## 八、数据流动完整验证
+## 十二、数据流动完整验证
 
 ### 8.1 正向流程验证：NPC创建任务
 
@@ -723,13 +1799,13 @@ POST /api/inventory/update
 
 ---
 
-## 九、测试用例设计
+## 十三、测试用例设计（完整）
 
-### 9.1 E2E测试：任务创建→游戏→更新
+### 13.1 E2E测试：任务创建→游戏→更新
 
 **测试文件**：`tests/e2e/task-driven-game-flow.spec.ts`
 
-**测试步骤**：
+**基础测试场景**：
 ```typescript
 test('NPC创建煎药任务→玩家完成→数据更新', async ({ page }) => {
   // 1. NPC对话创建任务
@@ -739,7 +1815,7 @@ test('NPC创建煎药任务→玩家完成→数据更新', async ({ page }) => 
 
   // 验证任务创建
   const taskResponse = await page.evaluate(() =>
-    fetch('http://localhost:8643/api/tasks/player_001/pending_game')
+    GameStateManager.getInstance().fetchAPI('/api/tasks/player_001/pending_game')
       .then(res => res.json())
   );
   expect(taskResponse.pending_game.game_type).toBe('decoction');
@@ -759,7 +1835,7 @@ test('NPC创建煎药任务→玩家完成→数据更新', async ({ page }) => 
 
   // 验证任务状态更新
   const updatedTask = await page.evaluate(() =>
-    fetch('http://localhost:8643/api/tasks/player_001')
+    GameStateManager.getInstance().fetchAPI('/api/tasks/player_001')
       .then(res => res.json())
       .then(data => data.tasks.find(t => t.task_id.includes('mahuangtang')))
   );
@@ -768,7 +1844,7 @@ test('NPC创建煎药任务→玩家完成→数据更新', async ({ page }) => 
 
   // 验证背包更新
   const inventory = await page.evaluate(() =>
-    fetch('http://localhost:8643/api/inventory/player_001')
+    GameStateManager.getInstance().fetchAPI('/api/inventory/player_001')
       .then(res => res.json())
       .then(data => data.herbs.find(h => h.id === 'mahuang'))
   );
@@ -776,71 +1852,265 @@ test('NPC创建煎药任务→玩家完成→数据更新', async ({ page }) => 
 });
 ```
 
+### 13.2 并发测试：乐观锁验证
+
+**测试场景1：同一任务并发完成**
+```typescript
+test('并发完成同一任务→乐观锁生效', async ({ page, context }) => {
+  // 创建任务
+  await createGameTask(page, 'decoction', 'mahuangtang');
+
+  // 启动两个并发请求（模拟网络延迟）
+  const response1 = page.evaluate(async () => {
+    const gameState = GameStateManager.getInstance();
+    return gameState.fetchAPI('/api/task/update', {
+      method: 'POST',
+      body: JSON.stringify({
+        task_id: 'task_dec_mahuangtang_001',
+        status: 'completed',
+        score: 85
+      })
+    });
+  });
+
+  const response2 = page.evaluate(async () => {
+    await sleep(100);  // 稍微延迟
+    const gameState = GameStateManager.getInstance();
+    return gameState.fetchAPI('/api/task/update', {
+      method: 'POST',
+      body: JSON.stringify({
+        task_id: 'task_dec_mahuangtang_001',
+        status: 'completed',
+        score: 90
+      })
+    });
+  });
+
+  const [res1, res2] = await Promise.all([response1, response2]);
+
+  // 验证：第一个成功，第二个失败
+  expect(res1.status).toBe('updated');
+  expect(res2.error).toContain('Concurrent update conflict');
+
+  // 验证最终状态（第一个请求的结果）
+  const task = await getTaskDetail(page, 'task_dec_mahuangtang_001');
+  expect(task.score).toBe(85);  // 不是90
+});
+```
+
+**测试场景2：奖励发放并发**
+```typescript
+test('并发发放奖励→原子性保证', async ({ page }) => {
+  // 创建两个相同奖励的任务
+  await createGameTask(page, 'decoction', 'mahuangtang', {
+    reward: {herbs: [{herb_id: 'mahuang', delta: 3}]}
+  });
+  await createGameTask(page, 'decoction', 'mahuangtang', {
+    reward: {herbs: [{herb_id: 'mahuang', delta: 3}]}
+  });
+
+  // 获取初始背包
+  const initialInventory = await getInventory(page, 'player_001');
+  const initialMahuang = initialInventory.herbs.find(h => h.id === 'mahuang').raw_count;
+
+  // 并发完成两个任务（使用联合API）
+  await Promise.all([
+    completeTaskWithReward(page, 'task_dec_001', 85),
+    completeTaskWithReward(page, 'task_dec_002', 90)
+  ]);
+
+  // 验证背包更新（两次发放都成功）
+  const finalInventory = await getInventory(page, 'player_001');
+  const finalMahuang = finalInventory.herbs.find(h => h.id === 'mahuang').raw_count;
+
+  expect(finalMahuang).toBe(initialMahuang + 6);  // 两次各+3
+});
+```
+
+### 13.3 数据一致性测试
+
+**测试场景3：NPC查询一致性**
+```typescript
+test('任务完成→NPC查询返回新数据', async ({ page }) => {
+  // 初始状态
+  const initialProgress = await page.evaluate(() =>
+    GameStateManager.getInstance().fetchAPI('/api/tasks/player_001')
+      .then(res => res.json())
+  );
+  const pendingTasks = initialProgress.tasks.filter(t => t.status === 'pending');
+
+  // 完成一个任务
+  await createAndCompleteTask(page, 'decoction', 'mahuangtang');
+
+  // NPC查询（模拟Hermes Backend）
+  const newProgress = await page.evaluate(() =>
+    GameStateManager.getInstance().fetchAPI('/api/tasks/player_001')
+      .then(res => res.json())
+  );
+
+  // 验证状态变化
+  const completedTask = newProgress.tasks.find(t => t.status === 'completed');
+  expect(completedTask.score).toBeGreaterThanOrEqual(80);
+
+  // 验证pending任务减少
+  const newPendingTasks = newProgress.tasks.filter(t => t.status === 'pending');
+  expect(newPendingTasks.length).toBe(pendingTasks.length - 1);
+});
+```
+
+**测试场景4：病案历史更新**
+```typescript
+test('诊断完成→病案历史更新', async ({ page }) => {
+  // 完成诊断任务
+  await createGameTask(page, 'diagnosis', 'case-001');
+  await startDiagnosis(page, 'case-001');
+  await completeDiagnosis(page, 'case-001', {syndrome: '风寒表实证', score: 85});
+
+  // 查询病案历史
+  const caseHistory = await page.evaluate(() =>
+    GameStateManager.getInstance().fetchAPI('/api/cases/player_001')
+      .then(res => res.json())
+  );
+
+  // 验证病案记录
+  const caseRecord = caseHistory.cases.find(c => c.case_id === 'case-001');
+  expect(caseRecord).toBeDefined();
+  expect(caseRecord.syndrome).toBe('风寒表实证');
+  expect(caseRecord.score).toBe(85);
+});
+```
+
+### 13.4 边界场景测试
+
+**测试场景5：奖励配置缺失**
+```typescript
+test('任务无奖励→完成不发放', async ({ page }) => {
+  // 创建无奖励任务
+  await createGameTask(page, 'decoction', 'mahuangtang', {reward: null});
+
+  const initialInventory = await getInventory(page, 'player_001');
+  const initialMahuang = initialInventory.herbs.find(h => h.id === 'mahuang').raw_count;
+
+  // 完成任务
+  await completeTask(page, 'task_dec_001', 85);
+
+  // 验证背包不变
+  const finalInventory = await getInventory(page, 'player_001');
+  const finalMahuang = finalInventory.herbs.find(h => h.id === 'mahuang').raw_count;
+
+  expect(finalMahuang).toBe(initialMahuang);
+});
+```
+
+**测试场景6：任务重复完成**
+```typescript
+test('任务已完成→再次完成失败', async ({ page }) => {
+  // 完成任务
+  await createAndCompleteTask(page, 'decoction', 'mahuangtang');
+
+  // 再次尝试完成
+  const response = await page.evaluate(() =>
+    GameStateManager.getInstance().fetchAPI('/api/task/update', {
+      method: 'POST',
+      body: JSON.stringify({
+        task_id: 'task_dec_001',
+        status: 'completed',
+        score: 90
+      })
+    }).then(res => res.json())
+  );
+
+  // 验证失败
+  expect(response.error).toContain('Task already completed');
+
+  // 验证数据不变
+  const task = await getTaskDetail(page, 'task_dec_001');
+  expect(task.score).toBe(85);  // 原分数，不是90
+});
+```
+
 ---
 
-## 十、实施计划
+## 十四、实施计划（修订）
 
-### 10.1 阶段划分
+### 14.1 阶段划分（修订）
 
 | 阶段 | 任务 | 工作量 | 优先级 |
 |------|------|--------|--------|
-| **Phase 1** | 任务系统扩展 | 2小时 | P0 |
+| **Phase 1** | 任务系统扩展 | 3小时 | P0 |
 | **Phase 2** | Hermes工具扩展 | 30分钟 | P0 |
-| **Phase 3** | 游戏UI更新 | 1.5小时 | P0 |
-| **Phase 4** | ClinicScene查询 | 30分钟 | P0 |
-| **Phase 5** | E2E测试 | 1小时 | P1 |
-| **总计** | | **5小时** | |
+| **Phase 3** | GameStateManager实现 | 1小时 | P0 |
+| **Phase 4** | 游戏UI更新 | 2小时 | P0 |
+| **Phase 5** | ClinicScene查询 | 30分钟 | P0 |
+| **Phase 6** | E2E测试 | 2小时 | P1 |
+| **总计** | | **~9小时** | |
 
-### 10.2 详细任务
+### 14.2 详细任务（修订）
 
-**Phase 1: 任务系统扩展**（2小时）
-- Task 1.1: ALTER TABLE tasks增加字段（game_type, game_config, score, reward）
-- Task 1.2: 新增GET /api/tasks/{player_id}/pending_game API
-- Task 1.3: 新增POST /api/task/update API
-- Task 1.4: 扩展POST /api/task/create支持新字段
+**Phase 1: 任务系统扩展**（3小时）
+- Task 1.1: ALTER TABLE tasks增加字段（game_type, game_config, score, reward, version）
+- Task 1.2: 创建case_history表
+- Task 1.3: 新增GET /api/task/{task_id} API
+- Task 1.4: 新增GET /api/tasks/{player_id}/pending_game API
+- Task 1.5: 新增POST /api/task/update API（带乐观锁）
+- Task 1.6: 新增POST /api/task/complete_with_reward API（联合事务）
+- Task 1.7: 新增GET /api/cases/{player_id} API
+- Task 1.8: 新增POST /api/cases/update API
+- Task 1.9: 扩展POST /api/task/create支持新字段
 
 **Phase 2: Hermes工具扩展**（30分钟）
-- Task 2.1: 扩展create_task工具schema
-- Task 2.2: 更新create_task_handler
+- Task 2.1: 扩展create_task工具schema（新增game_type, game_config, reward字段）
+- Task 2.2: 更新create_task_handler（生成奖励配置）
 - Task 2.3: 废弃trigger_minigame工具说明
 
-**Phase 3: 游戏UI更新**（1.5小时）
-- Task 3.1: DecoctionScene增加taskId参数接收
-- Task 3.2: DecoctionScene完成时调用task/update
-- Task 3.3: DecoctionScene发放奖励调用inventory/update
-- Task 3.4: DiagnosisScene同样改造
+**Phase 3: GameStateManager实现**（1小时）
+- Task 3.1: 创建GameStateManager.ts（player_id管理）
+- Task 3.2: 统一fetchAPI方法
+- Task 3.3: 集成到现有场景（替换硬编码）
 
-**Phase 4: ClinicScene查询**（30分钟）
-- Task 4.1: 新增getPendingGameTask方法
-- Task 4.2: startDecoction/startDiagnosis读取配置
-- Task 4.3: 启动游戏时更新任务状态为in_progress
+**Phase 4: 游戏UI更新**（2小时）
+- Task 4.1: DecoctionScene增加taskId参数接收
+- Task 4.2: DecoctionScene完成时调用task/complete_with_reward
+- Task 4.3: DiagnosisScene增加taskId参数接收
+- Task 4.4: DiagnosisScene完成时调用task/update + cases/update
 
-**Phase 5: E2E测试**（1小时）
-- Task 5.1: 编写task-driven-game-flow.spec.ts
-- Task 5.2: 验证数据流动完整闭环
+**Phase 5: ClinicScene查询**（30分钟）
+- Task 5.1: 新增getPendingGameTask方法（使用GameStateManager）
+- Task 5.2: startDecoction/startDiagnosis读取配置
+- Task 5.3: 启动游戏时更新任务状态为in_progress
+
+**Phase 6: E2E测试**（2小时）
+- Task 6.1: 编写基础流程测试（task-driven-game-flow.spec.ts）
+- Task 6.2: 编写并发测试（乐观锁验证）
+- Task 6.3: 编写数据一致性测试（NPC查询验证）
+- Task 6.4: 编写边界场景测试（无奖励、重复完成）
 
 ---
 
-## 十一、风险评估
+## 十五、风险评估（修订）
 
-### 11.1 技术风险
+### 15.1 技术风险（修订）
 
 | 风险 | 影响 | 缓解措施 |
 |------|------|----------|
-| 数据库ALTER TABLE失败 | 阻塞 | 先在测试环境验证SQL |
-| API并发更新冲突 | 数据不一致 | 使用事务+乐观锁 |
-| 前端异步调用失败 | 任务状态错误 | 增加错误处理+重试 |
+| 数据库ALTER TABLE失败 | 阻塞 | 先在测试环境验证SQL，使用迁移脚本 |
+| API并发更新冲突 | 数据不一致 | 乐观锁+事务+重试机制 |
+| 前端异步调用失败 | 任务状态错误 | 错误处理+重试+本地存储恢复 |
+| reward格式不匹配 | API调用失败 | Schema验证+类型检查 |
+| player_id硬编码影响 | 多玩家问题 | GameStateManager统一管理 |
 
-### 11.2 架构风险
+### 15.2 架构风险（修订）
 
 | 风险 | 影响 | 缓解措施 |
 |------|------|----------|
 | 废弃trigger_minigame影响现有流程 | 兼容性 | 保留工具定义，只更新description |
-| 游戏场景参数扩展影响测试 | 测试失败 | 逐步扩展，保持向后兼容 |
+| 游戏场景参数扩展影响测试 | 测试失败 | 逐步扩展，保持向后兼容（可选参数）|
+| case_history表新增影响查询 | 性能 | 合理索引+查询优化 |
+| 联合API性能问题 | 响应延迟 | 事务优化+异步处理 |
 
 ---
 
-## 十二、后续扩展
+## 十六、后续扩展（修订）
 
 ### 12.1 Phase 3扩展方向
 

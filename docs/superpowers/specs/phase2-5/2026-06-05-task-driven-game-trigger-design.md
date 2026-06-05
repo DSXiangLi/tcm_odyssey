@@ -239,6 +239,10 @@ ALTER TABLE tasks ADD COLUMN score REAL DEFAULT 0.0;
 ALTER TABLE tasks ADD COLUMN reward TEXT;
 -- JSON格式：{"herbs": [{"herb_id": "mahuang", "delta": 3}], "experience": 10}
 -- 任务奖励配置，完成后发放
+
+ALTER TABLE tasks ADD COLUMN version INTEGER DEFAULT 0;
+-- 乐观锁版本号（并发控制），每次更新+1
+-- ⚠️ 注意：必须包含DEFAULT 0，否则现有记录version=NULL会导致乐观锁失效
 ```
 
 ### 4.2 任务类型扩展
@@ -1117,8 +1121,12 @@ export class GameStateManager {
   private playerId: string;
 
   private constructor() {
-    // 从本地存储或登录系统获取player_id
+    // 游戏启动时初始化，player_id从登录系统或新建游戏流程获取
+    // 如果未登录，使用默认值'player_001'（单人模式）
     this.playerId = localStorage.getItem('player_id') || 'player_001';
+
+    // 未来扩展：登录系统集成
+    // this.playerId = LoginSystem.getInstance().getPlayerId();
   }
 
   static getInstance(): GameStateManager {
@@ -1836,9 +1844,9 @@ export class PaozhiScene extends Phaser.Scene {
 
 ---
 
-## 十三、测试用例设计（完整）
+## 十二、数据流动完整验证
 
-### 8.1 正向流程验证：NPC创建任务
+### 12.1 正向流程验证：NPC创建任务
 
 **测试场景**：
 ```
@@ -1858,7 +1866,7 @@ NPC对话: "麻黄汤由麻黄、桂枝、杏仁、甘草组成，我们来煎�
 4. ✅ game_config JSON正确
 ```
 
-### 8.2 中间流程验证：玩家触发游戏
+### 12.2 中间流程验证：玩家触发游戏
 
 **测试场景**：
 ```
@@ -1878,7 +1886,7 @@ ClinicScene启动
 3. ✅ POST /api/task/update (status='in_progress')
 ```
 
-### 8.3 反向流程验证：游戏完成更新
+### 12.3 反向流程验证：游戏完成更新
 
 **测试场景**：
 ```
@@ -2315,7 +2323,7 @@ test('任务已完成→再次完成失败', async ({ page }) => {
 
 ---
 
-## 十八、后续扩展（修订）
+## 十六、后续扩展
 
 ### 12.1 Phase 3扩展方向
 

@@ -1,9 +1,78 @@
 # 药灵山谷 - 当前进行中状态
 
-**最后更新**: 2026-05-27
+**最后更新**: 2026-06-06
 **核心问题**: "我们正在做什么？进展如何？"
-**当前状态**: Phase 2.5 Tool Card显示修复 - 已完成 ✅
-**当前分支**: `hermes_dev`
+**当前状态**: 任务驱动游戏触发系统开发 - Phase 3进行中 ⏳
+**当前分支**: `master`（主工作区），`feature/task-driven-game-trigger`（开发worktree）
+
+---
+
+## 开发环境隔离（2026-06-06）✅
+
+### Worktree创建
+
+**目的**: 隔离开发环境，允许主工作区测试其他功能
+
+**执行命令**:
+```bash
+git worktree add .claude/worktrees/task-driven-game-trigger feature/task-driven-game-trigger
+```
+
+**结果**:
+- 主工作区：`/home/lixiang/Desktop/zhongyi_game_v3`（master分支）
+- 开发worktree：`.claude/worktrees/task-driven-game-trigger`（feature分支）
+
+---
+
+## 任务驱动游戏触发系统开发 (Phase 1-2) ✅
+
+### 完成时间
+
+**开始**: 2026-06-05（设计文档）
+**Phase 1完成**: 2026-06-06（game-state-backend扩展）
+**Phase 2完成**: 2026-06-06（Hermes Backend工具调整）
+**总提交**: 2 commits（已提交到feature分支）
+
+### Phase 1完成内容
+
+**game-state-backend任务系统扩展**：
+- ✅ 数据库schema扩展（tasks表字段扩展）
+- ✅ 迁移函数实现（4个数据迁移）
+- ✅ 5个新API实现：
+  - `POST /api/tasks/{task_id}/trigger` - 触发任务小游戏
+  - `POST /api/tasks/{task_id}/complete` - 完成任务
+  - `GET /api/tasks/active` - 获取激活任务
+  - `POST /api/game-states/{state_id}/update` - 更新游戏状态
+  - `GET /api/game-states/{state_id}/validate` - 验证状态一致性
+- ✅ Models扩展（Task/GameState新字段）
+
+### Phase 2完成内容
+
+**Hermes Backend工具调整**：
+- ✅ start_minigame工具参数扩展（task_id字段）
+- ✅ 任务触发流程适配
+
+### 关键提交记录（worktree）
+
+| Commit | 描述 |
+|--------|------|
+| `phase1-commit` | feat(backend): extend task system with trigger/complete APIs |
+| `phase2-commit` | feat(hermes): add task_id to start_minigame tool |
+
+---
+
+## Phase 3: GameStateManager集成 ⏳
+
+### 进行中内容
+
+**ClinicScene硬编码替换**：
+- ⏳ 第97-101行：playerId硬编码替换
+- ⏳ 第391行：inventory数据获取替换
+- ⏳ 第1149-1150行：NPC交互状态替换
+
+**GameStateManager导入**：
+- ⏳ 添加import语句
+- ⏳ 替换硬编码调用为GameStateManager方法
 
 ---
 

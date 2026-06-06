@@ -189,12 +189,10 @@ registry.register(
 TRIGGER_MINIGAME_SCHEMA = {
     "name": "trigger_minigame",
     "description": (
-        "启动指定类型的小游戏。"
-        "【调用时机】当师傅讲解完毕准备让弟子实践时调用，例如："
-        "1. 讲完麻黄汤组成后，启动煎药游戏实践"
-        "2. 讲完风寒表实证后，启动问诊+辨证游戏"
-        "3. 学生主动请求'我想试试'时"
-        "4. 根据教学大纲任务需要启动特定游戏"
+        "⚠️ 已废弃：请使用create_task工具的game_task类型替代。"
+        "此工具调用将返回错误提示，不再触发小游戏。"
+        "【替代方案】使用create_task工具："
+        "create_task(type='game_task', game_type='decoction', game_config='...', reward='...')"
     ),
     "parameters": {
         "type": "object",
@@ -202,39 +200,22 @@ TRIGGER_MINIGAME_SCHEMA = {
             "game_type": {
                 "type": "string",
                 "enum": ["inquiry", "diagnosis", "decoction", "processing", "planting"],
-                "description": "'inquiry'问诊，'diagnosis'辨证选方，'decoction'煎药，'processing'炮制，'planting'种植"
+                "description": "游戏类型（已废弃）"
             },
-            "case_id": {
-                "type": "string",
-                "description": "关联的病案/方剂/药材ID"
-            },
-            "difficulty": {
-                "type": "integer",
-                "enum": [1, 2, 3],
-                "description": "难度等级：1初学，2进阶，3精通"
-            },
-            "related_task": {
-                "type": "string",
-                "description": "关联的学习任务ID（可选）"
-            }
+            "case_id": {"type": "string", "description": "病案ID（已废弃）"},
+            "difficulty": {"type": "integer", "description": "难度（已废弃）"},
+            "related_task": {"type": "string", "description": "任务ID（已废弃）"}
         },
         "required": ["game_type", "case_id"]
     }
 }
 
 def trigger_minigame_handler(args: dict, **kw) -> dict:
-    """Handle trigger_minigame tool call."""
-    # Use defaults for missing arguments to make handler more robust
-    game_type = args.get("game_type", "decoction")
-    case_id = args.get("case_id", "default_case")
-    difficulty = args.get("difficulty", 1)
-
+    """Handle trigger_minigame tool call (deprecated)."""
     return {
-        "status": "launched",
-        "session_id": f"game_{game_type}_{case_id}",
-        "game_type": game_type,
-        "case_id": case_id,
-        "difficulty": difficulty
+        "error": "trigger_minigame工具已废弃，请使用create_task工具替代",
+        "suggestion": "create_task(type='game_task', game_type='decoction', game_config='...', reward='...')",
+        "deprecated": True
     }
 
 registry.register(
@@ -337,19 +318,43 @@ registry.register(
 
 CREATE_TASK_SCHEMA = {
     "name": "create_task",
-    "description": "为玩家创建新的学习任务",
+    "description": (
+        "为玩家创建新的学习任务（包括游戏任务）。"
+        "【调用时机】当师傅准备让弟子实践时调用，例如："
+        "1. 讲完麻黄汤组成后，创建煎药任务"
+        "2. 讲完风寒表实证后，创建辨证任务"
+        "3. 需要弟子炮制当归时，创建炮制任务"
+    ),
     "parameters": {
         "type": "object",
         "properties": {
             "player_id": {"type": "string", "description": "玩家唯一标识"},
-            "task_id": {"type": "string", "description": "任务唯一标识"},
+            "task_id": {
+                "type": "string",
+                "description": "任务唯一标识，建议格式：task_{game_type}_{id}_{timestamp}"
+            },
             "title": {"type": "string", "description": "任务标题"},
             "type": {
                 "type": "string",
-                "enum": ["prescription", "syndrome"],
-                "description": "任务类型"
+                "enum": ["prescription", "syndrome", "game_task"],
+                "description": "任务类型：'prescription'方剂学习，'syndrome'证型学习，'game_task'游戏任务"
             },
-            "blocked_by": {"type": "string", "description": "依赖的任务ID"}
+            "blocked_by": {"type": "string", "description": "依赖的任务ID"},
+
+            # 游戏任务扩展字段（仅game_task需要）
+            "game_type": {
+                "type": "string",
+                "enum": ["decoction", "diagnosis", "processing"],
+                "description": "游戏类型：'decoction'煎药，'diagnosis'辨证，'processing'炮制"
+            },
+            "game_config": {
+                "type": "string",
+                "description": "游戏配置JSON字符串，例如：{\"prescriptionId\": \"mahuangtang\"}"
+            },
+            "reward": {
+                "type": "string",
+                "description": "任务奖励JSON字符串，例如：{\"herbs\": [{\"herb_id\": \"mahuang\", \"delta\": 3}]}"
+            }
         },
         "required": ["player_id", "task_id", "title", "type"]
     }

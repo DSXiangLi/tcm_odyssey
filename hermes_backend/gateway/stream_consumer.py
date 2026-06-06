@@ -68,8 +68,14 @@ def stream_chat(request: Dict[str, Any]) -> Generator[Dict[str, Any], None, None
     player_id = request['player_id']
     user_message = request['user_message']
 
+    # 获取历史对话（如果有）
+    recent_history = request.get('context', {}).get('recent_history', [])
+    logger.info(f"[AgentLoop] Received history count: {len(recent_history)}")
+    for i, h in enumerate(recent_history):
+        logger.info(f"[AgentLoop] History[{i}]: role={h.get('role')}, content={h.get('content', '')[:50]}...")
+
     session_id = dialog_logger.start_session(npc_id, player_id, user_message)
-    logger.info(f"[AgentLoop] Session started: {session_id}")
+    logger.info(f"[AgentLoop] Session started: {session_id}, history_count: {len(recent_history)}")
 
     system_prompt = build_system_prompt(npc_id, player_id)
     tools = registry.get_openai_tools()
@@ -85,10 +91,19 @@ def stream_chat(request: Dict[str, Any]) -> Generator[Dict[str, Any], None, None
     model = os.getenv('DEEPSEEK_MODEL') or os.getenv('GLM_MODEL_NAME') or 'deepseek-chat'
 
     # Agent Loop: messages accumulate tool results
-    messages = [
-        {'role': 'system', 'content': system_prompt},
-        {'role': 'user', 'content': user_message}
-    ]
+    # 构建 messages（包含历史）
+    messages = [{'role': 'system', 'content': system_prompt}]
+
+    # 加入历史对话
+    for hist_msg in recent_history:
+        messages.append({
+            'role': hist_msg['role'],
+            'content': hist_msg['content']
+        })
+        logger.debug(f"[AgentLoop] Added history: {hist_msg['role'][:20]}...")
+
+    # 加入当前用户消息
+    messages.append({'role': 'user', 'content': user_message})
 
     max_iterations = 5  # Prevent infinite loops
     iteration = 0

@@ -18,6 +18,7 @@ import Phaser from 'phaser';
 import { SCENES } from '../data/constants';
 import { EventBus, GameEvents } from '../systems/EventBus';
 import { GameStateBridge } from '../utils/GameStateBridge';
+import { GameStateManager } from '../utils/GameStateManager';
 import { DiagnosisFlowManager } from '../systems/DiagnosisFlowManager';
 import { PulseUI, PulseUIConfig } from '../ui/PulseUI';
 
@@ -55,7 +56,7 @@ export class PulseScene extends Phaser.Scene {
       this.flowManager = data.flowManager;
     } else {
       // 创建新的流程管理器
-      this.flowManager = new DiagnosisFlowManager(this.caseId, 'player_001');
+      this.flowManager = new DiagnosisFlowManager(this.caseId, GameStateManager.getInstance().getPlayerId());
     }
   }
 

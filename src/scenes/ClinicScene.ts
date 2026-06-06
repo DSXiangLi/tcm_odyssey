@@ -36,6 +36,7 @@ import { CaseDetailUI, CaseDetailUIConfig } from '../ui/CaseDetailUI';
 // Phase 2 S8: 背包系统
 import { InventoryManager, createInventoryManager } from '../systems/InventoryManager';
 import { showInventoryUI, hideInventoryUI } from '../ui/html/inventory-entry';
+import { GameStateManager } from '../utils/GameStateManager';
 // Phase 2 S13.4: 新手引导系统
 import { TutorialManager } from '../systems/TutorialManager';
 import { createSceneTipUI, TutorialUI } from '../ui/TutorialUI';
@@ -93,12 +94,13 @@ export class ClinicScene extends Phaser.Scene {
 
   constructor() {
     super({ key: SCENES.CLINIC });
+    const playerId = GameStateManager.getInstance().getPlayerId();
     // Phase 2 S3: 初始化NPC交互系统
-    this.npcSystem = new NPCInteractionSystem('player_001');
+    this.npcSystem = new NPCInteractionSystem(playerId);
     // Phase 2 S5: 初始化病案管理器
-    this.caseManager = createCaseManager('player_001', 'qingmu');
+    this.caseManager = createCaseManager(playerId, 'qingmu');
     // Phase 2 S8: 初始化背包管理器
-    this.inventoryManager = createInventoryManager('player_001');
+    this.inventoryManager = createInventoryManager(playerId);
   }
 
   create(): void {
@@ -388,7 +390,7 @@ export class ClinicScene extends Phaser.Scene {
     this.dialogCleanup = showDialogUI({
       npcId: npc.id,
       npcName: npc.name,
-      playerId: 'player_001',
+      playerId: GameStateManager.getInstance().getPlayerId(),
       onToolCall: (name: string, args: Record<string, unknown>) => this.handleToolCall(name, args),
       onClose: () => {
         console.log(`[ClinicScene] Dialog with ${npcId} closed`);
@@ -1145,8 +1147,9 @@ export class ClinicScene extends Phaser.Scene {
    * 在场景进入时预查询玩家状态并缓存到GameStateBridge
    */
   private triggerNPCHeartbeat(): void {
+    const playerId = GameStateManager.getInstance().getPlayerId();
     const heartbeat = NPCHeartbeat.getInstance();
-    heartbeat.triggerOnSceneEnter('player_001');
-    console.log('[ClinicScene] NPC heartbeat triggered for player_001');
+    heartbeat.triggerOnSceneEnter(playerId);
+    console.log(`[ClinicScene] NPC heartbeat triggered for ${playerId}`);
   }
 }

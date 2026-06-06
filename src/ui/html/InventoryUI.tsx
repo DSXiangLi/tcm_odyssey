@@ -26,6 +26,7 @@ import {
   emitToolClick,
   emitBookClick,
 } from './bridge/inventory-events';
+import { GameStateManager } from '../../utils/GameStateManager';
 
 // ============================================================
 // 类型定义
@@ -322,7 +323,8 @@ function SummaryPanel({ active }: { active: ViewType }) {
   const [herbs, setHerbs] = useState<HerbData[]>(STATIC_HERBS);
 
   useEffect(() => {
-    fetch('http://localhost:8643/api/inventory/player_001')
+    const playerId = GameStateManager.getInstance().getPlayerId();
+    fetch(`http://localhost:8643/api/inventory/${playerId}`)
       .then(res => res.json())
       .then(data => {
         const converted = data.herbs.map((h: any) => ({
@@ -498,7 +500,8 @@ function HerbView({ mode, onHover, onLeave, onImageClick }: { mode: 'piece' | 'r
   const [herbs, setHerbs] = useState<HerbData[]>(STATIC_HERBS);
 
   useEffect(() => {
-    fetch('http://localhost:8643/api/inventory/player_001')
+    const playerId = GameStateManager.getInstance().getPlayerId();
+    fetch(`http://localhost:8643/api/inventory/${playerId}`)
       .then(res => res.json())
       .then(data => {
         const converted = data.herbs.map((h: any) => ({

@@ -16,6 +16,7 @@ import { GameStateBridge } from '../utils/GameStateBridge';
 // Phase 2.5 全局背包系统
 import { InventoryManager, createInventoryManager } from '../systems/InventoryManager';
 import { showInventoryUI, hideInventoryUI } from '../ui/html/inventory-entry';
+import { GameStateManager } from '../utils/GameStateManager';
 
 export class HomeScene extends Phaser.Scene {
   private player!: Player;
@@ -38,7 +39,7 @@ export class HomeScene extends Phaser.Scene {
   constructor() {
     super({ key: SCENES.HOME });
     // 初始化背包管理器（单例）
-    this.inventoryManager = createInventoryManager('player_001');
+    this.inventoryManager = createInventoryManager(GameStateManager.getInstance().getPlayerId());
   }
 
   create(): void {

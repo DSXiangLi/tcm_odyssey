@@ -18,6 +18,7 @@ import Phaser from 'phaser';
 import { SCENES } from '../data/constants';
 import { EventBus, GameEvents } from '../systems/EventBus';
 import { GameStateBridge } from '../utils/GameStateBridge';
+import { GameStateManager } from '../utils/GameStateManager';
 import { DiagnosisFlowManager } from '../systems/DiagnosisFlowManager';
 import { TongueUI, TongueUIConfig } from '../ui/TongueUI';
 
@@ -54,7 +55,7 @@ export class TongueScene extends Phaser.Scene {
     if (data.flowManager) {
       this.flowManager = data.flowManager;
     } else {
-      this.flowManager = new DiagnosisFlowManager(this.caseId, 'player_001');
+      this.flowManager = new DiagnosisFlowManager(this.caseId, GameStateManager.getInstance().getPlayerId());
     }
   }
 

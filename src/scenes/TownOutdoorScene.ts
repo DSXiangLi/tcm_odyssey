@@ -23,6 +23,7 @@ import { createSceneTipUI, TutorialUI } from '../ui/TutorialUI';  // S13.4
 // Phase 2.5 全局背包系统
 import { InventoryManager, createInventoryManager } from '../systems/InventoryManager';
 import { showInventoryUI, hideInventoryUI } from '../ui/html/inventory-entry';
+import { GameStateManager } from '../utils/GameStateManager';
 
 // 简化的地图数据结构（Phase 1.5不再使用瓦片渲染）
 interface MapData {
@@ -53,7 +54,7 @@ export class TownOutdoorScene extends Phaser.Scene {
   constructor() {
     super({ key: SCENES.TOWN_OUTDOOR });
     // 初始化背包管理器（单例）
-    this.inventoryManager = createInventoryManager('player_001');
+    this.inventoryManager = createInventoryManager(GameStateManager.getInstance().getPlayerId());
   }
 
   create(): void {

@@ -14,6 +14,7 @@
  */
 
 import { EventBus, EventData } from './EventBus';
+import { GameStateManager } from '../utils/GameStateManager';
 import {
   HerbData,
   HerbBag,
@@ -118,7 +119,7 @@ export class InventoryManager {
   static getInstance(config?: InventoryManagerConfig): InventoryManager {
     if (!InventoryManager.instance) {
       InventoryManager.instance = new InventoryManager(config ?? {
-        playerId: 'player_001'
+        playerId: GameStateManager.getInstance().getPlayerId()
       });
       // 自动暴露到全局（供测试访问）
       InventoryManager.instance.exposeToWindow();

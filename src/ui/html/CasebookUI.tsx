@@ -4,7 +4,7 @@
  * 从 docs/ui/病案集/app.jsx 迁移
  */
 
-import React, { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { MEDICAL_CASES, CaseData } from '../../data/casebook-data';
 import { CASEBOOK_EVENTS } from './bridge/casebook-events';
 import './casebook.css';
@@ -242,7 +242,7 @@ function DetailLeft({ caseData, onBack }: { caseData: CaseData; onBack: () => vo
 }
 
 // 详情·右：未解锁
-function DetailRightLocked({ caseData, onStart }: { caseData: CaseData; onStart: () => void }) {
+function DetailRightLocked({ onStart }: { caseData: CaseData; onStart: () => void }) {
   return (
     <div className="page-inner detail-scroll fade-in">
       <div className="locked-state">
@@ -331,7 +331,7 @@ export default function CasebookUI({ onClose, initialCaseId, progress }: Caseboo
     return null;
   });
   const [flipDir, setFlipDir] = useState<'forward' | 'backward' | null>(null);
-  const [toast, setToast] = useState({ show: false, text: '' });
+  const [toast, _setToast] = useState({ show: false, text: '' });
 
   // 进度统计
   const { totalUnlocked, totalCount } = useMemo(() => {
@@ -396,10 +396,11 @@ export default function CasebookUI({ onClose, initialCaseId, progress }: Caseboo
     setActiveCat(id);
   };
 
-  const showToast = (text: string) => {
-    setToast({ show: true, text });
-    setTimeout(() => setToast({ show: false, text }), 1500);
-  };
+  // Toast helper (available for future use)
+  // const showToast = (text: string) => {
+  //   setToast({ show: true, text });
+  //   setTimeout(() => setToast({ show: false, text }), 1500);
+  // };
 
   const handleStart = () => {
     if (activeCase) {

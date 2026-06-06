@@ -5,7 +5,7 @@
  * 集成完整炮制逻辑：拖拽、器皿选择、炮制动画、结果处理
  */
 
-import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import {
   PROCESSING_TYPES,
   VESSELS,
@@ -118,7 +118,7 @@ function HerbSvg({
   );
 }
 
-function renderHerbShape(form: string, color: string, h: Herb): React.ReactElement {
+function renderHerbShape(form: string, color: string, _h: Herb): React.ReactElement {
   const dark = shade(color, -0.35);
   const light = shade(color, 0.18);
 
@@ -418,7 +418,7 @@ function Ash({ size, hot }: { size: number; hot: boolean }) {
   );
 }
 
-function Steamer({ size, hot }: { size: number; hot: boolean }) {
+function Steamer({ size }: { size: number; hot: boolean }) {
   return (
     <svg width={size} height={size} viewBox="0 0 200 200" style={{ overflow: 'visible' }}>
       <defs>
@@ -476,7 +476,9 @@ function Jar({ size }: { size: number }) {
   );
 }
 
-// === Particle Effect Component ===
+// === Particle Effect Component (reserved for future use) ===
+// === Particle Effect Component (reserved for future use) ===
+/*
 function Particles({
   kind,
   count = 12,
@@ -536,6 +538,7 @@ function Particles({
     </div>
   );
 }
+*/
 
 // === Main PaozhiUI Component ===
 export default function PaozhiUI({ onClose, initialRecipeId = 'r1', onComplete }: PaozhiUIProps) {

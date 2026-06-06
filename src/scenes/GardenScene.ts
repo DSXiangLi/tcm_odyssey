@@ -22,6 +22,7 @@ import { createSceneTipUI, TutorialUI } from '../ui/TutorialUI';  // S13.4
 // Phase 2.5 全局背包系统
 import { InventoryManager, createInventoryManager } from '../systems/InventoryManager';
 import { showInventoryUI, hideInventoryUI } from '../ui/html/inventory-entry';
+import { GameStateManager } from '../utils/GameStateManager';
 // Phase 2 S3: NPC交互系统
 import { NPCInteractionSystem } from '../systems/NPCInteraction';
 import { showDialogUI } from '../ui/html/dialog-entry';
@@ -62,10 +63,11 @@ export class GardenScene extends Phaser.Scene {
 
   constructor() {
     super({ key: SCENES.GARDEN });
+    const playerId = GameStateManager.getInstance().getPlayerId();
     // 初始化背包管理器（单例）
-    this.inventoryManager = createInventoryManager('player_001');
+    this.inventoryManager = createInventoryManager(playerId);
     // Phase 2 S3: 初始化NPC交互系统
-    this.npcSystem = new NPCInteractionSystem('player_001');
+    this.npcSystem = new NPCInteractionSystem(playerId);
   }
 
   create(): void {
@@ -603,7 +605,7 @@ export class GardenScene extends Phaser.Scene {
     this.dialogCleanup = showDialogUI({
       npcId: npc.id,
       npcName: npc.name,
-      playerId: 'player_001',
+      playerId: GameStateManager.getInstance().getPlayerId(),
       onToolCall: (name, args) => this.handleToolCall(name, args),
       onClose: () => {
         console.log(`[GardenScene] Dialog with ${npcId} closed`);

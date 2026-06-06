@@ -11,6 +11,7 @@ import type { DiagnosisResult } from '../DiagnosisUI';
 import type { DiagnosisCase } from '../data/diagnosis-cases';
 import type { DiagnosisScoreResult } from '../../../utils/DiagnosisScorer';
 import { calculateDiagnosisScore, formatScoreForNPC } from '../../../utils/DiagnosisScorer';
+import { GameStateManager } from '../../../utils/GameStateManager';
 
 /**
  * 游戏上下文类型
@@ -86,7 +87,7 @@ function triggerDiagnosisFeedback(data: {
   const dialogOptions: DialogUIOptions = {
     npcId: 'qingmu',
     npcName: '青木先生',
-    playerId: 'player_001',
+    playerId: GameStateManager.getInstance().getPlayerId(),
     gameContext: fullContext,
     mode: 'feedback',
     onClose: onClose,  // 关闭回调用于场景切换

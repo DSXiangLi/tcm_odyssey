@@ -370,10 +370,24 @@ export function DialogUI({
     setDisplayThinking('');
     setDisplayText('');
 
+    // 从 GameStateBridge 获取历史对话（feedback模式也应传递历史）
+    const bridge = GameStateBridge.getInstance();
+    const existingHistory = bridge.getDialogHistory(npcId);
+    const recentHistory = existingHistory
+      .slice(-10)
+      .filter(msg => msg.role === 'player' || msg.role === 'npc')
+      .map(msg => ({
+        role: msg.role === 'player' ? 'user' : 'assistant',
+        content: msg.text
+      }));
+
     const request: ChatRequest = {
       npc_id: npcId,
       player_id: playerId,
-      user_message: feedbackPrompt
+      user_message: feedbackPrompt,
+      context: {
+        recent_history: recentHistory
+      }
     };
 
     sseClient.current.chatStream(
@@ -502,7 +516,8 @@ export function DialogUI({
     setInput('');
     setError(null);
     const playerMsg = { role: 'player' as const, text, timestamp: Date.now() };
-    saveHistory([...messages, playerMsg]);
+    const newHistory = [...messages, playerMsg];
+    saveHistory(newHistory);
     setIsGenerating(true);
 
     // 清空所有buffer
@@ -515,10 +530,22 @@ export function DialogUI({
     setDisplayThinking('');
     setDisplayText('');
 
+    // 从历史中提取最近对话（转换为OpenAI格式）
+    const recentHistory = newHistory
+      .slice(-10)  // 最近10条，避免token过多
+      .filter(msg => msg.role === 'player' || msg.role === 'npc')  // 只取有效对话
+      .map(msg => ({
+        role: msg.role === 'player' ? 'user' : 'assistant',
+        content: msg.text
+      }));
+
     const request: ChatRequest = {
       npc_id: npcId,
       player_id: playerId,
-      user_message: text
+      user_message: text,
+      context: {
+        recent_history: recentHistory
+      }
     };
 
     try {

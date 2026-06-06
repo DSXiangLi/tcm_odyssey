@@ -2,14 +2,27 @@
 """Hermes Backend FastAPI entry point."""
 import json
 import os
+import logging
 from pathlib import Path
 from fastapi import FastAPI
 from fastapi.responses import StreamingResponse
 from fastapi.middleware.cors import CORSMiddleware
 from dotenv import load_dotenv
 
-# Load environment from parent directory
-load_dotenv(Path(__file__).parent.parent / '.env')
+# Configure logging
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+    handlers=[
+        logging.StreamHandler(),  # Output to console
+    ]
+)
+logger = logging.getLogger(__name__)
+
+# Load environment from multiple locations
+load_dotenv(Path(__file__).parent.parent / '.env')  # Project root
+load_dotenv(Path.home() / '.hermes' / '.env')  # Hermes config dir
+load_dotenv()  # Current directory
 
 from gateway.stream_consumer import stream_chat
 from tools.registry import registry

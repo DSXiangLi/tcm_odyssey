@@ -911,4 +911,64 @@ Phase 2.5 已完成多个HTML小游戏嵌入，但数据流动存在严重断点
 
 ---
 
-*本文档由 Claude Code 维护，更新于 2026-06-05*
+## 本Session进展：NPC对话系统WebSocket问题诊断 (2026-06-06) 🔍 问题定位完成
+
+### 问题现象
+
+用户反馈：前端发送消息后没有任何响应。
+
+### 诊断过程
+
+**步骤1：WebSocket消息检查**
+- 发现浏览器中没有任何WebSocket消息发送
+- WebSocket连接创建但未打开（无WS_OPENED事件）
+
+**步骤2：API错误定位**
+浏览器控制台发现两个API失败：
+1. `/api/user/avatar` - 404（头像API不存在）
+2. `/api/usage-limits` - 500 Internal Server Error
+
+**步骤3：根本原因分析**
+```
+/api/usage-limits 返回：
+"MODEL_API_KEY not configured"
+```
+
+WebSocket proxy日志：
+```
+ECONNRESET - 连接重置
+```
+
+**步骤4：配置问题确认**
+桌面OpenClawInitialize配置使用天弘内部模型服务：
+- 内部服务URL本地无法访问
+- API key配置缺失
+- 导致WebSocket无法真正建立连接
+
+### 关键发现
+
+| 诊断点 | 结果 |
+|--------|------|
+| WebSocket创建 | ✅ 已创建 |
+| WebSocket打开 | ❌ 未打开（无WS_OPENED） |
+| 前端状态显示 | "●已连接"（假成功） |
+| WebSocket frames | 空（无实际通信） |
+| API错误 | MODEL_API_KEY not configured |
+| 配置来源 | 桌面OpenClaw（天弘内部服务） |
+
+### 解决方案
+
+**方案**：使用poster-image-editor项目的API配置
+
+用户指导：
+- 从 `~/Desktop/poster-image-editor/.env` 中获取API key
+- 使用与qwen-vl-plus相同的URL
+- 使用 `qwen-plus-latest` 模型
+
+### 状态
+
+🔍 问题诊断完成，等待配置修复
+
+---
+
+*本文档由 Claude Code 维护，更新于 2026-06-06*

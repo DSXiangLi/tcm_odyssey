@@ -20,6 +20,7 @@ import type { Root } from 'react-dom/client';
 import { SCENES } from '../data/constants';
 import { EventBus, GameEvents } from '../systems/EventBus';
 import { GameStateBridge } from '../utils/GameStateBridge';
+import { GameStateManager } from '../utils/GameStateManager';
 
 // React UI imports
 import { mountDiagnosisUI, unmountDiagnosisUI, DIAGNOSIS_EVENTS } from '../ui/html/diagnosis-entry';
@@ -34,6 +35,11 @@ import { calculateDiagnosisScore } from '../utils/DiagnosisScorer';
 export interface DiagnosisSceneConfig {
   caseId: string;           // 必须指定病案 ID
   returnScene?: string;     // 返回场景（默认诊所）
+  taskId?: string;          // 可选：任务ID（任务驱动模式）
+  reward?: {                // 可选：奖励配置（任务驱动模式）
+    herbs?: Array<{ herb_id: string; delta: number }>;
+    experience?: number;
+  };
 }
 
 export class DiagnosisScene extends Phaser.Scene {
@@ -53,6 +59,7 @@ export class DiagnosisScene extends Phaser.Scene {
   private caseId: string;
   private caseData: DiagnosisCase | null = null;
   private returnScene: string;
+  private taskId: string | null = null;  // 任务ID（任务驱动模式）
 
   // 状态
   private isInitialized: boolean = false;
@@ -66,6 +73,8 @@ export class DiagnosisScene extends Phaser.Scene {
   init(data: DiagnosisSceneConfig): void {
     this.caseId = data.caseId;
     this.returnScene = data.returnScene || SCENES.CLINIC;
+    // 获取任务驱动参数
+    this.taskId = data.taskId || null;
 
     // 获取病案数据
     const foundCase = getCaseById(this.caseId);
@@ -176,6 +185,11 @@ export class DiagnosisScene extends Phaser.Scene {
     // 计算评分
     const score = calculateDiagnosisScore(result, this.caseData);
 
+    // 任务驱动模式：调用API完成任务
+    if (this.taskId) {
+      this.completeTaskWithReward(score.totalScore);
+    }
+
     // 触发NPC反馈（注入游戏上下文，传入关闭回调）
     triggerNPCFeedback({
       type: 'diagnosis',
@@ -184,7 +198,7 @@ export class DiagnosisScene extends Phaser.Scene {
         patientName: result.patient.name,
         userAnswers: result,
         correctAnswers: this.caseData,
-        score: score
+        score: score  // 传递完整的DiagnosisScoreResult
       }
     }, () => this.returnToPreviousScene());  // NPC点评完成后返回场景
 
@@ -192,11 +206,30 @@ export class DiagnosisScene extends Phaser.Scene {
     this.eventBus.emit('DIAGNOSIS_COMPLETE', {
       caseId: this.caseId,
       result,
-      score
+      score: score.totalScore
     });
 
     // 不立即返回场景，等待NPC点评完成
     // NPC对话UI关闭时会调用上面传入的onClose回调
+  }
+
+  /**
+   * 任务驱动模式：完成任务并发放奖励
+   */
+  private async completeTaskWithReward(score: number): Promise<void> {
+    const gameState = GameStateManager.getInstance();
+    try {
+      const result = await gameState.completeTaskWithReward(this.taskId!, score);
+      if (result?.success) {
+        console.log('[DiagnosisScene] Task completed with reward:', result);
+        // 触发背包刷新事件
+        this.eventBus.emit('INVENTORY_UPDATED', { playerId: gameState.getPlayerId() });
+      } else {
+        console.warn('[DiagnosisScene] Task completion failed:', result);
+      }
+    } catch (error) {
+      console.error('[DiagnosisScene] Task completion error:', error);
+    }
   }
 
   /**

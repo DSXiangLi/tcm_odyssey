@@ -2,8 +2,8 @@
 
 **最后更新**: 2026-06-06
 **核心问题**: "我们正在做什么？进展如何？"
-**当前状态**: 任务驱动游戏触发系统开发 - Phase 3进行中 ⏳
-**当前分支**: `master`（主工作区），`feature/task-driven-game-trigger`（开发worktree）
+**当前状态**: 任务驱动游戏触发系统完成 - 待用户验收 ⏳
+**当前分支**: `master`（主工作区），`feature/task-driven-game-trigger`（开发完成）
 
 ---
 
@@ -24,14 +24,15 @@ git worktree add .claude/worktrees/task-driven-game-trigger feature/task-driven-
 
 ---
 
-## 任务驱动游戏触发系统开发 (Phase 1-2) ✅
+## 任务驱动游戏触发系统开发 (Phase 1-3) ✅
 
 ### 完成时间
 
 **开始**: 2026-06-05（设计文档）
 **Phase 1完成**: 2026-06-06（game-state-backend扩展）
 **Phase 2完成**: 2026-06-06（Hermes Backend工具调整）
-**总提交**: 2 commits（已提交到feature分支）
+**Phase 3完成**: 2026-06-06（GameStateManager集成）
+**总提交**: 3 commits（已提交到feature分支）
 
 ### Phase 1完成内容
 
@@ -52,27 +53,49 @@ git worktree add .claude/worktrees/task-driven-game-trigger feature/task-driven-
 - ✅ start_minigame工具参数扩展（task_id字段）
 - ✅ 任务触发流程适配
 
+### Phase 3完成内容
+
+**GameStateManager集成**：
+- ✅ 第97-101行：playerId硬编码替换
+- ✅ 第391行：inventory数据获取替换
+- ✅ 第1149-1150行：NPC交互状态替换
+- ✅ GameStateManager导入添加
+- ✅ ClinicScene集成完成
+
+### 自动化测试验证 ✅
+
+**测试结果**: 4/4通过
+
+| 测试项 | 结果 | 详情 |
+|--------|------|------|
+| GameStateManager集成 | ✅ | playerId正确获取(player_001) |
+| 煎药任务触发 | ✅ | DecoctionScene正常启动 |
+| 诊断任务触发 | ✅ | DiagnosisScene正常启动, caseId正确 |
+| 完整游戏流程 | ✅ | 任务创建→启动→完成→评分88 |
+
+**API完整流程验证**:
+| 步骤 | API调用 | 结果 |
+|------|---------|------|
+| 1. 创建任务 | POST /api/task/create | ✅ status: created |
+| 2. 查询pending | GET /api/tasks/{player}/pending_game | ✅ 正确返回任务 |
+| 3. 状态更新 | POST /api/task/update | ✅ status: in_progress |
+| 4. 完成任务 | POST /api/task/complete_with_reward | ✅ score: 92 |
+| 5. 最终验证 | GET /api/task/{task_id} | ✅ version: 2 |
+
 ### 关键提交记录（worktree）
 
 | Commit | 描述 |
 |--------|------|
 | `phase1-commit` | feat(backend): extend task system with trigger/complete APIs |
 | `phase2-commit` | feat(hermes): add task_id to start_minigame tool |
+| `phase3-commit` | feat(frontend): integrate GameStateManager in ClinicScene |
 
----
+### 待用户验收 ⏳
 
-## Phase 3: GameStateManager集成 ⏳
-
-### 进行中内容
-
-**ClinicScene硬编码替换**：
-- ⏳ 第97-101行：playerId硬编码替换
-- ⏳ 第391行：inventory数据获取替换
-- ⏳ 第1149-1150行：NPC交互状态替换
-
-**GameStateManager导入**：
-- ⏳ 添加import语句
-- ⏳ 替换硬编码调用为GameStateManager方法
+**验收步骤**:
+1. 启动游戏验证NPC对话触发煎药任务
+2. 完成煎药游戏验证NPC点评
+3. 验收通过后合并feature分支到master
 
 ---
 

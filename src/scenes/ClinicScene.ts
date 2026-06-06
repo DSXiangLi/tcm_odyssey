@@ -639,24 +639,49 @@ export class ClinicScene extends Phaser.Scene {
   }
 
   /**
-   * Phase 2.5: 开始诊断
+   * Phase 2.5: 开始诊断（任务驱动模式）
    */
-  private startDiagnosis(caseId: string): void {
+  private async startDiagnosis(caseId: string): Promise<void> {
     if (this.isTransitioning) return;
 
     console.log('[ClinicScene] Starting diagnosis with case:', caseId);
+
+    // 查询pending游戏任务
+    const gameState = GameStateManager.getInstance();
+    const pendingTask = await gameState.getPendingGameTask();
+
+    // 检查是否有诊断任务
+    let taskId: string | undefined = undefined;
+    let taskCaseId: string | undefined = undefined;
+
+    if (pendingTask && pendingTask.game_type === 'diagnosis') {
+      taskId = pendingTask.task_id;
+      try {
+        const config = JSON.parse(pendingTask.game_config);
+        taskCaseId = config.case_id;
+        console.log('[ClinicScene] Found pending diagnosis task:', taskId, 'case:', taskCaseId);
+
+        // 使用任务中的case_id（优先级高于传入的caseId）
+        caseId = taskCaseId || caseId;
+
+        // 更新任务状态为in_progress
+        await gameState.updateTaskStatus(taskId, 'in_progress');
+      } catch (e) {
+        console.warn('[ClinicScene] Invalid game_config:', e);
+      }
+    }
 
     // 发送事件
     this.eventBus.emit(GameEvents.SCENE_SWITCH, {
       from: SCENES.CLINIC,
       to: SCENES.DIAGNOSIS,
-      data: { caseId }
+      data: { caseId, taskId }
     });
 
     this.isTransitioning = true;
 
     // 切换到诊断场景
-    this.scene.launch(SCENES.DIAGNOSIS, { caseId, returnScene: SCENES.CLINIC });
+    this.scene.launch(SCENES.DIAGNOSIS, { caseId, taskId, returnScene: SCENES.CLINIC });
   }
 
   /**
@@ -820,24 +845,50 @@ export class ClinicScene extends Phaser.Scene {
    */
 
   /**
-   * Phase 2 S9: 开始煎药
+   * Phase 2 S9: 开始煎药（任务驱动模式）
    */
-  private startDecoction(): void {
+  private async startDecoction(): Promise<void> {
     if (this.isTransitioning) return;
 
     console.log('[ClinicScene] Starting decoction...');
+
+    // 查询pending游戏任务
+    const gameState = GameStateManager.getInstance();
+    const pendingTask = await gameState.getPendingGameTask();
+
+    // 检查是否有煎药任务
+    let taskId: string | undefined = undefined;
+    let prescriptionId: string | undefined = undefined;
+
+    if (pendingTask && pendingTask.game_type === 'decoction') {
+      taskId = pendingTask.task_id;
+      try {
+        const config = JSON.parse(pendingTask.game_config);
+        prescriptionId = config.prescriptionId;
+        console.log('[ClinicScene] Found pending decoction task:', taskId, 'prescription:', prescriptionId);
+
+        // 更新任务状态为in_progress
+        await gameState.updateTaskStatus(taskId, 'in_progress');
+      } catch (e) {
+        console.warn('[ClinicScene] Invalid game_config:', e);
+      }
+    }
 
     // 发送事件
     this.eventBus.emit(GameEvents.SCENE_SWITCH, {
       from: SCENES.CLINIC,
       to: SCENES.DECOCTION,
-      data: {}
+      data: { taskId, prescriptionId }
     });
 
     this.isTransitioning = true;
 
     // 切换到煎药场景
-    this.scene.launch(SCENES.DECOCTION, {});
+    this.scene.launch(SCENES.DECOCTION, {
+      prescriptionId,
+      taskId,
+      returnScene: SCENES.CLINIC
+    });
   }
 
   /**

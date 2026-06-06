@@ -971,4 +971,53 @@ ECONNRESET - 连接重置
 
 ---
 
+## 本Session进展：NPC对话系统配置修复 (2026-06-06) ✅ 已修复
+
+### 问题现象
+
+API连接失败，返回 `invalid_api_key` 错误。
+
+### 根本原因
+
+**配置文件冲突**：
+- `~/.hermes/config.yaml` 中有多行冲突的API配置
+- 模型名称错误（用户纠正：glm-4 → glm-5）
+- 后端加载了错误的配置导致API key无效
+
+### 修复方案
+
+1. 清理配置文件，只保留正确的配置
+2. API配置从 `.env` 文件读取（禁止硬编码）
+3. URL: `https://dashscope.aliyuncs.com/compatible-mode/v1`
+4. Model: `glm-5`
+
+### 验证结果
+
+```
+HTTP Request: POST https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions "HTTP/1.1 200 OK"
+[AgentLoop] LLM streaming started, iteration 1
+```
+
+NPC正常响应：
+- thinking: 用户只是打了个招呼"你好"。作为青木先生，我应该...
+- text: 是想从**外感病辨证**入手，还是想了解**方剂配伍**之理？
+
+### 安全检查确认
+
+用户提醒：API key禁止出现在代码中，禁止提交到GitHub
+
+**检查结果**：
+- ✅ 代码中无硬编码key（检查hermes_backend相关文件）
+- ✅ .gitignore已正确配置（.env, auth.json, config.yaml等）
+- ✅ git status无敏感文件待提交
+
+### 经验教训
+
+| 问题 | 教训 |
+|------|------|
+| 配置文件多行冲突 | 定期检查配置文件，避免重复配置导致冲突 |
+| API key泄露风险 | 始终从.env读取，禁止硬编码，定期检查.gitignore |
+
+---
+
 *本文档由 Claude Code 维护，更新于 2026-06-06*

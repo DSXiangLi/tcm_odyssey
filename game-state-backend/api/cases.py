@@ -1,6 +1,7 @@
 """Cases API endpoints."""
 
 from fastapi import APIRouter, HTTPException
+from pydantic import BaseModel
 from datetime import datetime
 import json
 
@@ -90,3 +91,60 @@ async def complete_case(request: CompleteCaseRequest):
     except Exception as e:
         conn.rollback()
         raise HTTPException(status_code=400, detail=str(e))
+
+
+# ===== Phase 2.5 新增API =====
+
+class UpdateCaseRequest(BaseModel):
+    """病案更新请求（简化版）"""
+    player_id: str
+    case_id: str
+    syndrome: str  # 辨证结果
+    score: float
+    completed_at: str
+
+@router.post("/cases/update")
+async def update_case_history(request: UpdateCaseRequest):
+    """Update case history (for diagnosis tasks)."""
+    conn = get_db()
+
+    try:
+        # 检查是否已存在
+        existing = conn.execute(
+            "SELECT * FROM case_history WHERE player_id = ? AND case_id = ?",
+            (request.player_id, request.case_id)
+        ).fetchone()
+
+        if existing:
+            # 更新现有记录
+            conn.execute("""
+                UPDATE case_history
+                SET score = ?, completed_at = ?
+                WHERE player_id = ? AND case_id = ?
+            """, (request.score, request.completed_at, request.player_id, request.case_id))
+        else:
+            # 创建新记录（使用简化结构）
+            conn.execute("""
+                INSERT INTO case_history
+                (player_id, case_id, title, completed_at, score, diagnosis, prescription, errors)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+            """, (
+                request.player_id, request.case_id, request.case_id,
+                request.completed_at, request.score, request.syndrome,
+                "", "[]"  # prescription和errors使用空值
+            ))
+
+        conn.commit()
+
+        return {
+            "success": True,
+            "status": "updated",
+            "case_id": request.case_id
+        }
+
+    except Exception as e:
+        conn.rollback()
+        raise HTTPException(status_code=500, detail={
+            "code": "DATABASE_ERROR",
+            "message": str(e)
+        })

@@ -7,12 +7,19 @@ CREATE TABLE IF NOT EXISTS tasks (
     player_id TEXT NOT NULL,
     task_id TEXT NOT NULL UNIQUE,
     title TEXT NOT NULL,
-    type TEXT NOT NULL,
-    status TEXT NOT NULL,
+    type TEXT NOT NULL,          -- 'prescription', 'syndrome', 'game_task'
+    status TEXT NOT NULL,        -- 'pending', 'in_progress', 'completed'
     progress REAL DEFAULT 0.0,
     blocked_by TEXT,
     created_at TEXT NOT NULL,
-    updated_at TEXT NOT NULL
+    updated_at TEXT NOT NULL,
+
+    -- 游戏任务扩展字段（Phase 2.5新增）
+    game_type TEXT,              -- 'decoction', 'diagnosis', 'processing'
+    game_config TEXT,            -- JSON: {"prescriptionId": "xxx", "case_id": "xxx"}
+    score REAL DEFAULT 0.0,      -- 游戏评分（0-100）
+    reward TEXT,                 -- JSON: {"herbs": [{"herb_id": "xxx", "delta": 3}]}
+    version INTEGER DEFAULT 0    -- 乐观锁版本号（并发控制）
 );
 
 -- Todos表（Todo mastery）

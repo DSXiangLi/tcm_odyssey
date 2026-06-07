@@ -90,12 +90,22 @@ git worktree add .claude/worktrees/task-driven-game-trigger feature/task-driven-
 | `phase2-commit` | feat(hermes): add task_id to start_minigame tool |
 | `phase3-commit` | feat(frontend): integrate GameStateManager in ClinicScene |
 
-### 待用户验收 ⏳
+### 待用户验收 ⏳ 测试进行中
 
 **验收步骤**:
 1. 启动游戏验证NPC对话触发煎药任务
 2. 完成煎药游戏验证NPC点评
 3. 验收通过后合并feature分支到master
+
+**验收状态 (2026-06-07)**:
+- ✅ Worktree服务已启动（Hermes@8642 + Vite@3000）
+- ✅ 基础触发功能验证（master已有trigger_minigame）
+- ⏳ 任务驱动模式测试方法待确认
+
+**任务驱动模式测试方法**:
+- 方式1：NPC对话提出具体需求（如"帮我煎一份麻黄汤")
+- 方式2：后端API创建pending任务 → 前端查询触发
+- 验证点：任务状态更新 → 数据持久化 → NPC点评反馈
 
 ---
 

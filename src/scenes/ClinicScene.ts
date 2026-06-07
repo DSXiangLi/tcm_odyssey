@@ -26,6 +26,7 @@ import { CLINIC_SCALED_CONFIG } from '../data/clinic-scaled-walkable-config';
 import { Player } from '../entities/Player';
 import { EventBus, GameEvents, EventData } from '../systems/EventBus';
 import { GameStateBridge } from '../utils/GameStateBridge';
+import { GameStateManager } from '../utils/GameStateManager';  // Phase 2.5新增：统一player_id管理
 import { NPCInteractionSystem } from '../systems/NPCInteraction';
 import { getNPCById } from '../data/npc-config';
 import { showDialogUI } from '../ui/html/dialog-entry';
@@ -93,12 +94,14 @@ export class ClinicScene extends Phaser.Scene {
 
   constructor() {
     super({ key: SCENES.CLINIC });
+    const playerId = GameStateManager.getInstance().getPlayerId();
+
     // Phase 2 S3: 初始化NPC交互系统
-    this.npcSystem = new NPCInteractionSystem('player_001');
+    this.npcSystem = new NPCInteractionSystem(playerId);
     // Phase 2 S5: 初始化病案管理器
-    this.caseManager = createCaseManager('player_001', 'qingmu');
+    this.caseManager = createCaseManager(playerId, 'qingmu');
     // Phase 2 S8: 初始化背包管理器
-    this.inventoryManager = createInventoryManager('player_001');
+    this.inventoryManager = createInventoryManager(playerId);
   }
 
   create(): void {
@@ -388,7 +391,7 @@ export class ClinicScene extends Phaser.Scene {
     this.dialogCleanup = showDialogUI({
       npcId: npc.id,
       npcName: npc.name,
-      playerId: 'player_001',
+      playerId: GameStateManager.getInstance().getPlayerId(),
       onToolCall: (name: string, args: Record<string, unknown>) => this.handleToolCall(name, args),
       onClose: () => {
         console.log(`[ClinicScene] Dialog with ${npcId} closed`);
@@ -618,7 +621,7 @@ export class ClinicScene extends Phaser.Scene {
     });
     this.diagnosisButton.setScrollFactor(0);
     this.diagnosisButton.setInteractive({ useHandCursor: true });
-    this.diagnosisButton.on('pointerdown', () => this.startDiagnosis('case-001'));
+    this.diagnosisButton.on('pointerdown', () => this.startDiagnosis('case_001'));
 
     // 设置快捷键
     this.diagnosisKey = this.input.keyboard!.addKey(Phaser.Input.Keyboard.KeyCodes.Z);
@@ -630,7 +633,7 @@ export class ClinicScene extends Phaser.Scene {
   private setupDiagnosisEventListener(): void {
     // 监听 diagnosis:start 事件（来自 CasesListUI 或 NPC 系统）
     window.addEventListener('diagnosis:start', ((e: CustomEvent) => {
-      const caseId = e.detail?.caseId || 'case-001';
+      const caseId = e.detail?.caseId || 'case_001';
       console.log('[ClinicScene] Received diagnosis:start event, caseId:', caseId);
       this.startDiagnosis(caseId);
     }) as EventListener);
@@ -1025,7 +1028,7 @@ export class ClinicScene extends Phaser.Scene {
 
     // Phase 2.5: Z键开始诊断
     if (Phaser.Input.Keyboard.JustDown(this.diagnosisKey) && !this.isTransitioning) {
-      this.startDiagnosis('case-001');
+      this.startDiagnosis('case_001');
     }
   }
 

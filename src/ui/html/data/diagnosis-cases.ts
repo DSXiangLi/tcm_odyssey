@@ -66,7 +66,7 @@ export interface DiagnosisCase {
 export const DIAGNOSIS_CASES: DiagnosisCase[] = [
   // ========== 病案 1: 湿阻中焦（原设计稿示例）==========
   {
-    id: 'case-001',
+    id: 'case_001',
     category: '湿阻类',
     patient: {
       name: '李秀梅',
@@ -202,7 +202,7 @@ export const DIAGNOSIS_CASES: DiagnosisCase[] = [
 
   // ========== 病案 2: 风寒感冒 ==========
   {
-    id: 'case-002',
+    id: 'case_002',
     category: '感冒类',
     patient: {
       name: '张大山',
@@ -323,7 +323,7 @@ export const DIAGNOSIS_CASES: DiagnosisCase[] = [
 
   // ========== 病案 3: 风热感冒 ==========
   {
-    id: 'case-003',
+    id: 'case_003',
     category: '感冒类',
     patient: {
       name: '王淑芬',
@@ -444,7 +444,7 @@ export const DIAGNOSIS_CASES: DiagnosisCase[] = [
 
   // ========== 病案 4: 暑湿感冒 ==========
   {
-    id: 'case-004',
+    id: 'case_004',
     category: '感冒类',
     patient: {
       name: '陈小明',
@@ -565,7 +565,7 @@ export const DIAGNOSIS_CASES: DiagnosisCase[] = [
 
   // ========== 病案 5: 风寒咳嗽 ==========
   {
-    id: 'case-005',
+    id: 'case_005',
     category: '咳嗽类',
     patient: {
       name: '赵老汉',
@@ -686,7 +686,7 @@ export const DIAGNOSIS_CASES: DiagnosisCase[] = [
 
   // ========== 病案 6: 风热咳嗽 ==========
   {
-    id: 'case-006',
+    id: 'case_006',
     category: '咳嗽类',
     patient: {
       name: '林小姐',
@@ -807,7 +807,7 @@ export const DIAGNOSIS_CASES: DiagnosisCase[] = [
 
   // ========== 病案 7: 痰湿咳嗽 ==========
   {
-    id: 'case-007',
+    id: 'case_007',
     category: '咳嗽类',
     patient: {
       name: '周胖子',
@@ -928,7 +928,7 @@ export const DIAGNOSIS_CASES: DiagnosisCase[] = [
 
   // ========== 病案 8: 外感风寒兼内伤湿滞 ==========
   {
-    id: 'case-008',
+    id: 'case_008',
     category: '外感兼内伤类',
     patient: {
       name: '孙掌柜',
@@ -1049,7 +1049,7 @@ export const DIAGNOSIS_CASES: DiagnosisCase[] = [
 
   // ========== 病案 9: 风寒袭肺 ==========
   {
-    id: 'case-009',
+    id: 'case_009',
     category: '风寒犯肺类',
     patient: {
       name: '吴渔夫',
@@ -1170,7 +1170,7 @@ export const DIAGNOSIS_CASES: DiagnosisCase[] = [
 
   // ========== 病案 10: 风热犯肺 ==========
   {
-    id: 'case-010',
+    id: 'case_010',
     category: '风热犯肺类',
     patient: {
       name: '郑商人',

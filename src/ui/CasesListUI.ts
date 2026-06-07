@@ -449,7 +449,7 @@ export class CasesListUI extends ModalUI {
       console.log('[CasesListUI] Diagnosis practice button clicked');
       // 发送 CustomEvent，ClinicScene 会监听并切换场景
       window.dispatchEvent(new CustomEvent('diagnosis:start', {
-        detail: { caseId: 'case-001' }
+        detail: { caseId: 'case_001' }
       }));
       // 关闭病案列表
       this.destroy();

@@ -14,6 +14,7 @@ import Phaser from 'phaser';
 import { UI_COLORS, UI_COLOR_STRINGS } from '../data/ui-color-theme';
 import { SSEClient } from '../utils/sseClient';
 import { DiagnosisScore } from '../systems/ScoringSystem';
+import { GameStateManager } from '../utils/GameStateManager';
 
 /**
  * 创建顶层悬浮卡片背景Graphics对象（方案D + 顶层特性）
@@ -346,7 +347,7 @@ export class NPCFeedbackUI extends Phaser.GameObjects.Container {
       await this.sseClient.chatStream(
         {
           npc_id: this.config.npcId,
-          player_id: 'player_001',
+          player_id: GameStateManager.getInstance().getPlayerId(),
           user_message: prompt
         },
         (chunk) => {

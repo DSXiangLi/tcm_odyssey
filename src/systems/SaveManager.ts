@@ -15,6 +15,7 @@
 
 import { EventBus, EventData } from './EventBus';
 import { GameStateBridge, PlayerState } from '../utils/GameStateBridge';
+import { GameStateManager } from '../utils/GameStateManager';
 import { CaseManager, CaseHistoryRecord } from './CaseManager';
 import { ExperienceManager } from './ExperienceManager';
 import { initializeExperienceState, type ExperienceState } from '../data/experience-data';
@@ -180,7 +181,7 @@ export class SaveManager {
   static getInstance(config?: SaveManagerConfig): SaveManager {
     if (!SaveManager.instance) {
       SaveManager.instance = new SaveManager(config ?? {
-        playerId: 'player_001',
+        playerId: GameStateManager.getInstance().getPlayerId(),
         autoSaveEnabled: true,
         maxSlots: MAX_SAVE_SLOTS
       });

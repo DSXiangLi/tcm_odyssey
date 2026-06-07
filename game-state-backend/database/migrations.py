@@ -61,7 +61,36 @@ def initialize_database():
     init_database(conn)
     migrate_from_tasks_json()
     migrate_inventory(conn, Path(__file__).parent.parent.parent)
+    migrate_game_task_fields(conn)  # 新增：迁移游戏任务字段
     print("[Database] Initialization complete")
+
+
+def migrate_game_task_fields(conn):
+    """迁移游戏任务扩展字段到tasks表（Phase 2.5新增）."""
+    try:
+        # 检查字段是否已存在
+        columns = conn.execute("PRAGMA table_info(tasks)").fetchall()
+        column_names = [col[1] for col in columns]
+
+        fields_to_add = [
+            ('game_type', 'TEXT'),
+            ('game_config', 'TEXT'),
+            ('score', 'REAL DEFAULT 0.0'),
+            ('reward', 'TEXT'),
+            ('version', 'INTEGER DEFAULT 0')
+        ]
+
+        for field_name, field_type in fields_to_add:
+            if field_name not in column_names:
+                conn.execute(f"ALTER TABLE tasks ADD COLUMN {field_name} {field_type}")
+                print(f"[Migration] Added field '{field_name}' to tasks table")
+
+        conn.commit()
+        print("[Migration] Game task fields migration complete")
+
+    except Exception as e:
+        print(f"[Migration] Error adding game task fields: {e}")
+        conn.rollback()
 
 def migrate_inventory(conn, project_root: Path):
     """Migrate 86 herbs data from inventory-herbs.ts."""

@@ -18,6 +18,7 @@ import Phaser from 'phaser';
 import { SCENES } from '../data/constants';
 import { EventBus, GameEvents } from '../systems/EventBus';
 import { GameStateBridge } from '../utils/GameStateBridge';
+import { GameStateManager } from '../utils/GameStateManager';
 import { ClueTracker, ClueTrackerConfig } from '../systems/ClueTracker';
 import { PatientDialogGenerator, PatientDialogConfig, PatientTemplate, CaseInfo, DialogResponse } from '../systems/PatientDialogGenerator';
 import { InquiryUI, InquiryUIConfig } from '../ui/InquiryUI';
@@ -211,7 +212,7 @@ export class InquiryScene extends Phaser.Scene {
     const trackerConfig: ClueTrackerConfig = {
       caseId: this.caseId,
       clues: this.caseInfo.clues,
-      playerId: 'player_001'
+      playerId: GameStateManager.getInstance().getPlayerId()
     };
     this.clueTracker = new ClueTracker(trackerConfig);
   }
@@ -223,7 +224,7 @@ export class InquiryScene extends Phaser.Scene {
     const generatorConfig: PatientDialogConfig = {
       template: this.patientTemplate,
       caseInfo: this.caseInfo,
-      playerId: 'player_001',
+      playerId: GameStateManager.getInstance().getPlayerId(),
       patientName: this.patientName,
       patientAge: this.patientAge
     };

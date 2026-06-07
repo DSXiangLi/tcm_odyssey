@@ -8,7 +8,7 @@
 import React from 'react';
 import { createRoot, Root } from 'react-dom/client';
 import CasebookUI from './CasebookUI';
-import { CASEBOOK_EVENTS } from './bridge/casebook-events';
+// CASEBOOK_EVENTS available for future use
 
 export interface CasebookUIProps {
   onClose: () => void;

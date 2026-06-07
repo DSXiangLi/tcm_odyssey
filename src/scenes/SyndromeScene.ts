@@ -18,6 +18,7 @@ import Phaser from 'phaser';
 import { SCENES } from '../data/constants';
 import { EventBus, GameEvents } from '../systems/EventBus';
 import { GameStateBridge } from '../utils/GameStateBridge';
+import { GameStateManager } from '../utils/GameStateManager';
 import { DiagnosisFlowManager } from '../systems/DiagnosisFlowManager';
 import { SyndromeUI, SyndromeUIConfig, InfoSummaryData } from '../ui/SyndromeUI';
 import { ClueState } from '../systems/ClueTracker';
@@ -64,7 +65,7 @@ export class SyndromeScene extends Phaser.Scene {
     if (data.flowManager) {
       this.flowManager = data.flowManager;
     } else {
-      this.flowManager = new DiagnosisFlowManager(this.caseId, 'player_001');
+      this.flowManager = new DiagnosisFlowManager(this.caseId, GameStateManager.getInstance().getPlayerId());
     }
 
     // 获取从前置环节传递的数据

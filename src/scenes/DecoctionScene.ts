@@ -21,6 +21,7 @@ import type { Root } from 'react-dom/client';
 import { SCENES } from '../data/constants';
 import { EventBus, GameEvents } from '../systems/EventBus';
 import { GameStateBridge } from '../utils/GameStateBridge';
+import { GameStateManager } from '../utils/GameStateManager';
 import { DecoctionManager, DecoctionManagerConfig } from '../systems/DecoctionManager';
 
 // React UI imports (Phase 2.5 Task 7)
@@ -33,6 +34,11 @@ import prescriptionsData from '../data/prescriptions.json';
 
 export interface DecoctionSceneConfig {
   prescriptionId?: string;  // 可选：预设方剂ID
+  taskId?: string;          // 可选：任务ID（任务驱动模式）
+  reward?: {                // 可选：奖励配置（任务驱动模式）
+    herbs?: Array<{ herb_id: string; delta: number }>;
+    experience?: number;
+  };
 }
 
 export class DecoctionScene extends Phaser.Scene {
@@ -52,6 +58,7 @@ export class DecoctionScene extends Phaser.Scene {
 
   // 数据
   private prescriptionId: string | null = null;
+  private taskId: string | null = null;  // 任务ID（任务驱动模式）
 
   // 状态
   private isInitialized: boolean = false;
@@ -63,6 +70,8 @@ export class DecoctionScene extends Phaser.Scene {
   init(data: DecoctionSceneConfig): void {
     // 获取可选的预设方剂ID
     this.prescriptionId = data.prescriptionId || null;
+    // 获取任务驱动参数
+    this.taskId = data.taskId || null;
   }
 
   create(): void {
@@ -267,6 +276,11 @@ export class DecoctionScene extends Phaser.Scene {
     // 发送结果回 React UI
     window.dispatchEvent(new CustomEvent(DECOCTION_EVENTS.SCORE_RESULT, { detail: scoreResult }));
 
+    // 任务驱动模式：调用API完成任务
+    if (this.taskId) {
+      this.completeTaskWithReward(scoreResult.score);
+    }
+
     return scoreResult;
   }
 
@@ -276,6 +290,25 @@ export class DecoctionScene extends Phaser.Scene {
   private handleCompleteEvent(_herbs: string[], _fireType: string): void {
     // 已通过 handleCompleteFromUI 处理
     // This method is for event-based communication if needed
+  }
+
+  /**
+   * 任务驱动模式：完成任务并发放奖励
+   */
+  private async completeTaskWithReward(score: number): Promise<void> {
+    const gameState = GameStateManager.getInstance();
+    try {
+      const result = await gameState.completeTaskWithReward(this.taskId!, score);
+      if (result?.success) {
+        console.log('[DecoctionScene] Task completed with reward:', result);
+        // 触发背包刷新事件
+        this.eventBus.emit('INVENTORY_UPDATED', { playerId: gameState.getPlayerId() });
+      } else {
+        console.warn('[DecoctionScene] Task completion failed:', result);
+      }
+    } catch (error) {
+      console.error('[DecoctionScene] Task completion error:', error);
+    }
   }
 
   /**

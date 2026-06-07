@@ -5,6 +5,7 @@ import { GameLogger } from './utils/GameLogger';
 import { GameStateBridge } from './utils/GameStateBridge';
 import { HermesManager, DEFAULT_HERMES_CONFIG, HermesStatus } from './systems/HermesManager';
 import { SaveManager, createSaveManager } from './systems/SaveManager';
+import { GameStateManager } from './utils/GameStateManager';
 
 // Hermes服务状态（全局暴露供测试访问）
 let hermesManager: HermesManager | null = null;
@@ -17,7 +18,7 @@ let saveManager: SaveManager | null = null;
  * 初始化存档系统
  */
 function initSaveSystem(): SaveManager {
-  saveManager = createSaveManager('player_001');
+  saveManager = createSaveManager(GameStateManager.getInstance().getPlayerId());
 
   // 暴露到全局供测试访问
   if (typeof window !== 'undefined') {

@@ -70,10 +70,9 @@ def stream_chat(request: Dict[str, Any]) -> Generator[Dict[str, Any], None, None
 
     # 获取历史对话（如果有）
     recent_history = request.get('context', {}).get('recent_history', [])
-    # DEBUG: 直接打印到stdout
-    print(f"[DEBUG] History count: {len(recent_history)}")
+    logger.info(f"[AgentLoop] Received history count: {len(recent_history)}")
     for i, h in enumerate(recent_history):
-        print(f"[DEBUG] History[{i}]: role={h.get('role')}, content={h.get('content', '')[:50]}...")
+        logger.info(f"[AgentLoop] History[{i}]: role={h.get('role')}, content={h.get('content', '')[:50]}...")
 
     session_id = dialog_logger.start_session(npc_id, player_id, user_message)
     logger.info(f"[AgentLoop] Session started: {session_id}, history_count: {len(recent_history)}")
@@ -105,12 +104,6 @@ def stream_chat(request: Dict[str, Any]) -> Generator[Dict[str, Any], None, None
 
     # 加入当前用户消息
     messages.append({'role': 'user', 'content': user_message})
-
-    # DEBUG: 打印完整 messages 数组
-    print(f"[DEBUG] Total messages: {len(messages)}")
-    for i, m in enumerate(messages):
-        content_preview = m['content'][:100] if len(m['content']) > 100 else m['content']
-        print(f"[DEBUG] messages[{i}]: role={m['role']}, content={content_preview}...")
 
     max_iterations = 5  # Prevent infinite loops
     iteration = 0

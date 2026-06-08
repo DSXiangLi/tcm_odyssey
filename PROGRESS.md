@@ -1030,4 +1030,54 @@ NPC正常响应：
 
 ---
 
-*本文档由 Claude Code 维护，更新于 2026-06-06*
+*本文档由 Claude Code 维护，更新于 2026-06-08*
+
+---
+
+## 本Session进展：AskUserQuestion Card功能开发 (Phase 2.5) ⏳ 准备实现
+
+### 开始时间
+**开始**: 2026-06-08
+
+### 背景
+Phase 2.5 AskUserQuestion Card功能，用于Hermes Agent与前端交互，让用户选择选项驱动对话流程。
+
+### 已完成步骤
+1. ✅ 设计文档编写完成
+   - 文档路径：`docs/superpowers/specs/phase2.5/*ask-user-question*.md`
+2. ✅ 实现计划编写完成
+   - 文档路径：`docs/superpowers/plans/*ask-user-question*.md`
+   - 任务数：17个（bite-sized步骤）
+3. ✅ 用户选择执行方式：Subagent-Driven Development
+
+### 实现计划摘要（17任务）
+
+**Phase 1: Plugin后端**（Task 1-5）：
+- Task 1: Plugin结构搭建（package.json + plugin.json）
+- Task 2: Schema定义 + 测试
+- Task 3: 答案格式化 + 测试
+- Task 4: Hook实现 + 测试
+- Task 5: Plugin入口点
+
+**Phase 2: 前端组件**（Task 6-11）：
+- Task 6: 前端类型定义
+- Task 7: QuestionHeader组件
+- Task 8: QuestionRenderer组件 + 测试
+- Task 9: AskUserQuestionCard主组件 + 测试
+- Task 10: Export barrel
+- Task 11: ChatMsg类型扩展
+
+**Phase 3: DialogUI集成**（Task 12-17）：
+- Task 12: MessageBubble集成
+- Task 13: ChatContext.handleSend扩展
+- Task 14: 集成测试
+- Task 15-17: 最终验证
+
+### 当前状态
+- ⏳ 准备执行Subagent-Driven实现
+- 每个任务采用TDD流程（测试→实现→验证）
+
+### 下一步
+1. 调用 superpowers:subagent-driven-development skill
+2. 执行Task 1: Plugin结构搭建
+3. 追踪进度更新PROGRESS.md

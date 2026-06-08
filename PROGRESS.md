@@ -1081,3 +1081,48 @@ Phase 2.5 AskUserQuestion Card功能，用于Hermes Agent与前端交互，让�
 1. 调用 superpowers:subagent-driven-development skill
 2. 执行Task 1: Plugin结构搭建
 3. 追踪进度更新PROGRESS.md
+
+---
+
+## 本Session进展：构建过程TypeScript类型错误修复 (2026-06-08) ⏳ 进行中
+
+### 问题现象
+
+构建过程中遇到TypeScript类型错误，构建失败。
+
+### 错误详情
+
+**涉及文件**:
+- `src/ui/html/bridge/game-state-bridge.ts` - gameState类型导入
+- `src/ui/html/types.ts` - 工具参数类型定义
+
+**错误类型**: 类型定义不一致
+
+### 修复进度
+
+- ⏳ 类型错误正在修复中
+- 用户要求先杀掉所有相关端口后再build启动
+- 进程已清理完成
+
+### 正确启动流程（用户纠正）
+
+```bash
+# 1. 清理进程（如果需要）
+pkill -f "python.*main.py" || true
+pkill -f "vite" || true
+
+# 2. 构建项目
+npm run build
+
+# 3. 启动后端服务器
+npm run dev:server
+
+# 4. 启动前端开发服务器
+npm run dev
+```
+
+### 下一步
+1. 修复TypeScript类型错误
+2. 完成构建
+3. 按正确顺序启动服务
+4. 验证AskUserQuestion Card功能

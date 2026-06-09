@@ -1,9 +1,50 @@
 # 药灵山谷 - 当前进行中状态
 
-**最后更新**: 2026-06-06
+**最后更新**: 2026-06-09
 **核心问题**: "我们正在做什么？进展如何？"
-**当前状态**: 任务驱动游戏触发系统完成 - 待用户验收 ⏳
+**当前状态**: Gateway代理配置修复完成，NPC对话功能恢复 ✅
 **当前分支**: `master`（主工作区），`feature/task-driven-game-trigger`（开发完成）
+
+---
+
+## Gateway代理配置修复（2026-06-09）✅
+
+### 问题现象
+
+Gateway服务无法连接到模型服务器（`algoplatform.thfund.work`），导致NPC对话功能失效。
+
+### 根本原因
+
+Gateway进程继承了系统代理环境变量：
+```
+http_proxy=http://127.0.0.1:7890
+https_proxy=http://127.0.0.1:7890
+no_proxy=localhost,127.0.0.0/8,::1  ← 缺少 thfund 域名
+```
+
+请求内部域名时被强制走代理，导致连接失败。
+
+### 解决方案
+
+修改Gateway systemd服务配置，添加`no_proxy`环境变量：
+```ini
+[Service]
+Environment="no_proxy=localhost,127.0.0.0/8,::1,algoplatform.thfund.work,.thfund.work"
+```
+
+### 验证方法
+
+```bash
+# 检查进程环境变量
+cat /proc/<gateway_pid>/environ | tr '\0' '\n' | grep proxy
+
+# 测试连接（不走代理）
+curl --noproxy '*' http://algoplatform.thfund.work/v1/models
+```
+
+### 经验教训文档
+
+[Gateway代理配置经验](docs/superpowers/experience/2026-06-09-gateway-proxy-config.md)
 
 ---
 
